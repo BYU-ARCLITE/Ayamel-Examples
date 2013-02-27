@@ -15,7 +15,7 @@ object CaptionTracks extends Controller {
 
   def view(id: Long) = Action {
     val captionTrack = CaptionTrack.findById(id).get
-    Ok(captionTrack.content).as("text/vtt")
+    Ok(captionTrack.content).as("text/vtt").withHeaders("Access-Control-Allow-Origin" -> "*")
   }
 
 }
