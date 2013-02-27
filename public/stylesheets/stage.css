@@ -1,0 +1,14 @@
+.aspect_container {
+    display: inline-block;
+    position: relative;
+    width: 100%;
+}
+.aspect_element {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: black; /* show me! */
+    overflow: hidden;
+}

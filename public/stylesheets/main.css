@@ -1,0 +1,119 @@
+@font-face {
+    font-family: 'RawengulkSans';
+    src: url('../font/RawengulkSans-094.otf') format('opentype'),
+    url('../font/RawengulkSans-094.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: RawengulkSans;
+}
+
+.btn-yellow {
+    /*color: #ffffff;
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);*/
+    background-color: #ffd426;
+    *background-color: #ffd426;
+    background-image: -moz-linear-gradient(top, #FFF288, #ffd426);
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#FFF288), to(#ffd426));
+    background-image: -webkit-linear-gradient(top, #FFF288, #ffd426);
+    background-image: -o-linear-gradient(top, #FFF288, #ffd426);
+    background-image: linear-gradient(to bottom, #FFF288, #ffd426);
+    background-repeat: repeat-x;
+    border-color: #ffd426 #ffd426 #d9b75d;
+    border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffFFF288', endColorstr='#ffffd426', GradientType=0);
+    filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);
+}
+
+.btn-yellow:hover,
+.btn-yellow:focus,
+.btn-yellow:active,
+.btn-yellow.active,
+.btn-yellow.disabled,
+.btn-yellow[disabled] {
+    /*color: #ffffff;*/
+    background-color: #ffd426;
+    *background-color: #d9b75d;
+}
+
+.btn-yellow:active,
+.btn-yellow.active {
+    background-color: #b99840 \9;
+}
+
+.btn-magenta {
+    color: #ffffff;
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+    background-color: #DE2174;
+    *background-color: #DE2174;
+    background-image: -moz-linear-gradient(top, #EE7FB0, #DE2174);
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#EE7FB0), to(#DE2174));
+    background-image: -webkit-linear-gradient(top, #EE7FB0, #DE2174);
+    background-image: -o-linear-gradient(top, #EE7FB0, #DE2174);
+    background-image: linear-gradient(to bottom, #EE7FB0, #DE2174);
+    background-repeat: repeat-x;
+    border-color: #DE2174 #DE2174 #900B45;
+    border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffEE7FB0', endColorstr='#ffDE2174', GradientType=0);
+    filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);
+}
+
+.btn-magenta:hover,
+.btn-magenta:focus,
+.btn-magenta:active,
+.btn-magenta.active,
+.btn-magenta.disabled,
+.btn-magenta[disabled] {
+    color: #ffffff;
+    background-color: #DE2174;
+    *background-color: #900B45;
+}
+
+.btn-magenta:active,
+.btn-magenta.active {
+    background-color: #900B45 \9;
+}
+
+.btn-blue {
+    color: #ffffff;
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+    background-color: #2184AE;
+    *background-color: #2184AE;
+    background-image: -moz-linear-gradient(top, #77BAD7, #2184AE);
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#77BAD7), to(#2184AE));
+    background-image: -webkit-linear-gradient(top, #77BAD7, #2184AE);
+    background-image: -o-linear-gradient(top, #77BAD7, #2184AE);
+    background-image: linear-gradient(to bottom, #77BAD7, #2184AE);
+    background-repeat: repeat-x;
+    border-color: #2184AE #2184AE #0B5271;
+    border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff77BAD7', endColorstr='#ff2184AE', GradientType=0);
+    filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);
+}
+
+.btn-blue:hover,
+.btn-blue:focus,
+.btn-blue:active,
+.btn-blue.active,
+.btn-blue.disabled,
+.btn-blue[disabled] {
+    color: #ffffff;
+    background-color: #2184AE;
+    *background-color: #0B5271;
+}
+
+.btn-blue:active,
+.btn-blue.active {
+    background-color: #0B5271 \9;
+}
+
+.navbar .brand {
+    margin: 0 0 -26px -42px;
+    padding: 0 20px 0 0;
+}
+
+.inline-block {
+    display: inline-block;
+}

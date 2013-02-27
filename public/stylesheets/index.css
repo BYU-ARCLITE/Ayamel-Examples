@@ -1,0 +1,43 @@
+body {
+    background: url("../images/index/background.jpg") top center no-repeat;
+}
+
+#titles {
+    position: relative;
+    width: 900px;
+    height: 50px;
+    margin: 10px auto;
+}
+
+.title {
+    position: absolute;
+    text-align: center;
+    width: 100%;
+    opacity: 0;
+    transition: opacity ease 0.5s;
+    -moz-transition: opacity ease 0.5s;
+    -webkit-transition: opacity ease 0.5s;
+}
+
+.title.active {
+    opacity: 1;
+}
+
+.title h1 {
+    color: white;
+    text-shadow: 1px 2px 5px rgba(0,0,0,0.7);
+
+}
+
+.getStarted {
+    background: rgba(255,255,255,0.65);
+    border-radius: 12px;
+    -moz-border-radius: 12px;
+    -webkit-border-radius: 12px;
+    padding: 25px;
+    margin: 20px auto;
+    box-shadow: 2px 3px 12px rgba(0,0,0,0.4);
+    -webkit-box-shadow: 2px 3px 12px rgba(0,0,0,0.4);
+    -moz-box-shadow: 2px 3px 12px rgba(0,0,0,0.4);
+    width: 450px;
+}

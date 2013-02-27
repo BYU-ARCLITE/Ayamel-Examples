@@ -1,0 +1,49 @@
+@(title: String)(content: Html)(implicit request: RequestHeader)
+
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>@title</title>
+        <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/bootstrap.min.css")">
+        <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/bootstrap-responsive.min.css")">
+        <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/font-awesome.min.css")">
+        <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/main.css")">
+
+        <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.png")">
+
+        <script src="@routes.Assets.at("javascripts/jquery-1.9.0.min.js")" type="text/javascript"></script>
+        <script src="@routes.Assets.at("javascripts/bootstrap.min.js")" type="text/javascript"></script>
+    </head>
+    <body>
+        <div class="container">
+                <!-- Messages/alerts -->
+            @if(request.flash.get("alert").isDefined) {
+                <div class="alert">
+                    <a class="close" data-dismiss="alert">&times;</a>
+                    <strong>Just a sec...</strong> @request.flash("alert")
+                </div>
+            }
+            @if(request.flash.get("error").isDefined) {
+                <div class="alert alert-error">
+                    <a class="close" data-dismiss="alert">&times;</a>
+                    <strong>Oh snap!</strong> @request.flash("error")
+                </div>
+            }
+            @if(request.flash.get("success").isDefined) {
+                <div class="alert alert-success">
+                    <a class="close" data-dismiss="alert">&times;</a>
+                    <strong>Alright!</strong> @request.flash("success")
+                </div>
+            }
+            @if(request.flash.get("info").isDefined) {
+                <div class="alert alert-info">
+                    <a class="close" data-dismiss="alert">&times;</a>
+                    <strong>Heads up.</strong> @request.flash("info")
+                </div>
+            }
+        </div>
+
+        @content
+    </body>
+</html>

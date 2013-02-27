@@ -1,0 +1,39 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Home/basic pages
+GET     /                           controllers.Application.index
+GET     /home                       controllers.Application.home
+GET     /test                       controllers.Application.test
+
+# Watching movies/Levels of playback
+GET     /watch                      controllers.Application.watch
+GET     /watch/:id                  controllers.Pages.levelSelect(id: Long)
+GET     /watch/:id/1                controllers.Pages.level1(id: Long)
+GET     /watch/:id/2                controllers.Pages.level2(id: Long)
+GET     /watch/:id/3                controllers.Pages.level3(id: Long)
+GET     /watch/:id/4                controllers.Pages.level4(id: Long)
+GET     /watch/:id/5                controllers.Pages.level5(id: Long)
+GET     /watch/:id/6                controllers.Pages.level6(id: Long)
+
+# Editing caption tracks
+GET     /edit                       controllers.Application.edit
+
+# Viewing code examples
+GET     /code                       controllers.Application.code
+
+# API wrapper until cross domain works
+GET     /api                        controllers.Application.apiWrapperGet
+
+# Caption Tracks
+GET     /captionTracks/:id.vtt      controllers.CaptionTracks.view(id: Long)
+
+# Authentication
+GET     /auth/google                controllers.authentication.Google.login
+GET     /auth/google/callback       controllers.authentication.Google.callback
+GET     /auth/cas                   controllers.authentication.Cas.login
+GET     /auth/cas/callback          controllers.authentication.Cas.callback
+
+# Map static resources from the /public folder to the /assets URL path
+GET     /assets/*file               controllers.Assets.at(path="/public", file)
