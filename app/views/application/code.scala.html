@@ -2,12 +2,51 @@
 
 @main("Code") {
 
+	<script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js" type="text/javascript"></script>
+
     <div class="container">
 
         @views.html.application.navbar("code")
 
         <h1>Code examples</h1>
+        <h2>Level 1 Playback</h2>
+		<span>The scope at this base level is to offer high quality video viewing through a media player.</span>
+		
+		<div id="linkcontainer">
+			<div><a href="https://github.com/BYU-ARCLITE/Ayamel.js/blob/master/Ayamel.js">Ayamel</a></div>
+			<div><a href="https://github.com/BYU-ARCLITE/Ayamel.js/blob/master/h5Clip.js">h5Clip</a></div>
+			<div><a href="https://github.com/BYU-ARCLITE/Ayamel.js/blob/master/MediaController.js">MediaController</a></div>
+			<div><a href="https://github.com/BYU-ARCLITE/Ayamel.js/blob/master/MediaControls.js">MediaControls</a></div>
+			<div><a href="https://github.com/BYU-ARCLITE/Ayamel.js/blob/master/TimedMedia.js">TimedMedia</a></div>
+			<div><a href="https://github.com/BYU-ARCLITE/Ayamel.js/blob/master/UniformAspectRatio.js">UniformAspectRatio</a></div>
+			<div><a href="https://github.com/BYU-ARCLITE/Ayamel.js/blob/master/video.js">Video</a></div>
+			<div><a href="https://github.com/BYU-ARCLITE/Ayamel.js/blob/master/VideoPlayer.js">VideoPlayer</a></div>
+		</div>
+		
+		<span>Here is a example of utilizing the code above to create a level 1 playback.</span>
+		
+		<code class="prettyprint">
+			//ResourceId identifies which video you are looking for from the database
+            var resourceId = "512cfb8b35e544210c000001";
 
+            $(function() {
+                // Load the resource
+                // This script locates the video with resourceid from the database and retrieve necessary video files 
+                new Resource(resourceId, function(resource) {
+                    // Install the html5 video player
+                    // Elements including volume control, progress bar, play/pause button are all installed here
+                    Ayamel.AddVideoPlayer(h5PlayerInstall, 1, function() {
+                        // Create the player
+                        var videoPlayer = new Ayamel.VideoPlayer({
+                            element: document.getElementById('player'),
+                            aspectRatio: 45,
+                            resource: resource
+                        });
+                    });
+                });
+            });
+		</code>
+		
     </div>
 
 }
