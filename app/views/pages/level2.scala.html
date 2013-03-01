@@ -1,4 +1,4 @@
-@(movie: Movie)(implicit request: RequestHeader, user: User)
+@(video: Video)(implicit request: RequestHeader, user: User)
 
 @main("Ayamel Examples - Level 2") {
 
@@ -32,7 +32,7 @@
 
         @views.html.application.navbar("watch")
 
-        <h1>@movie.name</h1>
+        <h1>@video.name</h1>
         <h1><small>Level 2</small></h1>
 
         <div id="stage" class="aspect_container">
@@ -42,12 +42,12 @@
 
         <script type="text/javascript">
 
-            var movie = @Html(movie.toJson.toString()),
+            var video = @Html(video.toJson.toString()),
                 renderer;
 
             $(function() {
                 // Load the resource
-                new Resource(movie.resourceId, function(resource) {
+                new Resource(video.resourceId, function(resource) {
                     // Install the html5 video player
                     Ayamel.AddVideoPlayer(h5PlayerInstall, 1, function() {
                         var player = $('#player').get(0);
@@ -60,18 +60,18 @@
                         });
 
                         // Create the caption renderer
-                        var video = $("#player").find("video").get(0);
-                        var captions = $("#captions").get(0);
-                        renderer = new CaptionRenderer(video, {
-                            appendCueCanvasTo: captions,
+                        var videoElement = $("#player").find("video").get(0);
+                        var captionsElement = $("#captions").get(0);
+                        renderer = new CaptionRenderer(videoElement, {
+                            appendCueCanvasTo: captionsElement,
                             styleCue: function(DOMNode, track){
                                 return DOMNode;
                             }
                         });
-                        renderer.bindMediaElement(video);
+                        renderer.bindMediaElement(videoElement);
 
                         // Add the first caption track
-                        var captionTrack = movie.captionTracks[0];
+                        var captionTrack = video.captionTracks[0];
 
                         // Get the resource
                         new Resource(captionTrack.resourceId, function(resource) {

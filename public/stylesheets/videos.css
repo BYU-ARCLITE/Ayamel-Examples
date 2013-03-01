@@ -1,16 +1,16 @@
-.movieHolder {
+.videoHolder {
     width: 33%;
     float: left;
 }
 
-.movie {
+.video {
     margin: 10px;
     border: 7px solid #444;
     border-radius: 8px;
     box-shadow: 3px 3px 18px rgba(0,0,0,0.3), inset 1px 2px 7px rgba(0,0,0,0.1), inset 0 0 2px rgba(0,0,0,0.4);
 }
 
-.movieThumbnail {
+.videoThumbnail {
     background: black;
     width: 100%;
     height: 200px;
@@ -19,11 +19,11 @@
     background-size: cover;
 }
 
-.movieContent {
+.videoContent {
     padding: 10px;
 }
 
-.movieContent p {
+.videoContent p {
     height: 80px;
     overflow: hidden;
 }

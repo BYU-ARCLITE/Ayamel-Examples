@@ -1,4 +1,4 @@
-@(movie: Movie)(implicit request: RequestHeader, user: User)
+@(video: Video)(implicit request: RequestHeader, user: User)
 
 @main("Ayamel Examples - Level 1") {
 
@@ -23,14 +23,14 @@
 
         @views.html.application.navbar("watch")
 
-        <h1>@movie.name</h1>
+        <h1>@video.name</h1>
         <h1><small>Level 1</small></h1>
 
         <div id="player"></div>
 
         <script type="text/javascript">
 
-            var resourceId = "@movie.resourceId";
+            var resourceId = "@video.resourceId";
 
             $(function() {
                 // Load the resource

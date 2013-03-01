@@ -1,6 +1,6 @@
 package logic
 
-import models.{CaptionTrack, Movie}
+import models.{CaptionTrack, Video}
 import play.api.libs.json.{JsArray, Json}
 import concurrent.Await
 import concurrent.duration._
@@ -44,7 +44,7 @@ object Resources {
     id
   }
 
-  def createMovieResource(title: String, description: String, uri: String): String = {
+  def createVideoResource(title: String, description: String, uri: String): String = {
     val extension = uri.substring(uri.lastIndexOf("."))
     val mime = MimeTypes.forExtension(extension)
     createResourceWithUri(title, uri, description, "video", mime)

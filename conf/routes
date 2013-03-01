@@ -7,7 +7,7 @@ GET     /                           controllers.Application.index
 GET     /home                       controllers.Application.home
 GET     /test                       controllers.Application.test
 
-# Watching movies/Levels of playback
+# Watching videos/Levels of playback
 GET     /watch                      controllers.Application.watch
 GET     /watch/:id                  controllers.Pages.levelSelect(id: Long)
 GET     /watch/:id/1                controllers.Pages.level1(id: Long)
@@ -25,6 +25,9 @@ GET     /code                       controllers.Application.code
 
 # API wrapper until cross domain works
 GET     /api                        controllers.Application.apiWrapperGet
+
+# Google translate
+GET     /gt/:src/:dest/:text        controllers.GoogleTranslate.translate(src: String, dest: String, text: String)
 
 # Caption Tracks
 GET     /captionTracks/:id.vtt      controllers.CaptionTracks.view(id: Long)

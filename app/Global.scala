@@ -3,7 +3,7 @@ import concurrent.{ExecutionContext, Await}
 import concurrent.duration._
 import io.Source
 import logic.Resources
-import models.{CaptionTrack, MovieGroup, Movie}
+import models.{CaptionTrack, VideoGroup, Video}
 import play.api.libs.ws.WS
 import play.api.{Logger, GlobalSettings}
 import ExecutionContext.Implicits.global
@@ -24,7 +24,7 @@ object Global extends GlobalSettings {
    */
 
   // Video information
-  val movieInfo = List(
+  val videoInfo = List(
     (Some("512cfb8935e544200c000002"), "Les Choristes", "http://arclite.byu.edu/hvmirror/French/LesChoristes.mp4", "The new teacher at a severely administered boys' boarding school works to positively effect the students' lives through music."),
     (Some("512cfb8b35e544210c000001"), "Dreyfus", "http://arclite.byu.edu/hvmirror/French/Dreyfus.mp4", "A music video about Dreyfus."),
     (Some("512cfb8c35e544240c000001"), "Les Enfants de Marais", "http://arclite.byu.edu/hvmirror/French/Enfantsmarais.mp4", "A chronicle of a group of friends in rural France in 1918. Garris and Riton live in Marais, a quiet region along the banks of Loire river. Riton is afflicted with a bad-tempered wife and three unruly children. Garris lives alone with his recollections of World War I trenches. Their daily life consists of seasonal work and visits from their two pals: Tane, the local train conductor and Amédée, a dreamer and voracious reader of classics."),
@@ -39,8 +39,8 @@ object Global extends GlobalSettings {
     ("512cfb9035e544200c000003", "http://ia.media-imdb.com/images/M/MV5BMjAyNzk2OTIzMF5BMl5BanBnXkFtZTcwNjY5ODU4MQ@@._V1_SY317_CR5,0,214,317_.jpg", "image/jpg", true)
   )
 
-  // Movie groups
-  val movieGroupInfo = List(
+  // Video groups
+  val videoGroupInfo = List(
     ("French", List("Les Choristes", "Dreyfus", "Les Enfants de Marais", "Monsieur Batignole", "Saint-Jacques... La Mecque"))
   )
 
@@ -48,9 +48,9 @@ object Global extends GlobalSettings {
   val captionTrackInfo = List(
     ("Transcription", "fr", Some("512e6d6935e544230c000003"), "subtitles/Dreyfus-French.vtt", "Dreyfus"),
     ("Transcription", "fr", Some("512e70c935e544b412000000"), "subtitles/Les Enfants du Marais (French).vtt", "Les Enfants de Marais"),
-    ("Translation", "en",   Some("512e70d535e544210c000002"), "subtitles/Les Enfants du Marais (English).vtt", "Les Enfants de Marais"),
-    ("Transcription", "fr", Some("512e70d535e544230c000004"), "subtitles/LesChoristes (French).vtt", "Les Choristes"),
-    ("Translation", "en",   Some("512e70d535e544b612000000"), "subtitles/LesChoristes (English).vtt", "Les Choristes"),
+    ("Translation", "en",   Some("512e70d535e544b612000000"), "subtitles/Les Enfants du Marais (English).vtt", "Les Enfants de Marais"),
+    ("Transcription", "fr", Some("512e70d535e544210c000002"), "subtitles/LesChoristes (French).vtt", "Les Choristes"),
+    ("Translation", "en",   Some("512e70d535e544230c000004"), "subtitles/LesChoristes (English).vtt", "Les Choristes"),
     ("Transcription", "fr", Some("512e70d635e544240c000002"), "subtitles/MrBatignoleFrench.vtt", "Monsieur Batignole"),
     ("Translation", "en",   Some("512e70d635e544b412000001"), "subtitles/MrBatignoleEnglish.vtt", "Monsieur Batignole"),
     ("Transcription", "fr", Some("512e70d735e544b612000001"), "subtitles/St Jacques la Mecque.vtt", "Saint-Jacques... La Mecque")
@@ -75,18 +75,18 @@ object Global extends GlobalSettings {
    */
 
   def createFixtures() {
-    loadMovies()
-    loadMovieGroups()
+    loadVideos()
+    loadVideoGroups()
     loadCaptionTracks()
   }
 
-  def loadMovies() {
-    // Create the movies
-    if (Movie.list.isEmpty) {
-      for((resourceId, name, uri, description) <- movieInfo) {
-        Logger.debug("Loading movie: " + name)
-        val id = resourceId.getOrElse(Resources.createMovieResource(name, description, uri))
-        Movie(NotAssigned, name, description, id, List()).save
+  def loadVideos() {
+    // Create the videos
+    if (Video.list.isEmpty) {
+      for((resourceId, name, uri, description) <- videoInfo) {
+        Logger.debug("Loading video: " + name)
+        val id = resourceId.getOrElse(Resources.createVideoResource(name, description, uri))
+        Video(NotAssigned, name, description, id, List()).save
       }
 
       // Add the thumbnails
@@ -97,12 +97,12 @@ object Global extends GlobalSettings {
     }
   }
 
-  def loadMovieGroups() {
-    // Load the movie groups
-    if (MovieGroup.list.isEmpty) {
-      for (movieGroup <- movieGroupInfo) {
-        Logger.debug("Loading movie group: " + movieGroup._1)
-        MovieGroup(NotAssigned, movieGroup._1, movieGroup._2.map(name => Movie.findByName(name).get)).save
+  def loadVideoGroups() {
+    // Load the video groups
+    if (VideoGroup.list.isEmpty) {
+      for (videoGroup <- videoGroupInfo) {
+        Logger.debug("Loading video group: " + videoGroup._1)
+        VideoGroup(NotAssigned, videoGroup._1, videoGroup._2.map(name => Video.findByName(name).get)).save
       }
     }
   }
@@ -110,8 +110,8 @@ object Global extends GlobalSettings {
   def loadCaptionTracks() {
     // Load the caption tracks
     if (CaptionTrack.list.isEmpty) {
-      for((name, language, resourceId, filename, movieName) <- captionTrackInfo) {
-        Logger.info("Loading caption track: \"" + name + "\" for movie: \"" + movieName + "\"")
+      for((name, language, resourceId, filename, videoName) <- captionTrackInfo) {
+        Logger.info("Loading caption track: \"" + name + "\" for video: \"" + videoName + "\"")
 
         // Load the content from the remote file
         val content = Source.fromFile(filename, "UTF8").getLines().mkString("\r\n")
@@ -121,9 +121,9 @@ object Global extends GlobalSettings {
         val id = resourceId.getOrElse(Resources.createCaptionTrackResource(captionTrack))
         captionTrack = captionTrack.copy(resourceId = id).save
 
-        // Add the caption track to the movie
-        val movie = Movie.findByName(movieName).get
-        movie.copy(captionTracks = captionTrack :: movie.captionTracks).save
+        // Add the caption track to the video
+        val video = Video.findByName(videoName).get
+        video.copy(captionTracks = captionTrack :: video.captionTracks).save
       }
     }
   }

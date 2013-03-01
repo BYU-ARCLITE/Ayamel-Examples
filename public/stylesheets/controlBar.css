@@ -2,10 +2,22 @@
 .control_bar {
     margin: 0 auto;
     position: absolute;
-    bottom: 0;
+    bottom: -50px;
     width: 100%;
     height: auto;
     z-index: 100;
+    height: 50px;
+    overflow: hidden;
+    border-radius: 0 0 10px 10px;
+}
+
+.button_bar {
+    border-radius: 4px;
+    background: rgba(0,0,0,0.8);
+    height: 20px;
+    position: relative;
+    margin: 10px;
+    padding: 5px;
     opacity: 0;
 
     transition: opacity 0.3s ease;
@@ -14,17 +26,8 @@
     -o-transition: opacity 0.3s ease;
 }
 
-* :hover > .control_bar {
+.aspect_container:hover .button_bar {
     opacity: 1;
-}
-
-.control_bar > .button_bar {
-    border-radius: 4px;
-    background: rgba(0,0,0,0.8);
-    height: 20px;
-    position: relative;
-    margin: 10px;
-    padding: 5px;
 }
 
 .control_left {
@@ -39,7 +42,7 @@
 .control_time {
     position:absolute;
     top: 0px;
-    height: 7px;
+    height: 8px;
     width: 100%;
 }
 
@@ -112,28 +115,28 @@
 }
 
 .container_tiny {
-    padding: 1px;
-    height: 5px;
-    border-radius: 3px;
-    -moz-border-radius: 3px;
+    padding: 0px;
+    height: 8px;
+    border-radius: 0 0 3px 3px;
+    -moz-border-radius: 0 0 3px 3px;
     /*opacity: .5;*/
 }
 
 .mortice_tiny {
-    height: 5px;
+    height: 8px;
     background: #777;
     -webkit-box-shadow: inset 0px 1px 2px 0px #333;
     -moz-box-shadow: inset 0px 1px 2px 0px #333;
     box-shadow: inset 0px 1px 2px 0px #333;
-    border-radius: 3px;
-    -moz-border-radius: 3px;
+    border-radius: 0 0 3px 3px;
+    -moz-border-radius: 0 0 3px 3px;
     border-bottom: 1px solid #d0d0d0;
 }
 
 .progress_tiny {
-    height: 4px;
-    border-radius: 2px;
-    -moz-border-radius: 2px;
+    height: 6px;
+    border-radius: 0 2px 2px 2px;
+    -moz-border-radius: 0 2px 2px 2px;
     border-bottom: none;
 }
 

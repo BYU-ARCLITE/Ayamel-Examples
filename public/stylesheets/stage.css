@@ -1,3 +1,6 @@
+#stage {
+    margin-bottom: 65px;
+}
 .aspect_container {
     display: inline-block;
     position: relative;
@@ -10,5 +13,5 @@
     left: 0;
     right: 0;
     background-color: black; /* show me! */
-    overflow: hidden;
+    /*overflow: hidden;*/
 }

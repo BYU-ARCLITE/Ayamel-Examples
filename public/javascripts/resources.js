@@ -26,7 +26,7 @@ Resource.prototype.getThumbnail = function() {
     }
     return null;
 };
-Resource.prototype.getInformationFromMovie = function(movie) {
-    this.title = movie.title;
-    this.description = movie.description;
+Resource.prototype.getInformationFromVideo = function(video) {
+    this.title = video.title;
+    this.description = video.description;
 };
