@@ -3,7 +3,7 @@
 @main("Ayamel Examples - Level 3") {
 
     <!-- Include the Ayamel css files -->
-    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/controlBar.css")">
+    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/controlBar2.css")">
     <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/stage.css")">
 
     <!-- Resource Library Scripts -->
@@ -13,7 +13,9 @@
     <script src="@routes.Assets.at("javascripts/Ayamel.js/Ayamel.js")" type="text/javascript"></script>
     <script src="@routes.Assets.at("javascripts/Ayamel.js/h5Clip.js")" type="text/javascript"></script>
     <script src="@routes.Assets.at("javascripts/Ayamel.js/MediaController.js")" type="text/javascript"></script>
-    <script src="@routes.Assets.at("javascripts/Ayamel.js/MediaControls.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.at("javascripts/Ayamel.js/ControlBar.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.at("javascripts/Ayamel.js/ControlBarComponents.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.at("javascripts/Ayamel.js/ProgressBar.js")" type="text/javascript"></script>
     <script src="@routes.Assets.at("javascripts/Ayamel.js/TimedMedia.js")" type="text/javascript"></script>
     <script src="@routes.Assets.at("javascripts/Ayamel.js/UniformAspectRatio.js")" type="text/javascript"></script>
     <script src="@routes.Assets.at("javascripts/Ayamel.js/video.js")" type="text/javascript"></script>
@@ -34,6 +36,10 @@
     <script src="@routes.Assets.at("javascripts/Translate.js/WordReferenceTranslationEngine.js")" type="text/javascript"></script>
     <script src="@routes.Assets.at("javascripts/Translate.js/GoogleTranslationEngine.js")" type="text/javascript"></script>
 
+    <!-- View specific script -->
+    <script src="@routes.Assets.at("javascripts/mustache.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.at("javascripts/level3.js")" type="text/javascript"></script>
+
     <div class="container">
 
         @views.html.application.navbar("watch")
@@ -45,7 +51,7 @@
             <div class="span4">
                 <h2>Definitions</h2>
                 <p>
-                    Select any word to get a definition. Some translationsand are copyright
+                    Select any word to get a definition. Some translations are copyright
                     &copy; WordReference.com
                 </p>
                 <div id="definitions">
@@ -57,123 +63,12 @@
                     <div id="player"></div>
                     <div id="captions" style="position: absolute; top: 0; left: 0;"></div>
                 </div>
-                <div class="btn-group">
-                    <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
-                        Select Caption Track
-                        <span class="caret"></span>
-                    </a>
-                    <ul class="dropdown-menu" id="captionTracks">
-                    </ul>
-                </div>
             </div>
         </div>
 
 
         <script type="text/javascript">
-
-            var video = @Html(video.toJson.toString()),
-                renderer, translator,
-                captionTrackMap = {};
-
-            $(function() {
-                // Set up the translator
-                translator = new TextTranslator($("#definitions").get(0));
-                translator.addTranslationEngine(arcliteTranslationEngine, 2);
-                translator.addTranslationEngine(wordReferenceTranslationEngine, 3);
-                translator.addTranslationEngine(googleTranslationEngine, 1);
-
-                // Load the resource
-                new Resource(video.resourceId, function(resource) {
-                    // Install the html5 video player
-                    Ayamel.AddVideoPlayer(h5PlayerInstall, 1, function() {
-                        var player = $('#player').get(0);
-
-                        // Create the player
-                        var videoPlayer = new Ayamel.VideoPlayer({
-                            element: player,
-                            aspectRatio: 45,
-                            resource: resource
-                        });
-
-                        // Create the caption renderer
-                        var videoElement = $("#player").find("video").get(0);
-                        var captionsElement = $("#captions").get(0);
-                        renderer = new CaptionRenderer(videoElement, {
-                            appendCueCanvasTo: captionsElement,
-                            styleCue: function(DOMNode, track){
-                                translator.attach(DOMNode, track.language, "en");
-                                return DOMNode;
-                            }
-                        });
-                        renderer.bindMediaElement(videoElement);
-
-                        // Add the caption tracks
-                        var $captionTracks = $("#captionTracks");
-                        for(var i=0; i < video.captionTracks.length; i++) {
-                            var captionTrack = video.captionTracks[i];
-                            captionTrackMap[captionTrack.resourceId] = captionTrack;
-
-                            // Get the resource
-                            new Resource(captionTrack.resourceId, function(resource) {
-                                var captionTrack = captionTrackMap[resource.id];
-                                TextTrack.get({
-                                    kind: "subtitles",
-                                    label: captionTrack.name,
-                                    lang: captionTrack.language,
-                                    url: resource.content.files[0].downloadUri,
-                                    success: function(){
-                                        var track = this;
-                                        renderer.addTextTrack(track);
-
-                                        // Add this track to the drop down menu
-                                        if(renderer.tracks.length === 1) {
-                                            track.mode = 'showing';
-                                            $captionTracks.append("<li><a class='captionTrackSelect' href='#' data-resource='"+resource.id+"'><i class='icon-eye-open'></i> " + captionTrack.name + "</a></li>")
-                                        } else {
-                                            $captionTracks.append("<li><a class='captionTrackSelect' href='#' data-resource='"+resource.id+"'><i class='icon-eye-close'></i> " + captionTrack.name + "</a></li>")
-                                        }
-
-                                        if(renderer.tracks.length === video.captionTracks.length) {
-                                            // Enable the select ability
-                                            $(".captionTrackSelect").click(function() {
-                                                // Disable others
-                                                $(".captionTrackSelect").children("i").removeClass("icon-eye-open").addClass("icon-eye-close");
-                                                for(var i=0; i<renderer.tracks.length; i++)
-                                                    renderer.tracks.mode = "disabled";
-
-                                                // Enable this one
-                                                $(this).children("i").removeClass("icon-eye-close").addClass("icon-eye-open");
-                                                var resourceId = $(this).attr("data-resource");
-                                                captionTrackMap[resourceId].mode = "showing";
-                                            });
-                                        }
-
-                                    }
-                                });
-                            });
-                        }
-
-
-//                        var captionTrack = video.captionTracks[0];
-//
-//                        // Get the resource
-//                        new Resource(captionTrack.resourceId, function(resource) {
-//                            TextTrack.get({
-//                                kind: "subtitles",
-//                                label: captionTrack.name,
-//                                lang: captionTrack.language,
-//                                url: resource.content.files[0].downloadUri,
-//                                success: function(){
-//                                    var track = this;
-//                                    track.mode = 'showing';
-//                                    renderer.addTextTrack(track);
-//                                }
-//                            });
-//                        });
-
-                    });
-                });
-            });
+            var video = @Html(video.toJson.toString());
         </script>
 
     </div>

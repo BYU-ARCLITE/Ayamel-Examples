@@ -25,27 +25,27 @@
 		
 		<span>Here is a example of utilizing the code above to create a level 1 playback.</span>
 		
-		<code class="prettyprint">
-			//ResourceId identifies which video you are looking for from the database
-            var resourceId = "512cfb8b35e544210c000001";
+		<pre class="prettyprint"><code class="language-javascript"
+>//ResourceId identifies which video you are looking for from the database
+var resourceId = "512cfb8b35e544210c000001";
 
-            $(function() {
-                // Load the resource
-                // This script locates the video with resourceid from the database and retrieve necessary video files 
-                new Resource(resourceId, function(resource) {
-                    // Install the html5 video player
-                    // Elements including volume control, progress bar, play/pause button are all installed here
-                    Ayamel.AddVideoPlayer(h5PlayerInstall, 1, function() {
-                        // Create the player
-                        var videoPlayer = new Ayamel.VideoPlayer({
-                            element: document.getElementById('player'),
-                            aspectRatio: 45,
-                            resource: resource
-                        });
-                    });
-                });
+$(function() {
+    // Load the resource
+    // This script locates the video with resourceid from the database and retrieve necessary video files
+    new Resource(resourceId, function(resource) {
+        // Install the html5 video player
+        // Elements including volume control, progress bar, play/pause button are all installed here
+        Ayamel.AddVideoPlayer(h5PlayerInstall, 1, function() {
+            // Create the player
+            var videoPlayer = new Ayamel.VideoPlayer({
+                element: document.getElementById('player'),
+                aspectRatio: 45,
+                resource: resource
             });
-		</code>
+        });
+    });
+});</code>
+</pre>
 		
     </div>
 

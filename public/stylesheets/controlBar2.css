@@ -1,0 +1,125 @@
+.controlBar {
+    background: rgba(0,0,0,0.9);
+    border-radius: 0 0 5px 5px;
+}
+
+.timeBar {
+    background: #333;
+    border: 1px solid black;
+    height: 15px;
+    border-radius: 5px;
+    box-shadow: inset 2px 3px 5px rgba(0,0,0,0.3);
+}
+
+.timeBar > .progressBar {
+    display: inline-block;
+    height: 15px;
+    width: 1px;
+
+    background: #DE2174;
+    background-image: linear-gradient(bottom, rgb(222,33,115) 0%, rgb(238,127,175) 100%);
+    background-image: -o-linear-gradient(bottom, rgb(222,33,115) 0%, rgb(238,127,175) 100%);
+    background-image: -moz-linear-gradient(bottom, rgb(222,33,115) 0%, rgb(238,127,175) 100%);
+    background-image: -webkit-linear-gradient(bottom, rgb(222,33,115) 0%, rgb(238,127,175) 100%);
+    background-image: -ms-linear-gradient(bottom, rgb(222,33,115) 0%, rgb(238,127,175) 100%);
+
+    background-image: -webkit-gradient(
+        linear,
+        left bottom,
+        left top,
+        color-stop(0, rgb(222,33,115)),
+        color-stop(1, rgb(238,127,175))
+    );
+
+    border-radius: 4px 0 0 4px;
+}
+.timeBar > .progressKnob {
+    display: inline-block;
+    width: 15px;
+    height: 15px;
+
+    background: #DE2174;
+    background-image: linear-gradient(bottom, rgb(222,33,115) 0%, rgb(238,127,175) 100%);
+    background-image: -o-linear-gradient(bottom, rgb(222,33,115) 0%, rgb(238,127,175) 100%);
+    background-image: -moz-linear-gradient(bottom, rgb(222,33,115) 0%, rgb(238,127,175) 100%);
+    background-image: -webkit-linear-gradient(bottom, rgb(222,33,115) 0%, rgb(238,127,175) 100%);
+    background-image: -ms-linear-gradient(bottom, rgb(222,33,115) 0%, rgb(238,127,175) 100%);
+
+    background-image: -webkit-gradient(
+        linear,
+        left bottom,
+        left top,
+        color-stop(0, rgb(222,33,115)),
+        color-stop(1, rgb(238,127,175))
+    );
+
+    border-radius: 7px;
+    margin-left: -8px;
+    box-shadow: 0 0 4px rgba(0,0,0,1);
+}
+
+.components > div {
+    display: inline-block;
+    color: white;
+    margin: 10px;
+}
+
+.components > div.play, .components > div.volume, .components > div.fullScreen {
+    font-family: FontAwesome;
+}
+
+.play:not(.playing):before {
+    content: "\f04b";
+}
+
+.play.playing:before {
+    content: "\f04c";
+}
+
+.volume > .icon {
+    display: inline-block;
+}
+
+.volume:not(.muted) > .icon:before {
+    content: "\f028";
+}
+
+.volume.muted > .icon:before {
+    content: "\f026";
+}
+
+.volume > .volumeSlider {
+    display: inline-block;
+    width: 100px;
+    height: 10px;
+    margin-left: 3px;
+    border-radius: 5px;
+    box-shadow: inset 1px 2px 7px rgba(0,0,0,0.7), 0 1px 0 rgba(255,255,255,0.2);
+}
+
+.volume .volumeLevel {
+    width: 20px;
+    height: 9px;
+    margin: 1px;
+    border-radius: 4px;
+    width: 100%;
+
+    background: #DE2174;
+    background-image: linear-gradient(bottom, rgb(222,33,115) 0%, rgb(238,127,175) 100%);
+    background-image: -o-linear-gradient(bottom, rgb(222,33,115) 0%, rgb(238,127,175) 100%);
+    background-image: -moz-linear-gradient(bottom, rgb(222,33,115) 0%, rgb(238,127,175) 100%);
+    background-image: -webkit-linear-gradient(bottom, rgb(222,33,115) 0%, rgb(238,127,175) 100%);
+    background-image: -ms-linear-gradient(bottom, rgb(222,33,115) 0%, rgb(238,127,175) 100%);
+
+    background-image: -webkit-gradient(
+        linear,
+        left bottom,
+        left top,
+        color-stop(0, rgb(222,33,115)),
+        color-stop(1, rgb(238,127,175))
+    );
+}
+
+.volume.muted .volumeLevel {
+    opacity: 0.4;
+}

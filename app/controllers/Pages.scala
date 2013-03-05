@@ -42,7 +42,8 @@ object Pages extends Controller {
   def level4(id: Long) = logic.Authentication.authenticatedAction {
     implicit request =>
       implicit user =>
-        Ok(views.html.pages.level4())
+        val video = Video.findById(id).get
+        Ok(views.html.pages.level4(video))
   }
 
   def level5(id: Long) = logic.Authentication.authenticatedAction {
