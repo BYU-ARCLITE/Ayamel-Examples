@@ -2,46 +2,6 @@ $(function() {
 
     var renderer;
 
-    function createCaptionSelectionMenu(parentElement) {
-        var template =
-            '<div class="dropdown">' +
-            '    <a class="btn btn-inverse" data-toggle="dropdown" href="#">Select Caption Track <b class="caret"></b></a>' +
-            '    <ul class="dropdown-menu" id="captionTracks" role="menu" aria-labelledby="dLabel">' +
-            '    </ul>' +
-            '</div>';
-
-        $(parentElement).append(template);
-    }
-
-    function addTrackToCaptionSelectionMenu(track) {
-        var activeIconTemplate = '<i class="icon-eye-open"></i> ',
-            template = '<li><a href="#">{{>active}}{{name}}</a></li>',
-            html = Mustache.to_html(template, {
-                name: track.label
-            }, {
-                active: track.mode === "showing" ? activeIconTemplate : ""
-            });
-
-        $("#captionTracks")
-            .append(html)
-            .find("li:last-child > a")
-            .click(function () {
-                // Disable all the tracks
-                renderer.tracks.forEach(function (track) {
-                    track.mode = "disabled";
-                });
-
-                // Remove the icons
-                $("#captionTracks").find(".icon-eye-open").remove();
-
-                // Enable this track
-                track.mode = "showing";
-
-                // Add the icon
-                $(this).prepend(activeIconTemplate);
-            });
-    }
-
     // Load the resource
     new Resource(video.resourceId, function(resource) {
 
@@ -70,10 +30,8 @@ $(function() {
             // Bind the caption renderer to the video element
             renderer.bindMediaElement(videoElement);
 
-            // Create the caption track menu
-            createCaptionSelectionMenu(videoPlayer.controls.captionElement);
-
             // Add the caption tracks
+            var captionComponent = videoPlayer.controls.getComponent("captions");
             video.captionTracks.forEach(function (captionTrack) {
 
                 // Start by getting the resource
@@ -95,7 +53,7 @@ $(function() {
                             }
 
                             // Add the track to the selection menu
-                            addTrackToCaptionSelectionMenu(track);
+                            captionComponent.addTrack(track);
                         }
                     });
                 });
