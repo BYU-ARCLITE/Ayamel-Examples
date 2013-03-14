@@ -72,4 +72,24 @@ object Application extends Controller {
       }
   }
 
+  def profile = logic.Authentication.authenticatedAction {
+    implicit request =>
+      implicit user =>
+
+        Ok(views.html.application.profile(user))
+  }
+
+  def changeName = logic.Authentication.authenticatedAction {
+    request =>
+      user =>
+
+        // Change the name
+        val params = request.body.asFormUrlEncoded.get
+        val newName = params("monkeyBrains")(0)
+        user.copy(name = Some(newName)).save
+
+        // Redirect
+        Redirect(routes.Application.profile()).flashing("success" -> "Yay! You changed your name.")
+  }
+
 }

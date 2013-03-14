@@ -3,8 +3,9 @@ package logic
 import models.User
 import anorm.NotAssigned
 import play.api.mvc.Results.Redirect
-import play.api.mvc.{Action, Result, Request, PlainResult}
+import play.api.mvc._
 import controllers.routes
+import scala.Some
 
 /**
  * Created with IntelliJ IDEA.
@@ -51,7 +52,7 @@ object Authentication {
     }
   }
 
-  def authenticatedAction(f: Request[_] => User => Result) = Action {
+  def authenticatedAction(f: Request[AnyContent] => User => Result) = Action {
     request =>
       val userId = request.session.get("userId")
       if (userId.isDefined) {

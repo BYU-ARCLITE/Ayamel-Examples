@@ -1,0 +1,11 @@
+@(user: User)(implicit request: RequestHeader)
+
+@main("Profile") {
+
+    <h1>Welcome @user.name</h1>
+
+    <form action="@routes.Application.changeName()" method="@routes.Application.changeName().method">
+        <input type="text" name="monkeyBrains" value="@user.name" />
+        <input class="btn" type="submit" value="Change my name!" />
+    </form>
+}
