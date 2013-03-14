@@ -6,7 +6,7 @@ import libs.MimeTypes
 import libs.ws.WS
 import play.api.mvc._
 import anorm.NotAssigned
-import models.{VideoGroup, Video, User}
+import models.User
 import concurrent.{Await, ExecutionContext}
 import concurrent.duration._
 import ExecutionContext.Implicits.global
@@ -27,8 +27,9 @@ object Application extends Controller {
   def watch = logic.Authentication.authenticatedAction {
     implicit request =>
       implicit user =>
-        val videoGroups = VideoGroup.list
-        Ok(views.html.application.watch(videoGroups))
+//        val videoGroups = VideoGroup.list
+//        Ok(views.html.application.watch(videoGroups))
+      Ok("Watch")
   }
 
   def edit = logic.Authentication.authenticatedAction {

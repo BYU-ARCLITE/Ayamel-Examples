@@ -2,7 +2,6 @@ package controllers
 
 import play.api.mvc.{Controller, Action}
 import io.Source
-import models.CaptionTrack
 
 /**
  * Created with IntelliJ IDEA.
@@ -14,8 +13,9 @@ import models.CaptionTrack
 object CaptionTracks extends Controller {
 
   def view(id: Long) = Action {
-    val captionTrack = CaptionTrack.findById(id).get
-    Ok(captionTrack.content).as("text/vtt").withHeaders("Access-Control-Allow-Origin" -> "*")
+//    val captionTrack = CaptionTrack.findById(id).get
+//    Ok(captionTrack.content).as("text/vtt").withHeaders("Access-Control-Allow-Origin" -> "*")
+    Ok
   }
 
 }

@@ -1,6 +1,6 @@
 package logic
 
-import models.{CaptionTrack, Video}
+//import models.{CaptionTrack, Video}
 import play.api.libs.json.{JsArray, Json}
 import concurrent.Await
 import concurrent.duration._
@@ -67,8 +67,8 @@ object Resources {
     val y = 1
   }
 
-  def createCaptionTrackResource(captionTrack: CaptionTrack): String = {
-    val url = "http://ayamel.byu.edu" + controllers.routes.CaptionTracks.view(captionTrack.id.get)
-    createResourceWithUri(captionTrack.name, url, resourceType = "document", mime = Some("text/vtt"))
-  }
+//  def createCaptionTrackResource(captionTrack: CaptionTrack): String = {
+//    val url = "http://ayamel.byu.edu" + controllers.routes.CaptionTracks.view(captionTrack.id.get)
+//    createResourceWithUri(captionTrack.name, url, resourceType = "document", mime = Some("text/vtt"))
+//  }
 }

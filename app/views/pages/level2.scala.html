@@ -1,4 +1,4 @@
-@(video: Video)(implicit request: RequestHeader, user: User)
+@(video: String)(implicit request: RequestHeader, user: User)
 
 @main("Ayamel Examples - Level 2") {
 
@@ -40,7 +40,7 @@
         @views.html.application.navbar("watch")
 
         <!-- The video description -->
-        <h1>@video.name</h1>
+        <h1>@video .name</h1>
         <h1><small>Level 2</small></h1>
 
         <!-- Create the stage for the player and caption renderer -->
@@ -51,7 +51,7 @@
 
         <!-- Include the video as JSON -->
         <script type="text/javascript">
-            var video = @Html(video.toJson.toString());
+            var video = @Html(video.toString());
         </script>
 
     </div>

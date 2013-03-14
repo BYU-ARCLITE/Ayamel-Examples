@@ -1,7 +1,6 @@
 package controllers
 
 import play.api.mvc._
-import models.Video
 
 /**
  * Created with IntelliJ IDEA.
@@ -21,29 +20,33 @@ object Pages extends Controller {
   def level1(id: Long) = logic.Authentication.authenticatedAction {
     implicit request =>
       implicit user =>
-        val video = Video.findById(id).get
-        Ok(views.html.pages.level1(video))
+//        val video = Video.findById(id).get
+//        Ok(views.html.pages.level1(video))
+      Ok("l1")
   }
 
   def level2(id: Long) = logic.Authentication.authenticatedAction {
     implicit request =>
       implicit user =>
-        val video = Video.findById(id).get
-        Ok(views.html.pages.level2(video))
+//        val video = Video.findById(id).get
+//        Ok(views.html.pages.level2(video))
+      Ok("l2")
   }
 
   def level3(id: Long) = logic.Authentication.authenticatedAction {
     implicit request =>
       implicit user =>
-        val video = Video.findById(id).get
-        Ok(views.html.pages.level3(video))
+//        val video = Video.findById(id).get
+//        Ok(views.html.pages.level3(video))
+      Ok("l3")
   }
 
   def level4(id: Long) = logic.Authentication.authenticatedAction {
     implicit request =>
       implicit user =>
-        val video = Video.findById(id).get
-        Ok(views.html.pages.level4(video))
+//        val video = Video.findById(id).get
+//        Ok(views.html.pages.level4(video))
+      Ok("l4")
   }
 
   def level5(id: Long) = logic.Authentication.authenticatedAction {
