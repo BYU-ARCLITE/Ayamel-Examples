@@ -86,8 +86,8 @@ class CourseSpec extends Specification {
       running(FakeApplication()) {
         // Create a course, add two content objects, then get the content listing
         val newCourse = Course(NotAssigned, "Some course", "start", "end", "").save
-        val content1 = Content(NotAssigned, "asdf").save
-        val content2 = Content(NotAssigned, "asdf").save
+        val content1 = Content(NotAssigned, "asdf", 'blah, "", "", "").save
+        val content2 = Content(NotAssigned, "asdf", 'blah, "", "", "").save
         newCourse.addContent(content1)
         newCourse.addContent(content2)
         val content = newCourse.getContent
@@ -104,78 +104,12 @@ class CourseSpec extends Specification {
       }
     }
 
-    "return their announcements" in {
-      running(FakeApplication()) {
-        // Create a course, make two announcements, then get the announcement listing
-        val newCourse = Course(NotAssigned, "Some course", "start", "end", "").save
-        val user = User(NotAssigned, "asdf", 'qwerty, "asdf").save
-        val announcement1 = newCourse.makeAnnouncement(user, "This is an announcement 1")
-        val announcement2 = newCourse.makeAnnouncement(user, "This is an announcement 2")
-        val announcements = newCourse.getAnnouncements
-
-        // Cleanup
-        newCourse.delete()
-        user.delete()
-        announcement1.delete()
-        announcement2.delete()
-
-        // Check results
-        announcements.size must beEqualTo(2)
-        announcements must contain(announcement1)
-        announcements must contain(announcement2)
-      }
-    }
-
-    "return their requests" in {
-      running(FakeApplication()) {
-        // Create a course, two users, and have them request access to the course
-        val newCourse = Course(NotAssigned, "Some course", "start", "end", "").save
-        val user1 = User(NotAssigned, "asdf", 'qwerty, "asdf").save
-        val user2 = User(NotAssigned, "asdf", 'qwerty, "asdf").save
-        val request1 = user1.requestEnrollment(newCourse, "")
-        val request2 = user2.requestEnrollment(newCourse, "")
-        val requests = newCourse.getRequests
-
-        // Cleanup
-        request1.delete()
-        request2.delete()
-        user1.delete()
-        user2.delete()
-        newCourse.delete()
-
-        // Check the results
-        requests.size must beEqualTo(2)
-        requests must contain(request1)
-        requests must contain(request2)
-      }
-    }
-
-    "make announcements" in {
-      running(FakeApplication()) {
-        // Create a course and make an announcement, listing the announcements before and after
-        val newCourse = Course(NotAssigned, "Some course", "start", "end", "").save
-        val user = User(NotAssigned, "asdf", 'qwerty, "asdf").save
-        val announcements1 = newCourse.getAnnouncements
-        val announcement = newCourse.makeAnnouncement(user, "announcement")
-        val announcements2 = newCourse.getAnnouncements
-
-        // Cleanup
-        newCourse.delete()
-        user.delete()
-        announcement.delete()
-
-        // Check the results
-        announcements1 must beEmpty
-        announcements2 must contain(announcement)
-      }
-    }
-
     "add content" in {
       running(FakeApplication()) {
         // Create a course, add content, and list the content before and after
         val newCourse = Course(NotAssigned, "Some course", "start", "end", "").save
         val content1 = newCourse.getContent
-        val content = Content(NotAssigned, "asdf").save
+        val content = Content(NotAssigned, "asdf", 'blah, "", "", "").save
         newCourse.addContent(content)
         val content2 = newCourse.getContent
 
@@ -193,7 +127,7 @@ class CourseSpec extends Specification {
       running(FakeApplication()) {
         // Create a course, add content, list the content, delete, then list the content again
         val newCourse = Course(NotAssigned, "Some course", "start", "end", "").save
-        val content = Content(NotAssigned, "asdf").save
+        val content = Content(NotAssigned, "asdf", 'blah, "", "", "").save
         newCourse.addContent(content)
         val content1 = newCourse.getContent
         newCourse.removeContent(content)

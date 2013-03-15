@@ -11,9 +11,9 @@ import play.api.Logger
  * @param name The name of the course
  * @param startDate When the course become functional
  * @param endDate When the course ceases to be functional
- * @param settings A JSON formatted string of settings
+ * @param lmsKey A key for connecting with LMSs
  */
-case class Course(id: Pk[Long], name: String, startDate: String, endDate: String, settings: String)
+case class Course(id: Pk[Long], name: String, startDate: String, endDate: String, lmsKey: String)
   extends SQLSavable with SQLDeletable {
 
   /**
@@ -23,11 +23,10 @@ case class Course(id: Pk[Long], name: String, startDate: String, endDate: String
   def save: Course = {
     if (id.isDefined) {
       update(Course.tableName, 'id -> id, 'name -> name, 'startDate -> startDate, 'endDate -> endDate,
-        'settings -> settings)
+        'lmsKey -> lmsKey)
       this
     } else {
-      val id = insert(Course.tableName, 'name -> name, 'startDate -> startDate, 'endDate -> endDate,
-        'settings -> settings)
+      val id = insert(Course.tableName, 'name -> name, 'startDate -> startDate, 'endDate -> endDate, 'lmsKey -> lmsKey)
       this.copy(id)
     }
   }
@@ -59,26 +58,6 @@ case class Course(id: Pk[Long], name: String, startDate: String, endDate: String
    * @return The list of content
    */
   def getContent: List[Content] = ContentListing.listClassContent(this)
-
-  /**
-   * Get announcements for this course
-   * @return The list of messages (announcements)
-   */
-  def getAnnouncements: List[Message] = Message.listClassAnnouncements(this)
-
-  /**
-   * Get requests to join this course
-   * @return The list of messages (requests)
-   */
-  def getRequests: List[Message] = Message.listClassRequests(this)
-
-  /**
-   * Make an announcement to the course
-   * @param user The user making the announcement
-   * @param message The content of the announcement
-   * @return The new message
-   */
-  def makeAnnouncement(user: User, message: String): Message = Message.sendAnnouncement(user, this, message)
 
   /**
    * Post content to the course
@@ -115,8 +94,8 @@ object Course extends SQLSelectable[Course] {
       get[String](tableName + ".name") ~
       get[String](tableName + ".startDate") ~
       get[String](tableName + ".endDate") ~
-      get[String](tableName + ".settings") map {
-      case id~name~startDate~endDate~settings => Course(id, name, startDate, endDate, settings)
+      get[String](tableName + ".lmsKey") map {
+      case id~name~startDate~endDate~lmsKey => Course(id, name, startDate, endDate, lmsKey)
     }
   }
 

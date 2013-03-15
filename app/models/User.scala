@@ -79,16 +79,10 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
   }
 
   /**
-   * Gets the enrollment--coursees the user is in--of the user
-   * @return The list of coursees
+   * Gets the enrollment--courses the user is in--of the user
+   * @return The list of courses
    */
   def getEnrollment: List[Course] = CourseMembership.listUsersClasses(this)
-
-  /**
-   * Gets the messages to the user
-   * @return The list of messages
-   */
-  def getMessages: List[Message] = Message.listByUser(this)
 
   /**
    * Gets the content belonging to this user
@@ -97,49 +91,13 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
   def getContent: List[Content] = ContentOwnership.listByUser(this)
 
   /**
-   * Get the institutions of which this user is a director
-   * @return The list of institutions
-   */
-  def getInstitutions: List[Institution] = Directorship.listUsersInstitutions(this)
-
-  /**
    * Create content from a resource and assign this user as the owner
-   * @param resourceId The ID of the resource
-   * @return The new content
+   * @param content The content that will be owned
+   * @return The content ownership
    */
-  def addContent(resourceId: String): Content = {
-    val content = Content(NotAssigned, resourceId).save
+  def addContent(content: Content): ContentOwnership =
     ContentOwnership(NotAssigned, this.id.get, content.id.get).save
-    content
-  }
 
-  /**
-   * Requests enrollment for a certain course
-   * @param course The course in which the user wants to be enrolled
-   * @param message A message to accompany the request
-   * @return The request
-   */
-  def requestEnrollment(course: Course, message: String): Message = Message.sendRequest(this, course, message)
-
-  def setAsDirector(institution: Institution): User = {
-    Directorship(NotAssigned, id.get, institution.id.get).save
-    this
-  }
-
-  def removeDirectorship(institution: Institution): User = {
-    // First, find the membership
-    val directorship = Directorship.listByUser(this).filter(_.institutionId == institution.id.get)
-
-    // Check the number or results
-    if (directorship.size == 1)
-      // One membership. So delete it
-      directorship(0).delete()
-    else
-      // We didn't get exactly one directorship so don't do anything, but warn
-      Logger.warn("Multiple (or zero) directorships for user #" + id.get + " in institution #" + institution.id.get)
-
-    this
-  }
 }
 
 object User extends SQLSelectable[User] {

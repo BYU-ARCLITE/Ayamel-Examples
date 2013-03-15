@@ -23,41 +23,26 @@ object Fixtures {
       (passwordHash, 'password, "teacher3",  Some("Teacher 3"),  Some("t3@ayamel.byu.edu"), 2),
       (passwordHash, 'password, "teacher4",  Some("Teacher 4"),  Some("t4@ayamel.byu.edu"), 2),
       (passwordHash, 'password, "teacher5",  Some("Teacher 5"),  Some("t5@ayamel.byu.edu"), 2),
-      (passwordHash, 'password, "teacher6",  Some("Teacher 6"),  Some("t6@ayamel.byu.edu"), 2),
-      (passwordHash, 'password, "director1", Some("Director 1"), Some("d1@ayamel.byu.edu"), 3),
-      (passwordHash, 'password, "director2", Some("Director 2"), Some("d2@ayamel.byu.edu"), 3),
-      (passwordHash, 'password, "manager1",  Some("Manager 1"),  Some("m1@ayamel.byu.edu"), 4),
-      (passwordHash, 'password, "manager2",  Some("Manager 2"),  Some("m2@ayamel.byu.edu"), 4),
-      (passwordHash, 'password, "officer1",  Some("Officer 1"),  Some("o1@ayamel.byu.edu"), 5),
-      (passwordHash, 'password, "officer2",  Some("Officer 2"),  Some("o2@ayamel.byu.edu"), 5),
-      (passwordHash, 'password, "admin1",    Some("Admin 1"),    Some("a1@ayamel.byu.edu"), 6),
-      (passwordHash, 'password, "admin2",    Some("Admin 2"),    Some("a2@ayamel.byu.edu"), 6)
-    )
-
-    val institutions = List(
-      ("Institution 1", "Provo, UT",     "Some description goes here", Some("http://landscape.byu.edu/portals/13/images/BYU_logo.jpg")),
-      ("Institution 2", "San Diego, CA", "Some description goes here", Some("http://landscape.byu.edu/portals/13/images/BYU_logo.jpg")),
-      ("Institution 3", "Boise, ID",     "Some description goes here", Some("http://landscape.byu.edu/portals/13/images/BYU_logo.jpg")),
-      ("Institution 4", "Paris, France", "Some description goes here", Some("http://landscape.byu.edu/portals/13/images/BYU_logo.jpg"))
+      (passwordHash, 'password, "teacher6",  Some("Teacher 6"),  Some("t6@ayamel.byu.edu"), 2)
     )
 
     val content = List(
-      "resource1",
-      "resource2",
-      "resource3",
-      "resource4",
-      "resource5",
-      "resource6",
-      "resource7",
-      "resource8"
+      ("Resource 1", 'video, "thumb", "resource1"),
+      ("Resource 2", 'video, "thumb", "resource2"),
+      ("Resource 3", 'video, "thumb", "resource3"),
+      ("Resource 4", 'video, "thumb", "resource4"),
+      ("Resource 5", 'video, "thumb", "resource5"),
+      ("Resource 6", 'video, "thumb", "resource6"),
+      ("Resource 7", 'video, "thumb", "resource7"),
+      ("Resource 8", 'video, "thumb", "resource8")
     )
 
     val courses = List(
-      ("Course 101", "2013-03-14T20:37:01.665Z", "2014-03-14T20:37:01.665Z", "{}"),
-      ("Course 102", "2013-03-14T20:37:01.665Z", "2014-03-14T20:37:01.665Z", "{}"),
-      ("Course 103", "2013-03-14T20:37:01.665Z", "2014-03-14T20:37:01.665Z", "{}"),
-      ("Course 104", "2013-03-14T20:37:01.665Z", "2014-03-14T20:37:01.665Z", "{}"),
-      ("Course 105", "2013-03-14T20:37:01.665Z", "2014-03-14T20:37:01.665Z", "{}")
+      ("Course 101", "2013-03-14T20:37:01.665Z", "2014-03-14T20:37:01.665Z", "key1"),
+      ("Course 102", "2013-03-14T20:37:01.665Z", "2014-03-14T20:37:01.665Z", "key2"),
+      ("Course 103", "2013-03-14T20:37:01.665Z", "2014-03-14T20:37:01.665Z", "key3"),
+      ("Course 104", "2013-03-14T20:37:01.665Z", "2014-03-14T20:37:01.665Z", "key4"),
+      ("Course 105", "2013-03-14T20:37:01.665Z", "2014-03-14T20:37:01.665Z", "key5")
     )
 
     val courseListings = List(
@@ -109,18 +94,12 @@ object Fixtures {
       (10, 7)
     )
 
-    val directorship = List(
-      (12, 0),
-      (12, 1),
-      (13, 2)
-    )
   }
 
   def create() {
 
     // Create the objects
     val users = new ListBuffer[User]()
-    val institutions = new ListBuffer[Institution]()
     val content = new ListBuffer[Content]()
     val courses = new ListBuffer[Course]()
 
@@ -129,25 +108,14 @@ object Fixtures {
       userData => users.append(User.fromFixture(userData).save)
     }
 
-    Logger.info("Creating institution fixtures")
-    data.institutions foreach {
-      institutionData => institutions.append(Institution.fromFixture(institutionData).save)
-    }
-
     Logger.info("Creating content fixtures")
     data.content foreach {
-      resourceId => content.append(Content(NotAssigned, resourceId).save)
+      contentData => content.append(Content.fromFixture(contentData).save)
     }
 
     Logger.info("Creating course fixtures")
     data.courses foreach {
       courseData => courses.append(Course.fromFixture(courseData).save)
-    }
-
-    // Create the connections
-    Logger.info("Creating course listing fixtures")
-    data.courseListings.foreach {
-      data => CourseListing(NotAssigned, institutions(data._2).id.get, courses(data._1).id.get).save
     }
 
     Logger.info("Creating course membership fixtures")
@@ -163,11 +131,6 @@ object Fixtures {
     Logger.info("Creating content ownership fixtures")
     data.contentOwnership.foreach {
       data => ContentOwnership(NotAssigned, users(data._1).id.get, content(data._2).id.get).save
-    }
-
-    Logger.info("Creating directorship fixtures")
-    data.directorship.foreach {
-      data => Directorship(NotAssigned, users(data._1).id.get, institutions(data._2).id.get).save
     }
 
   }

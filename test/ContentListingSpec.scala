@@ -69,7 +69,7 @@ class ContentListingSpec extends Specification {
     "be listable by course" in {
       running(FakeApplication()) {
         val course = Course(NotAssigned, "name", "start", "end", "settings").save
-        val content = Content(NotAssigned, "someId").save
+        val content = Content(NotAssigned, "someId", 'blah, "", "", "").save
         val contentListing = course.addContent(content)
         val allContentListing = ContentListing.listByCourse(course)
 
@@ -85,7 +85,7 @@ class ContentListingSpec extends Specification {
     "list content by course" in {
       running(FakeApplication()) {
         val course = Course(NotAssigned, "name", "start", "end", "settings").save
-        val content = Content(NotAssigned, "someId").save
+        val content = Content(NotAssigned, "someId", 'blah, "", "", "").save
         course.addContent(content)
         val contentListing = ContentListing.listClassContent(course)
 

@@ -69,9 +69,9 @@ object CourseMembership extends SQLSelectable[CourseMembership] {
     }
 
   /**
-   * Finds all coursees that a certain user is enrolled in
+   * Finds all courses that a certain user is enrolled in
    * @param user The user for whom the course list will be
-   * @return The list of coursees
+   * @return The list of courses
    */
   def listUsersClasses(user: User): List[Course] = {
     DB.withConnection {
