@@ -27,11 +27,11 @@ case class Message(id: Pk[Long], from: Long, to: Long, messageType: Symbol, cont
    */
   def save: Message = {
     if (id.isDefined) {
-      update(Message.tableName, 'id -> id, 'fromUser -> from, 'toUser -> to, 'messageType -> messageType,
+      update(Message.tableName, 'id -> id, 'fromUser -> from, 'toUser -> to, 'messageType -> messageType.name,
         'content -> content, 'messageDate -> date, 'messageRead -> read)
       this
     } else {
-      val id = insert(Message.tableName, 'fromUser -> from, 'toUser -> to, 'messageType -> messageType,
+      val id = insert(Message.tableName, 'fromUser -> from, 'toUser -> to, 'messageType -> messageType.name,
         'content -> content, 'messageDate -> date, 'messageRead -> read)
       this.copy(id)
     }
@@ -129,7 +129,7 @@ object Message extends SQLSelectable[Message] {
   def listByUser(user: User): List[Message] =
     DB.withConnection {
       implicit connection =>
-        anorm.SQL("select * from " + tableName + " where toUser = {id}").on('toUser -> user.id).as(simple *)
+        anorm.SQL("select * from " + tableName + " where toUser = {toUser}").on('toUser -> user.id).as(simple *)
     }
 
   /**
@@ -140,7 +140,7 @@ object Message extends SQLSelectable[Message] {
   def listClassRequests(course: Course): List[Message] =
     DB.withConnection {
       implicit connection =>
-        anorm.SQL("select * from " + tableName + " where toUser = {id} and messageType = {messageType}")
+        anorm.SQL("select * from " + tableName + " where toUser = {toUser} and messageType = {messageType}")
           .on('toUser -> course.id, 'messageType -> "request").as(simple *)
     }
 
@@ -152,7 +152,7 @@ object Message extends SQLSelectable[Message] {
   def listClassAnnouncements(course: Course): List[Message] =
     DB.withConnection {
       implicit connection =>
-        anorm.SQL("select * from " + tableName + " where toUser = {id} and messageType = {messageType}")
+        anorm.SQL("select * from " + tableName + " where toUser = {toUser} and messageType = {messageType}")
           .on('toUser -> course.id, 'messageType -> "announcement").as(simple *)
     }
 
@@ -206,6 +206,6 @@ object Message extends SQLSelectable[Message] {
     })
 
     val time = ISODateTimeFormat.dateTime().print(new DateTime())
-    Message(NotAssigned, user.id.get, course.id.get, 'request, message, time)
+    Message(NotAssigned, user.id.get, course.id.get, 'request, message, time).save
   }
 }

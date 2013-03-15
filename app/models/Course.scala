@@ -3,6 +3,7 @@ package models
 import anorm.{NotAssigned, ~, Pk}
 import sqlTraits.{SQLSelectable, SQLDeletable, SQLSavable}
 import anorm.SqlParser._
+import play.api.Logger
 
 /**
  * A course. Students and teachers are members. Content and announcements can be posted here.
@@ -35,7 +36,7 @@ case class Course(id: Pk[Long], name: String, startDate: String, endDate: String
    * Deletes the course from the DB
    */
   def delete() {
-    delete(Content.tableName, id)
+    delete(Course.tableName, id)
   }
 
   //      Logic
@@ -57,7 +58,7 @@ case class Course(id: Pk[Long], name: String, startDate: String, endDate: String
    * Get content posted to this course
    * @return The list of content
    */
-  def getContent: List[Content] = ContentListing.listByClass(this)
+  def getContent: List[Content] = ContentListing.listClassContent(this)
 
   /**
    * Get announcements for this course
@@ -85,6 +86,25 @@ case class Course(id: Pk[Long], name: String, startDate: String, endDate: String
    * @return The content listing
    */
   def addContent(content: Content): ContentListing = ContentListing(NotAssigned, this.id.get, content.id.get).save
+
+  /**
+   * Remove content from the course
+   * @param content The content to be removed
+   * @return The course
+   */
+  def removeContent(content: Content): Course = {
+    val listing = ContentListing.listByCourse(this).filter(_.contentId == content.id.get)
+
+    // Check the number or results
+    if (listing.size == 1)
+    // One membership. So delete it
+      listing(0).delete()
+    else
+    // We didn't get exactly one listing so don't do anything, but warn
+      Logger.warn("Multiple (or zero) content lists for content #" + content.id.get + " in course #" + id.get)
+
+    this
+  }
 }
 
 object Course extends SQLSelectable[Course] {
