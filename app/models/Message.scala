@@ -9,7 +9,7 @@ import org.joda.time.DateTime
 import org.joda.time.format.ISODateTimeFormat
 
 /**
- * A message can be communication between users, an announcement, notification, or class request
+ * A message can be communication between users, an announcement, notification, or course request
  * @param id The id of the message
  * @param from The id of the sender of the message
  * @param to The id of the receiver of the message
@@ -54,19 +54,19 @@ case class Message(id: Pk[Long], from: Long, to: Long, messageType: Symbol, cont
   def markAsRead: Message = this.copy(read = true).save
 
   /**
-   * Add the user to the class, notify the user, and delete the request.
+   * Add the user to the course, notify the user, and delete the request.
    * If the message is not a request then it does nothing.
    */
   def approve() {
     if (this.messageType == 'request) {
 
-      // Add the user to the class
+      // Add the user to the course
       val user = User.findById(this.from).get
-      val _class = Class.findById(this.to).get
-      user.enroll(_class, teacher = false)
+      val course = Course.findById(this.to).get
+      user.enroll(course, teacher = false)
 
       // Notify the student
-      Message.sendNotification(user, "You have been accepted into the class " + _class.name)
+      Message.sendNotification(user, "You have been accepted into the course " + course.name)
 
       // Delete the request
       this.delete()
@@ -74,7 +74,7 @@ case class Message(id: Pk[Long], from: Long, to: Long, messageType: Symbol, cont
   }
 
   /**
-   * Deny admittance to the class: notify the user, and delete the request.
+   * Deny admittance to the course: notify the user, and delete the request.
    * If the message is not a request then it does nothing.
    */
   def deny() {
@@ -82,8 +82,8 @@ case class Message(id: Pk[Long], from: Long, to: Long, messageType: Symbol, cont
 
       // Notify the student
       val user = User.findById(this.from).get
-      val _class = Class.findById(this.to).get
-      Message.sendNotification(user, "You have been denied admittance into the class " + _class.name)
+      val course = Course.findById(this.to).get
+      Message.sendNotification(user, "You have been denied admittance into the course " + course.name)
 
       // Delete the request
       this.delete()
@@ -133,27 +133,27 @@ object Message extends SQLSelectable[Message] {
     }
 
   /**
-   * Gets all class requests for a certain class
-   * @param _class The class for which the requests will be listed
+   * Gets all course requests for a certain course
+   * @param course The course for which the requests will be listed
    * @return The list of messages
    */
-  def listClassRequests(_class: Class): List[Message] =
+  def listClassRequests(course: Course): List[Message] =
     DB.withConnection {
       implicit connection =>
         anorm.SQL("select * from " + tableName + " where toUser = {id} and messageType = {messageType}")
-          .on('toUser -> _class.id, 'messageType -> "request").as(simple *)
+          .on('toUser -> course.id, 'messageType -> "request").as(simple *)
     }
 
   /**
-   * Gets all announcements for a certain class
-   * @param _class The class for which the announcements will be listed
+   * Gets all announcements for a certain course
+   * @param course The course for which the announcements will be listed
    * @return The list of announcements
    */
-  def listClassAnnouncements(_class: Class): List[Message] =
+  def listClassAnnouncements(course: Course): List[Message] =
     DB.withConnection {
       implicit connection =>
         anorm.SQL("select * from " + tableName + " where toUser = {id} and messageType = {messageType}")
-          .on('toUser -> _class.id, 'messageType -> "announcement").as(simple *)
+          .on('toUser -> course.id, 'messageType -> "announcement").as(simple *)
     }
 
   /**
@@ -180,32 +180,32 @@ object Message extends SQLSelectable[Message] {
   }
 
   /**
-   * Make an announcement to a class
+   * Make an announcement to a course
    * @param user The user who is making the announcement
-   * @param _class The class where the announcement will be made
+   * @param course The course where the announcement will be made
    * @param message The content of the announcement
    * @return The sent message
    */
-  def sendAnnouncement(user: User, _class: Class, message: String): Message = {
+  def sendAnnouncement(user: User, course: Course, message: String): Message = {
     val time = ISODateTimeFormat.dateTime().print(new DateTime())
-    Message(NotAssigned, user.id.get, _class.id.get, 'announcement, message, time).save
+    Message(NotAssigned, user.id.get, course.id.get, 'announcement, message, time).save
   }
 
   /**
-   * Send a request for a user to join a class.
+   * Send a request for a user to join a course.
    * @param user The user wanting to join
-   * @param _class The class to join
+   * @param course The course to join
    * @param message The user can add a message
    * @return The sent request
    */
-  def sendRequest(user: User, _class: Class, message: String): Message = {
+  def sendRequest(user: User, course: Course, message: String): Message = {
     // Send the teachers a notification
-    val message = user.name + " has requested to join the class " + _class.name
-    _class.getTeachers.foreach(teacher => {
+    val message = user.name + " has requested to join the course " + course.name
+    course.getTeachers.foreach(teacher => {
       sendNotification(teacher, message)
     })
 
     val time = ISODateTimeFormat.dateTime().print(new DateTime())
-    Message(NotAssigned, user.id.get, _class.id.get, 'request, message, time)
+    Message(NotAssigned, user.id.get, course.id.get, 'request, message, time)
   }
 }

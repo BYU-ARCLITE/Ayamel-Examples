@@ -44,13 +44,13 @@ case class Institution(id: Pk[Long], name: String, location: String, description
    * Get the directors of this institution
    * @return The list of users
    */
-  def getDirectors: List[User] = Directorship.listByInstitution(this)
+  def getDirectors: List[User] = Directorship.listInstitutionDirectors(this)
 
   /**
-   * Get the classes of this institution
-   * @return The list of classes
+   * Get the courses of this institution
+   * @return The list of courses
    */
-  def getClasses: List[Class] = ClassListing.listByInstitution(this)
+  def getCourses: List[Course] = CourseListing.listByInstitution(this)
 
 }
 

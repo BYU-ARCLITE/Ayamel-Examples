@@ -62,11 +62,22 @@ object Directorship extends SQLSelectable[Directorship] {
   def list: List[Directorship] = list(Directorship.tableName, simple)
 
   /**
+   * Lists the directorship pertaining to a certain user
+   * @param user The user for whom the directorship will be
+   * @return The list of directorships
+   */
+  def listByUser(user: User): List[Directorship] =
+    DB.withConnection {
+      implicit connection =>
+        anorm.SQL("select * from " + tableName + " where userId = {id}").on('id -> user.id).as(simple *)
+    }
+
+  /**
    * Gets all institutions of which the user is a director
    * @param user The user who is the director
    * @return The list of institutions
    */
-  def listByUser(user: User): List[Institution] =
+  def listUsersInstitutions(user: User): List[Institution] =
     DB.withConnection {
       implicit connection =>
         anorm.SQL("select * from " + Institution.tableName + " join " + tableName + " on " + Institution.tableName +
@@ -79,7 +90,7 @@ object Directorship extends SQLSelectable[Directorship] {
    * @param institution The institution for which the directors will be listed
    * @return The list of director users
    */
-  def listByInstitution(institution: Institution): List[User] =
+  def listInstitutionDirectors(institution: Institution): List[User] =
     DB.withConnection {
       implicit connection =>
         anorm.SQL("select * from " + User.tableName + " join " + tableName + " on " + User.tableName + ".id = " +

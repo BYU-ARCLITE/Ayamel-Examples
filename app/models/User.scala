@@ -47,27 +47,25 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
   // ===============
 
   /**
-   * Enrolls the user in a class
-   * @param _class The class in which the user will be enrolled
-   * @param teacher Is this user a teacher of the class?
+   * Enrolls the user in a course
+   * @param course The course in which the user will be enrolled
+   * @param teacher Is this user a teacher of the course?
    * @return The user (for chaining)
    */
-  def enroll(_class: Class, teacher: Boolean = false): User = {
-    ClassMembership(NotAssigned, id.get, _class.id.get, teacher).save
+  def enroll(course: Course, teacher: Boolean = false): User = {
+    CourseMembership(NotAssigned, id.get, course.id.get, teacher).save
     this
   }
 
   /**
-   * Unenroll the user from a class
-   * @param _class The class from which to unenroll
+   * Unenroll the user from a course
+   * @param course The course from which to unenroll
    * @return The user (for chaining)
    */
-  def unenroll(_class: Class): User = {
+  def unenroll(course: Course): User = {
+
     // First, find the membership
-    val membership = {
-      ClassMembership.listClassMembers(_class, teacher = true) ++
-        ClassMembership.listClassMembers(_class, teacher = false)
-    }.filter(user => user == this)
+    val membership = CourseMembership.listByUser(this).filter(_.courseId == course.id.get)
 
     // Check the number or results
     if (membership.size == 1)
@@ -75,16 +73,16 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
       membership(0).delete()
     else
       // We didn't get exactly one membership so don't do anything, but warn
-      Logger.warn("Multiple memberships for user #" + id.get + " in class #" + _class.id.get)
+      Logger.warn("Multiple (or zero) memberships for user #" + id.get + " in course #" + course.id.get)
 
     this
   }
 
   /**
-   * Gets the enrollment--classes the user is in--of the user
-   * @return The list of classes
+   * Gets the enrollment--coursees the user is in--of the user
+   * @return The list of coursees
    */
-  def getEnrollment: List[Class] = ClassMembership.listUsersClasses(this)
+  def getEnrollment: List[Course] = CourseMembership.listUsersClasses(this)
 
   /**
    * Gets the messages to the user
@@ -102,16 +100,44 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
    * Get the institutions of which this user is a director
    * @return The list of institutions
    */
-  def getInstitutions: List[Institution] = Directorship.listByUser(this)
+  def getInstitutions: List[Institution] = Directorship.listUsersInstitutions(this)
 
   /**
    * Create content from a resource and assign this user as the owner
    * @param resourceId The ID of the resource
-   * @return This user (for chaining)
+   * @return The new content
    */
-  def addContent(resourceId: String): User = {
+  def addContent(resourceId: String): Content = {
     val content = Content(NotAssigned, resourceId).save
     ContentOwnership(NotAssigned, this.id.get, content.id.get).save
+    content
+  }
+
+  /**
+   * Requests enrollment for a certain course
+   * @param course The course in which the user wants to be enrolled
+   * @param message A message to accompany the request
+   * @return The request
+   */
+  def requestEnrollment(course: Course, message: String): Message = Message.sendRequest(this, course, message)
+
+  def setAsDirector(institution: Institution): User = {
+    Directorship(NotAssigned, id.get, institution.id.get).save
+    this
+  }
+
+  def removeDirectorship(institution: Institution): User = {
+    // First, find the membership
+    val directorship = Directorship.listByUser(this).filter(_.institutionId == institution.id.get)
+
+    // Check the number or results
+    if (directorship.size == 1)
+      // One membership. So delete it
+      directorship(0).delete()
+    else
+      // We didn't get exactly one directorship so don't do anything, but warn
+      Logger.warn("Multiple (or zero) directorships for user #" + id.get + " in institution #" + institution.id.get)
+
     this
   }
 }

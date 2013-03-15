@@ -7,12 +7,12 @@ import play.api.db.DB
 import play.api.Play.current
 
 /**
- * This represents content posted to a class
+ * This represents content posted to a course
  * @param id The id of this ownership
- * @param classId The id of the class
+ * @param courseId The id of the course
  * @param contentId The id of the content
  */
-case class ContentListing(id: Pk[Long], classId: Long, contentId: Long) extends SQLSavable with SQLDeletable {
+case class ContentListing(id: Pk[Long], courseId: Long, contentId: Long) extends SQLSavable with SQLDeletable {
 
   /**
    * Saves the content listing to the DB
@@ -20,10 +20,10 @@ case class ContentListing(id: Pk[Long], classId: Long, contentId: Long) extends 
    */
   def save: ContentListing = {
     if (id.isDefined) {
-      update(ContentListing.tableName, 'id -> id, 'classId -> classId, 'contentId -> contentId)
+      update(ContentListing.tableName, 'id -> id, 'courseId -> courseId, 'contentId -> contentId)
       this
     } else {
-      val id = insert(ContentListing.tableName, 'classId -> classId, 'contentId -> contentId)
+      val id = insert(ContentListing.tableName, 'courseId -> courseId, 'contentId -> contentId)
       this.copy(id)
     }
   }
@@ -42,9 +42,9 @@ object ContentListing extends SQLSelectable[ContentListing] {
 
   val simple = {
     get[Pk[Long]](tableName + ".id") ~
-      get[Long](tableName + ".classId") ~
+      get[Long](tableName + ".courseId") ~
       get[Long](tableName + ".contentId") map {
-      case id ~ classId ~ contentId => ContentListing(id, classId, contentId)
+      case id ~ courseId ~ contentId => ContentListing(id, courseId, contentId)
     }
   }
 
@@ -62,15 +62,15 @@ object ContentListing extends SQLSelectable[ContentListing] {
   def list: List[ContentListing] = list(ContentListing.tableName, simple)
 
   /**
-   * Gets all content belonging to a certain class
-   * @param _class The class where the content is posted
+   * Gets all content belonging to a certain course
+   * @param course The course where the content is posted
    * @return The list of content
    */
-  def listByClass(_class: Class): List[Content] =
+  def listByClass(course: Course): List[Content] =
     DB.withConnection {
       implicit connection =>
         anorm.SQL("select * from " + Content.tableName + " join " + tableName + " on " + Content.tableName + ".id = " +
-          tableName + ".contentId where " + tableName + ".classId = {classId}").on('classId -> _class.id)
+          tableName + ".contentId where " + tableName + ".courseId = {courseId}").on('courseId -> course.id)
           .as(Content.simple *)
     }
 }

@@ -52,15 +52,15 @@ object Fixtures {
       "resource8"
     )
 
-    val classes = List(
-      ("Class 101", "2013-03-14T20:37:01.665Z", "2014-03-14T20:37:01.665Z", "{}"),
-      ("Class 102", "2013-03-14T20:37:01.665Z", "2014-03-14T20:37:01.665Z", "{}"),
-      ("Class 103", "2013-03-14T20:37:01.665Z", "2014-03-14T20:37:01.665Z", "{}"),
-      ("Class 104", "2013-03-14T20:37:01.665Z", "2014-03-14T20:37:01.665Z", "{}"),
-      ("Class 105", "2013-03-14T20:37:01.665Z", "2014-03-14T20:37:01.665Z", "{}")
+    val courses = List(
+      ("Course 101", "2013-03-14T20:37:01.665Z", "2014-03-14T20:37:01.665Z", "{}"),
+      ("Course 102", "2013-03-14T20:37:01.665Z", "2014-03-14T20:37:01.665Z", "{}"),
+      ("Course 103", "2013-03-14T20:37:01.665Z", "2014-03-14T20:37:01.665Z", "{}"),
+      ("Course 104", "2013-03-14T20:37:01.665Z", "2014-03-14T20:37:01.665Z", "{}"),
+      ("Course 105", "2013-03-14T20:37:01.665Z", "2014-03-14T20:37:01.665Z", "{}")
     )
 
-    val classListings = List(
+    val courseListings = List(
       (0, 0),
       (1, 0),
       (2, 1),
@@ -68,7 +68,7 @@ object Fixtures {
       (4, 3)
     )
 
-    val classMembership = List(
+    val courseMembership = List(
       (0, 0,  false),
       (1, 0,  false),
       (1, 1,  false),
@@ -122,7 +122,7 @@ object Fixtures {
     val users = new ListBuffer[User]()
     val institutions = new ListBuffer[Institution]()
     val content = new ListBuffer[Content]()
-    val classes = new ListBuffer[Class]()
+    val courses = new ListBuffer[Course]()
 
     Logger.info("Creating user fixtures")
     data.users foreach {
@@ -139,25 +139,25 @@ object Fixtures {
       resourceId => content.append(Content(NotAssigned, resourceId).save)
     }
 
-    Logger.info("Creating class fixtures")
-    data.classes foreach {
-      classData => classes.append(Class.fromFixture(classData).save)
+    Logger.info("Creating course fixtures")
+    data.courses foreach {
+      courseData => courses.append(Course.fromFixture(courseData).save)
     }
 
     // Create the connections
-    Logger.info("Creating class listing fixtures")
-    data.classListings.foreach {
-      data => ClassListing(NotAssigned, institutions(data._2).id.get, classes(data._1).id.get).save
+    Logger.info("Creating course listing fixtures")
+    data.courseListings.foreach {
+      data => CourseListing(NotAssigned, institutions(data._2).id.get, courses(data._1).id.get).save
     }
 
-    Logger.info("Creating class membership fixtures")
-    data.classMembership.foreach {
-      data => ClassMembership(NotAssigned, users(data._2).id.get, classes(data._1).id.get, data._3).save
+    Logger.info("Creating course membership fixtures")
+    data.courseMembership.foreach {
+      data => CourseMembership(NotAssigned, users(data._2).id.get, courses(data._1).id.get, data._3).save
     }
 
     Logger.info("Creating content listing fixtures")
     data.contentListing.foreach {
-      data => ContentListing(NotAssigned, classes(data._1).id.get, content(data._2).id.get).save
+      data => ContentListing(NotAssigned, courses(data._1).id.get, content(data._2).id.get).save
     }
 
     Logger.info("Creating content ownership fixtures")
