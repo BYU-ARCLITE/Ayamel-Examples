@@ -1,9 +1,12 @@
-package models.sqlTraits
+package dataAccess.sqlTraits
 
 import anorm.{Id, ParameterValue, SQL, Pk}
 import play.api.db.DB
 import play.api.Play.current
 
+/**
+ * A trait to add SQL insert and update functionality based on the field 'id'.
+ */
 trait SQLSavable {
   def insert(tablename: String, fields: (Symbol, ParameterValue[_]) *): Pk[Long] = {
     val fieldNames = fields.map(_._1.name).mkString(", ")

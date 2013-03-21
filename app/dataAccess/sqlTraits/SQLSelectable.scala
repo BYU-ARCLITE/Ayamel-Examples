@@ -1,15 +1,12 @@
-package models.sqlTraits
+package dataAccess.sqlTraits
 
 import play.api.db.DB
 import play.api.Play.current
 import anorm.RowParser
 
 /**
- * Created with IntelliJ IDEA.
- * User: camman3d
- * Date: 2/15/13
- * Time: 1:40 PM
- * To change this template use File | Settings | File Templates.
+ * A trait to add SQL find and list functionality. Find is based on the field 'id'
+ * @tparam T The type of object to return.
  */
 trait SQLSelectable[T] {
   def findById(tablename: String, id: Long, parser: RowParser[T]): Option[T] = {

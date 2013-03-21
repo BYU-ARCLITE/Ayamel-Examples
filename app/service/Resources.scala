@@ -1,13 +1,10 @@
-package logic
+package service
 
-//import models.{CaptionTrack, Video}
 import play.api.libs.json.{JsArray, Json}
 import concurrent.Await
 import concurrent.duration._
-import anorm.NotAssigned
-import edu.byu.arclite.resourceLibrary.ResourceController
 import play.api.libs.MimeTypes
-import play.api.Logger
+import dataAccess.resourceLibrary.ResourceController
 
 /**
  * Created with IntelliJ IDEA.

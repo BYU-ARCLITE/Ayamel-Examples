@@ -6,32 +6,35 @@ import concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
 
 /**
- * Created with IntelliJ IDEA.
- * User: camman3d
- * Date: 2/15/13
- * Time: 12:45 PM
- * To change this template use File | Settings | File Templates.
+ * Controller which handles BYU CAS authentication.
  */
 object Cas extends Controller {
+
+  /**
+   * Redirects to the CAS login page.
+   */
   def login = Action {
     implicit request =>
       val service = routes.Cas.callback().absoluteURL()
       Redirect("https://cas.byu.edu:443?service=" + service, 302)
   }
 
+  /**
+   * When the CAS login is successful, it is redirected here, where the TGT and login are taken care of.
+   */
   def callback = Action {
     implicit request =>
-      // Retrieve the TGT
+    // Retrieve the TGT
       val tgt = request.queryString("ticket")(0)
-      val service = routes.Cas.callback().absoluteURL()
+      val casService = routes.Cas.callback().absoluteURL()
 
       // Verify the TGT with CAS to get the user id
-      val url = "https://cas.byu.edu/cas/serviceValidate?ticket=" + tgt + "&service=" + service
+      val url = "https://cas.byu.edu/cas/serviceValidate?ticket=" + tgt + "&service=" + casService
       Async {
         WS.url(url).get().map(request => {
           val xml = request.xml
           val username = ((xml \ "authenticationSuccess") \ "user").text
-          logic.Authentication.loginCas(username)
+          service.Authentication.loginCas(username)
         })
       }
   }

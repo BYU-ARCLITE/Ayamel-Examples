@@ -1,6 +1,7 @@
 package controllers
 
 import play.api.mvc._
+import service.Authentication
 
 /**
  * Created with IntelliJ IDEA.
@@ -11,13 +12,13 @@ import play.api.mvc._
  */
 object Pages extends Controller {
 
-  def levelSelect(id: Long) = logic.Authentication.authenticatedAction {
+  def levelSelect(id: Long) = service.Authentication.authenticatedAction {
     implicit request =>
       implicit user =>
         Ok(views.html.pages.levelSelect(id))
   }
 
-  def level1(id: Long) = logic.Authentication.authenticatedAction {
+  def level1(id: Long) = service.Authentication.authenticatedAction {
     implicit request =>
       implicit user =>
 //        val video = Video.findById(id).get
@@ -25,7 +26,7 @@ object Pages extends Controller {
       Ok("l1")
   }
 
-  def level2(id: Long) = logic.Authentication.authenticatedAction {
+  def level2(id: Long) = service.Authentication.authenticatedAction {
     implicit request =>
       implicit user =>
 //        val video = Video.findById(id).get
@@ -33,7 +34,7 @@ object Pages extends Controller {
       Ok("l2")
   }
 
-  def level3(id: Long) = logic.Authentication.authenticatedAction {
+  def level3(id: Long) = service.Authentication.authenticatedAction {
     implicit request =>
       implicit user =>
 //        val video = Video.findById(id).get
@@ -41,7 +42,7 @@ object Pages extends Controller {
       Ok("l3")
   }
 
-  def level4(id: Long) = logic.Authentication.authenticatedAction {
+  def level4(id: Long) = service.Authentication.authenticatedAction {
     implicit request =>
       implicit user =>
 //        val video = Video.findById(id).get
@@ -49,13 +50,13 @@ object Pages extends Controller {
       Ok("l4")
   }
 
-  def level5(id: Long) = logic.Authentication.authenticatedAction {
+  def level5(id: Long) = service.Authentication.authenticatedAction {
     implicit request =>
       implicit user =>
         Ok(views.html.pages.level5())
   }
 
-  def level6(id: Long) = logic.Authentication.authenticatedAction {
+  def level6(id: Long) = service.Authentication.authenticatedAction {
     implicit request =>
       implicit user =>
         Ok(views.html.pages.level6())

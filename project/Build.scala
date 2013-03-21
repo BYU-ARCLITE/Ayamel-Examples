@@ -11,7 +11,8 @@ object ApplicationBuild extends Build {
     // Add your project dependencies here,
     jdbc,
     anorm,
-    "mysql" % "mysql-connector-java" % "5.1.10"
+    "mysql" % "mysql-connector-java" % "5.1.10",
+    "commons-io" % "commons-io" % "2.4"
   )
 
 

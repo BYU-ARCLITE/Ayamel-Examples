@@ -1,7 +1,7 @@
 package models
 
 import anorm.{NotAssigned, ~, Pk}
-import sqlTraits.{SQLDeletable, SQLSelectable, SQLSavable}
+import dataAccess.sqlTraits.{SQLDeletable, SQLSelectable, SQLSavable}
 import anorm.SqlParser._
 import play.api.db.DB
 import play.api.Play.current

@@ -69,9 +69,9 @@ class ContentSpec extends Specification {
     "be created from fixture data" in {
       running(FakeApplication()) {
         // Create a course from fixture data and in the normal fashion
-        val content1 = Content(NotAssigned, "name", 'video, "thumb", "resourceId")
         val data = ("name", 'video, "thumb", "resourceId")
-        val content2 = Content.fromFixture(data)
+        val content1 = Content.fromFixture(data)
+        val content2 = Content(NotAssigned, "name", 'video, "thumb", "resourceId", content1.dateAdded)
 
         // Check the results
         content1 must beEqualTo(content2)

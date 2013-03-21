@@ -1,4 +1,4 @@
-package edu.byu.arclite.resourceLibrary
+package dataAccess.resourceLibrary
 
 import play.api.Play
 import Play.current

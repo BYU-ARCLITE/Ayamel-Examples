@@ -3,7 +3,7 @@ import collection.mutable.ListBuffer
 import models._
 import play.api.Logger
 import scala.Some
-import tools.HashTools
+import service.HashTools
 
 
 

@@ -6,6 +6,13 @@
 GET     /                           controllers.Application.index
 GET     /home                       controllers.Application.home
 GET     /test                       controllers.Application.test
+POST    /test                       controllers.Application.test
+
+# Course pages
+GET     /course/:id                 controllers.Courses.view(id: Long)
+POST    /course/:id/ltiAuth         controllers.Courses.ltiAuth(id: Long)
+GET     /course/:id/keyAuth         controllers.Courses.keyAuth(id: Long)
+
 
 GET     /profile                    controllers.Application.profile
 POST    /profile/changeName         controllers.Application.changeName
@@ -31,9 +38,6 @@ GET     /api                        controllers.Application.apiWrapperGet
 
 # Google translate
 GET     /gt/:src/:dest/:text        controllers.GoogleTranslate.translate(src: String, dest: String, text: String)
-
-# Caption Tracks
-GET     /captionTracks/:id.vtt      controllers.CaptionTracks.view(id: Long)
 
 # Authentication
 GET     /auth/google                controllers.authentication.Google.login

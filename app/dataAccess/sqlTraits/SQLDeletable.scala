@@ -1,15 +1,11 @@
-package models.sqlTraits
+package dataAccess.sqlTraits
 
 import anorm.{Pk, SQL}
 import play.api.db.DB
 import play.api.Play.current
 
 /**
- * Created with IntelliJ IDEA.
- * User: camman3d
- * Date: 2/15/13
- * Time: 1:50 PM
- * To change this template use File | Settings | File Templates.
+ * A trait to add SQL delete functionality.
  */
 trait SQLDeletable {
   def delete(tablename: String, id: Pk[Long]) {

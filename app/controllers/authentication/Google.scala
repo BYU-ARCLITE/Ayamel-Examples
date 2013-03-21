@@ -5,8 +5,14 @@ import play.api.libs.openid.OpenID
 import concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
 
+/**
+ * Controller which handles Google authentication.
+ */
 object Google extends Controller {
 
+  /**
+   * Redirects to the Google login page. Uses OpenID
+   */
   def login = Action {
     implicit request =>
       val openID = "https://www.google.com/accounts/o8/id"
@@ -23,6 +29,9 @@ object Google extends Controller {
       }
   }
 
+  /**
+   * When the Google login is successful, it is redirected here, where user info is extracted and the user is logged in.
+   */
   def callback = Action {
     implicit request =>
       Async {
@@ -32,7 +41,7 @@ object Google extends Controller {
           val firstName = userInfo.attributes("firstname")
           val lastName = userInfo.attributes("lastname")
           val email = userInfo.attributes("email")
-          logic.Authentication.loginGoogle(username, firstName, lastName, email)
+          service.Authentication.loginGoogle(username, firstName, lastName, email)
         })
       }
   }

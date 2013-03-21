@@ -10,6 +10,9 @@ import models.User
 import concurrent.{Await, ExecutionContext}
 import concurrent.duration._
 import ExecutionContext.Implicits.global
+import service.oauth.PlayOAuth
+import play.core.parsers.FormUrlEncodedParser
+import service.Authentication
 
 object Application extends Controller {
   
@@ -18,13 +21,13 @@ object Application extends Controller {
       Ok(views.html.application.index())
   }
 
-  def home = logic.Authentication.authenticatedAction {
+  def home = service.Authentication.authenticatedAction {
     implicit request =>
       implicit user =>
         Ok(views.html.application.home())
   }
 
-  def watch = logic.Authentication.authenticatedAction {
+  def watch = service.Authentication.authenticatedAction {
     implicit request =>
       implicit user =>
 //        val videoGroups = VideoGroup.list
@@ -32,19 +35,20 @@ object Application extends Controller {
       Ok("Watch")
   }
 
-  def edit = logic.Authentication.authenticatedAction {
+  def edit = service.Authentication.authenticatedAction {
     implicit request =>
       implicit user =>
         Ok(views.html.application.edit())
   }
 
-  def code = logic.Authentication.authenticatedAction {
+  def code = service.Authentication.authenticatedAction {
     implicit request =>
       implicit user =>
         Ok(views.html.application.code())
   }
 
-  def test = Action {
+  def test = Action(parse.tolerantText) {
+    request =>
 //    val uri = "http://arclite.byu.edu/hvmirror/something.mp4"
 //    val extension = uri.substring(uri.lastIndexOf("."))
 //    val mime = MimeTypes.forExtension(extension)
@@ -61,7 +65,14 @@ object Application extends Controller {
 //
 ////    val googleTranslateNamespace =
 //    Ok((response \ "entry" \ "translation").text)
-    Ok
+
+    val valid = PlayOAuth.verify(request, "", "key1")
+
+    //BodyParsers.parse.text.
+
+    val x = request.map(str => FormUrlEncodedParser.parse(request.body, request.charset.getOrElse("utf-8")))
+
+    Ok(x.body + " -- " + valid)
   }
 
 
@@ -72,14 +83,14 @@ object Application extends Controller {
       }
   }
 
-  def profile = logic.Authentication.authenticatedAction {
+  def profile = service.Authentication.authenticatedAction {
     implicit request =>
       implicit user =>
 
         Ok(views.html.application.profile(user))
   }
 
-  def changeName = logic.Authentication.authenticatedAction {
+  def changeName = service.Authentication.authenticatedAction {
     request =>
       user =>
 
