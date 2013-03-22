@@ -2,55 +2,18 @@
 
 @main("Ayamel Examples") {
 
-    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/home.css")">
-    <script src="@routes.Assets.at("javascripts/swipe.min.js")" type="text/javascript"></script>
-    <script src="@routes.Assets.at("javascripts/home.js")" type="text/javascript"></script>
+    <div class="padded">
+        <h1>My courses</h1>
+        <ul>
+            @for(course <- user.getEnrollment) {
+                <a href="@routes.Courses.view(course.id.get)">@course.name</a>
+            }
+        </ul>
 
-    <div class="container">
-
-        @views.html.application.navbar("home")
-
-        <h1>Get Started!</h1>
-
-        <div id="sliderHolder">
-            <div id='slider'>
-                <ul>
-                    <li style='display:block'>
-                        <div class="slide">
-                            <img src="@routes.Assets.at("images/banners/theater.jpg")">
-                            <div class="slideText">
-                                <h2>Awesome Videos</h2>
-                                <p>
-                                    Watch videos to help you learn languages.
-                                </p>
-                            </div>
-                        </div>
-                    </li>
-                    <li style='display:none'>
-                        <div class="slide">
-                            <img src="@routes.Assets.at("images/banners/chorus.jpg")">
-                            <div class="slideText">
-                                <h2>The Chorus</h2>
-                                <p>
-                                    Watch it now!
-                                </p>
-                            </div>
-                        </div>
-                    </li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="text-center">
-            <div class="inline-block">
-                <div class="well">
-                    <a href="@routes.Application.watch()" class="btn btn-large btn-magenta"><i class="icon-film"></i> Watch Videos</a>
-                    <a href="@routes.Application.edit()" class="btn btn-large btn-blue"><i class="icon-quote-left"></i> Edit Subtitles</a>
-                    <a href="@routes.Application.code()" class="btn btn-large btn-yellow"><i class="icon-desktop"></i> View Code Examples</a>
-                </div>
-            </div>
-        </div>
-
+        @* If the user didn't log in through a LMS, then allow the creation of courses *@
+        @if(user.canCreateCourse) {
+            <a href="#" class="btn btn-magenta"><i class="icon-group"></i> Create a new course</a>
+        }
     </div>
-    
+
 }

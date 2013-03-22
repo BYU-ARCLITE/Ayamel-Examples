@@ -3,8 +3,7 @@ package models
 import anorm.{NotAssigned, ~, Pk}
 import dataAccess.sqlTraits.{SQLSelectable, SQLDeletable, SQLSavable}
 import anorm.SqlParser._
-import org.joda.time.format.ISODateTimeFormat
-import org.joda.time.DateTime
+import service.TimeTools
 
 /**
  * This links a resource object (in a resource library) to this system
@@ -12,7 +11,7 @@ import org.joda.time.DateTime
  * @param resourceId The id of the resource
  */
 case class Content(id: Pk[Long], name: String, contentType: Symbol, thumbnail: String, resourceId: String,
-                   dateAdded: String = ISODateTimeFormat.dateTime().print(new DateTime()))
+                   dateAdded: String = TimeTools.now)
   extends SQLSavable with SQLDeletable {
 
   /**

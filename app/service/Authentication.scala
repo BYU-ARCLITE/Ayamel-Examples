@@ -75,17 +75,42 @@ object Authentication {
    */
   def loginPassword(username: String, password: String): PlainResult = {
     // Get the user based on the username and password
-    val user = User.findByAuthInfo(HashTools.sha256Base64(password), 'password).find(_.username == username)
-    if (user.isDefined)
+    val user = User.findByUsername('password, username)
+    val passwordHash = HashTools.sha256Base64(password)
+    if (user.isDefined && user.get.authId == passwordHash)
 
       // Yes, so just login
       login(user.get)
     else {
 
       // No, so redirect
-      // TODO: Change this when there is a definite login page
       Redirect(routes.Application.index()).flashing("error" -> "Invalid username/password.")
     }
+  }
+
+  /**
+   * Create a password-authenticated user account based on the provided information. Checks if the username is unique
+   * and if the passwords match
+   * @param username The username.
+   * @param password1 The password, first entry
+   * @param password2 The password, second entry
+   * @param name The real name
+   * @param email The email address
+   * @return The redirect result.
+   */
+  def createAccount(username: String, password1: String, password2: String, name: String, email: String): PlainResult = {
+
+    // Do some checks
+    val existingUser = User.findByUsername('password, username)
+    if (existingUser.isEmpty) {
+      if (password1 == password2) {
+        val passwordHash = HashTools.sha256Base64(password1)
+        val user = User(NotAssigned, passwordHash, 'password, username, Some(name), Some(email)).save
+        login(user)
+      } else
+        Redirect(routes.Application.index()).flashing("alert" -> "Passwords do not match")
+    } else
+      Redirect(routes.Application.index()).flashing("alert" -> "That username is already taken.")
   }
 
   /**
@@ -104,5 +129,23 @@ object Authentication {
           Redirect(routes.Application.index()).flashing("alert" -> "You are not logged in.")
       } else
         Redirect(routes.Application.index()).flashing("alert" -> "You are not logged in.")
+  }
+
+  /**
+   * This is to be used as a mix-in with other actions
+   * @param request The incoming request
+   * @param f A function which, given a user, returns a result
+   * @return The result.
+   */
+  def authenticate(request: Request[AnyContent])(f: User => Result): Result = {
+    val userId = request.session.get("userId")
+    if (userId.isDefined) {
+      val user = User.findById(userId.get.toLong)
+      if (user.isDefined) {
+        f(user.get)
+      } else
+        Redirect(routes.Application.index()).flashing("alert" -> "You are not logged in.")
+    } else
+      Redirect(routes.Application.index()).flashing("alert" -> "You are not logged in.")
   }
 }

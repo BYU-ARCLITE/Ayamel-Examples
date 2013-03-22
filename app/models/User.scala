@@ -6,6 +6,7 @@ import anorm.SqlParser._
 import play.api.db.DB
 import play.api.Play.current
 import play.api.Logger
+import controllers.routes
 
 /**
  * User
@@ -18,7 +19,8 @@ import play.api.Logger
  * @param role The permissions of the user
  */
 case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: String, name: Option[String] = None,
-                email: Option[String] = None, role: Int = 0) extends SQLSavable with SQLDeletable {
+                email: Option[String] = None, role: Int = 0, picture: Option[String] = None)
+  extends SQLSavable with SQLDeletable {
 
   /**
    * Saves the user to the DB
@@ -27,11 +29,11 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
   def save: User = {
     if (id.isDefined) {
       update(User.tableName, 'id -> id, 'authId -> authId, 'authScheme -> authScheme.name, 'username -> username,
-        'name -> name.getOrElse(""), 'email -> email.getOrElse(""), 'role -> role)
+        'name -> name.getOrElse(""), 'email -> email.getOrElse(""), 'role -> role, 'picture -> picture)
       this
     } else {
       val id = insert(User.tableName, 'authId -> authId, 'authScheme -> authScheme.name, 'username -> username,
-        'name -> name.getOrElse(""), 'email -> email.getOrElse(""), 'role -> role)
+        'name -> name.getOrElse(""), 'email -> email.getOrElse(""), 'role -> role, 'picture -> picture)
       this.copy(id)
     }
   }
@@ -98,6 +100,18 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
   def addContent(content: Content): ContentOwnership =
     ContentOwnership(NotAssigned, this.id.get, content.id.get).save
 
+  /**
+   * Get the profile picture. If it's not set then return the placeholder picture.
+   * @return The url of the picture
+   */
+  def getPicture: String = picture.getOrElse(routes.Assets.at("images/users/facePlaceholder.jpg").url)
+
+  def displayName: String = name.getOrElse(username)
+
+  def canCreateCourse: Boolean = {
+    val allowedSchemes = Set('google, 'cas, 'password)
+    allowedSchemes.contains(authScheme)
+  }
 }
 
 object User extends SQLSelectable[User] {
@@ -110,9 +124,10 @@ object User extends SQLSelectable[User] {
       get[String](tableName + ".username") ~
       get[String](tableName + ".name") ~
       get[String](tableName + ".email") ~
-      get[Int](tableName + ".role") map {
-      case id~authId~authScheme~username~name~email~role => User(id, authId, Symbol(authScheme), username,
-        if(name.isEmpty) None else Some(name), if(email.isEmpty) None else Some(email), role)
+      get[Int](tableName + ".role") ~
+      get[Option[String]](tableName + ".picture") map {
+      case id~authId~authScheme~username~name~email~role~picture => User(id, authId, Symbol(authScheme), username,
+        if(name.isEmpty) None else Some(name), if(email.isEmpty) None else Some(email), role, picture)
     }
   }
 
@@ -134,6 +149,20 @@ object User extends SQLSelectable[User] {
       implicit connection =>
         anorm.SQL("select * from userAccount where authId = {authId} and authScheme = {authScheme}")
           .on('authId -> authId, 'authScheme -> authScheme.name).as(simple.singleOpt)
+    }
+  }
+
+  /**
+   * Finds a user based on the username and the authScheme.
+   * @param authScheme The auth scheme to search
+   * @param username The username to look for
+   * @return If a user was found, then Some[User], otherwise None
+   */
+  def findByUsername(authScheme: Symbol, username: String): Option[User] = {
+    DB.withConnection {
+      implicit connection =>
+        anorm.SQL("select * from userAccount where authScheme = {authScheme} and username = {username}")
+          .on('authScheme -> authScheme.name, 'username -> username).as(simple.singleOpt)
     }
   }
 

@@ -1,0 +1,100 @@
+
+.courseBackground {
+    height: 215px;
+    width: 100%;
+    background: url("../images/courses/galaxy.jpg") center center no-repeat;
+    margin-top: -10px;
+    color: white;
+}
+
+.courseTitle {
+    padding: 20px;
+}
+
+.courseTitle > h1 {
+    display: inline-block;
+}
+
+.courseTitle > .btn {
+    margin-top: -15px;
+    margin-left: 30px;
+}
+
+.faces {
+    margin-top: 40px;
+    margin-left: 5px;
+}
+
+.face {
+    width: 60px;
+    height: 60px;
+    background: black;
+    display: inline-block;
+    margin-left: 12px;
+}
+
+.addStudent {
+    margin: -50px 0 0 20px;
+}
+
+.contentHolder {
+    height: 100px;
+    width: 100%;
+    border-radius: 5px;
+    background: #ccc;
+    border-top: 1px solid rgba(0,0,0,0.3);
+    border-bottom: 1px solid rgba(255,255,255,1);
+    box-shadow: inset 2px 2px 18px rgba(0,0,0,0.1);
+    margin-bottom: 10px;
+    overflow-y: auto;
+}
+
+.contentEntry {
+    width: 70px;
+    height: 70px;
+    background: black;
+    display: inline-block;
+    margin-left: 20px;
+    margin-top: 15px;
+    -webkit-box-shadow: 2px 1px 15px rgba(0,0,0,0.3);
+       -moz-box-shadow: 2px 1px 15px rgba(0,0,0,0.3);
+            box-shadow: 2px 1px 15px rgba(0,0,0,0.3);
+}
+
+.contentEntry.video {
+    background: url("../images/videos/placeholder.jpg") center no-repeat;
+    background-size: cover;
+}
+
+.contentEntry.audio {
+    background: url("../images/audio/placeholder.jpg") center no-repeat;
+    background-size: cover;
+}
+
+.contentEntry.image {
+    background: url("../images/index/background.jpg") center no-repeat;
+    background-size: cover;
+}
+
+.contentEntry.playlist {
+    background: url("../images/playlists/placeholder.jpg") center no-repeat;
+    background-size: cover;
+}
+
+.contentEntry.activity {
+    background: url("../images/activities/placeholder.jpg") center no-repeat;
+    background-size: cover;
+}
+
+.announcement {
+    border-top: 1px solid #aaa;
+    padding-top: 20px;
+}
+
+.info {
+    margin-top: 9px;
+    margin-left: 30px;
+    font-style: italic;
+    color: #666;
+    font-size: 12px;
+}

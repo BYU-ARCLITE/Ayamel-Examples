@@ -1,9 +1,22 @@
 @()(implicit request: RequestHeader)
 
-@main("Ayamel Examples") {
-
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ayamel</title>
+    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/bootstrap.min.css")">
+    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/bootstrap-responsive.min.css")">
+    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/font-awesome.min.css")">
+    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/main.css")">
     <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/index.css")">
+
+    <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.png")">
+
+    <script src="@routes.Assets.at("javascripts/jquery-1.9.0.min.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.at("javascripts/bootstrap.min.js")" type="text/javascript"></script>
     <script src="@routes.Assets.at("javascripts/index.js")" type="text/javascript"></script>
+</head>
+<body>
 
     <div class="container">
         <div class="text-center">
@@ -26,15 +39,141 @@
         <!--<h1>Ayamel <small>A better way to learn languages with video.</small></h1>-->
 
         <div class="getStarted">
+
+            @if(request.flash.get("alert").isDefined) {
+                <div class="alert">
+                    <a class="close" data-dismiss="alert">×</a>
+                    <strong>Just a sec...</strong> @request.flash("alert")
+                </div>
+            }
+            @if(request.flash.get("error").isDefined) {
+                <div class="alert alert-error">
+                    <a class="close" data-dismiss="alert">×</a>
+                    <strong>Oh snap!</strong> @request.flash("error")
+                </div>
+            }
+            @if(request.flash.get("success").isDefined) {
+                <div class="alert alert-success">
+                    <a class="close" data-dismiss="alert">×</a>
+                    <strong>Alright!</strong> @request.flash("success")
+                </div>
+            }
+            @if(request.flash.get("info").isDefined) {
+                <div class="alert alert-info">
+                    <a class="close" data-dismiss="alert">×</a>
+                    <strong>Heads up.</strong> @request.flash("info")
+                </div>
+            }
+
             <p>
-                Sign in to get started.
+                Sign in with one of the following services to get started.
             </p>
 
-            <div>
-                <a class="btn btn-danger btn-large" href="@controllers.authentication.routes.Google.login()"><i class="icon-google-plus"></i> Sign in with Google</a>
-                <a class="btn btn-primary btn-large" href="@controllers.authentication.routes.Cas.login()"><img src="@routes.Assets.at("images/auth/byu.png")" /> Sign in with BYU</a>
+            <div class="clearfix">
+                <div class="pull-left">
+                    <a class="btn btn-danger btn-large" href="@controllers.authentication.routes.Google.login()"><i class="icon-google-plus"></i> Sign in with Google</a>
+                </div>
+                <div class="pull-right">
+                    <a class="btn btn-primary btn-large" href="@controllers.authentication.routes.Cas.login()"><img src="@routes.Assets.at("images/auth/byu.png")" /> Sign in with BYU</a>
+                </div>
+            </div>
+
+            <hr>
+
+            <p>You can, alternatively, sign in with an Ayamel account.</p>
+            <div class="text-center">
+                <a href="#signupModal" role="button" class="btn btn-yellow" data-toggle="modal">Create an account</a>
+                <a href="#loginModal" role="button" class="btn btn-magenta" data-toggle="modal">Use existing account</a>
             </div>
         </div>
     </div>
-    
-}
+
+    <div id="signupModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="signupModalLabel" aria-hidden="true">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3 id="signupModalLabel">Create an account</h3>
+        </div>
+        <div class="modal-body">
+            <form class="form-horizontal" id="signupForm" method="post" action="@controllers.authentication.routes.Password.createAccount()">
+                <div class="control-group">
+                    <label class="control-label" for="username">Username</label>
+                    <div class="controls">
+                        <input type="text" id="username" name="username" placeholder="Username">
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label" for="password1">Password</label>
+                    <div class="controls">
+                        <input type="password" id="password1" name="password1" placeholder="Password">
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label" for="password2">Password again</label>
+                    <div class="controls">
+                        <input type="password" id="password2" name="password2" placeholder="Password again">
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label" for="name">Your name</label>
+                    <div class="controls">
+                        <input type="password" id="name" name="name" placeholder="Your name">
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label" for="email">Email address</label>
+                    <div class="controls">
+                        <input type="password" id="email" name="email" placeholder="Email address">
+                    </div>
+                </div>
+                <input type="submit" style="position: absolute; left: -9999px; width: 1px; height: 1px;"/>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+            <button id="signup" class="btn btn-blue">Sign up</button>
+        </div>
+    </div>
+
+    <div id="loginModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="loginModalLabel" aria-hidden="true">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3 id="loginModalLabel">Sign in</h3>
+        </div>
+
+        <div class="modal-body">
+            <form class="form-horizontal" id="loginForm" method="post" action="@controllers.authentication.routes.Password.login()">
+                <div class="control-group">
+                    <label class="control-label" for="username">Username</label>
+                    <div class="controls">
+                        <input type="text" id="username" name="username" placeholder="Username">
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label" for="password">Password</label>
+                    <div class="controls">
+                        <input type="password" id="password" name="password" placeholder="Password">
+                    </div>
+                </div>
+                <input type="submit" style="position: absolute; left: -9999px; width: 1px; height: 1px;"/>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+            <button id="login" class="btn btn-blue">Sign in</button>
+        </div>
+
+    </div>
+
+    <script type="text/javascript">
+        $(function() {
+            $("#login").click(function() {
+                $("#loginForm").submit();
+            });
+            $("#signup").click(function() {
+                $("#signupForm").submit();
+            });
+        });
+    </script>
+
+</body>
+</html>

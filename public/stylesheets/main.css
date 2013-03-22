@@ -1,3 +1,5 @@
+@import url(http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400);
+
 @font-face {
     font-family: 'RawengulkSans';
     src: url('../font/RawengulkSans-094.otf') format('opentype'),
@@ -6,9 +8,133 @@
     font-style: normal;
 }
 
-h1, h2, h3, h4, h5, h6 {
-    font-family: RawengulkSans;
+body {
+    background-color: #373737;
 }
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Source Sans Pro', sans-serif;
+}
+
+/* Header bar */
+.headerBar {
+
+    font-family: 'Source Sans Pro', sans-serif;
+
+    color: white;
+    height: 40px;
+    border-bottom: 1px solid #242424;
+
+    -webkit-box-shadow: 0 0 25px rgba(0,0,0,0.1);
+       -moz-box-shadow: 0 0 25px rgba(0,0,0,0.1);
+            box-shadow: 0 0 25px rgba(0,0,0,0.1);
+
+    background-color: #575757;
+    *background-color: #575757;
+    background-image: -moz-linear-gradient(top, #646464, #494949);
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#646464), to(#494949));
+    background-image: -webkit-linear-gradient(top, #646464, #494949);
+    background-image: -o-linear-gradient(top, #646464, #494949);
+    background-image: linear-gradient(to bottom, #646464, #494949);
+    background-repeat: repeat-x;
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#646464', endColorstr='#494949', GradientType=0);
+    filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);
+}
+
+.headerBar .logo {
+    background: url("../images/logo-small-light.png") top left no-repeat;
+    width: 137px;
+    height: 37px;
+    margin-top: 2px;
+}
+
+.headerBar .links {
+    margin-top: 8px;
+}
+
+.headerBar .links > .link {
+    display: inline-block;
+    margin: 0 15px;
+    color: white;
+    font-size: 16px;
+}
+
+.headerBar .links > .link a {
+    color: white;
+}
+
+.headerBar .links > .link a:hover {
+    text-shadow: 0 0 5px rgba(255,255,255,0.8);
+    text-decoration: none;
+}
+
+.headerBar .searchBox {
+    padding: 4px 10px;
+    height: 15px;
+    margin: 0 0 0 5px;
+    background: rgba(0,0,0,0.1);
+
+    -webkit-box-shadow: inset 2px 3px 12px rgba(0,0,0,0.4);
+       -moz-box-shadow: inset 2px 3px 12px rgba(0,0,0,0.4);
+            box-shadow: inset 2px 3px 12px rgba(0,0,0,0.4);
+
+    -webkit-border-radius: 12px;
+       -moz-border-radius: 12px;
+            border-radius: 12px;
+
+    border-left: none;
+    border-right: none;
+    border-top: rgba(0,0,0,0.6) 1px solid;
+    border-bottom: rgba(255,255,255,0.5) 1px solid;
+    color: white;
+}
+
+.headerBar .searchBox:focus {
+    border-left: none;
+    border-right: none;
+    border-top: rgba(0,0,0,0.6) 1px solid;
+    border-bottom: rgba(255,255,255,0.5) 1px solid;
+    outline: 0;
+    outline: thin dotted \9;
+    /* IE6-9 */
+
+    -webkit-box-shadow: inset 3px 4px 18px rgba(0,0,0,0.7);
+       -moz-box-shadow: inset 3px 4px 18px rgba(0,0,0,0.7);
+            box-shadow: inset 3px 4px 18px rgba(0,0,0,0.7);
+
+}
+
+/* Main content */
+.mainContent {
+    background-color: #eeeef0;
+    box-shadow: 0 0 25px rgba(0,0,0,0.1);
+    border-radius: 0 0 5px 5px;
+    overflow: hidden;
+    position: relative;
+    min-height: 200px;
+}
+
+.mainContent hr {
+    border-top: 1px solid #aaa;
+    border-bottom: 1px solid #fff;
+}
+
+.padded {
+    padding: 10px;
+}
+
+/* Messages */
+
+.messageContainer {
+    position: absolute;
+    top: 25px;
+    width: 90%;
+    margin-left: 5%;
+}
+
+/*
+ * Special colored buttons
+ */
 
 .btn-yellow {
     /*color: #ffffff;
@@ -23,7 +149,7 @@ h1, h2, h3, h4, h5, h6 {
     background-repeat: repeat-x;
     border-color: #ffd426 #ffd426 #d9b75d;
     border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffFFF288', endColorstr='#ffffd426', GradientType=0);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#FFF288', endColorstr='#ffd426', GradientType=0);
     filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);
 }
 
@@ -56,7 +182,7 @@ h1, h2, h3, h4, h5, h6 {
     background-repeat: repeat-x;
     border-color: #DE2174 #DE2174 #900B45;
     border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffEE7FB0', endColorstr='#ffDE2174', GradientType=0);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#EE7FB0', endColorstr='#DE2174', GradientType=0);
     filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);
 }
 
@@ -89,7 +215,7 @@ h1, h2, h3, h4, h5, h6 {
     background-repeat: repeat-x;
     border-color: #2184AE #2184AE #0B5271;
     border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff77BAD7', endColorstr='#ff2184AE', GradientType=0);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#77BAD7', endColorstr='#2184AE', GradientType=0);
     filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);
 }
 

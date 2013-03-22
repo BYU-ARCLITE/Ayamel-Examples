@@ -8,10 +8,25 @@ GET     /home                       controllers.Application.home
 GET     /test                       controllers.Application.test
 POST    /test                       controllers.Application.test
 
+# Authentication
+GET     /auth/google                controllers.authentication.Google.login
+GET     /auth/google/callback       controllers.authentication.Google.callback
+GET     /auth/cas                   controllers.authentication.Cas.login
+GET     /auth/cas/callback          controllers.authentication.Cas.callback
+POST    /auth/password              controllers.authentication.Password.login
+POST    /auth/createAccount         controllers.authentication.Password.createAccount
+
 # Course pages
 GET     /course/:id                 controllers.Courses.view(id: Long)
 POST    /course/:id/ltiAuth         controllers.Courses.ltiAuth(id: Long)
 GET     /course/:id/keyAuth         controllers.Courses.keyAuth(id: Long)
+
+# Content pages
+GET     /content/create             controllers.ContentController.create
+GET     /content/:id                controllers.ContentController.view(id: Long)
+
+
+
 
 
 GET     /profile                    controllers.Application.profile
@@ -39,11 +54,11 @@ GET     /api                        controllers.Application.apiWrapperGet
 # Google translate
 GET     /gt/:src/:dest/:text        controllers.GoogleTranslate.translate(src: String, dest: String, text: String)
 
-# Authentication
-GET     /auth/google                controllers.authentication.Google.login
-GET     /auth/google/callback       controllers.authentication.Google.callback
-GET     /auth/cas                   controllers.authentication.Cas.login
-GET     /auth/cas/callback          controllers.authentication.Cas.callback
+
+# Documentation
+GET     /help/teacher               controllers.documentation.Teacher.view(page: String = "index")
+GET     /help/teacher/:page         controllers.documentation.Teacher.view(page: String)
+
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)

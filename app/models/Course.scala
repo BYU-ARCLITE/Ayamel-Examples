@@ -4,6 +4,8 @@ import anorm.{NotAssigned, ~, Pk}
 import dataAccess.sqlTraits.{SQLSelectable, SQLDeletable, SQLSavable}
 import anorm.SqlParser._
 import play.api.Logger
+import service.HashTools
+import util.Random
 
 /**
  * A course. Students and teachers are members. Content and announcements can be posted here.
@@ -13,8 +15,8 @@ import play.api.Logger
  * @param endDate When the course ceases to be functional
  * @param lmsKey A key for connecting with LMSs
  */
-case class Course(id: Pk[Long], name: String, startDate: String, endDate: String, lmsKey: String)
-  extends SQLSavable with SQLDeletable {
+case class Course(id: Pk[Long], name: String, startDate: String, endDate: String,
+                  lmsKey: String = HashTools.md5Hex(Random.nextString(32))) extends SQLSavable with SQLDeletable {
 
   /**
    * Saves the course to the DB
@@ -54,10 +56,22 @@ case class Course(id: Pk[Long], name: String, startDate: String, endDate: String
   def getTeachers: List[User] = CourseMembership.listClassMembers(this, teacher = true)
 
   /**
+   * Get all the members (teachers and students)
+   * @return The list of all members
+   */
+  def getMembers: List[User] = getTeachers ++ getStudents
+
+  /**
    * Get content posted to this course
    * @return The list of content
    */
   def getContent: List[Content] = ContentListing.listClassContent(this)
+
+  /**
+   * Get the list of announcement for this course
+   * @return The list of announcements
+   */
+  def getAnnouncements: List[Announcement] = Announcement.listByCourse(this)
 
   /**
    * Post content to the course

@@ -2,7 +2,7 @@ package controllers
 
 import play.api.mvc._
 import models.Course
-import service.LMSAuth
+import service.{Authentication, LMSAuth}
 
 /**
  * This controller manages all the pages relating to courses, including authentication.
@@ -59,7 +59,13 @@ object Courses extends Controller {
   def view(id: Long) = courseAction(id) {
     implicit request =>
       course =>
-        Ok("Course: " + course.toString)
+        Authentication.authenticate(request) {
+          implicit user =>
+            if (course.getMembers.contains(user))
+              Ok(views.html.courses.view(course))
+            else
+              Forbidden
+        }
   }
 
 }
