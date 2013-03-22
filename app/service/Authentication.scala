@@ -118,7 +118,7 @@ object Authentication {
    * @param f The action logic. A curried function which, given a request and the authenticated user, returns a result.
    * @return The result. Either a redirect due to not being logged in, or the result returned by <strong>f</strong>.
    */
-  def authenticatedAction(f: Request[AnyContent] => User => Result) = Action {
+  def authenticatedAction[A](parser: BodyParser[A] = BodyParsers.parse.anyContent)(f: Request[A] => User => Result) = Action(parser) {
     request =>
       val userId = request.session.get("userId")
       if (userId.isDefined) {

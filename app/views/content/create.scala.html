@@ -1,0 +1,18 @@
+@()(implicit request: RequestHeader, user: User)
+
+@main("Ayamel - Add Content") {
+
+    <div class="padded">
+        <h1>Add Content</h1>
+
+        <h2>Video</h2>
+        <form method="post" enctype="multipart/form-data" action="@routes.ContentController.create()">
+            Title: <input type="text" name="title"><br/>
+            Description: <input type="text" name="description"><br/>
+            URL: <input type="text" name="url"><br/>
+            Thumbnail: <input type="text" name="thumbnail"><br/>
+        </form>
+
+    </div>
+
+}

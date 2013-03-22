@@ -1,7 +1,7 @@
 package controllers
 
 import play.api.mvc.Controller
-import service.Authentication
+import service.{ContentManagement, Authentication}
 
 /**
  * Created with IntelliJ IDEA.
@@ -12,17 +12,35 @@ import service.Authentication
  */
 object ContentController extends Controller {
 
-  def create = Authentication.authenticatedAction {
+  def createPage = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+        Ok(views.html.content.create())
+  }
+
+  def create = Authentication.authenticatedAction(parse.multipartFormData) {
     implicit request =>
       implicit user =>
 
-        Ok("TODO: Create")
+        // Collect the information
+        val data = request.body.dataParts.mapValues(_(0))
+        val title = data("title")
+        val description = data("description")
+        val url = data("url")
+        val thumbnail = data("thumbnail")
+
+        // Create the content
+        ContentManagement.createVideo(title, description, url, thumbnail, user)
+
+        Redirect(routes.Application.home()).flashing("success" -> "Content added")
   }
 
-  def view(id: Long) = Authentication.authenticatedAction {
+  def view(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
         Ok("TODO: View")
   }
+
+  def mine = TODO
 
 }

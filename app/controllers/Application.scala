@@ -21,13 +21,13 @@ object Application extends Controller {
       Ok(views.html.application.index())
   }
 
-  def home = service.Authentication.authenticatedAction {
+  def home = service.Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
         Ok(views.html.application.home())
   }
 
-  def watch = service.Authentication.authenticatedAction {
+  def watch = service.Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
 //        val videoGroups = VideoGroup.list
@@ -35,13 +35,13 @@ object Application extends Controller {
       Ok("Watch")
   }
 
-  def edit = service.Authentication.authenticatedAction {
+  def edit = service.Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
         Ok(views.html.application.edit())
   }
 
-  def code = service.Authentication.authenticatedAction {
+  def code = service.Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
         Ok(views.html.application.code())
@@ -83,20 +83,19 @@ object Application extends Controller {
       }
   }
 
-  def profile = service.Authentication.authenticatedAction {
+  def profile = service.Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
 
         Ok(views.html.application.profile(user))
   }
 
-  def changeName = service.Authentication.authenticatedAction {
+  def changeName = service.Authentication.authenticatedAction(parse.urlFormEncoded) {
     request =>
       user =>
 
         // Change the name
-        val params = request.body.asFormUrlEncoded.get
-        val newName = params("monkeyBrains")(0)
+        val newName = request.body("monkeyBrains")(0)
         user.copy(name = Some(newName)).save
 
         // Redirect

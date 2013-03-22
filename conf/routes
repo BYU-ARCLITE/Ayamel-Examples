@@ -22,7 +22,9 @@ POST    /course/:id/ltiAuth         controllers.Courses.ltiAuth(id: Long)
 GET     /course/:id/keyAuth         controllers.Courses.keyAuth(id: Long)
 
 # Content pages
-GET     /content/create             controllers.ContentController.create
+GET     /content                    controllers.ContentController.mine
+GET     /content/create             controllers.ContentController.createPage
+POST    /content/create             controllers.ContentController.create
 GET     /content/:id                controllers.ContentController.view(id: Long)
 
 

@@ -89,7 +89,7 @@ object ResourceController {
    * @param remoteFiles The JSON object describing the remote files
    * @return The future JSON result
    */
-  def uploadRemoteFiles(url: String, remoteFiles: JsValue): Future[JsValue] = WS.url(url).post(remoteFiles).map(_.json)
+  def setRemoteFiles(url: String, remoteFiles: JsValue): Future[JsValue] = WS.url(url).post(remoteFiles).map(_.json)
 
   /**
    * Get resource relations
