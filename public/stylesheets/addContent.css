@@ -1,0 +1,62 @@
+.contentBadge {
+    border-radius: 5px;
+    width: 100px;
+    height: 100px;
+    background: black;
+    display: inline-block;
+    margin: 10px 10px 25px 10px;
+    position: relative;
+    box-shadow: 2px 2px 15px rgba(0,0,0,0.5);
+    cursor: pointer;
+}
+
+.contentBadge.video {
+    background: url("../images/videos/placeholder.jpg") center;
+    background-size: cover;
+}
+
+.contentBadge.audio {
+    background: url("../images/audio/placeholder.jpg") center;
+    background-size: cover;
+}
+
+.contentBadge.image {
+    background: url("../images/index/background.jpg") center;
+    background-size: cover;
+}
+
+.contentBadge > span {
+    width: 100px;
+    text-align: center;
+    display: block;
+    position: absolute;
+    top: 105px;
+    font-size: 18px;
+}
+
+.createForm {
+    padding: 25px 50px;
+    background: #666;
+    box-shadow: inset 0 10px 15px -10px;
+    height: 300px;
+
+    border-radius: 0 0 5px 5px;
+
+    transition: height ease 0.5s, padding ease 0.5s;
+    -moz-transition: height ease 0.5s, padding ease 0.5s;
+    -webkit-transition: height ease 0.5s, padding ease 0.5s;
+    -o-transition: height ease 0.5s, padding ease 0.5s;
+    -ms-transition: height ease 0.5s, padding ease 0.5s;
+    overflow: hidden;
+}
+
+.createForm h2, .createForm label {
+    color: black;
+}
+
+.createForm.hidden {
+    padding: 0 50px;
+    height: 0;
+    display: block;
+    visibility: visible;
+}

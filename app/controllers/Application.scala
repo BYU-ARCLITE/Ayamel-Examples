@@ -6,7 +6,7 @@ import libs.MimeTypes
 import libs.ws.WS
 import play.api.mvc._
 import anorm.NotAssigned
-import models.User
+import models.{Course, User}
 import concurrent.{Await, ExecutionContext}
 import concurrent.duration._
 import ExecutionContext.Implicits.global
@@ -90,7 +90,7 @@ object Application extends Controller {
         Ok(views.html.application.profile(user))
   }
 
-  def course = logic.Authentication.authenticatedAction {
+  def course = service.Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
 
@@ -109,11 +109,11 @@ object Application extends Controller {
         Redirect(routes.Application.profile()).flashing("success" -> "Yay! You changed your name.")
   }
 
-  def createCoursePage = logic.Authentication.authenticatedAction {
+  def createCoursePage = service.Authentication.authenticatedAction(parse.urlFormEncoded) {
     request =>
       user =>
 
-        val params = request.body.asFormUrlEncoded.get
+        val params = request.body
         val newCourse = params("courseName")(0)
         Course(NotAssigned, newCourse, "", "", "").save
 

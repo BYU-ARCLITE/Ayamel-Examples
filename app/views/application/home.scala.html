@@ -6,7 +6,7 @@
         <h1>My courses</h1>
         <ul>
             @for(course <- user.getEnrollment) {
-                <a href="@routes.Courses.view(course.id.get)">@course.name</a>
+                <li><a href="@routes.Courses.view(course.id.get)">@course.name</a></li>
             }
         </ul>
 

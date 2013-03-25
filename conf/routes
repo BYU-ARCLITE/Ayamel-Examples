@@ -20,6 +20,7 @@ POST    /auth/createAccount         controllers.authentication.Password.createAc
 GET     /course/:id                 controllers.Courses.view(id: Long)
 POST    /course/:id/ltiAuth         controllers.Courses.ltiAuth(id: Long)
 GET     /course/:id/keyAuth         controllers.Courses.keyAuth(id: Long)
+POST    /course/:id/addContent      controllers.Courses.addContent(id: Long)
 
 # Content pages
 GET     /content                    controllers.ContentController.mine

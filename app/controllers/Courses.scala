@@ -1,7 +1,7 @@
 package controllers
 
 import play.api.mvc._
-import models.Course
+import models.{Content, Course}
 import service.{Authentication, LMSAuth}
 
 /**
@@ -64,6 +64,26 @@ object Courses extends Controller {
             if (course.getMembers.contains(user))
               Ok(views.html.courses.view(course))
             else
+              Forbidden
+        }
+  }
+
+  def addContent(id: Long) = courseAction(id, parse.urlFormEncoded) {
+    implicit request =>
+      course =>
+        Authentication.authenticate(request) {
+          implicit user =>
+            if (course.getMembers.contains(user)) {
+
+              // Add the content to the course
+              val contentId = request.body("addContent")(0).toLong
+              val content = Content.findById(contentId)
+              if (content.isDefined) {
+                course.addContent(content.get)
+                Redirect(routes.Courses.view(id)).flashing("success" -> "Content added to course.")
+              } else
+                NotFound
+            } else
               Forbidden
         }
   }

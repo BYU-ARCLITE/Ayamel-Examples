@@ -27,14 +27,14 @@ object Fixtures {
     )
 
     val content = List(
-      ("Resource 1", 'video, "thumb", "resource1"),
-      ("Resource 2", 'video, "thumb", "resource2"),
-      ("Resource 3", 'video, "thumb", "resource3"),
-      ("Resource 4", 'video, "thumb", "resource4"),
-      ("Resource 5", 'video, "thumb", "resource5"),
-      ("Resource 6", 'video, "thumb", "resource6"),
-      ("Resource 7", 'video, "thumb", "resource7"),
-      ("Resource 8", 'video, "thumb", "resource8")
+      ("Resource 1", 'video, "", "resource1"),
+      ("Resource 2", 'video, "", "resource2"),
+      ("Resource 3", 'video, "", "resource3"),
+      ("Resource 4", 'video, "", "resource4"),
+      ("Resource 5", 'video, "", "resource5"),
+      ("Resource 6", 'video, "", "resource6"),
+      ("Resource 7", 'video, "", "resource7"),
+      ("Resource 8", 'video, "", "resource8")
     )
 
     val courses = List(

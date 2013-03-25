@@ -16,6 +16,26 @@ object ContentManagement {
   }
 
   /**
+   * Creates content depending on the content type
+   * @param name The name of the content
+   * @param description A description about the content
+   * @param url The URL to the content
+   * @param thumbnail A thumbnail of the content
+   * @param owner The user who is to own the content
+   * @param contentType The type of content
+   * @return The content object in a future
+   */
+  def createContent(name: String, description: String, url: String, thumbnail: String, owner: User,
+                    contentType: Symbol): Future[Content] = {
+    contentType match {
+      case 'video => createVideo(name, description, url, thumbnail, owner)
+      case 'audio => createAudio(name, description, url, owner)
+      case 'image => createImage(name, description, url, owner)
+      case _ => Future { null }
+    }
+  }
+
+  /**
    * Create a video content object with a corresponding resource object from information.
    * @param name The name of the video
    * @param description A description about the video

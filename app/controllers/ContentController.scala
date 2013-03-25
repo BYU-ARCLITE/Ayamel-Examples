@@ -24,13 +24,14 @@ object ContentController extends Controller {
 
         // Collect the information
         val data = request.body.dataParts.mapValues(_(0))
+        val contentType = Symbol(data("contentType"))
         val title = data("title")
         val description = data("description")
         val url = data("url")
         val thumbnail = data("thumbnail")
 
         // Create the content
-        ContentManagement.createVideo(title, description, url, thumbnail, user)
+        ContentManagement.createContent(title, description, url, thumbnail, user, contentType)
 
         Redirect(routes.Application.home()).flashing("success" -> "Content added")
   }
@@ -41,6 +42,11 @@ object ContentController extends Controller {
         Ok("TODO: View")
   }
 
-  def mine = TODO
+  def mine = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+        Ok(views.html.content.mine())
+  }
+
 
 }

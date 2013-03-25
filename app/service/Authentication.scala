@@ -137,7 +137,7 @@ object Authentication {
    * @param f A function which, given a user, returns a result
    * @return The result.
    */
-  def authenticate(request: Request[AnyContent])(f: User => Result): Result = {
+  def authenticate(request: Request[_])(f: User => Result): Result = {
     val userId = request.session.get("userId")
     if (userId.isDefined) {
       val user = User.findById(userId.get.toLong)

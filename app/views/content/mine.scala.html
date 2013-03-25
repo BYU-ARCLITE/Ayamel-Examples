@@ -1,0 +1,15 @@
+@()(implicit request: RequestHeader, user: User)
+
+@main("Ayamel - My Content") {
+
+    <div class="padded">
+
+        <ul>
+            @for(content <- user.getContent) {
+                <li><a href="@routes.ContentController.view(content.id.get)">@content.name (<em>@content.contentType</em>)</a></li>
+            }
+        </ul>
+
+        <a href="@routes.ContentController.createPage()" class="btn btn-blue">Add Content</a>
+    </div>
+}
