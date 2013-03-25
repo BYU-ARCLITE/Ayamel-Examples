@@ -2,7 +2,8 @@ package controllers
 
 import play.api.mvc._
 import models.{Content, Course}
-import service.{Authentication, LMSAuth}
+import service.{TimeTools, Authentication, LMSAuth}
+import anorm.NotAssigned
 
 /**
  * This controller manages all the pages relating to courses, including authentication.
@@ -88,4 +89,26 @@ object Courses extends Controller {
         }
   }
 
+  def create = service.Authentication.authenticatedAction(parse.urlFormEncoded) {
+    request =>
+      user =>
+
+        val courseName = request.body("courseName")(0)
+        val startDate = request.body("startDate")(0)
+        val endDate = request.body("endDate")(0)
+
+        val course = Course(NotAssigned, courseName, TimeTools.parseDate(startDate), TimeTools.parseDate(endDate)).save
+
+        user.enroll(course, teacher = true)
+
+        Redirect(routes.Courses.view(course.id.get)).flashing("success" -> "Course Added")
+
+  }
+
+  def createPage = service.Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+
+        Ok(views.html.courses.create())
+  }
 }

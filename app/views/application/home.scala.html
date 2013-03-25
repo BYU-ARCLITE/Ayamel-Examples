@@ -12,7 +12,7 @@
 
         @* If the user didn't log in through a LMS, then allow the creation of courses *@
         @if(user.canCreateCourse) {
-            <a href="#" class="btn btn-magenta"><i class="icon-group"></i> Create a new course</a>
+            <a href="@routes.Courses.create()" class="btn btn-magenta"><i class="icon-group"></i> Create a new course</a>
         }
     </div>
 

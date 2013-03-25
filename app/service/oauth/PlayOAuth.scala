@@ -3,7 +3,6 @@ package service.oauth
 import com.twitter.joauth._
 import com.twitter.joauth.Request
 import play.api.mvc._
-import service.oauth.PlayOAuthRequest
 import play.api.libs.ws.WS.WSRequest
 
 /**

@@ -90,13 +90,6 @@ object Application extends Controller {
         Ok(views.html.application.profile(user))
   }
 
-  def course = service.Authentication.authenticatedAction() {
-    implicit request =>
-      implicit user =>
-
-        Ok(views.html.application.course(user))
-  }
-
   def changeName = service.Authentication.authenticatedAction(parse.urlFormEncoded) {
     request =>
       user =>
@@ -109,14 +102,4 @@ object Application extends Controller {
         Redirect(routes.Application.profile()).flashing("success" -> "Yay! You changed your name.")
   }
 
-  def createCoursePage = service.Authentication.authenticatedAction(parse.urlFormEncoded) {
-    request =>
-      user =>
-
-        val params = request.body
-        val newCourse = params("courseName")(0)
-        Course(NotAssigned, newCourse, "", "", "").save
-
-        Redirect(routes.Application.course()).flashing("success" -> "Course Added")
-  }
 }

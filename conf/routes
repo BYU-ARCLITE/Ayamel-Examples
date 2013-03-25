@@ -17,6 +17,8 @@ POST    /auth/password              controllers.authentication.Password.login
 POST    /auth/createAccount         controllers.authentication.Password.createAccount
 
 # Course pages
+GET     /course/create              controllers.Courses.createPage
+POST    /course/create              controllers.Courses.create
 GET     /course/:id                 controllers.Courses.view(id: Long)
 POST    /course/:id/ltiAuth         controllers.Courses.ltiAuth(id: Long)
 GET     /course/:id/keyAuth         controllers.Courses.keyAuth(id: Long)
@@ -31,10 +33,10 @@ GET     /content/:id                controllers.ContentController.view(id: Long)
 
 
 
-GET     /course                     controllers.Application.course
+
 GET     /profile                    controllers.Application.profile
 POST    /profile/changeName         controllers.Application.changeName
-POST    /course/createCoursePage    controllers.Application.createCoursePage
+
 
 # Watching videos/Levels of playback
 GET     /watch                      controllers.Application.watch

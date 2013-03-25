@@ -1,0 +1,37 @@
+@()(implicit request: RequestHeader, user: User)
+
+@main("Ayamel - Create course page") {
+
+    <div class="padded">
+        <h1>Create Course Page</h1>
+
+        <form class="form-horizontal" action="@routes.Courses.create()" method="post">
+            <div class="control-group">
+                <label class="control-label">Course Name</label>
+                <div class="controls">
+                    <input type="text" name="courseName" />
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label">Start Date</label>
+                <div class="controls">
+                    <input type="text" name="startDate" placeholder="mm/dd/yyyy"/>
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label">End Date</label>
+                <div class="controls">
+                    <input type="text" name="endDate" placeholder="mm/dd/yyyy"/>
+                </div>
+            </div>
+            <div class="control-group">
+                <div class="controls">
+                    <input class="btn btn-blue" type="submit" value="Create Course Page"/>
+                </div>
+            </div>
+        </form>
+    </div>
+
+
+        }
+

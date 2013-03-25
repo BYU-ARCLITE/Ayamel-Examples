@@ -17,4 +17,8 @@ object TimeTools {
     val dateTime = new DateTime(time)
     dateTime.toString("MMM dd, yyyy") + " at " + dateTime.toString("hh:mm aa")
   }
+
+  def parseDate(date: String): String = {
+    date
+  }
 }
