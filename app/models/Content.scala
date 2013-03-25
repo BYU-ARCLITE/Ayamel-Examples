@@ -34,6 +34,13 @@ case class Content(id: Pk[Long], name: String, contentType: Symbol, thumbnail: S
    * Deletes the content from the DB, but not from the resource library
    */
   def delete() {
+    // Delete the content from courses
+    ContentListing.listByContent(this).foreach(_.delete())
+
+    // Delete ownership
+    ContentOwnership.findByContent(this).delete()
+
+    // Delete the content
     delete(Content.tableName, id)
   }
 

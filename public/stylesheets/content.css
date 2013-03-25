@@ -60,3 +60,52 @@
     display: block;
     visibility: visible;
 }
+
+.contentHolder {
+    height: 100px;
+    width: 100%;
+    border-radius: 5px;
+    background: #ccc;
+    border-top: 1px solid rgba(0,0,0,0.3);
+    border-bottom: 1px solid rgba(255,255,255,1);
+    box-shadow: inset 2px 2px 18px rgba(0,0,0,0.1);
+    margin-bottom: 10px;
+    overflow-y: auto;
+}
+
+.contentEntry {
+    width: 70px;
+    height: 70px;
+    background: black;
+    display: inline-block;
+    margin-left: 20px;
+    margin-top: 15px;
+    -webkit-box-shadow: 2px 1px 15px rgba(0,0,0,0.3);
+    -moz-box-shadow: 2px 1px 15px rgba(0,0,0,0.3);
+    box-shadow: 2px 1px 15px rgba(0,0,0,0.3);
+}
+
+.contentEntry.video {
+    background: url("../images/videos/placeholder.jpg") center no-repeat;
+    background-size: cover;
+}
+
+.contentEntry.audio {
+    background: url("../images/audio/placeholder.jpg") center no-repeat;
+    background-size: cover;
+}
+
+.contentEntry.image {
+    background: url("../images/index/background.jpg") center no-repeat;
+    background-size: cover;
+}
+
+.contentEntry.playlist {
+    background: url("../images/playlists/placeholder.jpg") center no-repeat;
+    background-size: cover;
+}
+
+.contentEntry.activity {
+    background: url("../images/activities/placeholder.jpg") center no-repeat;
+    background-size: cover;
+}

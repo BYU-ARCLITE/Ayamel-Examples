@@ -1,7 +1,8 @@
 package controllers
 
-import play.api.mvc.Controller
+import play.api.mvc.{Result, Request, Controller}
 import service.{ContentManagement, Authentication}
+import models.Content
 
 /**
  * Created with IntelliJ IDEA.
@@ -11,6 +12,14 @@ import service.{ContentManagement, Authentication}
  * To change this template use File | Settings | File Templates.
  */
 object ContentController extends Controller {
+
+  def getContent(id: Long)(f: Content => Result)(implicit request: Request[_]) = {
+    val content = Content.findById(id)
+    if (content.isDefined) {
+      f(content.get)
+    } else
+      NotFound
+  }
 
   def createPage = Authentication.authenticatedAction() {
     implicit request =>
@@ -39,7 +48,20 @@ object ContentController extends Controller {
   def view(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        Ok("TODO: View")
+        getContent(id) {
+          content =>
+            Ok(views.html.content.view(content))
+        }
+  }
+
+  def delete(id: Long) = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+        getContent(id) {
+          content =>
+            content.delete()
+            Redirect(routes.ContentController.mine()).flashing("success" -> "Content deleted.")
+        }
   }
 
   def mine = Authentication.authenticatedAction() {

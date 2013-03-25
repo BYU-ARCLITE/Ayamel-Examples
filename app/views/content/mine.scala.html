@@ -2,13 +2,20 @@
 
 @main("Ayamel - My Content") {
 
+    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/content.css")">
+
     <div class="padded">
 
-        <ul>
-            @for(content <- user.getContent) {
-                <li><a href="@routes.ContentController.view(content.id.get)">@content.name (<em>@content.contentType</em>)</a></li>
-            }
-        </ul>
+        <h1>My Content</h1>
+        @defining(user.getContent) { content =>
+            @views.html.content.contentHolder(content, 'video, "Videos", "icon-film")
+            @views.html.content.contentHolder(content, 'audio, "Audio", "icon-volume-up")
+            @views.html.content.contentHolder(content, 'image, "Images", "icon-picture")
+            @views.html.content.contentHolder(content, 'playlist, "Playlists", "icon-list-ol")
+            @views.html.content.contentHolder(content, 'activity, "Activities", "icon-pencil")
+        }
+
+        <hr>
 
         <a href="@routes.ContentController.createPage()" class="btn btn-blue">Add Content</a>
     </div>

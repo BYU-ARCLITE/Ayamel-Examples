@@ -2,20 +2,15 @@ package controllers
 
 import play.api._
 import libs.json.Json
-import libs.MimeTypes
 import libs.ws.WS
 import play.api.mvc._
 import anorm.NotAssigned
-import models.{Course, User}
-import concurrent.{Await, ExecutionContext}
-import concurrent.duration._
+import models.Course
+import concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
-import service.oauth.PlayOAuth
-import play.core.parsers.FormUrlEncodedParser
-import service.Authentication
 
 object Application extends Controller {
-  
+
   def index = Action {
     implicit request =>
       Ok(views.html.application.index())
@@ -30,9 +25,9 @@ object Application extends Controller {
   def watch = service.Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-//        val videoGroups = VideoGroup.list
-//        Ok(views.html.application.watch(videoGroups))
-      Ok("Watch")
+      //        val videoGroups = VideoGroup.list
+      //        Ok(views.html.application.watch(videoGroups))
+        Ok("Watch")
   }
 
   def edit = service.Authentication.authenticatedAction() {
@@ -49,30 +44,13 @@ object Application extends Controller {
 
   def test = Action(parse.tolerantText) {
     request =>
-//    val uri = "http://arclite.byu.edu/hvmirror/something.mp4"
-//    val extension = uri.substring(uri.lastIndexOf("."))
-//    val mime = MimeTypes.forExtension(extension)
 
-
-
-    // Now make the simple translation call
-//    val response = Await.result(
-//      WS.url("http://translate.google.com/researchapi/translate")
-//        .withQueryString("sl" -> "en", "tl" -> "fr", "q" -> "hat")
-//        .withHeaders("Authorization" -> ("GoogleLogin auth=" + authCode)).get().map(_.xml),
-//      30 seconds
-//    )
-//
-////    val googleTranslateNamespace =
-//    Ok((response \ "entry" \ "translation").text)
-
-    val valid = PlayOAuth.verify(request, "", "key1")
-
-    //BodyParsers.parse.text.
-
-    val x = request.map(str => FormUrlEncodedParser.parse(request.body, request.charset.getOrElse("utf-8")))
-
-    Ok(x.body + " -- " + valid)
+      Logger.debug("Headers: " + request.headers)
+      Logger.debug("Body: " + request.body)
+      val obj = Json.obj(
+        "success" -> true
+      )
+      Ok(obj)
   }
 
 
@@ -94,7 +72,7 @@ object Application extends Controller {
     request =>
       user =>
 
-        // Change the name
+      // Change the name
         val newName = request.body("monkeyBrains")(0)
         user.copy(name = Some(newName)).save
 

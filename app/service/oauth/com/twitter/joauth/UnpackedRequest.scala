@@ -62,7 +62,7 @@ case class OAuth1Request(
 /**
  * models an OAuth 2.0 request. Just a wrapper for the token, really.
  */
-@deprecated("Use OAuth2Request instead")
+@deprecated("Use OAuth2Request instead", "")
 case class OAuth2d11Request(token: String, parsedRequest: ParsedRequest) extends OAuthRequest {
   override val oAuthVersionString = "oauth2d11"
 

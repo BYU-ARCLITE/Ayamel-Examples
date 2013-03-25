@@ -11,27 +11,11 @@
     </div>
 }
 
-@renderContentEntry(content: models.Content) = {
-    @defining(
-        if (content.thumbnail.isEmpty) ""
-        else "background: url('" + content.thumbnail + "') center no-repeat; background-size: cover;"
-    ) { thumbnail =>
-        <a href="@routes.ContentController.view(content.id.get)" class="contentEntry @content.contentType.name" data-toggle="tooltip" title="@content.name" style="@thumbnail"></a>
-    }
-}
-
-@renderContent(allContent: List[models.Content], contentType: Symbol) = {
-    <div class="contentHolder">
-        @for(content <- allContent.filter(_.contentType == contentType)) {
-            @renderContentEntry(content)
-        }
-    </div>
-}
-
 @main("Ayamel - " + course.name) {
     @defining(course.getContent) { content =>
 
         <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/course.css")">
+        <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/content.css")">
 
         <div class="courseBackground">
             <div class="courseTitle">
@@ -52,30 +36,12 @@
         <div class="padded">
             <div class="row-fluid">
                 <div class="span8">
-                    @if(!content.filter(_.contentType == 'video).isEmpty) {
-                        <h2><i class="icon-film"></i> Videos</h2>
-                        @renderContent(content, 'video)
-                    }
+                    @views.html.content.contentHolder(content, 'video, "Videos", "icon-film")
+                    @views.html.content.contentHolder(content, 'audio, "Audio", "icon-volume-up")
+                    @views.html.content.contentHolder(content, 'image, "Images", "icon-picture")
+                    @views.html.content.contentHolder(content, 'playlist, "Playlists", "icon-list-ol")
+                    @views.html.content.contentHolder(content, 'activity, "Activities", "icon-pencil")
 
-                    @if(!content.filter(_.contentType == 'audio).isEmpty) {
-                        <h2><i class="icon-volume-up"></i> Audio</h2>
-                        @renderContent(content, 'audio)
-                    }
-
-                    @if(!content.filter(_.contentType == 'image).isEmpty) {
-                        <h2><i class="icon-picture"></i> Images</h2>
-                        @renderContent(content, 'image)
-                    }
-
-                    @if(!content.filter(_.contentType == 'playlist).isEmpty) {
-                        <h2><i class="icon-list-ol"></i> Playlists</h2>
-                        @renderContent(content, 'playlist)
-                    }
-
-                    @if(!content.filter(_.contentType == 'activity).isEmpty) {
-                        <h2><i class="icon-pencil"></i> Activities</h2>
-                        @renderContent(content, 'activity)
-                    }
                 </div>
                 <div class="span4">
                     <h3><i class="icon-bullhorn"></i> Announcements</h3>

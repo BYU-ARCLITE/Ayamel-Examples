@@ -74,7 +74,7 @@ class ContentOwnershipSpec extends Specification {
         val content2 = Content(NotAssigned, "c2", 'blah, "", "", "").save
         val ownership1 = ContentOwnership(NotAssigned, user.id.get, content1.id.get).save
         val ownership2 = ContentOwnership(NotAssigned, user.id.get, content2.id.get).save
-        val list = ContentOwnership.listByUser(user)
+        val list = ContentOwnership.listUserContent(user)
 
         // Cleanup
         user.delete()

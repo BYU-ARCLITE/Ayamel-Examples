@@ -73,6 +73,17 @@ object ContentListing extends SQLSelectable[ContentListing] {
     }
 
   /**
+   * Lists the content listing pertaining to a certain content object
+   * @param content The content object the listings will be for
+   * @return The list of content listings
+   */
+  def listByContent(content: Content): List[ContentListing] =
+    DB.withConnection {
+      implicit connection =>
+        anorm.SQL("select * from " + tableName + " where contentId = {id}").on('id -> content.id).as(simple *)
+    }
+
+  /**
    * Gets all content belonging to a certain course
    * @param course The course where the content is posted
    * @return The list of content

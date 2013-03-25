@@ -16,6 +16,7 @@ object ResourceController {
 
   // The base endpoint of the resource library api
   val baseUrl = Play.configuration.getString("resourceLibrary.baseUrl").get
+//  val baseUrl = "http://localhost:9000/test"
 
   /**
    * List resources

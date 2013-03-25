@@ -62,11 +62,22 @@ object ContentOwnership extends SQLSelectable[ContentOwnership] {
   def list: List[ContentOwnership] = list(ContentOwnership.tableName, simple)
 
   /**
+   * Gets the ownership for a particular object (there should only be one)
+   * @param content The content object the ownership is for
+   * @return The content ownership
+   */
+  def findByContent(content: Content): ContentOwnership =
+    DB.withConnection {
+      implicit connection =>
+        anorm.SQL("select * from " + tableName + " where contentId = {id}").on('id -> content.id).as(simple.single)
+    }
+
+  /**
    * Gets all content belonging to a certain user
    * @param user The user who owns the content
    * @return The list of content
    */
-  def listByUser(user: User): List[Content] =
+  def listUserContent(user: User): List[Content] =
     DB.withConnection {
       implicit connection =>
         anorm.SQL("select * from " + Content.tableName + " join " + tableName + " on " + Content.tableName + ".id = " +

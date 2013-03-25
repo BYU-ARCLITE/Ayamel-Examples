@@ -1,0 +1,42 @@
+@(content: models.Content)(implicit request: RequestHeader, user: User)
+
+@renderTitle(content: models.Content) = {
+    @defining(Map(
+        'video -> "icon-film",
+        'audio -> "icon-volume-up",
+        'image -> "icon-picture",
+        'playlist -> "icon-list-ol",
+        'activity -> "icon-pencil"
+    )) { iconMap =>
+        <h1><i class="@iconMap(content.contentType)"></i> @content.name</h1>
+    }
+}
+
+@main("Ayamel - " + content.name) {
+
+    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/content.css")">
+
+    <div class="padded">
+
+        @views.html.content.header(content)
+
+        @renderTitle(content)
+
+        @if(content.contentType == 'video) {
+            @* TODO: Video rendering *@
+        }
+        @if(content.contentType == 'audio) {
+            @* TODO: Audio rendering *@
+        }
+        @if(content.contentType == 'image) {
+            @views.html.content.renderers.image(content)
+        }
+        @if(content.contentType == 'playlist) {
+            @* TODO: Playlist rendering *@
+        }
+        @if(content.contentType == 'activity) {
+            @* TODO: Activity rendering *@
+        }
+
+    </div>
+}

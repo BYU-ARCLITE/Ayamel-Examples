@@ -90,7 +90,7 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
    * Gets the content belonging to this user
    * @return The list of content
    */
-  def getContent: List[Content] = ContentOwnership.listByUser(this)
+  def getContent: List[Content] = ContentOwnership.listUserContent(this)
 
   /**
    * Create content from a resource and assign this user as the owner

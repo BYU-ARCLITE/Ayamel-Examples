@@ -1,0 +1,32 @@
+@(content: models.Content)
+
+<div class="well">
+
+    <a href="#" class="btn"><i class="icon-edit"></i> Edit Metadata</a>
+    <a href="#" class="btn"><i class="icon-eye-open"></i> Set Visibility</a>
+    <a href="#" class="btn"><i class="icon-bar-chart"></i> View Stats</a>
+    <a href="#" class="btn btn-yellow"><i class="icon-share"></i> Share</a>
+    <a href="#deleteModal" role="button" class="btn btn-magenta"data-toggle="modal"><i class="icon-trash"></i> Delete</a>
+</div>
+
+<div id="deleteModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="deleteModalLabel">Delete Content</h3>
+    </div>
+    <div class="modal-body">
+        <p>Are you sure you want to delete @content.name?</p>
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
+        <button id="deleteContentButton" class="btn btn-magenta">Yes</button>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(function() {
+        $("#deleteContentButton").click(function() {
+            window.location = "@routes.ContentController.delete(content.id.get)";
+        })
+    });
+</script>

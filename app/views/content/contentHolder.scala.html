@@ -1,0 +1,18 @@
+@(contentList: List[models.Content], contentType: Symbol, title: String, icon: String)
+
+@defining(contentList.filter(_.contentType == contentType)) { filteredContent =>
+    @if(!filteredContent.isEmpty) {
+        <h2><i class="@icon"></i> @title</h2>
+
+        <div class="contentHolder">
+            @for(content <- filteredContent) {
+                @defining(
+                    if (content.thumbnail.isEmpty) ""
+                    else "background: url('" + content.thumbnail + "') center no-repeat; background-size: cover;"
+                ) { thumbnail =>
+                    <a href="@routes.ContentController.view(content.id.get)" class="contentEntry @content.contentType.name" data-toggle="tooltip" title="@content.name" style="@thumbnail"></a>
+                }
+            }
+        </div>
+    }
+}
