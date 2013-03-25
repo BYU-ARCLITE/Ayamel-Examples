@@ -90,6 +90,13 @@ object Application extends Controller {
         Ok(views.html.application.profile(user))
   }
 
+  def course = logic.Authentication.authenticatedAction {
+    implicit request =>
+      implicit user =>
+
+        Ok(views.html.application.course(user))
+  }
+
   def changeName = service.Authentication.authenticatedAction(parse.urlFormEncoded) {
     request =>
       user =>
@@ -102,4 +109,14 @@ object Application extends Controller {
         Redirect(routes.Application.profile()).flashing("success" -> "Yay! You changed your name.")
   }
 
+  def createCoursePage = logic.Authentication.authenticatedAction {
+    request =>
+      user =>
+
+        val params = request.body.asFormUrlEncoded.get
+        val newCourse = params("courseName")(0)
+        Course(NotAssigned, newCourse, "", "", "").save
+
+        Redirect(routes.Application.course()).flashing("success" -> "Course Added")
+  }
 }

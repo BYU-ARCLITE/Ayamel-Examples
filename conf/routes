@@ -30,9 +30,10 @@ GET     /content/:id                controllers.ContentController.view(id: Long)
 
 
 
-
+GET     /course                     controllers.Application.course
 GET     /profile                    controllers.Application.profile
 POST    /profile/changeName         controllers.Application.changeName
+POST    /course/createCoursePage    controllers.Application.createCoursePage
 
 # Watching videos/Levels of playback
 GET     /watch                      controllers.Application.watch
