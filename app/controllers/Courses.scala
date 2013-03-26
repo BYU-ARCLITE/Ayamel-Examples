@@ -111,4 +111,12 @@ object Courses extends Controller {
 
         Ok(views.html.courses.create())
   }
+
+  def list = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+
+        val courses = Course.list
+        Ok(views.html.courses.list(courses))
+  }
 }

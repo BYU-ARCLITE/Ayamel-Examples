@@ -243,3 +243,30 @@ h1, h2, h3, h4, h5, h6 {
 .inline-block {
     display: inline-block;
 }
+
+/* General padding classes */
+
+.pad-left-low  { margin-left: 5px; }
+.pad-left-med  { margin-left: 10px; }
+.pad-left-high { margin-left: 15px; }
+
+.pad-right-low  { margin-right: 5px; }
+.pad-right-med  { margin-right: 10px; }
+.pad-right-high { margin-right: 15px; }
+
+.pad-top-low  { margin-top: 5px; }
+.pad-top-med  { margin-top: 10px; }
+.pad-top-high { margin-top: 15px; }
+
+.pad-bottom-low  { margin-bottom: 5px; }
+.pad-bottom-med  { margin-bottom: 10px; }
+.pad-bottom-high { margin-bottom: 15px; }
+
+.footer {
+    background: #ddd;
+    border-top: 1px solid #aaa;
+    margin-top: 50px;
+    min-height: 50px;
+    font-size: 11px;
+    padding: 20px 0;
+}

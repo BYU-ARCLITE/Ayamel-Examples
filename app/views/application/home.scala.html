@@ -2,18 +2,97 @@
 
 @main("Ayamel Examples") {
 
-    <div class="padded">
-        <h1>My courses</h1>
-        <ul>
-            @for(course <- user.getEnrollment) {
-                <li><a href="@routes.Courses.view(course.id.get)">@course.name</a></li>
-            }
-        </ul>
+    <link rel="stylesheet" href="@routes.Assets.at("stylesheets/home.css")"/>
 
-        @* If the user didn't log in through a LMS, then allow the creation of courses *@
-        @if(user.canCreateCourse) {
-            <a href="@routes.Courses.create()" class="btn btn-magenta"><i class="icon-group"></i> Create a new course</a>
-        }
+    <div class="spotlight">
+        <h1>Spotlight</h1>
     </div>
+
+    <div class="padded">
+
+        <h2>My Ayamel</h2>
+
+        <div class="row-fluid">
+            <div class="span4">
+                <div class="homeContent">
+                    <div class="homeContentContainer">
+                        <h3>Latest Content</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="span4">
+                <div class="homeContent">
+                    <div class="homeContentContainer">
+                        <h3>Announcements</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="span4">
+                <div class="homeContent">
+                    <div class="homeContentContainer">
+                        <h3>My Courses</h3>
+                        <ul>
+                            @for(course <- user.getEnrollment) {
+                                <li><a href="@routes.Courses.view(course.id.get)">@course.name</a></li>
+                            }
+                        </ul>
+
+                        @* If the user didn't log in through a LMS, then allow the creation of courses *@
+                        @if(user.canCreateCourse) {
+                            <a href="@routes.Courses.create()" class="btn btn-magenta"><i class="icon-group"></i> Create a new course</a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h2>New Stuff</h2>
+
+        <div class="row-fluid">
+            <div class="span3">
+                <div class="homeContent accent">
+                    <div class="homeContentContainer">
+                        <div class="pad-bottom-med">
+                            <div class="fresh"></div>
+                            <h3 class="inline-block">Fresh Content</h3>
+                        </div>
+                        <p>The latest public content is here for your enjoyment!</p>
+                        <a href="#" class="btn btn-blue">View All</a>
+                    </div>
+                </div>
+            </div> <div class="span3">
+                <div class="homeContent">
+                    <div class="homeContentContainer">  </div>
+                </div>
+            </div> <div class="span3">
+                <div class="homeContent">
+                    <div class="homeContentContainer">  </div>
+                </div>
+            </div> <div class="span3">
+                <div class="homeContent">
+                    <div class="homeContentContainer"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row-fluid">
+            <div class="span6">
+                <h3>Are you a teacher?</h3>
+                <p>
+                    If you would like to teach a course you must be approved as a teacher by an administrator. To submit
+                    a teacher request, please fill out the <a href="#">teacher request form.</a>
+                </p>
+            </div>
+            <div class="span6">
+                <h3>How does Ayamel work?</h3>
+                <p>
+                    A very good question...
+                </p>
+            </div>
+        </div>
+
+    </div>
+
+
 
 }

@@ -17,6 +17,7 @@ POST    /auth/password              controllers.authentication.Password.login
 POST    /auth/createAccount         controllers.authentication.Password.createAccount
 
 # Course pages
+GET     /course                     controllers.Courses.list
 GET     /course/create              controllers.Courses.createPage
 POST    /course/create              controllers.Courses.create
 GET     /course/:id                 controllers.Courses.view(id: Long)

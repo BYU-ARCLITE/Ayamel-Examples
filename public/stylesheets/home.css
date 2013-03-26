@@ -1,3 +1,16 @@
+.spotlight {
+    height: 220px;
+    width: 100%;
+    background: black;
+    padding-top: 80px;
+    text-align: center;
+}
+
+.spotlight h1 {
+    color: white;
+    margin: 0;
+}
+
 .slide {
     margin: 10px;
     overflow: hidden;
@@ -27,4 +40,33 @@
     border-radius: 10px;
     -moz-border-radius: 10px;
     -webkit-border-radius: 10px;
+}
+
+.homeContent {
+    background: #f5f5f5;
+    border: #aaa solid 1px;
+    height: 225px;
+    box-shadow: 3px 4px 20px rgba(0,0,0,0.1);
+}
+
+.homeContent.accent {
+    background: #ddd;
+    border: #c7c7c7 solid 1px;
+}
+
+.homeContentContainer {
+    margin: 15px;
+}
+
+.fresh {
+    display: inline-block;
+    width: 50px;
+    height: 50px;
+    background: url("../images/home/fresh.jpg") center;
+    background-size: cover;
+
+    border: 5px solid #fff;
+    outline: 1px solid #ccc;
+    box-shadow: 1px 2px 5px rgba(0,0,0,0.2);
+    vertical-align: bottom;
 }

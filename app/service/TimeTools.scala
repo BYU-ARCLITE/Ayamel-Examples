@@ -30,8 +30,8 @@ object TimeTools {
    * @return The formatted date
    */
   def parseDate(date: String): String = {
-//    val dateTime = DateTimeFormat.forPattern("MM/dd/yy").parseDateTime(date)
-    val dateTime = new DateTime(date)
+    val dateTime = DateTimeFormat.forPattern("MM/dd/yy").parseDateTime(date)
+//    val dateTime = new DateTime(date)
     ISODateTimeFormat.dateTime().print(dateTime)
 
   }

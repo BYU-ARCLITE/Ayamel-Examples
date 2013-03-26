@@ -1,0 +1,15 @@
+@(courses: List[Course])(implicit request: RequestHeader, user: User)
+
+@main("Ayamel - Course Directory") {
+
+    <div class="padded">
+        <h1>Course Directory</h1>
+
+        <ul>
+            @for(course <- courses.sortWith(_.name < _.name)) {
+                <li><a href="@routes.Courses.view(course.id.get)">@course.name</a></li>
+            }
+        </ul>
+    </div>
+
+}
