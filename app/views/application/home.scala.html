@@ -4,8 +4,33 @@
 
     <link rel="stylesheet" href="@routes.Assets.at("stylesheets/home.css")"/>
 
+    <script src="@routes.Assets.at("javascripts/swipe.js")" type="text/javascript"></script>
+
     <div class="spotlight">
-        <h1>Spotlight</h1>
+        <div id="slider" class="swipe">
+            <div class="swipe-wrap">
+                <div class="slide" style="background: url('/assets/images/home/byu-campus.jpg') center; background-size: cover">
+                    <div class="slideTextHolder">
+                        <h1>Enrich your studies</h1>
+                        <p>
+                            With Ayamel, increase your language speaking ability.
+                        </p>
+                    </div>
+                </div>
+                <div class="slide" style="background: url('/assets/images/home/construction.jpg') center; background-size: cover">
+                    <div class="slideTextHolder">
+                        <h1>Pardon our dust</h1>
+                        <p>
+                            We're working hard to provide language learning magic, so there may be some things don't
+                            work well, or at all. Please be patient. You will be rewarded as awesomeness occurs.
+                        </p>
+                    </div>
+                </div>
+                @*<div>Two</div>*@
+                @*<div>Three</div>*@
+            </div>
+        </div>
+        @*<h1>Spotlight</h1>*@
     </div>
 
     <div class="padded">
@@ -96,6 +121,12 @@
 
     </div>
 
-
+    <script type="text/javascript">
+        $(function() {
+            $("#slider").Swipe({
+                auto: 10000
+            });
+        });
+    </script>
 
 }
