@@ -22,26 +22,6 @@ object Application extends Controller {
         Ok(views.html.application.home())
   }
 
-  def watch = service.Authentication.authenticatedAction() {
-    implicit request =>
-      implicit user =>
-      //        val videoGroups = VideoGroup.list
-      //        Ok(views.html.application.watch(videoGroups))
-        Ok("Watch")
-  }
-
-  def edit = service.Authentication.authenticatedAction() {
-    implicit request =>
-      implicit user =>
-        Ok(views.html.application.edit())
-  }
-
-  def code = service.Authentication.authenticatedAction() {
-    implicit request =>
-      implicit user =>
-        Ok(views.html.application.code())
-  }
-
   def test = Action(parse.tolerantText) {
     request =>
 
@@ -65,7 +45,7 @@ object Application extends Controller {
     implicit request =>
       implicit user =>
 
-        Ok(views.html.application.profile(user))
+        Ok(views.html.application.profile())
   }
 
   def changeName = service.Authentication.authenticatedAction(parse.urlFormEncoded) {
@@ -78,6 +58,10 @@ object Application extends Controller {
 
         // Redirect
         Redirect(routes.Application.profile()).flashing("success" -> "Yay! You changed your name.")
+  }
+
+  def logout = Action {
+    Redirect(routes.Application.index()).withNewSession
   }
 
 }

@@ -15,6 +15,7 @@ GET     /auth/cas                   controllers.authentication.Cas.login
 GET     /auth/cas/callback          controllers.authentication.Cas.callback
 POST    /auth/password              controllers.authentication.Password.login
 POST    /auth/createAccount         controllers.authentication.Password.createAccount
+GET     /auth/logout                controllers.Application.logout
 
 # Course pages
 GET     /course                     controllers.Courses.list
@@ -26,7 +27,8 @@ GET     /course/:id/keyAuth         controllers.Courses.keyAuth(id: Long)
 POST    /course/:id/addContent      controllers.Courses.addContent(id: Long)
 
 # Content pages
-GET     /content                    controllers.ContentController.mine
+GET     /content                    controllers.ContentController.public
+GET     /content/mine               controllers.ContentController.mine
 GET     /content/create             controllers.ContentController.createPage
 POST    /content/create             controllers.ContentController.create
 GET     /content/:id                controllers.ContentController.view(id: Long)
@@ -34,40 +36,8 @@ GET     /content/:id/delete         controllers.ContentController.delete(id: Lon
 POST    /content/:id/visibility     controllers.ContentController.setVisibility(id: Long)
 POST    /content/:id/shareability   controllers.ContentController.setShareability(id: Long)
 
-
-
-
-
 GET     /profile                    controllers.Application.profile
 POST    /profile/changeName         controllers.Application.changeName
-
-
-# Watching videos/Levels of playback
-GET     /watch                      controllers.Application.watch
-GET     /watch/:id                  controllers.Pages.levelSelect(id: Long)
-GET     /watch/:id/1                controllers.Pages.level1(id: Long)
-GET     /watch/:id/2                controllers.Pages.level2(id: Long)
-GET     /watch/:id/3                controllers.Pages.level3(id: Long)
-GET     /watch/:id/4                controllers.Pages.level4(id: Long)
-GET     /watch/:id/5                controllers.Pages.level5(id: Long)
-GET     /watch/:id/6                controllers.Pages.level6(id: Long)
-
-# Editing caption tracks
-GET     /edit                       controllers.Application.edit
-
-# Viewing code examples
-GET     /code                       controllers.Application.code
-
-# API wrapper until cross domain works
-GET     /api                        controllers.Application.apiWrapperGet
-
-# Google translate
-GET     /gt/:src/:dest/:text        controllers.GoogleTranslate.translate(src: String, dest: String, text: String)
-
-
-# Documentation
-GET     /help/teacher               controllers.documentation.Teacher.view(page: String = "index")
-GET     /help/teacher/:page         controllers.documentation.Teacher.view(page: String)
 
 
 # Map static resources from the /public folder to the /assets URL path

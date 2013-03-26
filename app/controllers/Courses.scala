@@ -1,7 +1,7 @@
 package controllers
 
 import play.api.mvc._
-import models.{Content, Course}
+import models.{User, Content, Course}
 import service.{TimeTools, Authentication, LMSAuth}
 import anorm.NotAssigned
 
@@ -74,7 +74,9 @@ object Courses extends Controller {
       course =>
         Authentication.authenticate(request) {
           implicit user =>
-            if (course.getMembers.contains(user)) {
+
+            // Only non-guest members and admins can add content
+            if (user canAddContentTo course) {
 
               // Add the content to the course
               val contentId = request.body("addContent")(0).toLong
@@ -93,30 +95,43 @@ object Courses extends Controller {
     request =>
       user =>
 
-        val courseName = request.body("courseName")(0)
-        val startDate = request.body("startDate")(0)
-        val endDate = request.body("endDate")(0)
+        // Check if the user is allowed to create a course
+        if (user.canCreateCourse) {
+          // Collect info
+          val courseName = request.body("courseName")(0)
+          val startDate = request.body("startDate")(0)
+          val endDate = request.body("endDate")(0)
 
-        val course = Course(NotAssigned, courseName, TimeTools.parseDate(startDate), TimeTools.parseDate(endDate)).save
+          // Create the course
+          val course = Course(NotAssigned, courseName, TimeTools.parseDate(startDate), TimeTools.parseDate(endDate)).save
+          user.enroll(course, teacher = true)
 
-        user.enroll(course, teacher = true)
-
-        Redirect(routes.Courses.view(course.id.get)).flashing("success" -> "Course Added")
-
+          // Redirect to the course page
+          Redirect(routes.Courses.view(course.id.get)).flashing("success" -> "Course Added")
+        } else
+          Forbidden
   }
 
   def createPage = service.Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
 
-        Ok(views.html.courses.create())
+        // Check if the user is allowed to create a course
+        if (user.canCreateCourse)
+          Ok(views.html.courses.create())
+        else
+          Forbidden
   }
 
   def list = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
 
-        val courses = Course.list
-        Ok(views.html.courses.list(courses))
+        // Guest user's are limited to their course. No browsing
+        if (user.role != User.roles.guest) {
+          val courses = Course.list
+          Ok(views.html.courses.list(courses))
+        } else
+          Forbidden
   }
 }

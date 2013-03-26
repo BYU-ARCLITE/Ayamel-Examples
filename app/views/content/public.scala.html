@@ -1,0 +1,17 @@
+@(allContent: List[models.Content])(implicit request: RequestHeader, user: User)
+
+@main("Ayamel - Public Content") {
+
+    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/content.css")">
+
+    <div class="padded">
+
+        <h1>Public Content</h1>
+        @views.html.content.contentHolder(allContent, 'video, "Videos", "icon-film")
+        @views.html.content.contentHolder(allContent, 'audio, "Audio", "icon-volume-up")
+        @views.html.content.contentHolder(allContent, 'image, "Images", "icon-picture")
+        @views.html.content.contentHolder(allContent, 'playlist, "Playlists", "icon-list-ol")
+        @views.html.content.contentHolder(allContent, 'activity, "Activities", "icon-pencil")
+
+    </div>
+}

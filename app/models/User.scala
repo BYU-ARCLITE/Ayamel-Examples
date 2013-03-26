@@ -108,10 +108,15 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
 
   def displayName: String = name.getOrElse(username)
 
-  def canCreateCourse: Boolean = {
-    val allowedSchemes = Set('google, 'cas, 'password)
-    allowedSchemes.contains(authScheme)
-  }
+  def canCreateCourse: Boolean = role == User.roles.teacher || role == User.roles.admin
+
+  /**
+   * Admins and non-guest members can add content to a course
+   * @param course The course to check against
+   * @return Can or cannot add content
+   */
+  def canAddContentTo(course: Course): Boolean =
+    role == User.roles.admin || (role != User.roles.guest && course.getMembers.contains(this))
 }
 
 object User extends SQLSelectable[User] {

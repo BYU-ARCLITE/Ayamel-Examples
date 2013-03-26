@@ -11,7 +11,8 @@ import service.TimeTools
  * @param resourceId The id of the resource
  */
 case class Content(id: Pk[Long], name: String, contentType: Symbol, thumbnail: String, resourceId: String,
-                   dateAdded: String = TimeTools.now, visibility: Int = 2, shareability: Int = 3)
+                   dateAdded: String = TimeTools.now, visibility: Int = Content.visibility.tightlyRestricted,
+                   shareability: Int = Content.shareability.shareable)
   extends SQLSavable with SQLDeletable {
 
   /**
@@ -60,9 +61,9 @@ case class Content(id: Pk[Long], name: String, contentType: Symbol, thumbnail: S
     else
       // Check the visibility attribute of the content object
       visibility match {
-        case 2 => user.getEnrollment.flatMap(_.getContent).contains(this)
-        case 3 => user.role == User.roles.teacher || user.getEnrollment.flatMap(_.getContent).contains(this)
-        case 4 => true
+        case Content.visibility.tightlyRestricted => user.getEnrollment.flatMap(_.getContent).contains(this)
+        case Content.visibility.looselyRestricted => user.role == User.roles.teacher || user.getEnrollment.flatMap(_.getContent).contains(this)
+        case Content.visibility.public => true
         case _ => false
       }
   }
@@ -77,9 +78,9 @@ case class Content(id: Pk[Long], name: String, contentType: Symbol, thumbnail: S
    */
   def isShareableBy(user: User): Boolean = {
     shareability match {
-      case 1 => false
-      case 2 => user.getContent.contains(this)
-      case 3 => isVisibleBy(user)
+      case Content.shareability.notShareable => false
+      case Content.shareability.byMeOnly => user.getContent.contains(this)
+      case Content.shareability.shareable => isVisibleBy(user)
     }
   }
 
@@ -95,6 +96,21 @@ case class Content(id: Pk[Long], name: String, contentType: Symbol, thumbnail: S
 
 object Content extends SQLSelectable[Content] {
   val tableName = "content"
+
+  /* Visibility levels */
+  object visibility {
+    val _private = 1
+    val tightlyRestricted = 2
+    val looselyRestricted = 3
+    val public = 4
+  }
+
+  /* Shareability levels */
+  object shareability {
+    val notShareable = 1
+    val byMeOnly = 2
+    val shareable = 3
+  }
 
   val simple = {
     get[Pk[Long]](tableName + ".id") ~

@@ -2,7 +2,7 @@ package controllers
 
 import play.api.mvc.{Result, Request, Controller}
 import service.{ContentManagement, Authentication}
-import models.Content
+import models.{User, Content}
 
 /**
  * The controller for dealing with content.
@@ -26,7 +26,12 @@ object ContentController extends Controller {
   def createPage = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        Ok(views.html.content.create())
+
+        // If the user isn't a guest then allow it
+        if (user.role != User.roles.guest)
+          Ok(views.html.content.create())
+        else
+          Forbidden
   }
 
   /**
@@ -36,18 +41,22 @@ object ContentController extends Controller {
     implicit request =>
       implicit user =>
 
-        // Collect the information
-        val data = request.body.dataParts.mapValues(_(0))
-        val contentType = Symbol(data("contentType"))
-        val title = data("title")
-        val description = data("description")
-        val url = data("url")
-        val thumbnail = data("thumbnail")
+      // If the user isn't a guest then allow it
+        if (user.role != User.roles.guest) {
+          // Collect the information
+          val data = request.body.dataParts.mapValues(_(0))
+          val contentType = Symbol(data("contentType"))
+          val title = data("title")
+          val description = data("description")
+          val url = data("url")
+          val thumbnail = data("thumbnail")
 
-        // Create the content
-        ContentManagement.createContent(title, description, url, thumbnail, user, contentType)
+          // Create the content
+          ContentManagement.createContent(title, description, url, thumbnail, user, contentType)
 
-        Redirect(routes.Application.home()).flashing("success" -> "Content added")
+          Redirect(routes.Application.home()).flashing("success" -> "Content added")
+        } else
+          Forbidden
   }
 
   /**
@@ -58,7 +67,12 @@ object ContentController extends Controller {
       implicit user =>
         getContent(id) {
           content =>
-            Ok(views.html.content.view(content))
+
+            // Check that the user can view the content
+            if (content isVisibleBy user)
+              Ok(views.html.content.view(content))
+            else
+              Forbidden
         }
   }
 
@@ -86,7 +100,22 @@ object ContentController extends Controller {
   def mine = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        Ok(views.html.content.mine())
+
+        // If the user isn't a guest then allow it
+        if (user.role != User.roles.guest)
+          Ok(views.html.content.mine())
+        else
+          Forbidden
+  }
+
+  /**
+   * Public content page
+   */
+  def public = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+        val content = Content.list.filter(_.visibility == Content.visibility.public)
+        Ok(views.html.content.public(content))
   }
 
   /**
