@@ -1,32 +1,134 @@
-@(content: models.Content)
+@(content: models.Content)(implicit user: User)
 
-<div class="well">
+@isChecked(val1: Int, val2: Int) = {
+    @if(val1 == val2) {
+        checked
+    }
+}
 
-    <a href="#" class="btn"><i class="icon-edit"></i> Edit Metadata</a>
-    <a href="#" class="btn"><i class="icon-eye-open"></i> Set Visibility</a>
-    <a href="#" class="btn"><i class="icon-bar-chart"></i> View Stats</a>
-    <a href="#" class="btn btn-yellow"><i class="icon-share"></i> Share</a>
-    <a href="#deleteModal" role="button" class="btn btn-magenta"data-toggle="modal"><i class="icon-trash"></i> Delete</a>
-</div>
+@defining(content isEditableBy user) { userCanEdit =>
 
-<div id="deleteModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
-    <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-        <h3 id="deleteModalLabel">Delete Content</h3>
+    <div class="well">
+
+        @if(content isShareableBy user) {
+            <a href="#" class="btn btn-yellow"><i class="icon-share-alt"></i> Share</a>
+        }
+
+        @if(userCanEdit) {
+            <a href="#metadataModal" role="button" class="btn" data-toggle="modal"><i class="icon-edit"></i> Edit Metadata</a>
+            <a href="#shareabilityModal" role="button" class="btn" data-toggle="modal"><i class="icon-share"></i> Set Shareability</a>
+            <a href="#visibilityModal" role="button" class="btn" data-toggle="modal"><i class="icon-eye-open"></i> Set Visibility</a>
+            <a href="#" class="btn"><i class="icon-bar-chart"></i> View Stats</a>
+
+            <a href="#deleteModal" role="button" class="btn btn-magenta" data-toggle="modal"><i class="icon-trash"></i> Delete</a>
+        }
     </div>
-    <div class="modal-body">
-        <p>Are you sure you want to delete @content.name?</p>
-    </div>
-    <div class="modal-footer">
-        <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
-        <button id="deleteContentButton" class="btn btn-magenta">Yes</button>
-    </div>
-</div>
 
-<script type="text/javascript">
-    $(function() {
-        $("#deleteContentButton").click(function() {
-            window.location = "@routes.ContentController.delete(content.id.get)";
-        })
-    });
-</script>
+    @if(userCanEdit) {
+        <div id="deleteModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h3 id="deleteModalLabel">Delete Content</h3>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete @content.name?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
+                <button id="deleteContentButton" class="btn btn-magenta">Yes</button>
+            </div>
+        </div>
+
+        <div id="metadataModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="metadataModalLabel" aria-hidden="true">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h3 id="metadataModalLabel">Edit Metadata</h3>
+            </div>
+            <div class="modal-body">
+                <p>Stuff goes here...</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+                <button id="metadataButton" class="btn btn-blue">Save</button>
+            </div>
+        </div>
+
+        <div id="shareabilityModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="shareabilityModalLabel" aria-hidden="true">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h3 id="shareabilityModalLabel">Set Shareability</h3>
+            </div>
+            <div class="modal-body">
+                <p>Set the shareability of @content.name. </p>
+                <form id="shareabilityForm" method="post" action="@routes.ContentController.setShareability(content.id.get)">
+                    <label class="radio">
+                        <input type="radio" name="shareability" value="1" @isChecked(content.shareability, 1)>
+                        Not sharable
+                    </label>
+                    <label class="radio">
+                        <input type="radio" name="shareability" value="2" @isChecked(content.shareability, 2)>
+                        Sharable by me only.
+                    </label>
+                    <label class="radio">
+                        <input type="radio" name="shareability" value="3" @isChecked(content.shareability, 3)>
+                        Sharable by anybody who can see this.
+                    </label>
+                    <input type="submit" style="position: absolute; left: -9999px; width: 1px; height: 1px;"/>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+                <button class="btn btn-blue formSubmitter" data-target="#shareabilityForm">Save</button>
+            </div>
+        </div>
+
+        <div id="visibilityModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="visibilityModalLabel" aria-hidden="true">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h3 id="visibilityModalLabel">Set Visibility</h3>
+            </div>
+            <div class="modal-body">
+                <p>
+                    Set the visibility of @content.name. Please be aware that even private content can be seen if
+                    shared.
+                </p>
+                <form id="visibilityForm" method="post" action="@routes.ContentController.setVisibility(content.id.get)">
+                    <label class="radio">
+                        <input type="radio" name="visibility" value="1" @isChecked(content.visibility, 1)>
+                        Private (Only I can see this).
+                    </label>
+                    <label class="radio">
+                        <input type="radio" name="visibility" value="2" @isChecked(content.visibility, 2)>
+                        Tightly Restricted (Me and courses I add this to can see this).
+                    </label>
+                    <label class="radio">
+                        <input type="radio" name="visibility" value="3" @isChecked(content.visibility, 3)>
+                        Loosely Restricted (Me, teachers, and courses we add this to can see this).
+                    </label>
+                    <label class="radio">
+                        <input type="radio" name="visibility" value="4" @isChecked(content.visibility, 4)>
+                        Public (Everybody can see this).
+                    </label>
+                    <input type="submit" style="position: absolute; left: -9999px; width: 1px; height: 1px;"/>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+                <button class="btn btn-blue formSubmitter" data-target="#visibilityForm">Save</button>
+            </div>
+        </div>
+
+
+
+        <script type="text/javascript">
+            $(function() {
+                $("#deleteContentButton").click(function() {
+                    window.location = "@routes.ContentController.delete(content.id.get)";
+                });
+                $(".formSubmitter").click(function() {
+                    $($(this).attr("data-target")).submit();
+                });
+            });
+        </script>
+    }
+}

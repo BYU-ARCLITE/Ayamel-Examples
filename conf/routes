@@ -31,6 +31,8 @@ GET     /content/create             controllers.ContentController.createPage
 POST    /content/create             controllers.ContentController.create
 GET     /content/:id                controllers.ContentController.view(id: Long)
 GET     /content/:id/delete         controllers.ContentController.delete(id: Long)
+POST    /content/:id/visibility     controllers.ContentController.setVisibility(id: Long)
+POST    /content/:id/shareability   controllers.ContentController.setShareability(id: Long)
 
 
 

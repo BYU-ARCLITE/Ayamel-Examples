@@ -117,6 +117,14 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
 object User extends SQLSelectable[User] {
   val tableName = "userAccount"
 
+  // User roles
+  object roles {
+    val guest = 0
+    val student = 1
+    val teacher = 2
+    val admin = 3
+  }
+
   val simple = {
     get[Pk[Long]](tableName + ".id") ~
       get[String](tableName + ".authId") ~
