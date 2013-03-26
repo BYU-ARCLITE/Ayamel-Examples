@@ -22,7 +22,7 @@ object LMSAuth {
     if (user.isDefined)
       user.get
     else
-      User(NotAssigned, id, 'ltiAuth, "user" + id, Some(userInfo._1), Some(userInfo._3)).save
+      User(NotAssigned, id, 'ltiAuth, "user" + id, Some(userInfo._1), Some(userInfo._3), User.roles.student).save
         .enroll(course, teacher = false)
   }
 
@@ -78,6 +78,6 @@ object LMSAuth {
     if (user.isDefined)
       user.get
     else
-      User(NotAssigned, course.id.get.toString, 'keyAuth, "guest", Some("Guest")).save.enroll(course, teacher = false)
+      User(NotAssigned, course.id.get.toString, 'keyAuth, "guest", Some("Guest"), role = User.roles.guest).save.enroll(course, teacher = false)
   }
 }

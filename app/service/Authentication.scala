@@ -39,7 +39,7 @@ object Authentication {
     else {
 
       // No, so create an account
-      val newUser = User(NotAssigned, username, 'cas, username).save
+      val newUser = User(NotAssigned, username, 'cas, username, role = User.roles.student).save
       login(newUser)
     }
   }
@@ -62,7 +62,8 @@ object Authentication {
     else {
 
       // No, so create an account
-      val newUser = User(NotAssigned, username, 'google, username, Some(firstName + " " + lastName), Some(email)).save
+      val newUser = User(NotAssigned, username, 'google, username, Some(firstName + " " + lastName), Some(email),
+        User.roles.student).save
       login(newUser)
     }
   }
@@ -105,7 +106,7 @@ object Authentication {
     if (existingUser.isEmpty) {
       if (password1 == password2) {
         val passwordHash = HashTools.sha256Base64(password1)
-        val user = User(NotAssigned, passwordHash, 'password, username, Some(name), Some(email)).save
+        val user = User(NotAssigned, passwordHash, 'password, username, Some(name), Some(email), User.roles.student).save
         login(user)
       } else
         Redirect(routes.Application.index()).flashing("alert" -> "Passwords do not match")
