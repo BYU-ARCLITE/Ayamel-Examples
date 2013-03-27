@@ -1,5 +1,6 @@
 package controllers
 
+import authentication.Authentication
 import play.api.mvc.{Result, Request, Controller}
 import models.{Notification, User, TeacherRequest}
 
@@ -12,13 +13,13 @@ import models.{Notification, User, TeacherRequest}
  */
 object Users extends Controller {
 
-  def notifications = service.Authentication.authenticatedAction() {
+  def notifications = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
         Ok(views.html.users.notifications())
   }
 
-  def markNotification(id: Long) = service.Authentication.authenticatedAction() {
+  def markNotification(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
 
@@ -30,21 +31,26 @@ object Users extends Controller {
             notification.get.copy(messageRead = true).save
             Redirect(routes.Users.notifications())flashing("info" -> "Notification marked as read.")
           } else
-            service.Authentication.actions.forbidden
+            Errors.forbidden
         } else
-          service.Authentication.actions.notFound
+          Errors.notFound
   }
 
-  def accountSettings = TODO
+  def accountSettings = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+
+        Ok(views.html.users.accountSettings())
+  }
 
   def saveSettings = TODO
 
-  def teacherRequestPage = service.Authentication.authenticatedAction() {
+  def teacherRequestPage = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
 
         // Check that the user is a student (not guest, teacher, or admin)
-        if (user.role == User.roles.student) {
+        Authentication.enforceRole(User.roles.student) {
 
           // Check to see if the user has already submitted a request
           val teacherRequest = TeacherRequest.findByUser(user)
@@ -52,16 +58,15 @@ object Users extends Controller {
             Ok(views.html.users.teacherRequest.status())
           else
             Ok(views.html.users.teacherRequest.requestForm())
-        } else
-          Redirect(routes.Application.home()).flashing("alert" -> "You cannot do that")
+        }
   }
 
-  def submitTeacherRequest = service.Authentication.authenticatedAction(parse.urlFormEncoded) {
+  def submitTeacherRequest = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
 
         // Check that the user is a student (not guest, teacher, or admin)
-        if (user.role == User.roles.student) {
+        Authentication.enforceRole(User.roles.student) {
 
           // Check to see if the user has already submitted a request
           val teacherRequest = TeacherRequest.findByUser(user)
@@ -84,24 +89,23 @@ object Users extends Controller {
             Redirect(routes.Application.home()).flashing("success" -> "Your teacher request has been submitted.")
           } else
             Ok(views.html.users.teacherRequest.status())
-        } else
-          service.Authentication.actions.forbidden
+        }
   }
 
   // Admin actions
 
-  def admin = service.Authentication.authenticatedAction() {
+  def admin = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        service.Authentication.ensureAdmin({
+        Authentication.enforceRole(User.roles.admin) {
           Ok(views.html.users.admin.dashboard())
-        })
+        }
   }
 
-  def teacherApprovalPage = service.Authentication.authenticatedAction() {
+  def teacherApprovalPage = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        service.Authentication.ensureAdmin {
+        Authentication.enforceRole(User.roles.admin) {
           val requests = TeacherRequest.list
           Ok(views.html.users.admin.teacherRequests(requests))
         }
@@ -112,13 +116,13 @@ object Users extends Controller {
     if (teacherRequest.isDefined)
       f(teacherRequest.get)
     else
-      service.Authentication.actions.notFound
+      Errors.notFound
   }
 
-  def approveTeacher(id: Long) = service.Authentication.authenticatedAction() {
+  def approveTeacher(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        service.Authentication.ensureAdmin {
+        Authentication.enforceRole(User.roles.admin) {
           getTeacherRequest(id) {
             teacherRequest =>
               teacherRequest.approve()
@@ -127,11 +131,11 @@ object Users extends Controller {
         }
   }
 
-  def denyTeacher(id: Long) = service.Authentication.authenticatedAction() {
+  def denyTeacher(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
 
-        service.Authentication.ensureAdmin {
+        Authentication.enforceRole(User.roles.admin) {
           getTeacherRequest(id) {
             teacherRequest =>
               teacherRequest.deny()

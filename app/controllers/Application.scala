@@ -1,5 +1,6 @@
 package controllers
 
+import authentication.Authentication
 import play.api._
 import libs.json.Json
 import libs.ws.WS
@@ -16,7 +17,7 @@ object Application extends Controller {
       Ok(views.html.application.index())
   }
 
-  def home = service.Authentication.authenticatedAction() {
+  def home = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
         Ok(views.html.application.home())
@@ -41,14 +42,14 @@ object Application extends Controller {
       }
   }
 
-  def profile = service.Authentication.authenticatedAction() {
+  def profile = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
 
         Ok(views.html.application.profile())
   }
 
-  def changeName = service.Authentication.authenticatedAction(parse.urlFormEncoded) {
+  def changeName = Authentication.authenticatedAction(parse.urlFormEncoded) {
     request =>
       user =>
 
@@ -60,8 +61,6 @@ object Application extends Controller {
         Redirect(routes.Application.profile()).flashing("success" -> "Yay! You changed your name.")
   }
 
-  def logout = Action {
-    Redirect(routes.Application.index()).withNewSession
-  }
+
 
 }

@@ -15,7 +15,7 @@ GET     /auth/cas                   controllers.authentication.Cas.login
 GET     /auth/cas/callback          controllers.authentication.Cas.callback
 POST    /auth/password              controllers.authentication.Password.login
 POST    /auth/createAccount         controllers.authentication.Password.createAccount
-GET     /auth/logout                controllers.Application.logout
+GET     /auth/logout                controllers.authentication.Authentication.logout
 
 # Course pages
 GET     /course                     controllers.Courses.list

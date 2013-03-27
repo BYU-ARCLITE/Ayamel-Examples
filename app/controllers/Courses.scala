@@ -1,8 +1,9 @@
 package controllers
 
+import authentication.Authentication
 import play.api.mvc._
 import models.{User, Content, Course}
-import service.{TimeTools, Authentication, LMSAuth}
+import service.{TimeTools, LMSAuth}
 import anorm.NotAssigned
 
 /**
@@ -11,71 +12,73 @@ import anorm.NotAssigned
 object Courses extends Controller {
 
   /**
-   * A generic action that automatically checks the course and returns it if found, otherwise give a 404.
-   * Also, you can specify the body parser. This is needed for lti authentication, where the body needs to be a string.
+   * Gets the course. A mix-in for action composition.
    * @param id The id of the course
-   * @param parser (optional) The body parser
-   * @param f The action logic. A curried function which, given a request and course, returns a result.
-   * @tparam A The type of the request body
-   * @return The result. Either a 404 or the returned result from <strong>f</strong>.
+   * @param f The action body. Returns a result
+   * @param request The implicit http request
+   * @return A result
    */
-  def courseAction[A](id: Long, parser: BodyParser[A] = parse.anyContent)(f: Request[A] => Course => Result) = Action(parser) {
-    request =>
-      val course = Course.findById(id)
-      if (course.isDefined)
-        f(request)(course.get)
-      else
-        service.Authentication.actions.notFound
+  def getCourse(id: Long)(f: Course => Result)(implicit request: Request[_]): Result = {
+    val course = Course.findById(id)
+    if (course.isDefined)
+      f(course.get)
+    else
+      Errors.notFound
   }
+
 
   /**
    * The lti authentication page. Redirects to the course page if successful.
    */
-  def ltiAuth(id: Long) = courseAction(id, parse.tolerantText) {
+  def ltiAuth(id: Long) = Action(parse.tolerantText) {
     implicit request =>
-      course =>
-        val user = LMSAuth.ltiAuth(course)
-        if (user.isDefined)
-          Redirect(routes.Courses.view(id)).withSession("userId" -> user.get.id.get.toString)
-        else
-          service.Authentication.actions.forbidden
+      getCourse(id) {
+        course =>
+          val user = LMSAuth.ltiAuth(course)
+          if (user.isDefined)
+            Redirect(routes.Courses.view(id)).withSession("userId" -> user.get.id.get.toString)
+          else
+            Errors.forbidden
+      }
   }
 
   /**
    * The key-based authentication page. Redirects to the course page if successful.
    */
-  def keyAuth(id: Long) = courseAction(id) {
+  def keyAuth(id: Long) = Action {
     implicit request =>
-      course =>
-        val user = LMSAuth.keyAuth(course)
-        if (user.isDefined)
-          Redirect(routes.Courses.view(id)).withSession("userId" -> user.get.id.get.toString)
-        else
-          service.Authentication.actions.forbidden
+      getCourse(id) {
+        course =>
+          val user = LMSAuth.keyAuth(course)
+          if (user.isDefined)
+            Redirect(routes.Courses.view(id)).withSession("userId" -> user.get.id.get.toString)
+          else
+            Errors.forbidden
+      }
   }
 
   /**
    * The course page.
    */
-  def view(id: Long) = courseAction(id) {
+  def view(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
-      course =>
-        Authentication.authenticate(request) {
-          implicit user =>
+      implicit user =>
+        getCourse(id) {
+          course =>
             if (course.getMembers.contains(user))
               Ok(views.html.courses.view(course))
             else
-              service.Authentication.actions.forbidden
+              Errors.forbidden
         }
   }
 
-  def addContent(id: Long) = courseAction(id, parse.urlFormEncoded) {
+  def addContent(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
-      course =>
-        Authentication.authenticate(request) {
-          implicit user =>
+      implicit user =>
+        getCourse(id) {
+          course =>
 
-            // Only non-guest members and admins can add content
+          // Only non-guest members and admins can add content
             if (user canAddContentTo course) {
 
               // Add the content to the course
@@ -85,18 +88,19 @@ object Courses extends Controller {
                 course.addContent(content.get)
                 Redirect(routes.Courses.view(id)).flashing("success" -> "Content added to course.")
               } else
-                service.Authentication.actions.notFound
+                Errors.notFound
             } else
-              service.Authentication.actions.forbidden
+              Errors.forbidden
         }
   }
 
-  def create = service.Authentication.authenticatedAction(parse.urlFormEncoded) {
+  def create = Authentication.authenticatedAction(parse.urlFormEncoded) {
     request =>
       user =>
 
-        // Check if the user is allowed to create a course
+      // Check if the user is allowed to create a course
         if (user.canCreateCourse) {
+
           // Collect info
           val courseName = request.body("courseName")(0)
           val startDate = request.body("startDate")(0)
@@ -109,29 +113,28 @@ object Courses extends Controller {
           // Redirect to the course page
           Redirect(routes.Courses.view(course.id.get)).flashing("success" -> "Course Added")
         } else
-          service.Authentication.actions.forbidden
+          Errors.forbidden
   }
 
-  def createPage = service.Authentication.authenticatedAction() {
+  def createPage = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
 
-        // Check if the user is allowed to create a course
+      // Check if the user is allowed to create a course
         if (user.canCreateCourse)
           Ok(views.html.courses.create())
         else
-          service.Authentication.actions.forbidden
+          Errors.forbidden
   }
 
   def list = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
 
-        // Guest user's are limited to their course. No browsing
-        if (user.role != User.roles.guest) {
+      // Guests cannot browse
+        Authentication.enforceNotRole(User.roles.guest) {
           val courses = Course.list
           Ok(views.html.courses.list(courses))
-        } else
-          service.Authentication.actions.forbidden
+        }
   }
 }

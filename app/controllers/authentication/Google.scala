@@ -41,7 +41,10 @@ object Google extends Controller {
           val firstName = userInfo.attributes("firstname")
           val lastName = userInfo.attributes("lastname")
           val email = userInfo.attributes("email")
-          service.Authentication.loginGoogle(username, firstName, lastName, email)
+
+          val name = firstName + " " + lastName
+          val user = Authentication.getAuthenticatedUser(username, 'google, Some(name), Some(email))
+          Authentication.login(user)
         })
       }
   }

@@ -4,6 +4,8 @@ import play.api.mvc.{Action, Controller}
 import play.api.libs.ws.WS
 import concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
+import models.User
+import anorm.NotAssigned
 
 /**
  * Controller which handles BYU CAS authentication.
@@ -34,7 +36,8 @@ object Cas extends Controller {
         WS.url(url).get().map(request => {
           val xml = request.xml
           val username = ((xml \ "authenticationSuccess") \ "user").text
-          service.Authentication.loginCas(username)
+          val user = Authentication.getAuthenticatedUser(username, 'cas)
+          Authentication.login(user)
         })
       }
   }

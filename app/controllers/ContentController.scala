@@ -1,7 +1,8 @@
 package controllers
 
+import authentication.Authentication
 import play.api.mvc.{Result, Request, Controller}
-import service.{ContentManagement, Authentication}
+import service.ContentManagement
 import models.{User, Content}
 
 /**
@@ -17,7 +18,7 @@ object ContentController extends Controller {
     if (content.isDefined) {
       f(content.get)
     } else
-      service.Authentication.actions.notFound
+      Errors.notFound
   }
 
   /**
@@ -26,12 +27,10 @@ object ContentController extends Controller {
   def createPage = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-
-        // If the user isn't a guest then allow it
-        if (user.role != User.roles.guest)
+        // Guests cannot create content
+        Authentication.enforceNotRole(User.roles.guest) {
           Ok(views.html.content.create())
-        else
-          service.Authentication.actions.forbidden
+        }
   }
 
   /**
@@ -41,8 +40,8 @@ object ContentController extends Controller {
     implicit request =>
       implicit user =>
 
-      // If the user isn't a guest then allow it
-        if (user.role != User.roles.guest) {
+        // Guests cannot create content
+        Authentication.enforceNotRole(User.roles.guest) {
           // Collect the information
           val data = request.body.dataParts.mapValues(_(0))
           val contentType = Symbol(data("contentType"))
@@ -55,8 +54,7 @@ object ContentController extends Controller {
           ContentManagement.createContent(title, description, url, thumbnail, user, contentType)
 
           Redirect(routes.Application.home()).flashing("success" -> "Content added")
-        } else
-          service.Authentication.actions.forbidden
+        }
   }
 
   /**
@@ -72,7 +70,7 @@ object ContentController extends Controller {
             if (content isVisibleBy user)
               Ok(views.html.content.view(content))
             else
-              service.Authentication.actions.forbidden
+              Errors.forbidden
         }
   }
 
@@ -90,7 +88,7 @@ object ContentController extends Controller {
               content.delete()
               Redirect(routes.ContentController.mine()).flashing("success" -> "Content deleted.")
             } else
-              service.Authentication.actions.forbidden
+              Errors.forbidden
         }
   }
 
@@ -101,11 +99,10 @@ object ContentController extends Controller {
     implicit request =>
       implicit user =>
 
-        // If the user isn't a guest then allow it
-        if (user.role != User.roles.guest)
+        // Guests cannot create content
+        Authentication.enforceNotRole(User.roles.guest) {
           Ok(views.html.content.mine())
-        else
-          service.Authentication.actions.forbidden
+        }
   }
 
   /**
@@ -133,7 +130,7 @@ object ContentController extends Controller {
               content.copy(visibility = visibility).save
               Redirect(routes.ContentController.view(id)).flashing("success" -> "Visibility updated.")
             } else
-              service.Authentication.actions.forbidden
+              Errors.forbidden
         }
   }
 
@@ -152,7 +149,7 @@ object ContentController extends Controller {
               content.copy(shareability = shareability).save
               Redirect(routes.ContentController.view(id)).flashing("success" -> "Shareability updated.")
             } else
-              service.Authentication.actions.forbidden
+              Errors.forbidden
         }
   }
 
