@@ -1,0 +1,8 @@
+@(content: models.Content, classes: List[String] = List())
+
+@defining(
+    if (content.thumbnail.isEmpty) ""
+    else "background: url('" + content.thumbnail + "') center no-repeat; background-size: cover;"
+) { thumbnail =>
+    <a href="@routes.ContentController.view(content.id.get)" class="contentEntry @content.contentType.name @classes.mkString(" ")" data-toggle="tooltip" title="@content.name" style="@thumbnail"></a>
+}

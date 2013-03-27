@@ -3,7 +3,7 @@ package models
 import anorm.{NotAssigned, ~, Pk}
 import dataAccess.sqlTraits.{SQLSelectable, SQLDeletable, SQLSavable}
 import anorm.SqlParser._
-import service.TimeTools
+import service.{SerializationTools, TimeTools}
 
 /**
  * This links a resource object (in a resource library) to this system
@@ -11,8 +11,8 @@ import service.TimeTools
  * @param resourceId The id of the resource
  */
 case class Content(id: Pk[Long], name: String, contentType: Symbol, thumbnail: String, resourceId: String,
-                   dateAdded: String = TimeTools.now, visibility: Int = Content.visibility.tightlyRestricted,
-                   shareability: Int = Content.shareability.shareable)
+                   dateAdded: String = TimeTools.now(), visibility: Int = Content.visibility.tightlyRestricted,
+                   shareability: Int = Content.shareability.shareable, settings: Map[String, String] = Map())
   extends SQLSavable with SQLDeletable {
 
   /**
@@ -22,11 +22,13 @@ case class Content(id: Pk[Long], name: String, contentType: Symbol, thumbnail: S
   def save: Content = {
     if (id.isDefined) {
       update(Content.tableName, 'id -> id, 'name -> name, 'contentType -> contentType.name, 'thumbnail -> thumbnail,
-        'resourceId -> resourceId, 'dateAdded -> dateAdded, 'visibility -> visibility, 'shareability -> shareability)
+        'resourceId -> resourceId, 'dateAdded -> dateAdded, 'visibility -> visibility, 'shareability -> shareability,
+        'settings -> SerializationTools.serializeMap(settings))
       this
     } else {
       val id = insert(Content.tableName, 'name -> name, 'contentType -> contentType.name, 'thumbnail -> thumbnail,
-        'resourceId -> resourceId, 'dateAdded -> dateAdded, 'visibility -> visibility, 'shareability -> shareability)
+        'resourceId -> resourceId, 'dateAdded -> dateAdded, 'visibility -> visibility, 'shareability -> shareability,
+        'settings -> SerializationTools.serializeMap(settings))
       this.copy(id)
     }
   }
@@ -112,6 +114,15 @@ object Content extends SQLSelectable[Content] {
     val shareable = 3
   }
 
+  /* Default settings */
+  val defaultSettings = Map(
+    'video -> Map("level" -> "4"),
+    'image -> Map("allowAnnotations" -> "true"),
+    'audio -> Map("blah" -> "blah"),
+    'playlist -> Map("blah" -> "blah"),
+    'activity -> Map("blah" -> "blah")
+  )
+
   val simple = {
     get[Pk[Long]](tableName + ".id") ~
       get[String](tableName + ".name") ~
@@ -120,9 +131,11 @@ object Content extends SQLSelectable[Content] {
       get[String](tableName + ".resourceId") ~
       get[String](tableName + ".dateAdded") ~
       get[Int](tableName + ".visibility") ~
-      get[Int](tableName + ".shareability") map {
-      case id ~ name ~ contentType ~ thumbnail ~ resourceId ~ dateAdded ~ visibility ~ shareability =>
-        Content(id, name, Symbol(contentType), thumbnail, resourceId, dateAdded, visibility, shareability)
+      get[Int](tableName + ".shareability") ~
+      get[String](tableName + ".settings") map {
+      case id ~ name ~ contentType ~ thumbnail ~ resourceId ~ dateAdded ~ visibility ~ shareability ~ settings =>
+        Content(id, name, Symbol(contentType), thumbnail, resourceId, dateAdded, visibility, shareability,
+          if (settings.isEmpty) defaultSettings(Symbol(contentType)) else SerializationTools.unserializeMap(settings))
     }
   }
 
@@ -138,6 +151,13 @@ object Content extends SQLSelectable[Content] {
    * @return The list of content
    */
   def list: List[Content] = list(tableName, simple)
+
+  /**
+   * Gets all the public content sorted by newest first
+   * @return The list of content
+   */
+  def listPublic: List[Content] = list.filter(_.visibility == Content.visibility.public)
+    .sortWith((c1, c2) => TimeTools.dateToTimestamp(c1.dateAdded) > TimeTools.dateToTimestamp(c2.dateAdded))
 
   /**
    * Create a content from fixture data

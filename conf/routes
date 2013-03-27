@@ -36,6 +36,20 @@ GET     /content/:id/delete         controllers.ContentController.delete(id: Lon
 POST    /content/:id/visibility     controllers.ContentController.setVisibility(id: Long)
 POST    /content/:id/shareability   controllers.ContentController.setShareability(id: Long)
 
+# User pages
+GET     /user/settings                  controllers.Users.accountSettings
+POST    /user/settings                  controllers.Users.saveSettings
+GET     /user/notifications             controllers.Users.notifications
+GET     /user/notifications/mark/:id    controllers.Users.markNotification(id: Long)
+GET     /user/teacher/request           controllers.Users.teacherRequestPage
+POST    /user/teacher/request           controllers.Users.submitTeacherRequest
+
+# Admin pages
+GET     /admin                      controllers.Users.admin
+GET     /admin/teacher              controllers.Users.teacherApprovalPage
+GET     /admin/teacher/:id/approve  controllers.Users.approveTeacher(id: Long)
+GET     /admin/teacher/:id/deny     controllers.Users.denyTeacher(id: Long)
+
 GET     /profile                    controllers.Application.profile
 POST    /profile/changeName         controllers.Application.changeName
 

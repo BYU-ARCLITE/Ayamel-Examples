@@ -4,13 +4,6 @@
     <div class="face" data-toggle="tooltip" title="@user.displayName" style="background: url('@user.getPicture'); background-size: cover;"></div>
 }
 
-@renderAnnouncement(announcement: Announcement) = {
-    <div class="announcement">
-        @announcement.content
-        <div class="info">By @announcement.getUser.displayName on @service.TimeTools.prettyTime(announcement.timeMade)</div>
-    </div>
-}
-
 @main("Ayamel - " + course.name) {
     @defining(course.getContent) { content =>
 
@@ -38,18 +31,18 @@
         <div class="padded">
             <div class="row-fluid">
                 <div class="span8">
-                    @views.html.content.contentHolder(content, 'video, "Videos", "icon-film")
-                    @views.html.content.contentHolder(content, 'audio, "Audio", "icon-volume-up")
-                    @views.html.content.contentHolder(content, 'image, "Images", "icon-picture")
-                    @views.html.content.contentHolder(content, 'playlist, "Playlists", "icon-list-ol")
-                    @views.html.content.contentHolder(content, 'activity, "Activities", "icon-pencil")
+                    @views.html.content.helpers.contentList(content, 'video, "Videos", "icon-film")
+                    @views.html.content.helpers.contentList(content, 'audio, "Audio", "icon-volume-up")
+                    @views.html.content.helpers.contentList(content, 'image, "Images", "icon-picture")
+                    @views.html.content.helpers.contentList(content, 'playlist, "Playlists", "icon-list-ol")
+                    @views.html.content.helpers.contentList(content, 'activity, "Activities", "icon-pencil")
 
                 </div>
                 <div class="span4">
                     <h3><i class="icon-bullhorn"></i> Announcements</h3>
 
                     @for(announcement <- course.getAnnouncements) {
-                        @renderAnnouncement(announcement)
+                        @courses.announcement(announcement)
                     }
                 </div>
             </div>

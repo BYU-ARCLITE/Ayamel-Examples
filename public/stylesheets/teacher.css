@@ -1,0 +1,6 @@
+.teacherRequestBackground {
+    height: 250px;
+    width: 100%;
+    background: url("../images/users/teacher.jpg") 0 -100px;
+    background-size: cover;
+}

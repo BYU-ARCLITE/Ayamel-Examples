@@ -1,0 +1,31 @@
+.notification {
+    background: #c2e8f9;
+    border: 1px solid #2184AE;
+    padding: 15px;
+    margin: 10px 0;
+    position: relative;
+}
+
+.notifications a {
+    color: #333;
+    text-decoration: none;
+}
+
+.notification.unread {
+    border: 1px solid #ffb526;
+    background: #FFF288;
+    cursor: pointer;
+}
+
+.notification .date {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    color: #2184AE;
+    font-size: 11px
+
+}
+
+.notification.unread .date {
+    color: #d28f0f;
+}

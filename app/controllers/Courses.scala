@@ -25,7 +25,7 @@ object Courses extends Controller {
       if (course.isDefined)
         f(request)(course.get)
       else
-        NotFound
+        service.Authentication.actions.notFound
   }
 
   /**
@@ -38,7 +38,7 @@ object Courses extends Controller {
         if (user.isDefined)
           Redirect(routes.Courses.view(id)).withSession("userId" -> user.get.id.get.toString)
         else
-          Forbidden
+          service.Authentication.actions.forbidden
   }
 
   /**
@@ -51,7 +51,7 @@ object Courses extends Controller {
         if (user.isDefined)
           Redirect(routes.Courses.view(id)).withSession("userId" -> user.get.id.get.toString)
         else
-          Forbidden
+          service.Authentication.actions.forbidden
   }
 
   /**
@@ -65,7 +65,7 @@ object Courses extends Controller {
             if (course.getMembers.contains(user))
               Ok(views.html.courses.view(course))
             else
-              Forbidden
+              service.Authentication.actions.forbidden
         }
   }
 
@@ -85,9 +85,9 @@ object Courses extends Controller {
                 course.addContent(content.get)
                 Redirect(routes.Courses.view(id)).flashing("success" -> "Content added to course.")
               } else
-                NotFound
+                service.Authentication.actions.notFound
             } else
-              Forbidden
+              service.Authentication.actions.forbidden
         }
   }
 
@@ -109,7 +109,7 @@ object Courses extends Controller {
           // Redirect to the course page
           Redirect(routes.Courses.view(course.id.get)).flashing("success" -> "Course Added")
         } else
-          Forbidden
+          service.Authentication.actions.forbidden
   }
 
   def createPage = service.Authentication.authenticatedAction() {
@@ -120,7 +120,7 @@ object Courses extends Controller {
         if (user.canCreateCourse)
           Ok(views.html.courses.create())
         else
-          Forbidden
+          service.Authentication.actions.forbidden
   }
 
   def list = Authentication.authenticatedAction() {
@@ -132,6 +132,6 @@ object Courses extends Controller {
           val courses = Course.list
           Ok(views.html.courses.list(courses))
         } else
-          Forbidden
+          service.Authentication.actions.forbidden
   }
 }

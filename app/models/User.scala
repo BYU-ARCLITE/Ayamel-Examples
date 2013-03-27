@@ -7,6 +7,7 @@ import play.api.db.DB
 import play.api.Play.current
 import play.api.Logger
 import controllers.routes
+import service.TimeTools
 
 /**
  * User
@@ -117,6 +118,46 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
    */
   def canAddContentTo(course: Course): Boolean =
     role == User.roles.admin || (role != User.roles.guest && course.getMembers.contains(this))
+
+  /**
+   * Gets the latest content from this user's courses.
+   * @param limit The number of content objects to get
+   * @return The content
+   */
+  def getContentFeed(limit: Int = 5): List[Content] =
+    getEnrollment.flatMap(_.getContent)
+      .sortWith((c1, c2) => TimeTools.dateToTimestamp(c1.dateAdded) > TimeTools.dateToTimestamp(c2.dateAdded))
+      .distinct.take(limit)
+
+  /**
+   * Gets the latest announcements made in this user's courses.
+   * @param limit The number of announcement to get
+   * @return The announcements paired with the course they came from
+   */
+  def getAnnouncementFeed(limit: Int = 5): List[(Announcement, Course)] =
+    getEnrollment.flatMap(course => course.getAnnouncements.map(announcement => (announcement, course)))
+      .sortWith((d1, d2) => TimeTools.dateToTimestamp(d1._1.timeMade) > TimeTools.dateToTimestamp(d2._1.timeMade))
+      .take(limit)
+
+  /**
+   * Submits a teacher request for this user
+   * @param reason The reason for the request
+   * @return The teacher request
+   */
+  def requestTeacherStatus(reason: String): TeacherRequest = TeacherRequest(NotAssigned, this.id.get, reason).save
+
+  /**
+   * Sends a notification to this user
+   * @param message The message of the notification
+   * @return The notification
+   */
+  def sendNotification(message: String): Notification = {
+    // TODO: Possibly send an email as well
+    Notification(NotAssigned, this.id.get, message).save
+  }
+
+  def getNotifications: List[Notification] = Notification.listByUser(this)
+
 }
 
 object User extends SQLSelectable[User] {

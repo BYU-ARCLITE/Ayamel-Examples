@@ -12,7 +12,7 @@ object TimeTools {
    * Returns the current date and time as an RFC 3339 formatted date
    * @return The current date and time
    */
-  def now: String = ISODateTimeFormat.dateTime().print(new DateTime())
+  def now(): String = ISODateTimeFormat.dateTime().print(new DateTime())
 
   /**
    * Takes an RFC 3339 formatted date and formats it as something readable for display on pages.
@@ -35,4 +35,6 @@ object TimeTools {
     ISODateTimeFormat.dateTime().print(dateTime)
 
   }
+
+  def dateToTimestamp(date: String): Long = new DateTime(date).getMillis
 }

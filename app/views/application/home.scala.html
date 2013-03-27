@@ -2,7 +2,9 @@
 
 @main("Ayamel Examples") {
 
-    <link rel="stylesheet" href="@routes.Assets.at("stylesheets/home.css")"/>
+    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/home.css")"/>
+    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/course.css")">
+    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/content.css")">
 
     <script src="@routes.Assets.at("javascripts/swipe.js")" type="text/javascript"></script>
 
@@ -30,6 +32,11 @@
                 @*<div>Three</div>*@
             </div>
         </div>
+        <div class="spotlightNavigation">
+            <div class="left" id="leftArrow"></div>
+            <div class="right" id="rightArrow"></div>
+        </div>
+
         @*<h1>Spotlight</h1>*@
     </div>
 
@@ -42,6 +49,7 @@
                 <div class="homeContent">
                     <div class="homeContentContainer">
                         <h3>Latest Content</h3>
+                        @views.html.content.helpers.contentHolder(user.getContentFeed(6))
                     </div>
                 </div>
             </div>
@@ -49,6 +57,9 @@
                 <div class="homeContent">
                     <div class="homeContentContainer">
                         <h3>Announcements</h3>
+                        @for((announcement, course) <- user.getAnnouncementFeed(3)) {
+                            @courses.announcement(announcement, Some(course))
+                        }
                     </div>
                 </div>
             </div>
@@ -77,26 +88,31 @@
                 <div class="homeContent accent">
                     <div class="homeContentContainer">
                         <div class="pad-bottom-med">
-                            <div class="fresh"></div>
+                            @*<div class="fresh"></div>*@
+                            <img src="@routes.Assets.at("images/home/fresh.jpg")" class="img-polaroid homeThumbnail">
                             <h3 class="inline-block">Fresh Content</h3>
                         </div>
                         <p>The latest public content is here for your enjoyment!</p>
                         <a href="@routes.ContentController.public()" class="btn btn-blue">View All</a>
                     </div>
                 </div>
-            </div> <div class="span3">
-                <div class="homeContent">
-                    <div class="homeContentContainer">  </div>
-                </div>
-            </div> <div class="span3">
-                <div class="homeContent">
-                    <div class="homeContentContainer">  </div>
-                </div>
-            </div> <div class="span3">
-                <div class="homeContent">
-                    <div class="homeContentContainer"></div>
-                </div>
             </div>
+            @for(content <- Content.listPublic.take(3)) {
+                <div class="span3">
+                    <div class="homeContent">
+                        <div class="homeContentContainer">
+                            <div class="pad-bottom-med">
+                                @views.html.content.helpers.contentItem(content, List("homeThumbnail"))
+                                <a href="@routes.ContentController.view(content.id.get)" class="btn btn-blue pad-left-high">View</a>
+                            </div>
+                            <h3 class="inline-block">@content.name</h3>
+                            <p>
+                                Added on @service.TimeTools.prettyTime(content.dateAdded)
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            }
         </div>
 
         <div class="row-fluid">
@@ -107,7 +123,7 @@
                     <h3>Are you a teacher?</h3>
                     <p>
                         If you would like to teach a course you must be approved as a teacher by an administrator. To submit
-                        a teacher request, please fill out the <a href="#">teacher request form.</a>
+                        a teacher request, please fill out the <a href="@routes.Users.teacherRequestPage()">teacher request form.</a>
                     </p>
                 </div>
             }
@@ -123,8 +139,19 @@
 
     <script type="text/javascript">
         $(function() {
-            $("#slider").Swipe({
+
+            var swipe = new Swipe($("#slider")[0], {
                 auto: 10000
+            });
+
+            $("#leftArrow").click(function() {
+                swipe.prev();
+            });
+            $("#rightArrow").click(function() {
+                swipe.next();
+            });
+            $(".contentEntry").tooltip({
+                placement: "bottom"
             });
         });
     </script>

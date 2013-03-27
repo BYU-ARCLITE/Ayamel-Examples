@@ -1,0 +1,7 @@
+@(contentList: List[models.Content])
+
+<div class="contentHolder">
+    @for(content <- contentList) {
+        @views.html.content.helpers.contentItem(content)
+    }
+</div>

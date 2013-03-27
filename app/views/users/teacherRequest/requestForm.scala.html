@@ -1,0 +1,57 @@
+@()(implicit request: RequestHeader, user: User)
+
+@main("Ayamel - Teacher Request Form") {
+
+    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/teacher.css")"/>
+
+    <div class="teacherRequestBackground">
+    </div>
+
+    <div class="padded">
+
+        <h1>Teacher Request Form</h1>
+
+        <p>
+            Please fill out and submit the following form. Your request will be evaluated and, if approved, you will be
+            granted teacher status. As a teacher more content will be available to you.
+        </p>
+
+        <form class="form-horizontal" method="post" action="@routes.Users.submitTeacherRequest()">
+            <div class="control-group">
+                <label class="control-label" for="name">Name</label>
+                <div class="controls">
+                    @if(user.name.isDefined) {
+                        <span class="input-medium uneditable-input">@user.name.get</span>
+                        <input type="hidden" name="name" id="name" value="@user.name.get">
+                    } else {
+                        <input type="text" id="name" name="name" placeholder="Name">
+                    }
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="email">Email</label>
+                <div class="controls">
+                    @if(user.email.isDefined) {
+                        <span class="input-medium uneditable-input">@user.email.get</span>
+                        <input type="hidden" name="email" id="email" value="@user.email.get">
+                    } else {
+                        <input type="text" id="email" placeholder="Email">
+                    }
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="reason">Reason for needing to be a teacher</label>
+                <div class="controls">
+                    <textarea name="reason" id="reason"></textarea>
+                </div>
+            </div>
+            <div class="control-group">
+                <div class="controls">
+                    <button type="submit" class="btn btn-blue">Submit request</button>
+                </div>
+            </div>
+        </form>
+
+    </div>
+
+}

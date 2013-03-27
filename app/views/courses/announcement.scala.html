@@ -1,0 +1,11 @@
+@(announcement: Announcement, course: Option[Course] = None)
+
+<div class="announcement">
+    @announcement.content
+    <div class="info">
+        By @announcement.getUser.displayName on @service.TimeTools.prettyTime(announcement.timeMade)
+        @if(course.isDefined) {
+            <br>for <a href="@routes.Courses.view(course.get.id.get)">@course.get.name</a>
+        }
+    </div>
+</div>

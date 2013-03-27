@@ -1,0 +1,53 @@
+@()(implicit request: RequestHeader, user: User)
+
+@read(notification: Notification) = {
+    @if(!notification.messageRead) {
+        unread
+    }
+}
+
+@main("Ayamel - Notifications") {
+
+    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/notifications.css")"/>
+
+    <div class="padded">
+
+        <h1>Notifications</h1>
+
+        @defining(user.getNotifications) { notifications =>
+            <div class="row-fluid">
+                <div class="span4">
+                    <table class="pad-bottom-high">
+                        <tr>
+                            <td>Unread messages:</td>
+                            <td><span class="badge badge-yellow">@notifications.filterNot(_.messageRead).size</span></td>
+                        </tr>
+                        <tr>
+                            <td>Total messages:</td>
+                            <td><span class="badge badge-blue">@notifications.size</span></td>
+                        </tr>
+                    </table>
+                    <p>Click on a notification to mark it as read.</p>
+                </div>
+                <div class="span8 notifications">
+                    @for(notification <- notifications) {
+                        @if(!notification.messageRead) {
+                            <a href="@routes.Users.markNotification(notification.id.get)">
+                        }
+                        <div class="notification @read(notification)" data-id="@notification.id.get">
+                            <div class="message">@notification.message</div>
+                            <div class="date">@service.TimeTools.prettyTime(notification.dateSent)</div>
+                        </div>
+                        @if(!notification.messageRead) {
+                            </a>
+                        }
+                    }
+                    @if(notifications.isEmpty) {
+                        <em>You don't have any notifications</em>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+
+}

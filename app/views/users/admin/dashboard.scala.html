@@ -1,0 +1,42 @@
+@()(implicit request: RequestHeader, user: User)
+
+@main("Ayamel - Teacher Request Approval") {
+
+    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/admin.css")"/>
+
+    <div class="adminBackground">
+    </div>
+
+    <div class="padded">
+
+        <h1>Admin dashboard</h1>
+
+        <div class="row-fluid">
+            <div class="span4">
+                <div class="well">
+                    <h2><i class="icon-briefcase"></i> Site Management</h2>
+                    <ul>
+                        <li><a href="@routes.Users.teacherApprovalPage()"><i class="icon-group"></i> Manage Teacher Requests</a></li>
+                        <li><a href="#"><i class="icon-user"></i> Manage Users</a></li>
+                        <li><a href="#"><i class="icon-book"></i> Manage Courses</a></li>
+                        <li><a href="#"><i class="icon-picture"></i> Manage Content</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="span4">
+                <div class="well">
+                    <h2><i class="icon-bar-chart"></i> Statistics</h2>
+                    Nothing here yet.
+                </div>
+            </div>
+            <div class="span4">
+                <div class="well">
+                    <h2><i class="icon-cogs"></i> Site Settings</h2>
+                    Nothing here yet.
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+}

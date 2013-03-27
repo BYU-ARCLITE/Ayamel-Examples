@@ -306,3 +306,18 @@ h1, h2, h3, h4, h5, h6 {
     font-size: 11px;
     padding: 20px 0;
 }
+
+.label-blue, .badge-blue {
+    background-color: #2184AE;
+}
+.label-yellow, .badge-yellow {
+    background-color: #FFE726;
+}
+.label-magenta, .badge-magenta {
+    background-color: #DE2174;
+}
+
+.label.label-yellow, .badge.badge-yellow {
+    color: #555;
+    text-shadow: 0 -1px 0 rgba(255,255,255,0.25);
+}

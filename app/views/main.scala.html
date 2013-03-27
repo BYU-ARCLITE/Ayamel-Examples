@@ -44,11 +44,22 @@
                             <div id="profileDropdown">
                                 <div class="dropdownPoint"></div>
                                 <div class="dropdownItem">
-                                    <a href="#"><i class="icon-cog"></i> Account Settings</a>
+                                    <a href="@routes.Users.accountSettings()"><i class="icon-cog"></i> Account Settings</a>
                                 </div>
                                 <div class="dropdownItem">
-                                    <a href="#"><i class="icon-comment"></i> Notifications</a>
+                                    <a href="@routes.Users.notifications()"><i class="icon-inbox"></i> Notifications
+                                        @defining(user.getNotifications.filterNot(_.messageRead)) { notifications =>
+                                            @if(!notifications.isEmpty) {
+                                                <span class="badge badge-yellow pad-left-low">@notifications.size</span>
+                                            }
+                                        }
+                                    </a>
                                 </div>
+                                @if(user.role == User.roles.admin) {
+                                    <div class="dropdownItem">
+                                        <a href="@routes.Users.admin()"><i class="icon-wrench"></i> Admin Dashboard</a>
+                                    </div>
+                                }
                                 <div class="dropdownItem">
                                     <a href="@routes.Application.logout()"><i class="icon-off"></i> Log out</a>
                                 </div>
@@ -137,6 +148,7 @@
                 $("#profileLink").click(function() {
                     $profileDropdown.toggle();
                     event.stopPropagation();
+                    return false;
                 });
                 $("body").click(function() {
                     $profileDropdown.hide();

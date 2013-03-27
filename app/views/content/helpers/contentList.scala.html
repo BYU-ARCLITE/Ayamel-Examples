@@ -1,0 +1,9 @@
+@(contentList: List[models.Content], contentType: Symbol, title: String, icon: String)
+
+@defining(contentList.filter(_.contentType == contentType)) { filteredContent =>
+    @if(!filteredContent.isEmpty) {
+        <h2><i class="@icon"></i> @title</h2>
+
+        @views.html.content.helpers.contentHolder(filteredContent)
+    }
+}

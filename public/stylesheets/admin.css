@@ -1,0 +1,6 @@
+.adminBackground {
+    height: 250px;
+    width: 100%;
+    background: url("../images/users/admin.jpg") center;
+    background-size: cover;
+}

@@ -17,7 +17,7 @@ object ContentController extends Controller {
     if (content.isDefined) {
       f(content.get)
     } else
-      NotFound
+      service.Authentication.actions.notFound
   }
 
   /**
@@ -31,7 +31,7 @@ object ContentController extends Controller {
         if (user.role != User.roles.guest)
           Ok(views.html.content.create())
         else
-          Forbidden
+          service.Authentication.actions.forbidden
   }
 
   /**
@@ -56,7 +56,7 @@ object ContentController extends Controller {
 
           Redirect(routes.Application.home()).flashing("success" -> "Content added")
         } else
-          Forbidden
+          service.Authentication.actions.forbidden
   }
 
   /**
@@ -72,7 +72,7 @@ object ContentController extends Controller {
             if (content isVisibleBy user)
               Ok(views.html.content.view(content))
             else
-              Forbidden
+              service.Authentication.actions.forbidden
         }
   }
 
@@ -90,7 +90,7 @@ object ContentController extends Controller {
               content.delete()
               Redirect(routes.ContentController.mine()).flashing("success" -> "Content deleted.")
             } else
-              Forbidden
+              service.Authentication.actions.forbidden
         }
   }
 
@@ -105,7 +105,7 @@ object ContentController extends Controller {
         if (user.role != User.roles.guest)
           Ok(views.html.content.mine())
         else
-          Forbidden
+          service.Authentication.actions.forbidden
   }
 
   /**
@@ -114,7 +114,7 @@ object ContentController extends Controller {
   def public = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        val content = Content.list.filter(_.visibility == Content.visibility.public)
+        val content = Content.listPublic
         Ok(views.html.content.public(content))
   }
 
@@ -133,7 +133,7 @@ object ContentController extends Controller {
               content.copy(visibility = visibility).save
               Redirect(routes.ContentController.view(id)).flashing("success" -> "Visibility updated.")
             } else
-              Forbidden
+              service.Authentication.actions.forbidden
         }
   }
 
@@ -152,7 +152,7 @@ object ContentController extends Controller {
               content.copy(shareability = shareability).save
               Redirect(routes.ContentController.view(id)).flashing("success" -> "Shareability updated.")
             } else
-              Forbidden
+              service.Authentication.actions.forbidden
         }
   }
 

@@ -8,11 +8,11 @@
 
         <h1>My Content</h1>
         @defining(user.getContent) { content =>
-            @views.html.content.contentHolder(content, 'video, "Videos", "icon-film")
-            @views.html.content.contentHolder(content, 'audio, "Audio", "icon-volume-up")
-            @views.html.content.contentHolder(content, 'image, "Images", "icon-picture")
-            @views.html.content.contentHolder(content, 'playlist, "Playlists", "icon-list-ol")
-            @views.html.content.contentHolder(content, 'activity, "Activities", "icon-pencil")
+            @views.html.content.helpers.contentList(content, 'video, "Videos", "icon-film")
+            @views.html.content.helpers.contentList(content, 'audio, "Audio", "icon-volume-up")
+            @views.html.content.helpers.contentList(content, 'image, "Images", "icon-picture")
+            @views.html.content.helpers.contentList(content, 'playlist, "Playlists", "icon-list-ol")
+            @views.html.content.helpers.contentList(content, 'activity, "Activities", "icon-pencil")
         }
 
         <hr>

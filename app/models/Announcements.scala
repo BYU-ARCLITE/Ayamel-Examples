@@ -78,7 +78,7 @@ object Announcement extends SQLSelectable[Announcement] {
    * @return The newly created announcement
    */
   def create(course: Course, user: User, content: String): Announcement =
-    Announcement(NotAssigned, course.id.get, user.id.get, TimeTools.now, content).save
+    Announcement(NotAssigned, course.id.get, user.id.get, TimeTools.now(), content).save
 
   /**
    * Gets all users in the DB

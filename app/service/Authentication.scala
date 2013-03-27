@@ -12,6 +12,17 @@ import scala.Some
  */
 object Authentication {
 
+  object messages {
+    val forbidden = "error" -> "You cannot do that."
+    val notFound = "error" -> "We couldn't find what you were looking for."
+    val notLoggedIn = "alert" -> "You are not logged in"
+  }
+
+  object actions {
+    val forbidden = Redirect(routes.Application.home()).flashing(messages.forbidden)
+    val notFound = Redirect(routes.Application.home()).flashing(messages.notFound)
+  }
+
   /**
    * This simply logs in by redirecting to the home page and setting up the session.
    * @param user The user to log in as
@@ -127,9 +138,9 @@ object Authentication {
         if (user.isDefined) {
           f(request)(user.get)
         } else
-          Redirect(routes.Application.index()).flashing("alert" -> "You are not logged in.")
+          Redirect(routes.Application.index()).flashing(messages.notLoggedIn)
       } else
-        Redirect(routes.Application.index()).flashing("alert" -> "You are not logged in.")
+        Redirect(routes.Application.index()).flashing(messages.notLoggedIn)
   }
 
   /**
@@ -145,8 +156,16 @@ object Authentication {
       if (user.isDefined) {
         f(user.get)
       } else
-        Redirect(routes.Application.index()).flashing("alert" -> "You are not logged in.")
+        Redirect(routes.Application.index()).flashing(messages.notLoggedIn)
     } else
-      Redirect(routes.Application.index()).flashing("alert" -> "You are not logged in.")
+      Redirect(routes.Application.index()).flashing(messages.notLoggedIn)
   }
+
+  def ensureAdmin(result: Result)(implicit request: Request[_], user: User): Result = {
+    if (user.role == User.roles.admin)
+      result
+    else
+      actions.forbidden
+  }
+
 }

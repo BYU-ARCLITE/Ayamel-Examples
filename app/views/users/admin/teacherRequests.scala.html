@@ -1,0 +1,38 @@
+@(requests: List[TeacherRequest])(implicit request: RequestHeader, user: User)
+
+@main("Ayamel - Teacher Request Approval") {
+
+    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/teacher.css")"/>
+
+    <div class="teacherRequestBackground">
+    </div>
+
+    <div class="padded">
+
+        <h1>Teacher Request Approval</h1>
+
+        <table class="table table-bordered table-striped">
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Reason</th>
+                <th>Actions</th>
+            </tr>
+            @for(teacherRequest <- requests) {
+                @defining(teacherRequest.getUser) { requester =>
+                    <tr>
+                        <td>@requester.name.get</td>
+                        <td>@requester.email.get</td>
+                        <td>@teacherRequest.reason</td>
+                        <td>
+                            <a href="@routes.Users.approveTeacher(teacherRequest.id.get)" class="btn btn-blue">Approve</a>
+                            <a href="@routes.Users.denyTeacher(teacherRequest.id.get)" class="btn btn-magenta">Deny</a>
+                        </td>
+                    </tr>
+                }
+            }
+        </table>
+
+    </div>
+
+}
