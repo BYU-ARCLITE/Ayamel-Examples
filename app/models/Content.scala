@@ -4,6 +4,8 @@ import anorm.{NotAssigned, ~, Pk}
 import dataAccess.sqlTraits.{SQLSelectable, SQLDeletable, SQLSavable}
 import anorm.SqlParser._
 import service.{SerializationTools, TimeTools}
+import play.api.db.DB
+import play.api.Play.current
 
 /**
  * This links a resource object (in a resource library) to this system
@@ -166,4 +168,18 @@ object Content extends SQLSelectable[Content] {
    */
   def fromFixture(data: (String, Symbol, String, String)): Content =
     Content(NotAssigned, data._1, data._2, data._3, data._4)
+
+  /**
+   * Search the names of content
+   * @param query The string to look for
+   * @return The list of content that match
+   */
+  def search(query: String): List[Content] =
+    DB.withConnection {
+      implicit connection =>
+        val sqlQuery = "%" + query + "%"
+        // TODO: Search the resource library metadata
+        anorm.SQL("SELECT * from " + tableName + " where name like {query} and visibility = {public}")
+          .on('query -> sqlQuery, 'public -> visibility.public).as(simple *)
+    }
 }

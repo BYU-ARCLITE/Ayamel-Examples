@@ -6,6 +6,8 @@ import anorm.SqlParser._
 import play.api.Logger
 import service.{TimeTools, HashTools}
 import util.Random
+import play.api.db.DB
+import play.api.Play.current
 
 /**
  * A course. Students and teachers are members. Content and announcements can be posted here.
@@ -149,4 +151,16 @@ object Course extends SQLSelectable[Course] {
    */
   def fromFixture(data: (String, String, String, String)): Course =
     Course(NotAssigned, data._1, data._2, data._3, data._4)
+
+  /**
+   * Search the names of courses
+   * @param query The string to look for
+   * @return The list of courses that match
+   */
+  def search(query: String): List[Course] =
+    DB.withConnection {
+      implicit connection =>
+        val sqlQuery = "%" + query + "%"
+        anorm.SQL("SELECT * from " + tableName + " where name like {query}").on('query -> sqlQuery).as(simple *)
+    }
 }

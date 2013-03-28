@@ -1,0 +1,42 @@
+@(contentList: List[models.Content], courses: List[Course])(implicit request: RequestHeader, user: User)
+
+@main("Ayamel - Search Results") {
+
+    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/content.css")">
+
+    <div class="padded">
+        <h1>Search Results</h1>
+
+        <div class="row-fluid">
+            <div class="span6">
+                <h2 class="searchHeader"><i class="icon-book"></i> Courses</h2>
+                @if(courses.isEmpty) {
+                    <em>There were no course results for your search.</em>
+                }
+                <ul>
+                    @for(course <- courses) {
+                        <li><a href="@routes.Courses.view(course.id.get)">@course.name</a></li>
+                    }
+                </ul>
+            </div>
+            <div class="span6">
+                <h2 class="searchHeader"><i class="icon-play-circle"></i> Public Content</h2>
+                @if(contentList.isEmpty) {
+                    <em>There were no content results for your search.</em>
+                }
+                @views.html.content.helpers.contentList(contentList, 'video, "Videos", "icon-film", "h3")
+                @views.html.content.helpers.contentList(contentList, 'audio, "Audio", "icon-volume-up", "h3")
+                @views.html.content.helpers.contentList(contentList, 'image, "Images", "icon-picture", "h3")
+                @views.html.content.helpers.contentList(contentList, 'playlist, "Playlists", "icon-list-ol", "h3")
+                @views.html.content.helpers.contentList(contentList, 'activity, "Activities", "icon-pencil", "h3")
+            </div>
+        </div>
+    </div>
+
+    <style type="text/css">
+        .searchHeader {
+            color: #666;
+            border-bottom: 1px solid #666;
+        }
+    </style>
+}

@@ -7,6 +7,7 @@ GET     /                               controllers.Application.index
 GET     /home                           controllers.Application.home
 GET     /test                           controllers.Application.test
 POST    /test                           controllers.Application.test
+GET     /search                         controllers.Application.search
 
 # Authentication
 GET     /auth/google                    controllers.authentication.Google.login(action: String = "login")

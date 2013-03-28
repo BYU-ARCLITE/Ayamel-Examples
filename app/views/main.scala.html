@@ -68,7 +68,7 @@
 
                         <div class="link">
                             <i class="icon-search"></i>
-                            <input type="text" class="searchBox" />
+                            <input type="text" class="searchBox" id="searchBox" />
                         </div>
                     }
                 </div>
@@ -155,6 +155,18 @@
                 });
                 $profileDropdown.click(function(event) {
                     event.stopPropagation();
+                });
+                $("#searchBox").keypress(function(event) {
+                    var keycode = null;
+                    if(window.event)
+                        keycode = window.event.keyCode;
+                    else
+                        keycode = e.which;
+
+                    if (keycode == 13) {
+                        var query = $(this).val();
+                        window.location = "/search?query=" + encodeURI(query);
+                    }
                 });
 
             });

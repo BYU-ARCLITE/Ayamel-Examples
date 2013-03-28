@@ -6,7 +6,7 @@ import libs.json.Json
 import libs.ws.WS
 import play.api.mvc._
 import anorm.NotAssigned
-import models.Course
+import models.{Content, Course}
 import concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
 
@@ -32,6 +32,18 @@ object Application extends Controller {
         "success" -> true
       )
       Ok(obj)
+  }
+
+  def search = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+
+        // Search each applicable model
+        val query = request.queryString("query")(0)
+        val courses = Course.search(query)
+        val content = Content.search(query)
+
+        Ok(views.html.application.search(content, courses))
   }
 
 
