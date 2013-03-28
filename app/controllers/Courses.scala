@@ -2,7 +2,7 @@ package controllers
 
 import authentication.Authentication
 import play.api.mvc._
-import models.{User, Content, Course}
+import models.{AddCourseRequest, User, Content, Course}
 import service.{TimeTools, LMSAuth}
 import anorm.NotAssigned
 
@@ -68,7 +68,7 @@ object Courses extends Controller {
             if (course.getMembers.contains(user))
               Ok(views.html.courses.view(course))
             else
-              Errors.forbidden
+              Redirect(routes.Courses.courseRequestPage(id))
         }
   }
 
@@ -153,6 +153,36 @@ object Courses extends Controller {
         Authentication.enforceNotRole(User.roles.guest) {
           val courses = Course.list
           Ok(views.html.courses.list(courses))
+        }
+  }
+
+  def courseRequestPage(id: Long) = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+        getCourse(id){
+          course =>
+
+            val findRequest = AddCourseRequest.listByCourse(course).find( req => req.userId == user.id.get)
+
+            if(findRequest.isDefined){
+              Ok(views.html.courses.pending(course))
+            } else {
+              Ok(views.html.courses.addRequest(course))
+            }
+        }
+  }
+
+  def submitCourseRequest(id:Long) = Authentication.authenticatedAction(parse.urlFormEncoded){
+    implicit request =>
+      implicit user =>
+        getCourse(id){
+          course =>
+
+        val message = request.body("message")(0)
+
+        AddCourseRequest(NotAssigned, user.id.get, course.id.get, message).save
+
+        Ok(views.html.courses.pending(course))
         }
   }
 }
