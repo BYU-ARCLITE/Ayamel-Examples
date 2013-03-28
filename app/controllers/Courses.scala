@@ -159,30 +159,91 @@ object Courses extends Controller {
   def courseRequestPage(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        getCourse(id){
+        getCourse(id) {
           course =>
 
-            val findRequest = AddCourseRequest.listByCourse(course).find( req => req.userId == user.id.get)
-
-            if(findRequest.isDefined){
+            val findRequest = AddCourseRequest.listByCourse(course).find(req => req.userId == user.id.get)
+            if (findRequest.isDefined)
               Ok(views.html.courses.pending(course))
-            } else {
-              Ok(views.html.courses.addRequest(course))
+            else
+              Ok(views.html.courses.request(course))
+        }
+  }
+
+  def submitCourseRequest(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
+    implicit request =>
+      implicit user =>
+        getCourse(id) {
+          course =>
+
+            // Make sure it's not a guest
+            Authentication.enforceNotRole(User.roles.guest) {
+              val message = request.body("message")(0)
+              AddCourseRequest(NotAssigned, user.id.get, course.id.get, message).save
+
+              // Notify the teachers
+              val notificationMessage = "A student has requested to join your course \"" + course.name + "\"."
+              course.getTeachers.foreach { _.sendNotification(notificationMessage)}
+
+              Ok(views.html.courses.pending(course))
             }
         }
   }
 
-  def submitCourseRequest(id:Long) = Authentication.authenticatedAction(parse.urlFormEncoded){
+  def approvePage(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        getCourse(id){
+        getCourse(id) {
           course =>
 
-        val message = request.body("message")(0)
-
-        AddCourseRequest(NotAssigned, user.id.get, course.id.get, message).save
-
-        Ok(views.html.courses.pending(course))
+            if (user canEdit course)
+              Ok(views.html.courses.approveRequests(course))
+            else
+              Errors.forbidden
         }
   }
+
+  def approveRequest(id: Long, requestId: Long) = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+        getCourse(id) {
+          course =>
+
+            // Get the request
+            val courseRequest = AddCourseRequest.findById(requestId)
+            if (courseRequest.isDefined) {
+
+              // Make sure the user is allowed to approve
+              if(user canApprove(courseRequest.get, course)) {
+                courseRequest.get.approve()
+                Redirect(routes.Courses.approvePage(course.id.get)).flashing("info" -> "Course request approved")
+              } else
+                Errors.forbidden
+            } else
+              Errors.notFound
+        }
+  }
+
+  def denyRequest(id: Long, requestId: Long) = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+        getCourse(id) {
+          course =>
+
+            // Get the request
+            val courseRequest = AddCourseRequest.findById(requestId)
+            if (courseRequest.isDefined) {
+
+              // Make sure the user is allowed to approve
+              if(user canApprove(courseRequest.get, course)) {
+                courseRequest.get.deny()
+                Redirect(routes.Courses.approvePage(course.id.get)).flashing("info" -> "Course request denied")
+              } else
+                Errors.forbidden
+            } else
+              Errors.notFound
+        }
+  }
+
+
 }

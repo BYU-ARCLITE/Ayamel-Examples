@@ -1,0 +1,33 @@
+@(course: Course)(implicit request: RequestHeader, user: User)
+
+@main("Ayamel - Course Requests Approval Panel") {
+
+    <div class="padded">
+
+        <h1>Course Requests Approval Panel</h1>
+
+        <table class="table table-bordered table-striped">
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Reason</th>
+                <th>Actions</th>
+            </tr>
+            @for(addRequest <- course.getRequests) {
+                @defining(addRequest.getUser) { requester =>
+                    <tr>
+                        <td>@requester.name.get</td>
+                        <td>@requester.email.get</td>
+                        <td>@addRequest.message</td>
+                        <td>
+                            <a href="@routes.Courses.approveRequest(course.id.get, addRequest.id.get)" class="btn btn-blue">Approve</a>
+                            <a href="@routes.Courses.denyRequest(course.id.get, addRequest.id.get)" class="btn btn-magenta">Deny</a>
+                        </td>
+                    </tr>
+                }
+            }
+        </table>
+
+    </div>
+
+}

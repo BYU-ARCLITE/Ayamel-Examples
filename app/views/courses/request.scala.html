@@ -1,0 +1,30 @@
+@(course: Course)(implicit request: RequestHeader, user: User)
+
+@main("Ayamel - Request Course Action") {
+    <div class="padded">
+        <h1>
+            Request Course Access
+            <small>@course.name</small>
+        </h1>
+
+        <p>
+            You are not part of this course, so you cannot see content which has been posted to this course. You can,
+            however, request access to this course. A teacher will review your request and approve or deny it. If
+            approved, you will be added to the course.
+        </p>
+
+        <form method="post" action="@routes.Courses.submitCourseRequest(course.id.get)" class="form-horizontal">
+            <div class="control-group">
+                <label class="control-label" for="message">Message to the instructor:</label>
+                <div class="controls">
+                    <textarea name="message" id="message"></textarea>
+                </div>
+            </div>
+            <div class="control-group">
+                <div class="controls">
+                    <input class="btn btn-blue" type="submit" value="Submit Request"/>
+                </div>
+            </div>
+        </form>
+    </div>
+}

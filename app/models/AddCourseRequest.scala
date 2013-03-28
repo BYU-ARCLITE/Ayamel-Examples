@@ -8,13 +8,6 @@ import play.api.Play.current
 import play.api.Logger
 import controllers.routes
 
-/**
- * AddCourseRequest
- * @param id
- * @param userId id of the user
- * @param course
- *
- */
 
 case class AddCourseRequest (id:Pk [Long], userId:Long, courseId:Long, message: String) extends SQLSavable with SQLDeletable {
   /**
@@ -36,6 +29,26 @@ case class AddCourseRequest (id:Pk [Long], userId:Long, courseId:Long, message: 
    */
   def delete() {
     delete(AddCourseRequest.tableName, id)
+  }
+
+  def getUser: User = User.findById(userId).get
+
+  def getCourse: Course = Course.findById(courseId).get
+
+  def approve() {
+    // Notify the user and add him to the course
+    val user = getUser
+    val course = getCourse
+    user.enroll(course).sendNotification("You have been added to the course \"" + course.name + "\".")
+    delete()
+  }
+
+  def deny() {
+    // Notify the user
+    val user = getUser
+    val course = getCourse
+    user.sendNotification("You have been denied access to the course \"" + course.name + "\".")
+    delete()
   }
 }
 

@@ -1,5 +1,15 @@
 @(course: Course)(implicit request: RequestHeader, user:User)
 
-@main("Ayamel - Pending Request"){
-    <h1>Your request hasn't been approved yet</h1>
+@main("Ayamel - Request Pending"){
+    <div class="padded">
+        <h1>
+            Request Pending
+            <small>@course.name</small>
+        </h1>
+
+        <p>
+            You're request to join the course "@course.name" has been submitted and has not been added or denied by a teacher yet. When a decision is
+            made you will be notified.
+        </p>
+    </div>
 }

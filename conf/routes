@@ -35,6 +35,9 @@ POST    /course/:id/addContent          controllers.Courses.addContent(id: Long)
 POST    /course/:id/announce            controllers.Courses.addAnnouncement(id: Long)
 GET     /course/:id/request             controllers.Courses.courseRequestPage(id: Long)
 POST    /course/:id/request             controllers.Courses.submitCourseRequest(id: Long)
+GET     /course/:id/request/manage      controllers.Courses.approvePage(id: Long)
+GET     /course/:id/request/:requestId/approve    controllers.Courses.approveRequest(id: Long, requestId: Long)
+GET     /course/:id/request/:requestId/deny       controllers.Courses.denyRequest(id: Long, requestId: Long)
 
 # Content pages
 GET     /content                        controllers.ContentController.public

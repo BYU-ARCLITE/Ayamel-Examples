@@ -116,6 +116,8 @@ case class Course(id: Pk[Long], name: String, startDate: String, endDate: String
    */
   def makeAnnouncement(user: User, message: String): Announcement =
     Announcement(NotAssigned, this.id.get, user.id.get, TimeTools.now(), message).save
+
+  def getRequests: List[AddCourseRequest] = AddCourseRequest.listByCourse(this)
 }
 
 object Course extends SQLSelectable[Course] {

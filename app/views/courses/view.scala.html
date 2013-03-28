@@ -13,8 +13,9 @@
         <div class="courseBackground">
             <div class="courseTitle">
                 <h1>@course.name</h1>
-                @if(user.role == User.roles.teacher || user.role == User.roles.admin) {
+                @if(user canEdit course) {
                     <a href="#lmsModal" role="button" class="btn btn-yellow" data-toggle="modal"><i class="icon-book"></i> Add to an LMS</a>
+                    <a href="@routes.Courses.approvePage(course.id.get)" class="btn btn-yellow"><i class="icon-user"></i> Approve/Deny Student Requests</a>
                 }
             </div>
 
@@ -95,7 +96,7 @@
             </div>
         }
 
-        @if(user.role != User.roles.guest) {
+        @if(user canAddContentTo course) {
             <div id="addContentModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="addContentModalLabel" aria-hidden="true">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
