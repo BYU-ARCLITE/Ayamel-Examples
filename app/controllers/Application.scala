@@ -46,5 +46,25 @@ object Application extends Controller {
         Ok(views.html.application.search(content, courses))
   }
 
+  def about = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+
+        Ok(views.html.application.about())
+  }
+
+  def terms = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+
+        Ok(views.html.application.terms())
+  }
+
+  def policy = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+
+        Ok(views.html.application.policy())
+  }
 
 }
