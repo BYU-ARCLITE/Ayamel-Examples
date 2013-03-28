@@ -1,7 +1,7 @@
 package controllers.authentication
 
 import play.api.mvc._
-import models.User
+import models.{AccountLink, User}
 import anorm.NotAssigned
 import controllers.Errors
 
@@ -16,10 +16,34 @@ object Authentication extends Controller {
    * @return The result. To be called from within an action
    */
   def login(user: User): Result = {
-    val displayName = user.name.getOrElse(user.username)
+
+    // Check if the user's account is merged. If it is, then login with the primary account, if this one isn't it
+    var loginUser = user
+    val accountLink = user.getAccountLink
+    if (accountLink.isDefined) {
+      if (user.id.get != accountLink.get.primaryAccount)
+        loginUser = User.findById(accountLink.get.primaryAccount).get
+    }
+
+    // Log the user in
     Redirect(controllers.routes.Application.home())
-      .withSession("userId" -> user.id.get.toString)
-      .flashing("success" -> ("Welcome " + displayName + "!"))
+      .withSession("userId" -> loginUser.id.get.toString)
+      .flashing("success" -> ("Welcome " + loginUser.displayName + "!"))
+  }
+
+
+  def merge(user: User)(implicit request: RequestHeader): Result = {
+
+    val activeUser = getUserFromRequest()
+    if (activeUser.isDefined) {
+
+      if(activeUser.get != user) {
+        activeUser.get.merge(user)
+        Redirect(controllers.routes.Users.accountSettings()).flashing("success" -> "Account merged.")
+      } else
+        Redirect(controllers.routes.Users.accountSettings()).flashing("alert" -> "You cannot merge an account with itself")
+    } else
+      Redirect(controllers.routes.Application.index()).flashing("alert" -> "You are not logged in")
   }
 
   /**
@@ -69,20 +93,24 @@ object Authentication extends Controller {
       Errors.forbidden
   }
 
+  def getUserFromRequest()(implicit request: RequestHeader): Option[User] = {
+    val userId = request.session.get("userId")
+    if (userId.isDefined)
+      User.findById(userId.get.toLong)
+    else
+      None
+  }
+
   /**
    * A generic action to be used on authenticated pages.
    * @param f The action logic. A curried function which, given a request and the authenticated user, returns a result.
    * @return The result. Either a redirect due to not being logged in, or the result returned by <strong>f</strong>.
    */
   def authenticatedAction[A](parser: BodyParser[A] = BodyParsers.parse.anyContent)(f: Request[A] => User => Result) = Action(parser) {
-    request =>
-      val userId = request.session.get("userId")
-      if (userId.isDefined) {
-        val user = User.findById(userId.get.toLong)
-        if (user.isDefined) {
-          f(request)(user.get)
-        } else
-          Redirect(controllers.routes.Application.index()).flashing("alert" -> "You are not logged in")
+    implicit request =>
+      val user = getUserFromRequest()
+      if (user.isDefined) {
+        f(request)(user.get)
       } else
         Redirect(controllers.routes.Application.index()).flashing("alert" -> "You are not logged in")
   }

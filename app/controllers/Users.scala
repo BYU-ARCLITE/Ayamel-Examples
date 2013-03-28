@@ -3,6 +3,7 @@ package controllers
 import authentication.Authentication
 import play.api.mvc.{Result, Request, Controller}
 import models.{Notification, User, TeacherRequest}
+import service.HashTools
 
 /**
  * Created with IntelliJ IDEA.
@@ -43,7 +44,32 @@ object Users extends Controller {
         Ok(views.html.users.accountSettings())
   }
 
-  def saveSettings = TODO
+  def saveSettings = Authentication.authenticatedAction(parse.urlFormEncoded) {
+    implicit request =>
+      implicit user =>
+
+        // Change the user information
+        val name = request.body("name")(0)
+        val email = request.body("email")(0)
+        user.copy(name = Some(name), email = Some(email)).save
+
+        Redirect(routes.Users.accountSettings()).flashing("info" -> "Personal information updated.")
+  }
+
+  def changePassword = Authentication.authenticatedAction(parse.urlFormEncoded) {
+    implicit request =>
+      implicit user =>
+
+        val password1 = request.body("password1")(0)
+        val password2 = request.body("password2")(0)
+
+        // Make sure the passwords match
+        if (password1 == password2) {
+          user.copy(authId = HashTools.sha256Base64(password1)).save
+          Redirect(routes.Users.accountSettings()).flashing("info" -> "Password changed.")
+        } else
+          Redirect(routes.Users.accountSettings()).flashing("alert" -> "Passwords don't match.")
+  }
 
   def teacherRequestPage = Authentication.authenticatedAction() {
     implicit request =>

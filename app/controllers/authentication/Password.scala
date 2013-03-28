@@ -14,22 +14,28 @@ import models.User
  */
 object Password extends Controller {
 
-  def login = Action(parse.urlFormEncoded) {
-    request =>
+  def login(action: String) = Action(parse.urlFormEncoded) {
+    implicit request =>
       val username = request.body("username")(0)
       val password = request.body("password")(0)
 
       // Get the user based on the username and password
       val user = User.findByUsername('password, username)
       val passwordHash = HashTools.sha256Base64(password)
-      if (user.isDefined && user.get.authId == passwordHash)
 
-        // Yes, so just login
-        Authentication.login(user.get)
-      else {
+      // Check that the user exists and the password matches
+      if (user.isDefined && user.get.authId == passwordHash) {
 
-        // No, so redirect
-        Redirect(controllers.routes.Application.index()).flashing("error" -> "Invalid username/password.")
+        if (action == "merge")
+          Authentication.merge(user.get)
+        else
+          Authentication.login(user.get)
+      } else {
+
+        if (action == "merge")
+          Redirect(controllers.routes.Users.accountSettings()).flashing("error" -> "Invalid username/password.")
+        else
+          Redirect(controllers.routes.Application.index()).flashing("error" -> "Invalid username/password.")
       }
   }
 

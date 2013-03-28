@@ -2,6 +2,196 @@
 
 @main("Ayamel - Account Settings") {
 
-    <h1>Account Settings</h1>
+    <div class="padded">
+        <h1>Account Settings</h1>
+
+        <div class="row-fluid">
+            <div class="span6">
+                <h2>Personal Information</h2>
+
+                <form class="form-horizontal" method="post" action="@routes.Users.saveSettings()">
+                    <div class="control-group">
+                        <label class="control-label" for="name">Name</label>
+                        <div class="controls">
+                            <input type="text" id="name" name="name" placeholder="Name" value="@user.name.getOrElse("")">
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="email">Email</label>
+                        <div class="controls">
+                            <input type="text" id="email" name="email" placeholder="Email" value="@user.email.getOrElse("")">
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <div class="controls">
+                            <button type="submit" class="btn btn-blue">Save Changes</button>
+                        </div>
+                    </div>
+                </form>
+
+                <h2>Change Password</h2>
+                <p>Use the folowing form to reset your password.</p>
+                <form class="form-horizontal" method="post" action="@routes.Users.changePassword()">
+                    <div class="control-group">
+                        <label class="control-label" for="password1">New Password</label>
+                        <div class="controls">
+                            <input type="password" id="password1" name="password1" placeholder="New Password">
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="password2">Repeat New Password</label>
+                        <div class="controls">
+                            <input type="password" id="password2" name="password2" placeholder="Repeat New Password">
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <div class="controls">
+                            <button type="submit" class="btn btn-blue">Change Password</button>
+                        </div>
+                    </div>
+                </form>
+
+            </div>
+            <div class="span6">
+
+                <h2>Account Level</h2>
+                <p>
+                        Your account level is:
+                    @if(user.role == User.roles.guest) {
+                        <span class="label label-magenta">Guest</span>
+                    }
+                    @if(user.role == User.roles.student) {
+                        <span class="label label-magenta">Student</span>
+                    }
+                    @if(user.role == User.roles.teacher) {
+                        <span class="label label-magenta">Teacher</span>
+                    }
+                    @if(user.role == User.roles.admin) {
+                        <span class="label label-magenta">Administrator</span>
+                    }
+                </p>
+                @if(user.role == User.roles.student) {
+                    <p>
+                            If you need to create a course page, then you'll need to be approved as a teacher. To request
+                            teacher status, you must submit a teacher request form.
+                    </p>
+                    <div>
+                        <a href="@routes.Users.teacherRequestPage()" class="btn btn-blue">Fill out form</a>
+                    </div>
+                }
+
+
+                <h2>Merge accounts</h2>
+                <p>
+                    There are many ways to log on to Ayamel, all provided for your convenience. You can combine these accounts
+                    so no matter which account you use to log in the same content will be available.
+                </p>
+                <div>
+                    Account merge status:
+                    @defining(user.getAccountLink) { accountLink =>
+                        @if(accountLink.isDefined) {
+                            <span class="label label-magenta">Merged with @{accountLink.get.userIds.size - 1} other(s)</span>
+
+                            <table class="table table-bordered pad-top-med">
+                                <thead>
+                                    <tr>
+                                        <th>Login method</th>
+                                        <th>Username</th>
+                                        <th>Primary account? <i class="icon-question-sign color-blue" id="primaryHelp"></i></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @for(user <- accountLink.get.getUsers) {
+                                        <tr>
+                                        <td>@user.authScheme.name</td>
+                                        <td>@user.username</td>
+                                        <td>
+                                            @if(user.id.get == accountLink.get.primaryAccount) {
+                                                <span class="label label-yellow">Primary</span>
+                                            } else {
+                                                <span class="label label-blue">Secondary</span>
+                                            }
+                                        </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        } else {
+                            <span class="label label-magenta">Not merged</span>
+                        }
+                    }
+                </div>
+                <div class="pad-top-med">
+                    <p>
+                        To merge your account with another, please authenticate with one of the following methods:
+                    </p>
+                    <div class="row-fluid">
+                        <div class="span6 offset3">
+                            <div class="well">
+                                <a class="btn btn-danger btn-block" href="@controllers.authentication.routes.Google.login("merge")"><i class="icon-google-plus"></i> Google</a>
+                                <a class="btn btn-primary btn-block" href="@controllers.authentication.routes.Cas.login("merge")"><img src="@routes.Assets.at("images/auth/byu.png")" style="height: 14px; margin-top: -2px;" /> BYU</a>
+                                <a href="#passwordModal" role="button" class="btn btn-magenta btn-block" data-toggle="modal"><i class="icon-key"></i> Username/Password</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="passwordModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="passwordModalLabel" aria-hidden="true">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3 id="passwordModalLabel">Enter your username and password</h3>
+        </div>
+
+        <div class="modal-body">
+            <form class="form-horizontal" id="loginForm" method="post" action="@controllers.authentication.routes.Password.login("merge")">
+                <div class="control-group">
+                    <label class="control-label" for="username">Username</label>
+                    <div class="controls">
+                        <input type="text" id="username" name="username" placeholder="Username">
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label" for="password">Password</label>
+                    <div class="controls">
+                        <input type="password" id="password" name="password" placeholder="Password">
+                    </div>
+                </div>
+                <input type="submit" style="position: absolute; left: -9999px; width: 1px; height: 1px;"/>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+            <button id="login" class="btn btn-blue">Sign in</button>
+        </div>
+
+    </div>
+
+    <style type="text/css">
+        #primaryHelp {
+            cursor: pointer;
+        }
+    </style>
+
+    <script type="text/javascript">
+        $(function() {
+            $("#login").click(function() {
+                $("#loginForm").submit();
+            });
+
+            $('#primaryHelp').popover({
+                placement: "bottom",
+                title: "What does \"primary account\" mean?",
+                content: "When you merge accounts, one of the accounts is chosen to be the \"primary\" one. All of " +
+                    "the other account's information is then transferred to the primary account. This includes your " +
+                    "content, courses you're enrolled in, announcements, etc. When you log in with a secondary " +
+                    "account you are automatically switched to the primary account, so you can see all of your same " +
+                    "content and courses.",
+                container: "body"
+            });
+        });
+    </script>
 
 }

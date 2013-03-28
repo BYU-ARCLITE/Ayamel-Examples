@@ -94,6 +94,24 @@ object Courses extends Controller {
         }
   }
 
+  def addAnnouncement(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
+    implicit request =>
+      implicit user =>
+        getCourse(id) {
+          course =>
+
+          // Only non-guest members and admins can add content
+            if (user canAddContentTo course) {
+
+              // Add the content to the course
+              val announcement = request.body("announcement")(0)
+              course.makeAnnouncement(user, announcement)
+              Redirect(routes.Courses.view(id)).flashing("success" -> "Announcement published.")
+            } else
+              Errors.forbidden
+        }
+  }
+
   def create = Authentication.authenticatedAction(parse.urlFormEncoded) {
     request =>
       user =>

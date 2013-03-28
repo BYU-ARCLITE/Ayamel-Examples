@@ -4,7 +4,7 @@ import anorm.{NotAssigned, ~, Pk}
 import dataAccess.sqlTraits.{SQLSelectable, SQLDeletable, SQLSavable}
 import anorm.SqlParser._
 import play.api.Logger
-import service.HashTools
+import service.{TimeTools, HashTools}
 import util.Random
 
 /**
@@ -74,6 +74,13 @@ case class Course(id: Pk[Long], name: String, startDate: String, endDate: String
   def getAnnouncements: List[Announcement] = Announcement.listByCourse(this)
 
   /**
+   * Get the list of announcement for this course, ordered by date
+   * @return The list of announcements
+   */
+  def getSortedAnnouncements: List[Announcement] = Announcement.listByCourse(this)
+    .sortWith((a1, a2) => TimeTools.dateToTimestamp(a1.timeMade) > TimeTools.dateToTimestamp(a2.timeMade))
+
+  /**
    * Post content to the course
    * @param content The content to be posted
    * @return The content listing
@@ -98,6 +105,15 @@ case class Course(id: Pk[Long], name: String, startDate: String, endDate: String
 
     this
   }
+
+  /**
+   * Makes an announcement to this course
+   * @param user The user making the announcement
+   * @param message The content of the announcement
+   * @return The saved announcement
+   */
+  def makeAnnouncement(user: User, message: String): Announcement =
+    Announcement(NotAssigned, this.id.get, user.id.get, TimeTools.now(), message).save
 }
 
 object Course extends SQLSelectable[Course] {

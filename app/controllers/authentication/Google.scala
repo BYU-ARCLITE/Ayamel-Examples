@@ -13,13 +13,13 @@ object Google extends Controller {
   /**
    * Redirects to the Google login page. Uses OpenID
    */
-  def login = Action {
+  def login(action: String) = Action {
     implicit request =>
       val openID = "https://www.google.com/accounts/o8/id"
 
       Async {
         OpenID.redirectURL(
-          openID, routes.Google.callback().absoluteURL(),
+          openID, routes.Google.callback(action).absoluteURL(),
           Seq(
             "email" -> "http://axschema.org/contact/email",
             "firstname" -> "http://axschema.org/namePerson/first",
@@ -32,7 +32,7 @@ object Google extends Controller {
   /**
    * When the Google login is successful, it is redirected here, where user info is extracted and the user is logged in.
    */
-  def callback = Action {
+  def callback(action: String) = Action {
     implicit request =>
       Async {
         OpenID.verifiedId.map(userInfo => {
@@ -44,7 +44,11 @@ object Google extends Controller {
 
           val name = firstName + " " + lastName
           val user = Authentication.getAuthenticatedUser(username, 'google, Some(name), Some(email))
-          Authentication.login(user)
+
+          if (action == "merge")
+            Authentication.merge(user)
+          else
+            Authentication.login(user)
         })
       }
   }

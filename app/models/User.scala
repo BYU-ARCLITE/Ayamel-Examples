@@ -20,7 +20,7 @@ import service.TimeTools
  * @param role The permissions of the user
  */
 case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: String, name: Option[String] = None,
-                email: Option[String] = None, role: Int = 0, picture: Option[String] = None)
+                email: Option[String] = None, role: Int = 0, picture: Option[String] = None, accountLinkId: Long = -1)
   extends SQLSavable with SQLDeletable {
 
   /**
@@ -30,11 +30,13 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
   def save: User = {
     if (id.isDefined) {
       update(User.tableName, 'id -> id, 'authId -> authId, 'authScheme -> authScheme.name, 'username -> username,
-        'name -> name.getOrElse(""), 'email -> email.getOrElse(""), 'role -> role, 'picture -> picture)
+        'name -> name.getOrElse(""), 'email -> email.getOrElse(""), 'role -> role, 'picture -> picture,
+        'accountLinkId -> accountLinkId)
       this
     } else {
       val id = insert(User.tableName, 'authId -> authId, 'authScheme -> authScheme.name, 'username -> username,
-        'name -> name.getOrElse(""), 'email -> email.getOrElse(""), 'role -> role, 'picture -> picture)
+        'name -> name.getOrElse(""), 'email -> email.getOrElse(""), 'role -> role, 'picture -> picture,
+        'accountLinkId -> accountLinkId)
       this.copy(id)
     }
   }
@@ -72,10 +74,10 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
 
     // Check the number or results
     if (membership.size == 1)
-      // One membership. So delete it
+    // One membership. So delete it
       membership(0).delete()
     else
-      // We didn't get exactly one membership so don't do anything, but warn
+    // We didn't get exactly one membership so don't do anything, but warn
       Logger.warn("Multiple (or zero) memberships for user #" + id.get + " in course #" + course.id.get)
 
     this
@@ -107,8 +109,16 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
    */
   def getPicture: String = picture.getOrElse(routes.Assets.at("images/users/facePlaceholder.jpg").url)
 
+  /**
+   * Tries the user's name, if it doesn't exists then returns the username
+   * @return A displayable name
+   */
   def displayName: String = name.getOrElse(username)
 
+  /**
+   * Check's the user's permission level to see if he/she can create a course.
+   * @return
+   */
   def canCreateCourse: Boolean = role == User.roles.teacher || role == User.roles.admin
 
   /**
@@ -156,8 +166,112 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
     Notification(NotAssigned, this.id.get, message).save
   }
 
-  def getNotifications: List[Notification] = Notification.listByUser(this)
+  /**
+   * Gets a list of the user's notifications
+   * @return
+   */
+  def getNotifications: List[Notification] = {
+    Notification.listByUser(this)
+  }
 
+  /**
+   * Moves user ownership and enrollment from the provided user to the current user
+   * @param user The user to move ownership
+   */
+  def consolidateOwnership(user: User) {
+    // Transfer content ownership
+    user.getContent.foreach { content => ContentOwnership.findByContent(content).copy(userId = id.get).save }
+
+    // Move the notifications over
+    user.getNotifications.foreach { _.copy(userId = id.get).save }
+
+    // Move the announcements over
+    Announcement.list.filter(_.userId == user.id.get).foreach { _.copy(userId = id.get).save }
+
+    // Move the course membership over. Check this user's membership to prevent duplicates
+    val myMembership = CourseMembership.listByUser(this).map(_.courseId)
+    CourseMembership.listByUser(user).foreach(membership => {
+      if (myMembership.contains(membership.courseId))
+        membership.delete()
+      else
+        membership.copy(userId = id.get).save
+    })
+
+    // Move the teacher request over if this one doesn't have one.
+    if (TeacherRequest.findByUser(this).isDefined)
+      TeacherRequest.findByUser(user).foreach { _.delete() }
+    else
+      TeacherRequest.findByUser(user).foreach { _.copy(userId = id.get) }
+  }
+
+  /**
+   * Merges the provided user into this one.
+   * @param user The user to merge
+   */
+  def merge(user: User) {
+    val newRole = math.max(role, user.role)
+
+    /*
+     * Three possibilities:
+     * 1. Neither user has an account link
+     * 2. One user has an account link
+     * 3. Both users have an account link
+     */
+    val id1 = accountLinkId
+    val id2 = user.accountLinkId
+    if (id1 == -1 && id2 == -1) { // Case 1
+
+      // Transfer ownership
+      consolidateOwnership(user)
+
+      // Create an account link and add both users to it, then update the users (role and account link)
+      val accountLink = AccountLink(NotAssigned, Set(this, user).map(_.id.get), id.get).save
+      this.copy(role = newRole, accountLinkId = accountLink.id.get).save
+      user.copy(role = newRole, accountLinkId = accountLink.id.get).save
+
+    } else if((id1 != -1 && id2 == -1) || (id1 == -1 && id2 != -1)) { // Case 2
+
+      // Transfer ownership from this user's primary account to the other user's primary account
+      getAccountLink.map(_.getPrimaryUser).getOrElse(this).consolidateOwnership(
+        user.getAccountLink.map(_.getPrimaryUser).getOrElse(user)
+      )
+
+      // Merge the non-merged user into the other
+      val accountLink = AccountLink.findById(math.max(id1, id2)).get // The max id is the one that actually exists
+      accountLink.addUser(this).addUser(user).copy(primaryAccount = id.get).save
+      this.copy(role = newRole, accountLinkId = accountLink.id.get).save
+      user.copy(role = newRole, accountLinkId = accountLink.id.get).save
+
+    } else if(id1 != -1 && id2 != -1) { // Case 3
+
+      // Transfer ownership from this user's primary account to the other user's primary account
+      getAccountLink.get.getPrimaryUser.consolidateOwnership(
+        user.getAccountLink.get.getPrimaryUser
+      )
+
+      // Move all accounts on the other user to this one
+      val accountLink1 = AccountLink.findById(id1).get
+      val accountLink2 = AccountLink.findById(id2).get
+      accountLink1.copy(userIds = accountLink1.userIds ++ accountLink2.userIds, primaryAccount = id.get).save
+      accountLink2.getUsers foreach { user =>
+        user.copy(accountLinkId = accountLink1.id.get).save
+      }
+      accountLink2.delete()
+    }
+
+
+
+  }
+
+  /**
+   * Returns the account link
+   * @return If it exists, then Some(AccountLink) otherwise None
+   */
+  def getAccountLink: Option[AccountLink] =
+    if (accountLinkId == -1)
+      None
+    else
+      AccountLink.findById(accountLinkId)
 }
 
 object User extends SQLSelectable[User] {
@@ -179,9 +293,13 @@ object User extends SQLSelectable[User] {
       get[String](tableName + ".name") ~
       get[String](tableName + ".email") ~
       get[Int](tableName + ".role") ~
-      get[Option[String]](tableName + ".picture") map {
-      case id~authId~authScheme~username~name~email~role~picture => User(id, authId, Symbol(authScheme), username,
-        if(name.isEmpty) None else Some(name), if(email.isEmpty) None else Some(email), role, picture)
+      get[Option[String]](tableName + ".picture") ~
+      get[Long](tableName + ".accountLinkId") map {
+      case id ~ authId ~ authScheme ~ username ~ name ~ email ~ role ~ picture ~ accountLinkId => {
+        val _name = if (name.isEmpty) None else Some(name)
+        val _email = if (email.isEmpty) None else Some(email)
+        User(id, authId, Symbol(authScheme), username, _name, _email, role, picture, accountLinkId)
+      }
     }
   }
 

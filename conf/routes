@@ -3,56 +3,57 @@
 # ~~~~
 
 # Home/basic pages
-GET     /                           controllers.Application.index
-GET     /home                       controllers.Application.home
-#GET     /test                       controllers.Application.test
-POST    /test                       controllers.Application.test
+GET     /                               controllers.Application.index
+GET     /home                           controllers.Application.home
+GET     /test                           controllers.Application.test
+POST    /test                           controllers.Application.test
 
 # Authentication
-GET     /auth/google                controllers.authentication.Google.login
-GET     /auth/google/callback       controllers.authentication.Google.callback
-GET     /auth/cas                   controllers.authentication.Cas.login
-GET     /auth/cas/callback          controllers.authentication.Cas.callback
-POST    /auth/password              controllers.authentication.Password.login
-POST    /auth/createAccount         controllers.authentication.Password.createAccount
-GET     /auth/logout                controllers.authentication.Authentication.logout
+GET     /auth/google                    controllers.authentication.Google.login(action: String = "login")
+GET     /auth/google/merge              controllers.authentication.Google.login(action: String = "merge")
+GET     /auth/google/callback/:action   controllers.authentication.Google.callback(action: String)
+GET     /auth/cas                       controllers.authentication.Cas.login(action: String = "login")
+GET     /auth/cas/merge                 controllers.authentication.Cas.login(action: String = "merge")
+GET     /auth/cas/callback/:action      controllers.authentication.Cas.callback(action: String)
+POST    /auth/password                  controllers.authentication.Password.login(action: String = "login")
+POST    /auth/password/merge            controllers.authentication.Password.login(action: String = "merge")
+POST    /auth/createAccount             controllers.authentication.Password.createAccount
+GET     /auth/logout                    controllers.authentication.Authentication.logout
 
 # Course pages
-GET     /course                     controllers.Courses.list
-GET     /course/create              controllers.Courses.createPage
-POST    /course/create              controllers.Courses.create
-GET     /course/:id                 controllers.Courses.view(id: Long)
-POST    /course/:id/ltiAuth         controllers.Courses.ltiAuth(id: Long)
-GET     /course/:id/keyAuth         controllers.Courses.keyAuth(id: Long)
-POST    /course/:id/addContent      controllers.Courses.addContent(id: Long)
+GET     /course                         controllers.Courses.list
+GET     /course/create                  controllers.Courses.createPage
+POST    /course/create                  controllers.Courses.create
+GET     /course/:id                     controllers.Courses.view(id: Long)
+POST    /course/:id/ltiAuth             controllers.Courses.ltiAuth(id: Long)
+GET     /course/:id/keyAuth             controllers.Courses.keyAuth(id: Long)
+POST    /course/:id/addContent          controllers.Courses.addContent(id: Long)
+POST    /course/:id/announce            controllers.Courses.addAnnouncement(id: Long)
 
 # Content pages
-GET     /content                    controllers.ContentController.public
-GET     /content/mine               controllers.ContentController.mine
-GET     /content/create             controllers.ContentController.createPage
-POST    /content/create             controllers.ContentController.create
-GET     /content/:id                controllers.ContentController.view(id: Long)
-GET     /content/:id/delete         controllers.ContentController.delete(id: Long)
-POST    /content/:id/visibility     controllers.ContentController.setVisibility(id: Long)
-POST    /content/:id/shareability   controllers.ContentController.setShareability(id: Long)
+GET     /content                        controllers.ContentController.public
+GET     /content/mine                   controllers.ContentController.mine
+GET     /content/create                 controllers.ContentController.createPage
+POST    /content/create                 controllers.ContentController.create
+GET     /content/:id                    controllers.ContentController.view(id: Long)
+GET     /content/:id/delete             controllers.ContentController.delete(id: Long)
+POST    /content/:id/visibility         controllers.ContentController.setVisibility(id: Long)
+POST    /content/:id/shareability       controllers.ContentController.setShareability(id: Long)
 
 # User pages
 GET     /user/settings                  controllers.Users.accountSettings
 POST    /user/settings                  controllers.Users.saveSettings
+POST    /user/changePassword            controllers.Users.changePassword
 GET     /user/notifications             controllers.Users.notifications
 GET     /user/notifications/mark/:id    controllers.Users.markNotification(id: Long)
 GET     /user/teacher/request           controllers.Users.teacherRequestPage
 POST    /user/teacher/request           controllers.Users.submitTeacherRequest
 
 # Admin pages
-GET     /admin                      controllers.Users.admin
-GET     /admin/teacher              controllers.Users.teacherApprovalPage
-GET     /admin/teacher/:id/approve  controllers.Users.approveTeacher(id: Long)
-GET     /admin/teacher/:id/deny     controllers.Users.denyTeacher(id: Long)
-
-GET     /profile                    controllers.Application.profile
-POST    /profile/changeName         controllers.Application.changeName
-
+GET     /admin                          controllers.Users.admin
+GET     /admin/teacher                  controllers.Users.teacherApprovalPage
+GET     /admin/teacher/:id/approve      controllers.Users.approveTeacher(id: Long)
+GET     /admin/teacher/:id/deny         controllers.Users.denyTeacher(id: Long)
 
 # Map static resources from the /public folder to the /assets URL path
-GET     /assets/*file               controllers.Assets.at(path="/public", file)
+GET     /assets/*file                   controllers.Assets.at(path="/public", file)

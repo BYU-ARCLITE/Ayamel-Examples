@@ -280,6 +280,7 @@ h1, h2, h3, h4, h5, h6 {
     display: inline-block;
 }
 
+
 /* General padding classes */
 
 .pad-left-low  { margin-left: 5px; }
@@ -320,4 +321,14 @@ h1, h2, h3, h4, h5, h6 {
 .label.label-yellow, .badge.badge-yellow {
     color: #555;
     text-shadow: 0 -1px 0 rgba(255,255,255,0.25);
+}
+
+.color-blue {
+    color: #2184AE;
+}
+.color-yellow {
+    color: #FFE726;
+}
+.color-magenta {
+    color: #DE2174;
 }

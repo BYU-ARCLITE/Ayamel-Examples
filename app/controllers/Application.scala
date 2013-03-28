@@ -35,32 +35,4 @@ object Application extends Controller {
   }
 
 
-  def apiWrapperGet = Action {
-    request =>
-      Async {
-        WS.url(request.queryString("url")(0)).get().map(response => Ok(response.json).as("application/json"))
-      }
-  }
-
-  def profile = Authentication.authenticatedAction() {
-    implicit request =>
-      implicit user =>
-
-        Ok(views.html.application.profile())
-  }
-
-  def changeName = Authentication.authenticatedAction(parse.urlFormEncoded) {
-    request =>
-      user =>
-
-      // Change the name
-        val newName = request.body("monkeyBrains")(0)
-        user.copy(name = Some(newName)).save
-
-        // Redirect
-        Redirect(routes.Application.profile()).flashing("success" -> "Yay! You changed your name.")
-  }
-
-
-
 }
