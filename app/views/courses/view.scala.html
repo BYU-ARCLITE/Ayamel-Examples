@@ -15,7 +15,9 @@
                 <h1>@course.name</h1>
                 @if(user canEdit course) {
                     <a href="#lmsModal" role="button" class="btn btn-yellow" data-toggle="modal"><i class="icon-book"></i> Add to an LMS</a>
-                    <a href="@routes.Courses.approvePage(course.id.get)" class="btn btn-yellow"><i class="icon-user"></i> Approve/Deny Student Requests</a>
+                    @if(!course.getRequests.isEmpty) {
+                        <a href="@routes.Courses.approvePage(course.id.get)" class="btn btn-yellow"><i class="icon-user"></i> Approve/Deny Student Requests</a>
+                    }
                 }
             </div>
 
@@ -32,11 +34,11 @@
         <div class="padded">
             <div class="row-fluid">
                 <div class="span8">
-                    @views.html.content.helpers.contentList(content, 'video, "Videos", "icon-film")
-                    @views.html.content.helpers.contentList(content, 'audio, "Audio", "icon-volume-up")
-                    @views.html.content.helpers.contentList(content, 'image, "Images", "icon-picture")
-                    @views.html.content.helpers.contentList(content, 'playlist, "Playlists", "icon-list-ol")
-                    @views.html.content.helpers.contentList(content, 'activity, "Activities", "icon-pencil")
+                    @views.html.content.helpers.contentList(content, 'video, "Videos", "icon-film", course = Some(course))
+                    @views.html.content.helpers.contentList(content, 'audio, "Audio", "icon-volume-up", course = Some(course))
+                    @views.html.content.helpers.contentList(content, 'image, "Images", "icon-picture", course = Some(course))
+                    @views.html.content.helpers.contentList(content, 'playlist, "Playlists", "icon-list-ol", course = Some(course))
+                    @views.html.content.helpers.contentList(content, 'activity, "Activities", "icon-pencil", course = Some(course))
 
                 </div>
                 <div class="span4">

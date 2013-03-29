@@ -36,11 +36,9 @@
 
 .createForm {
     padding: 25px 50px;
-    background: #666;
-    box-shadow: inset 0 10px 15px -10px;
+    background: #eee;
+    box-shadow: inset 0 10px 15px -10px rgba(0,0,0,0.15), 0 0 3px rgba(0,0,0,0.5);
     height: 300px;
-
-    border-radius: 0 0 5px 5px;
 
     transition: height ease 0.5s, padding ease 0.5s;
     -moz-transition: height ease 0.5s, padding ease 0.5s;
@@ -48,6 +46,8 @@
     -o-transition: height ease 0.5s, padding ease 0.5s;
     -ms-transition: height ease 0.5s, padding ease 0.5s;
     overflow: hidden;
+
+
 }
 
 .createForm h2, .createForm label {

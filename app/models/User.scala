@@ -129,6 +129,9 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
   def canAddContentTo(course: Course): Boolean =
     role == User.roles.admin || (role != User.roles.guest && course.getMembers.contains(this))
 
+  def canView(course: Course): Boolean =
+    role == User.roles.admin || course.getMembers.contains(this)
+
   def canApprove(request: AddCourseRequest, course: Course): Boolean =
     role == User.roles.admin || (canEdit(course) && request.courseId == course.id.get)
 

@@ -1,4 +1,4 @@
-@(content: models.Content)(implicit request: RequestHeader, user: User)
+@(content: models.Content, resourceLibraryUrl: String, course: Option[Course] = None)(implicit request: RequestHeader, user: User)
 
 @renderTitle(content: models.Content) = {
     @defining(Map(
@@ -18,18 +18,18 @@
 
     <div class="padded">
 
-        @views.html.content.header(content)
+        @views.html.content.header.header(content, course)
 
         @renderTitle(content)
 
         @if(content.contentType == 'video) {
-            @* TODO: Video rendering *@
+            @views.html.content.renderers.video(content, resourceLibraryUrl)
         }
         @if(content.contentType == 'audio) {
             @* TODO: Audio rendering *@
         }
         @if(content.contentType == 'image) {
-            @views.html.content.renderers.image(content)
+            @views.html.content.renderers.image(content, resourceLibraryUrl)
         }
         @if(content.contentType == 'playlist) {
             @* TODO: Playlist rendering *@

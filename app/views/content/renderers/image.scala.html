@@ -1,3 +1,23 @@
-@(content: models.Content)
+@(content: models.Content, resourceLibraryUrl: String)
 
-<img id="content_@content.id.get" src="@content.thumbnail">
+@*<img id="content_@content.id.get" src="@content.thumbnail">*@
+
+<script src="@routes.Assets.at("Ayamel.js/js/Resource.js")" type="text/javascript"></script>
+
+<img id="theImage">
+
+<script type="text/javascript">
+
+    $(function() {
+        // Load the resource
+        var resourceUri = "@resourceLibraryUrl/@content.resourceId";
+        new Resource(resourceUri, function (resource) {
+
+            var url = resource.content.files[0].downloadUri;
+            $("#theImage").attr("src", url);
+
+            // Get the uri from the resource
+            // display it
+        });
+    });
+</script>

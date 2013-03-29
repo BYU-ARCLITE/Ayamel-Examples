@@ -3,7 +3,9 @@ package controllers
 import authentication.Authentication
 import play.api.mvc.{Result, Request, Controller}
 import service.ContentManagement
-import models.{User, Content}
+import models.{Course, User, Content}
+import play.api.Play
+import Play.current
 
 /**
  * The controller for dealing with content.
@@ -67,10 +69,32 @@ object ContentController extends Controller {
           content =>
 
             // Check that the user can view the content
-            if (content isVisibleBy user)
-              Ok(views.html.content.view(content))
-            else
+            if (content isVisibleBy user) {
+              val resourceLibraryUrl = Play.configuration.getString("resourceLibrary.baseUrl").get
+              Ok(views.html.content.view(content, resourceLibraryUrl))
+            } else
               Errors.forbidden
+        }
+  }
+
+  /**
+   * Content view in course page
+   */
+  def viewInCourse(id: Long, courseId: Long) = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+        getContent(id) {
+          content =>
+            Courses.getCourse(courseId) {
+              course =>
+
+                // Check that the user can view the content
+                if (content isVisibleBy user) {
+                  val resourceLibraryUrl = Play.configuration.getString("resourceLibrary.baseUrl").get
+                  Ok(views.html.content.view(content, resourceLibraryUrl, Some(course)))
+                } else
+                  Errors.forbidden
+            }
         }
   }
 
@@ -150,6 +174,68 @@ object ContentController extends Controller {
               Redirect(routes.ContentController.view(id)).flashing("success" -> "Shareability updated.")
             } else
               Errors.forbidden
+        }
+  }
+
+  def setVideoSettings(content: Content, course: Option[Course] = None)(implicit request: Request[Map[String, Seq[String]]]) {
+    val prefix = course.map(c => "course_" + c.id.get + ":").getOrElse("")
+    val level = request.body("level")(0)
+
+    content.setSetting(prefix + "level", level).save
+  }
+
+  def setAudioSettings(content: Content, course: Option[Course] = None)(implicit request: Request[Map[String, Seq[String]]]) {
+
+  }
+
+  def setImageSettings(content: Content, course: Option[Course] = None)(implicit request: Request[Map[String, Seq[String]]]) {
+
+  }
+
+  def setSettings(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
+    implicit request =>
+      implicit user =>
+        getContent(id) {
+          content =>
+
+          // Make sure the user is able to edit
+            if (content isEditableBy user) {
+              val contentType = Symbol(request.body("contentType")(0))
+              if (contentType == 'video)
+                setVideoSettings(content)
+              if (contentType == 'audio)
+                setAudioSettings(content)
+              if (contentType == 'image)
+                setImageSettings(content)
+
+              Redirect(routes.ContentController.view(id)).flashing("success" -> "Settings updated.")
+            } else
+              Errors.forbidden
+        }
+  }
+
+  def setCourseSettings(id: Long, courseId: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
+    implicit request =>
+      implicit user =>
+        getContent(id) {
+          content =>
+            Courses.getCourse(courseId) {
+              course =>
+
+              // Make sure the user is able to edit
+                if (content isEditableBy user) {
+                  val contentType = Symbol(request.body("contentType")(0))
+                  if (contentType == 'video)
+                    setVideoSettings(content, Some(course))
+                  if (contentType == 'audio)
+                    setAudioSettings(content, Some(course))
+                  if (contentType == 'image)
+                    setImageSettings(content, Some(course))
+
+                  Redirect(routes.ContentController.view(id)).flashing("success" -> "Settings updated.")
+                } else
+                  Errors.forbidden
+            }
         }
   }
 

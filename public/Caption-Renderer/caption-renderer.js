@@ -67,31 +67,10 @@ var CaptionRenderer = (function() {
             var videoElement = renderer.element,
                 cueX = 0, cueY = 0, cueWidth = 0, cueHeight = 0, cuePaddingLR = 0, cuePaddingTB = 0,
                 cueSize, cueLine, cueVertical = cueObject.vertical, cueSnap = cueObject.snapToLines, cuePosition = cueObject.position,
-                baseFontSize, basePixelFontSize, baseLineHeight, tmpHeightExclusions,
+                baseFontSize, basePixelFontSize, baseLineHeight,
                 videoHeightInLines, videoWidthInLines, pixelLineHeight, verticalPixelLineHeight,
                 maxCueSize = 100, textBoundingBoxWidth = 0, textBoundingBoxPercentage = 0, autoSize = true,
                 availableCueArea = renderer.availableCueArea;
-
-            if (cueVertical === "") {
-                // Calculate text bounding box
-                // (isn't useful for vertical cues, because we're doing all glyph positioning ourselves.)
-                applyStyles(DOMNode,{
-                    "width": "auto",
-                    "position": "static",
-                    "display": "inline-block",
-                    "padding": "1em"
-                });
-
-                textBoundingBoxWidth = parseInt(DOMNode.offsetWidth,10);
-                textBoundingBoxPercentage = Math.floor((textBoundingBoxWidth / availableCueArea.width) * 100);
-                textBoundingBoxPercentage = textBoundingBoxPercentage <= 100 ? textBoundingBoxPercentage : 100;
-
-                cuePaddingLR = Math.floor(videoMetrics.width * 0.01);
-                cuePaddingTB = 0;
-            }else{
-                cuePaddingLR = 0;
-                cuePaddingTB = Math.floor(videoMetrics.height * 0.01);
-            }
 
             // Calculate font metrics
             baseFontSize = Math.max(((videoMetrics.height * renderer.fontSizeRatio)/96)*72, renderer.minFontSize);
@@ -113,7 +92,35 @@ var CaptionRenderer = (function() {
             videoHeightInLines = Math.floor(availableCueArea.height / pixelLineHeight);
             videoWidthInLines = Math.floor(availableCueArea.width / verticalPixelLineHeight);
 
-            // Calculate cue size and padding
+            if (cueVertical === "") {
+                // Calculate text bounding box
+                // (isn't useful for vertical cues, because we're doing all glyph positioning ourselves.)
+                DOMNode.style.display = "inline-block";
+                textBoundingBoxWidth = parseInt(DOMNode.offsetWidth,10);
+                textBoundingBoxPercentage = Math.floor((textBoundingBoxWidth / availableCueArea.width) * 100);
+                textBoundingBoxPercentage = textBoundingBoxPercentage <= 100 ? textBoundingBoxPercentage : 100;
+
+                cuePaddingLR = Math.floor(videoMetrics.width/100);
+            }else{
+                cuePaddingTB = Math.floor(videoMetrics.height/100);
+            }
+
+            //http://dev.w3.org/html5/webvtt/#applying-css-properties-to-webvtt-node-objects
+            //not quite perfect compliance, but close, especially given vertical-text hacks
+            applyStyles(DOMNode,{
+                "position": "absolute",
+                "unicodeBidi": "plaintext",
+                "overflow": "hidden",
+                "height": pixelLineHeight + "px", //so the scrollheight has a baseline to work from
+                "padding": cuePaddingTB + "px " + cuePaddingLR + "px",
+                "textAlign": (cueVertical !== "")?"":(cueObject.align === "middle"?"center":cueObject.align),
+                "backgroundColor": renderer.cueBgColor,
+                "direction": checkDirection(String(cueObject.text)),
+                "lineHeight": baseLineHeight + "pt",
+                "boxSizing": "border-box"
+            });
+
+            // Calculate cue size
             if (renderer.sizeCuesByTextBoundingBox && cueObject.size === 100) {
                 // We assume (given a size of 100) that no explicit size was set.
                 cueSize = textBoundingBoxPercentage;
@@ -122,35 +129,51 @@ var CaptionRenderer = (function() {
                 autoSize = false;
             }
 
-            if (cueObject.line === "auto") {
-                cueLine = cueVertical === "" ? "auto" : videoWidthInLines;
-            } else {
-                cueLine = parseFloat(cueObject.line);
-            }
+            cueLine =	(cueObject.line !== "auto")?parseFloat(cueObject.line):
+                (cueVertical === "")?"auto":
+                    videoWidthInLines;
+
+
 
             if (cueVertical === "") {
-                cueHeight = pixelLineHeight;
-
                 if (autoSize) { // Don't squish the text
                     cueSize = (cueSize - cuePosition > textBoundingBoxPercentage)
                         ?cueSize-cuePosition:textBoundingBoxPercentage;
                 }
-                if(cueLine === 'auto'){
-                    cueY = availableCueArea.height + availableCueArea.top - cueHeight;
-                    cueWidth = availableCueArea.width * cueSize/100;
-                }else if (cueSnap) {
-                    cueY = ((videoHeightInLines-1) * pixelLineHeight) + availableCueArea.top;
-                    cueWidth = availableCueArea.width * cueSize/100;
-                } else {
-                    tmpHeightExclusions = videoMetrics.controlHeight + pixelLineHeight + (cuePaddingTB*2);
-                    cueY = (videoMetrics.height - tmpHeightExclusions) * (cueLine/100);
-                    cueWidth = videoMetrics.width * cueSize/100;
-                }
-
+                cueWidth = (cueLine === 'auto'?availableCueArea:videoMetrics).width * cueSize/100;
                 cueX = ((availableCueArea.right - cueWidth) * (cuePosition/100)) + availableCueArea.left;
+                DOMNode.style.width = cueWidth + "px";
+                DOMNode.style.left = cueX + "px";
+
+                if (cueSnap) {
+                    cueHeight = Math.round(DOMNode.scrollHeight/pixelLineHeight)*pixelLineHeight;
+                    if(cueLine === 'auto'){
+                        cueY = availableCueArea.height + availableCueArea.top - cueHeight;
+                    }else{
+                        cueY = cueLine < 0
+                            ?videoMetrics.height-cueHeight+(1+cueLine)*pixelLineHeight
+                            :cueLine*pixelLineHeight;
+                    }
+                } else {
+                    cueHeight = DOMNode.scrollHeight;
+                    cueY = (videoMetrics.height - cueHeight - 2*cuePaddingTB) * (cueLine/100);
+                }
+                DOMNode.style.height = cueHeight + "px";
+                DOMNode.style.top = cueY + "px";
+
+                // Work out how to shrink the available render area
+                // If subtracting from the bottom works out to a larger area, subtract from the bottom.
+                // Otherwise, subtract from the top.
+                if ((cueY - 2*availableCueArea.top) >=
+                    (availableCueArea.bottom - (cueY + cueHeight)) &&
+                    availableCueArea.bottom > cueY) {
+                    availableCueArea.bottom = cueY;
+                } else if (availableCueArea.top < cueY + cueHeight) {
+                    availableCueArea.top = cueY + cueHeight;
+                }
+                availableCueArea.height = availableCueArea.bottom - availableCueArea.top;
 
             } else {
-                // Basic positioning
                 cueHeight = availableCueArea.height * (cueSize/100);
                 // Work out CueY taking into account textPosition...
                 cueY = ((availableCueArea.bottom - cueHeight) * (cuePosition/100)) +
@@ -181,19 +204,19 @@ var CaptionRenderer = (function() {
                             characterY = (characterPosition * basePixelFontSize) + cuePaddingTB;
                         }else switch(cueObject.align){
                             case "start":
+                            case "right": //hack
                                 characterY = (characterPosition * basePixelFontSize) + cuePaddingTB;
                                 break;
                             case "end":
+                            case "left":
                                 characterY = ((characterPosition * basePixelFontSize)-basePixelFontSize) + ((cueHeight+(cuePaddingTB*2))-finalLineCharacterHeight);
                                 break;
                             case "middle":
                                 characterY = (((cueHeight - (cuePaddingTB*2))-finalLineCharacterHeight)/2) + (characterPosition * basePixelFontSize);
                         }
 
-                        applyStyles(characterSpan,{
-                            "top": characterY + "px",
-                            "left": characterX + "px"
-                        });
+                        characterSpan.style.top = characterY + "px";
+                        characterSpan.style.left = characterX + "px";
 
                         if (characterPosition >= charactersPerLine-1) {
                             characterPosition = 0;
@@ -203,68 +226,14 @@ var CaptionRenderer = (function() {
                         }
                     });
                 }());
-            }
 
-            applyStyles(DOMNode,{
-                "position": "absolute",
-                "overflow": "hidden",
-                "width": cueWidth + "px",
-                "height": cueHeight + "px",
-                "top": cueY + "px",
-                "left": cueX + "px",
-                "padding": cuePaddingTB + "px " + cuePaddingLR + "px",
-                "textAlign": (cueVertical !== "")?"":
-                    (checkDirection(String(cueObject.text)) === "rtl"
-                        ?{"start":"right","middle":"center","end":"left"}
-                        :{"start":"left","middle":"center","end":"right"})[cueObject.align],
-                "backgroundColor": renderer.cueBgColor,
-                "direction": checkDirection(String(cueObject.text)),
-                "lineHeight": baseLineHeight + "pt",
-                "boxSizing": "border-box"
-            });
+                applyStyles(DOMNode,{
+                    width: cueWidth + "px",
+                    height: cueHeight + "px",
+                    left: cueX + "px",
+                    top: cueY + "px"
+                });
 
-            if (cueVertical === "") {
-                // Now shift cue up if required to ensure it's all visible
-                if (DOMNode.scrollHeight > DOMNode.offsetHeight * 1.2) {
-                    if (cueSnap || cueLine==='auto') {
-                        (function(){ //this does the wrong thing with ruby text
-                            var upwardAjustment = 0;
-                            while (DOMNode.scrollHeight > DOMNode.offsetHeight * 1.2) {
-                                cueHeight += pixelLineHeight;
-                                DOMNode.style.height = cueHeight + "px";
-                                upwardAjustment ++;
-                            }
-
-                            cueY = cueY - (upwardAjustment*pixelLineHeight);
-                            DOMNode.style.top = cueY + "px";
-                        }());
-                    } else {
-                        // Not working by lines, so instead of shifting up, simply throw out old cueY calculation
-                        // and completely recalculate its value
-                        cueHeight = (DOMNode.scrollHeight + cuePaddingTB);
-                        tmpHeightExclusions = videoMetrics.controlHeight + cueHeight + (cuePaddingTB*2);
-                        cueY = (videoMetrics.height - tmpHeightExclusions) * (cueLine/100);
-
-                        DOMNode.style.height = cueHeight + "px";
-                        DOMNode.style.top = cueY + "px";
-                    }
-                }
-
-                // Work out how to shrink the available render area
-                // If subtracting from the bottom works out to a larger area, subtract from the bottom.
-                // Otherwise, subtract from the top.
-                if (((cueY - availableCueArea.top) - availableCueArea.top) >=
-                    (availableCueArea.bottom - (cueY + cueHeight)) &&
-                    availableCueArea.bottom > cueY) {
-                    availableCueArea.bottom = cueY;
-                } else if (availableCueArea.top < cueY + cueHeight) {
-                    availableCueArea.top = cueY + cueHeight;
-                }
-
-                availableCueArea.height =
-                    availableCueArea.bottom -
-                        availableCueArea.top;
-            } else {
                 // Work out how to shrink the available render area
                 // If subtracting from the right works out to a larger area, subtract from the right.
                 // Otherwise, subtract from the left.
@@ -274,91 +243,67 @@ var CaptionRenderer = (function() {
                 } else {
                     availableCueArea.left = cueX + cueWidth;
                 }
-
-                availableCueArea.width =
-                    availableCueArea.right -
-                        availableCueArea.left;
+                availableCueArea.width = availableCueArea.right - availableCueArea.left;
             }
         };
     }());
-    /* getNodeMetrics(DOMNode)
-     Calculates and returns a number of sizing and position metrics from a DOMNode of any variety (though this function is intended
-     to be used with HTMLVideoElements.) Returns the height of the default controls on a video based on user agent detection
-     (As far as I know, there's no way to dynamically calculate the height of browser UI controls on a video.)
-     First parameter: DOMNode from which to calculate sizing metrics. This parameter is mandatory.
-
-     RETURNS:
+    /* getDisplayMetrics(DOMNode)
      An object with the following properties:
-     left: The calculated left offset of the node
-     top: The calculated top offset of the node
-     height: The calculated height of the node
-     width: The calculated with of the node
-     controlHeight: If the node is a video and has the `controls` attribute present, the height of the UI controls for the video. Otherwise, zero.
+     left: The calculated left offset of the display
+     top: The calculated top offset of the display
+     height: The calculated height of the display
+     width: The calculated width of the display
      */
-    function getNodeMetrics(DOMNode,renderer) {
-        var offsetObject, UA,
-            nodeComputedStyle = window.getComputedStyle(DOMNode,null),
-            width = parseInt(nodeComputedStyle.getPropertyValue("width"),10),
-            height = parseInt(nodeComputedStyle.getPropertyValue("height"),10),
+    function getDisplayMetrics(renderer) {
+        var UA, offsetObject = renderer.element,
+            nodeComputedStyle = window.getComputedStyle(offsetObject,null),
             offsetTop = 0, offsetLeft = 0, controlHeight = 0;
-
-        for (	offsetObject = DOMNode;
-                 (!!offsetObject) && offsetObject !== renderer.appendCueCanvasTo;
-                 offsetObject = offsetObject.offsetParent
-            ) {
-            offsetTop += offsetObject.offsetTop;
-            offsetLeft += offsetObject.offsetLeft;
-        }
 
         if (typeof renderer.controlHeight === 'number'){
             controlHeight = renderer.controlHeight;
-        }else if (DOMNode.hasAttribute("controls")) {
+        }else if (offsetObject.hasAttribute("controls")) {
             // Get heights of default control strip in various browsers
             // There could be a way to measure this live but I haven't thought/heard of it yet...
             UA = navigator.userAgent.toLowerCase();
-            if (UA.indexOf("chrome") !== -1) {
-                controlHeight = 35;
-            } else if (UA.indexOf("opera") !== -1) {
-                controlHeight = 25;
-            } else if (UA.indexOf("firefox") !== -1) {
-                controlHeight = 28;
-            } else if (UA.indexOf("ie 9") !== -1 || UA.indexOf("ipad") !== -1) {
-                controlHeight = 44;
-            } else if (UA.indexOf("safari") !== -1) {
-                controlHeight = 25;
-            }
+            controlHeight =	(UA.indexOf("chrome") !== -1)?35:
+                (UA.indexOf("opera") !== -1)?25:
+                    (UA.indexOf("firefox") !== -1)?28:
+                        (UA.indexOf("ie 9") !== -1)?44:
+                            (UA.indexOf("ipad") !== -1)?44:
+                                (UA.indexOf("safari") !== -1)?25:
+                                    0;
+        }
+
+        while(offsetObject && offsetObject !== renderer.appendCueCanvasTo){
+            offsetTop += offsetObject.offsetTop;
+            offsetLeft += offsetObject.offsetLeft;
+            offsetObject = offsetObject.offsetParent;
         }
 
         return {
             left: offsetLeft,
             top: offsetTop,
-            width: width,
-            height: height,
-            controlHeight: controlHeight
+            width: parseInt(nodeComputedStyle.getPropertyValue("width"),10),
+            height: parseInt(nodeComputedStyle.getPropertyValue("height"),10)-controlHeight
         };
     }
     /* applyStyles(DOMNode, Style Object)
-     A fast way to apply multiple CSS styles to a DOMNode.
-     First parameter: DOMNode to style. This parameter is mandatory.
-     Second parameter: A key/value object where the keys are camel-cased variants of CSS property names to apply,
-     and the object values are CSS property values as per the spec. This parameter is mandatory.
+     A fast way to apply multiple CSS styles to a DOMNode
+     First parameter: DOMNode to style
+     Second parameter: An object where the keys are camel-cased CSS property names
      */
-    function applyStyles(StyleNode, styleObject) {
-        var styleName;
-        for (styleName in styleObject) {
-            if ({}.hasOwnProperty.call(styleObject, styleName)) {
-                StyleNode.style[styleName] = styleObject[styleName];
-            }
-        }
+    function applyStyles(Node, styleObject) {
+        var style = Node.style;
+        Object.keys(styleObject).forEach(function(styleName){
+            style[styleName] = styleObject[styleName];
+        });
     }
 
     function defaultRenderCue(cue){
         var node = document.createElement('div');
         node.appendChild(cue.getCueAsHTML(cue.track.kind==='subtitles'));
-        return node;
+        return {node:node};
     }
-
-    function defaultStyleCue(node,track){ return node; }
 
     function cueTime(cue,currentTime){
         //find the last timestamp in the past and the first in the future
@@ -377,11 +322,18 @@ var CaptionRenderer = (function() {
         for(hash = i = 0; i < str.length; i++){
             hash = ((hash<<5)-hash+str.charCodeAt(i))|0; //bitwise or forces to 32-bit integer
         }
-        return hash;
+        return hash.toString(16);
     };
 
-    function defaultHashCue(cue,currentTime){
-        return cue.size+cue.vertical+cue.line+cue.position+cue.align+hashCode(cue.text)+cueTime(cue,currentTime);
+    function defaultHashCue(cue){
+        return hashCode(cue.text)
+            +cue.startTime
+            +cue.endTime
+            +cue.size
+            +cue.vertical
+            +cue.line
+            +cue.position
+            +cue.align;
     }
 
     /* CaptionRenderer([dom element],
@@ -398,6 +350,7 @@ var CaptionRenderer = (function() {
         var media, renderer = this,
             timeupdate = function(){ renderer.currentTime = media.currentTime; },
             container = document.createElement("div"),
+            containerID = "captionator-canvas-"+(Math.random()*9999).toString(16),
             internalTime = 0,
             appendCueCanvasTo = (options.appendCueCanvasTo instanceof HTMLElement)?options.appendCueCanvasTo:null,
             minFontSize = (typeof(options.minFontSize) === "number")?options.minFontSize:10,			//pt
@@ -407,18 +360,21 @@ var CaptionRenderer = (function() {
             sizeCuesByTextBoundingBox = !!options.sizeCuesByTextBoundingBox,
             cueBgColor = (typeof(options.cueBgColor) === "string")?options.cueBgColor:"rgba(0,0,0,0.5)",
             hashCue = typeof options.hashCue === 'function'?options.hashCue:defaultHashCue,
-            renderCue = typeof options.renderCue === 'function'?options.renderCue:defaultRenderCue,
-            styleCue = typeof options.styleCue === 'function'?options.styleCue:defaultStyleCue;
+            renderCue = typeof options.renderCue === 'function'?options.renderCue:defaultRenderCue;
 
+        container.id = containerID;
         container.className = "captionator-cue-canvas";
-        //TODO: we should do aria-live on descriptions and those doesn't need visual display
-        //container.setAttribute("aria-live","polite");
-        //container.setAttribute("aria-atomic","true");
+
+        if (String(element.getAttribute("aria-describedby")).indexOf(containerID) === -1) {
+            element.setAttribute("aria-describedby",(element.hasAttribute("aria-describedby") ? element.getAttribute("aria-describedby") + " " : "")+containerID);
+        }
 
         this.container = container;
         this.tracks = [];
         this.element = element;
+        this.currentNodes = [];
         this.hash = "";
+        this.timeHash = "";
 
         element.classList.add("captioned");
 
@@ -532,15 +488,6 @@ var CaptionRenderer = (function() {
                     return renderCue;
                 },
                 enumerable: true
-            },
-            styleCue:  {
-                get: function(){ return styleCue; },
-                set: function(val){
-                    styleCue = typeof val === 'function'?val:defaultStyleCue;
-                    this.refreshLayout();
-                    return styleCue;
-                },
-                enumerable: true
             }
         });
     }
@@ -568,9 +515,8 @@ var CaptionRenderer = (function() {
         /* styleCueContainer(renderer)
          Styles and positions a div for displaying cues on a video.
          */
-        function styleCueContainer(renderer) {
+        function styleCueContainer(renderer,videoMetrics) {
             var container = renderer.container,
-                containerID = container.id,
                 videoElement = renderer.element,
                 videoMetrics, baseFontSize, baseLineHeight;
 
@@ -580,19 +526,13 @@ var CaptionRenderer = (function() {
                     :document.body).appendChild(container);
             }
 
-            // TODO(silvia): we should not really muck with the aria-describedby attribute of the video
-            if (String(videoElement.getAttribute("aria-describedby")).indexOf(containerID) === -1) {
-                videoElement.setAttribute("aria-describedby",videoElement.hasAttribute("aria-describedby") ? videoElement.getAttribute("aria-describedby") + " " : ""+containerID);
-            }
-
             // Set up font metrics
-            videoMetrics = getNodeMetrics(videoElement,renderer);
             baseFontSize = Math.max(((videoMetrics.height * renderer.fontSizeRatio)/96)*72,renderer.minFontSize);
             baseLineHeight = Math.max(Math.floor(baseFontSize * renderer.lineHeightRatio),renderer.minLineHeight);
 
             // Style node!
             applyStyles(container,{
-                "height": (videoMetrics.height - videoMetrics.controlHeight) + "px",
+                "height": videoMetrics.height + "px",
                 "width": videoMetrics.width + "px",
                 "top": videoMetrics.top + "px",
                 "left": videoMetrics.left + "px",
@@ -601,8 +541,6 @@ var CaptionRenderer = (function() {
                 "fontSize": baseFontSize + "pt",
                 "lineHeight": baseLineHeight + "pt"
             });
-
-            return videoMetrics;
         }
 
         function parse_timestamp(str){
@@ -619,11 +557,11 @@ var CaptionRenderer = (function() {
                     newnode.appendChild(node);
                     node = newnode;
                 case Node.ELEMENT_NODE:
-                    node.dataset[pos] = "";
+                    node.dataset['time-position'] = pos;
             }
         }
 
-        function timeStyle(DOM,currentTime){
+        function markTimes(DOM,currentTime){
             //depth-first traversal of the cue DOM
             var i, node, time, children, timeNodes,
                 pastNode = null,
@@ -645,10 +583,24 @@ var CaptionRenderer = (function() {
                     set_node_time(node,"past");
                 }else if(futureNode && node.compareDocumentPosition(futureNode) === 2){ //futureNode is preceding
                     set_node_time(node,"future");
+                }else{
+                    set_node_time(node,"present");
                 }
                 if(node.childNodes){ children.push.apply(children,node.childNodes); }
             }
             return pastNode?pastNode.dataset.seconds:0;
+        }
+
+        function timeStyle(node){ //TODO: read stylesheets
+            [].forEach.call(node.querySelectorAll('[data-time-position]'),function(element){
+                switch(node.dataset['time-position']){
+                    case "past":
+                        element.style.visibility = "hidden";
+                    case "present":
+                    case "future":
+                        element.style.visibility = "";
+                }
+            });
         }
 
         CaptionRenderer.prototype.rebuildCaptions = function(dirtyBit) {
@@ -658,31 +610,34 @@ var CaptionRenderer = (function() {
                 currentTime = this.currentTime,
                 hashCue = renderer.hashCue,
                 renderCue = renderer.renderCue,
-                styleCue = renderer.styleCue,
-                videoMetrics, compositeActiveCues = [], hash = "";
+                videoMetrics = getDisplayMetrics(this),
+                compositeActiveCues = [],
+                hash = "", timeHash = "";
 
             // Work out what cues are showing...
             //WHY IS IT SKIPPING CUES?
             this.tracks.forEach(function(track) {
-                if (track.mode === "showing" && track.readyState === TextTrack.LOADED && (track.kind === "captions" || track.kind === "subtitles")) {
-                    // Since the render area decreases in size with each successive cue added,
-                    // and we want cues which are older to be displayed above cues which are newer,
-                    // we sort active cues within each track so that older ones are rendered first.
-                    [].push.apply(compositeActiveCues,[].slice.call(track.activeCues,0).sort(function(cueA, cueB) {
-                        return (cueA.startTime > cueB.startTime)? -1 : 1;
-                    }));
+                if (track.mode === "showing" && track.readyState === TextTrack.LOADED){
+                    if(track.kind === "captions" || track.kind === "subtitles"/* || track.kind === "descriptions")*/) {
+                        // Since the render area decreases in size with each successive cue added,
+                        // and we want cues which are older to be displayed above cues which are newer,
+                        // we sort active cues within each track so that older ones are rendered first.
+                        [].push.apply(compositeActiveCues,[].slice.call(track.activeCues,0).sort(function(cueA, cueB) {
+                            return (cueA.startTime > cueB.startTime)? -1 : 1;
+                        }));
+                    }
+                    //TODO: we should do aria-live on descriptions and those don't need visual display
+                    //container.setAttribute("aria-live","polite");
+                    //container.setAttribute("aria-atomic","true");
                 }
             });
 
             // If any of them are different, we redraw them to the screen.
-            if(!dirtyBit){
-                hash = compositeActiveCues.map(function(cue){ return hashCue(cue,currentTime); }).join();
-                dirtyBit = (this.hash !== hash);
-            }
-            if(dirtyBit){
+            hash = compositeActiveCues.map(function(cue){ return hashCue(cue); }).join();
+            if(dirtyBit || (this.hash !== hash)){
                 // Get the canvas ready if it isn't already
                 container.style.visibility = "hidden";
-                videoMetrics = styleCueContainer(this);
+                styleCueContainer(this,videoMetrics);
                 container.innerHTML = "";
                 // Define storage for the available cue area, diminished as further cues are added
                 // Cues occupy the largest possible area they can, either by width or height
@@ -690,44 +645,62 @@ var CaptionRenderer = (function() {
                 // Cues which have an explicit position set do not detract from this area.
                 this.availableCueArea = {
                     "top": 0, "left": 0,
-                    "bottom": (videoMetrics.height-videoMetrics.controlHeight),
+                    "bottom": videoMetrics.height,
                     "right": videoMetrics.width,
-                    "height": (videoMetrics.height-videoMetrics.controlHeight),
+                    "height": videoMetrics.height,
                     "width": videoMetrics.width
                 };
-                compositeActiveCues.forEach(function(cue) {
-                    var updateTime, cueNode;
-                    cueNode = styleCue(renderCue(cue),cue.track);
-                    cueNode.className = "captionator-cue";
-                    cueNode._cue = cue;
+                this.currentNodes.forEach(function(nObj){
+                    if(typeof nObj.cleanup === 'function'){
+                        nObj.cleanup();
+                    }
+                });
+                this.currentNodes = compositeActiveCues.map(function(cue){
+                    var nObj = renderCue(cue);
+                    nObj.cue = cue;
+                    return nObj;
+                });
+                this.timeHash = "";
+                this.currentNodes.forEach(function(nObj){
+                    var node = nObj.node;
+                    node.className = "captionator-cue";
 
                     //Handle karaoke styling
-                    timeStyle(cueNode,currentTime);
-                    [].forEach.call(cueNode.querySelectorAll('[data-future]'),function(element){
-                        element.style.visibility = "hidden";
-                    });
+                    timeHash += markTimes(node,currentTime);
+                    timeStyle(node);
 
-                    container.appendChild(cueNode);
-                    positionCue(cueNode,cue,renderer,videoMetrics,true);
+                    container.appendChild(node);
+                    positionCue(node,nObj.cue,renderer,videoMetrics,true);
                 });
                 container.style.visibility = "visible";
-                // Defeat a horrid Chrome 10 video bug
-                // http://stackoverflow.com/questions/5289854/chrome-10-custom-video-interface-problem/5400438#5400438
-                if (window.navigator.userAgent.toLowerCase().indexOf("chrome/10") > -1) {
-                    container.style.backgroundColor = "rgba(0,0,0," + (Math.random()/100) + ")";
-                }
                 this.hash = hash;
+                this.timeHash = timeHash;
+            }else{
+                timeHash = this.currentNodes.map(function(nObj){ return cueTime(nObj.cue,currentTime); }).join();
+                if(this.timeHash !== timeHash){
+                    container.style.visibility = "hidden";
+                    this.currentNodes.forEach(function(nObj){
+                        var node = nObj.node;
+                        markTimes(node,currentTime);
+                        timeStyle(node);
+                        positionCue(node,nObj.cue,renderer,videoMetrics,true);
+                    });
+                    container.style.visibility = "visible";
+                    this.timeHash = timeHash;
+                }
             }
         };
 
         CaptionRenderer.prototype.refreshLayout = function() {
             var renderer = this,
                 container = this.container,
-                videoMetrics;
+                currentTime = this.currentTime,
+                hashCue = renderer.hashCue,
+                videoMetrics = getDisplayMetrics(renderer);
 
             // Get the canvas ready
             container.style.visibility = "hidden";
-            videoMetrics = styleCueContainer(this);
+            styleCueContainer(this,videoMetrics);
 
             // Define storage for the available cue area, diminished as further cues are added
             // Cues occupy the largest possible area they can, either by width or height
@@ -735,20 +708,21 @@ var CaptionRenderer = (function() {
             // Cues which have an explicit position set do not detract from this area.
             this.availableCueArea = {
                 "top": 0, "left": 0,
-                "bottom": (videoMetrics.height-videoMetrics.controlHeight),
+                "bottom": videoMetrics.height,
                 "right": videoMetrics.width,
-                "height": (videoMetrics.height-videoMetrics.controlHeight),
+                "height": videoMetrics.height,
                 "width": videoMetrics.width
             };
-            [].forEach.call(container.childNodes,function(node) {
-                positionCue(node,node._cue,renderer,videoMetrics,false);
+            this.currentNodes.forEach(function(nObj) {
+                var node = nObj.node;
+                markTimes(node,currentTime);
+                timeStyle(node);
+                positionCue(node,nObj.cue,renderer,videoMetrics,false);
             });
             container.style.visibility = "visible";
-            // Defeat a horrid Chrome 10 video bug
-            // http://stackoverflow.com/questions/5289854/chrome-10-custom-video-interface-problem/5400438#5400438
-            if (window.navigator.userAgent.toLowerCase().indexOf("chrome/10") > -1) {
-                container.style.backgroundColor = "rgba(0,0,0," + (Math.random()/100) + ")";
-            }
+            //refresh was probably called because cue contents changed, so we better update the hash
+            this.hash = this.currentNodes.map(function(nObj){ return hashCue(nObj.cue,currentTime); }).join();
+            this.timeHash = this.currentNodes.map(function(nObj){ return cueTime(nObj.cue,currentTime); }).join();
         };
     }());
 

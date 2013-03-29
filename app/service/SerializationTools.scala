@@ -1,29 +1,27 @@
 package service
 
-/**
- * Created with IntelliJ IDEA.
- * User: camman3d
- * Date: 3/27/13
- * Time: 2:44 PM
- * To change this template use File | Settings | File Templates.
- */
+import java.io.{ByteArrayInputStream, ObjectInputStream, ObjectOutputStream, ByteArrayOutputStream}
+import org.apache.commons.codec.binary.Base64
 object SerializationTools {
 
-  def escapeString(str: String): String = str.replaceAll("=", "{{equals}}").replaceAll("\\&", "{{amp}}")
-
-  def unescapeString(str: String): String = str.replaceAll("\\{\\{equals\\}\\}", "=").replaceAll("\\{\\{amp\\}\\}", "&")
-
-  def serializeMap(map: Map[String, String]): String =
-    map.toList.map(d => escapeString(d._1) + "=" + escapeString(d._2)).mkString("&")
-
-  def unserializeMap(str: String): Map[String, String] = {
-    if (str.isEmpty)
-      Map()
-    else
-      str.split("\\&").map(s => {
-        val data = s.split("=")
-        (unescapeString(data(0)), unescapeString(data(1)))
-      }).toMap
+  def objectToString(obj: AnyRef): String = {
+    val stream = new ByteArrayOutputStream()
+    val out = new ObjectOutputStream(stream)
+    out.writeObject(obj)
+    out.close()
+    new String(Base64.encodeBase64(stream.toByteArray))
   }
+
+  def stringToObject[A](str: String): A = {
+    val data = Base64.decodeBase64(str.getBytes)
+    val in = new ObjectInputStream(new ByteArrayInputStream(data))
+    val obj = in.readObject().asInstanceOf[A]
+    in.close()
+    obj
+  }
+
+  def serializeMap(map: Map[String, String]): String = objectToString(map)
+
+  def unserializeMap(str: String): Map[String, String] = stringToObject[Map[String, String]](str)
 
 }

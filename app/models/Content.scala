@@ -93,9 +93,15 @@ case class Content(id: Pk[Long], name: String, contentType: Symbol, thumbnail: S
    * @param user The to check
    * @return Can edit or not
    */
-  def isEditableBy(user: User): Boolean = user.role == User.roles.admin || user.getContent.contains(this)
+  def isEditableBy(user: User): Boolean =
+    user.role == User.roles.admin || user.getContent.contains(this)
 
+  def setSetting(key: String, value: String): Content =
+    copy(settings = settings.updated(key, value))
 
+  object videoSettings {
+    def level = settings.get("level").getOrElse(Content.defaultSettings.video.level)
+  }
 }
 
 object Content extends SQLSelectable[Content] {
@@ -117,13 +123,23 @@ object Content extends SQLSelectable[Content] {
   }
 
   /* Default settings */
-  val defaultSettings = Map(
-    'video -> Map("level" -> "4"),
-    'image -> Map("allowAnnotations" -> "true"),
-    'audio -> Map("blah" -> "blah"),
-    'playlist -> Map("blah" -> "blah"),
-    'activity -> Map("blah" -> "blah")
-  )
+  object defaultSettings {
+    object video {
+      val level = "2"
+    }
+
+    object image {
+      val allowAnnotations = "true"
+    }
+
+    val preset = Map(
+      'video -> Map("level" -> video.level),
+      'image -> Map("allowAnnotations" -> image.allowAnnotations),
+      'audio -> Map("blah" -> "blah"),
+      'playlist -> Map("blah" -> "blah"),
+      'activity -> Map("blah" -> "blah")
+    )
+  }
 
   val simple = {
     get[Pk[Long]](tableName + ".id") ~
@@ -137,7 +153,7 @@ object Content extends SQLSelectable[Content] {
       get[String](tableName + ".settings") map {
       case id ~ name ~ contentType ~ thumbnail ~ resourceId ~ dateAdded ~ visibility ~ shareability ~ settings =>
         Content(id, name, Symbol(contentType), thumbnail, resourceId, dateAdded, visibility, shareability,
-          if (settings.isEmpty) defaultSettings(Symbol(contentType)) else SerializationTools.unserializeMap(settings))
+          if (settings.isEmpty) defaultSettings.preset(Symbol(contentType)) else SerializationTools.unserializeMap(settings))
     }
   }
 

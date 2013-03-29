@@ -1,0 +1,38 @@
+@(content: models.Content)
+
+@isChecked(val1: Any, val2: Any) = {
+    @if(val1 == val2) {
+        checked
+    }
+}
+
+<form id="settingsForm" class="form-horizontal" method="post" action="@routes.ContentController.setSettings(content.id.get)">
+    <input type="hidden" name="contentType" value="video">
+    <div class="control-group">
+        <label class="control-label" for="playbackLevel">Playback level</label>
+        <div class="controls">
+
+            <label class="radio">
+                <input type="radio" name="level" value="1" @isChecked(content.videoSettings.level, "1")>
+                    1 - Video playback
+            </label>
+            <label class="radio">
+                <input type="radio" name="level" value="2" @isChecked(content.videoSettings.level, "2")>
+                    2 - Video playback and subtitles
+            </label>
+            <label class="radio">
+                <input type="radio" name="level" value="3" @isChecked(content.videoSettings.level, "3")>
+                    3 - Video, subtitles, and interactions
+            </label>
+            <label class="radio">
+                <input type="radio" name="level" value="4" @isChecked(content.videoSettings.level, "4")>
+                    4 - Video, subtitles, interactions, and annotations
+            </label>
+            <label class="radio">
+                <input type="radio" name="level" value="5" @isChecked(content.videoSettings.level, "5")>
+                    5 - Video, subtitles, interactions, annotations, and auto-generated activities
+            </label>
+        </div>
+    </div>
+    <input type="submit" style="position: absolute; left: -9999px; width: 1px; height: 1px;"/>
+</form>

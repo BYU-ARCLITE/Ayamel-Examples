@@ -1,17 +1,22 @@
-@(content: models.Content)(implicit user: User)
+@(content: models.Content, course: Option[Course])(implicit user: User)
 
-@isChecked(val1: Int, val2: Int) = {
+@isChecked(val1: Any, val2: Any) = {
     @if(val1 == val2) {
         checked
     }
 }
 
 @defining(content isEditableBy user) { userCanEdit =>
+@defining(course.isDefined && user.canEdit(course.get)) { userIsInstructor =>
 
     <div class="well">
 
         @if(content isShareableBy user) {
             <a href="#" class="btn btn-yellow"><i class="icon-share-alt"></i> Share</a>
+        }
+
+        @if(userIsInstructor) {
+            <a href="#courseSettingsModal" role="button" class="btn" data-toggle="modal"><i class="icon-edit"></i> Edit Course Settings</a>
         }
 
         @if(userCanEdit) {
@@ -24,6 +29,38 @@
             <a href="#deleteModal" role="button" class="btn btn-magenta" data-toggle="modal"><i class="icon-trash"></i> Delete</a>
         }
     </div>
+
+    @if(userIsInstructor) {
+        <div id="courseSettingsModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="courseSettingsModalLabel" aria-hidden="true">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h3 id="courseSettingsModalLabel">Edit Course Settings</h3>
+            </div>
+            <div class="modal-body">
+
+
+                @if(content.contentType == 'video) {
+                    @views.html.content.header.courseVideoSettings(content, course.get)
+                }
+                @if(content.contentType == 'audio) {
+                    <em>There are no settings defined for this content type.</em>
+                }
+                @if(content.contentType == 'image) {
+                    <em>There are no settings defined for this content type.</em>
+                }
+                @if(content.contentType == 'playlist) {
+                    <em>There are no settings defined for this content type.</em>
+                }
+                @if(content.contentType == 'activity) {
+                    <em>There are no settings defined for this content type.</em>
+                }
+            </div>
+            <div class="modal-footer">
+                <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+                <button class="btn btn-blue formSubmitter" data-target="#courseSettingsForm">Save</button>
+            </div>
+        </div>
+    }
 
     @if(userCanEdit) {
         <div id="deleteModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
@@ -61,49 +98,21 @@
             </div>
             <div class="modal-body">
 
-                <form id="settingsForm" class="form-horizontal">
-                    @if(content.contentType == 'video) {
-                        <div class="control-group">
-                            <label class="control-label" for="playbackLevel">Playback level</label>
-                            <div class="controls">
-
-                                <label class="radio">
-                                    <input type="radio" name="shareability" value="1">
-                                    1 - Video playback
-                                </label>
-                                <label class="radio">
-                                    <input type="radio" name="shareability" value="2">
-                                    2 - Video playback and subtitles
-                                </label>
-                                <label class="radio">
-                                    <input type="radio" name="shareability" value="3">
-                                    3 - Video, subtitles, and interactions
-                                </label>
-                                <label class="radio">
-                                    <input type="radio" name="shareability" value="3">
-                                    4 - Video, subtitles, interactions, and annotations
-                                </label>
-                                <label class="radio">
-                                    <input type="radio" name="shareability" value="3">
-                                    5 - Video, subtitles, interactions, annotations, and auto-generated activities
-                                </label>
-                            </div>
-                        </div>
-                    }
-                    @if(content.contentType == 'audio) {
-                        <em>There are no settings defined for this content type.</em>
-                    }
-                    @if(content.contentType == 'image) {
-                        <em>There are no settings defined for this content type.</em>
-                    }
-                    @if(content.contentType == 'playlist) {
-                        <em>There are no settings defined for this content type.</em>
-                    }
-                    @if(content.contentType == 'activity) {
-                        <em>There are no settings defined for this content type.</em>
-                    }
-                    <input type="submit" style="position: absolute; left: -9999px; width: 1px; height: 1px;"/>
-                </form>
+                @if(content.contentType == 'video) {
+                    @views.html.content.header.videoSettings(content)
+                }
+                @if(content.contentType == 'audio) {
+                    <em>There are no settings defined for this content type.</em>
+                }
+                @if(content.contentType == 'image) {
+                    <em>There are no settings defined for this content type.</em>
+                }
+                @if(content.contentType == 'playlist) {
+                    <em>There are no settings defined for this content type.</em>
+                }
+                @if(content.contentType == 'activity) {
+                    <em>There are no settings defined for this content type.</em>
+                }
             </div>
             <div class="modal-footer">
                 <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
@@ -176,8 +185,6 @@
             </div>
         </div>
 
-
-
         <script type="text/javascript">
             $(function() {
                 $("#deleteContentButton").click(function() {
@@ -189,4 +196,5 @@
             });
         </script>
     }
+}
 }

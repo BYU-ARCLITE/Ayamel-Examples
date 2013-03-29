@@ -65,7 +65,7 @@ object Courses extends Controller {
       implicit user =>
         getCourse(id) {
           course =>
-            if (course.getMembers.contains(user))
+            if (user canView course)
               Ok(views.html.courses.view(course))
             else
               Redirect(routes.Courses.courseRequestPage(id))
@@ -162,11 +162,14 @@ object Courses extends Controller {
         getCourse(id) {
           course =>
 
-            val findRequest = AddCourseRequest.listByCourse(course).find(req => req.userId == user.id.get)
-            if (findRequest.isDefined)
-              Ok(views.html.courses.pending(course))
-            else
-              Ok(views.html.courses.request(course))
+            // Guests cannot request courses
+            Authentication.enforceNotRole(User.roles.guest) {
+              val findRequest = AddCourseRequest.listByCourse(course).find(req => req.userId == user.id.get)
+              if (findRequest.isDefined)
+                Ok(views.html.courses.pending(course))
+              else
+                Ok(views.html.courses.request(course))
+            }
         }
   }
 
@@ -214,7 +217,7 @@ object Courses extends Controller {
             if (courseRequest.isDefined) {
 
               // Make sure the user is allowed to approve
-              if(user canApprove(courseRequest.get, course)) {
+              if(user.canApprove(courseRequest.get, course)) {
                 courseRequest.get.approve()
                 Redirect(routes.Courses.approvePage(course.id.get)).flashing("info" -> "Course request approved")
               } else
@@ -235,7 +238,7 @@ object Courses extends Controller {
             if (courseRequest.isDefined) {
 
               // Make sure the user is allowed to approve
-              if(user canApprove(courseRequest.get, course)) {
+              if(user.canApprove(courseRequest.get, course)) {
                 courseRequest.get.deny()
                 Redirect(routes.Courses.approvePage(course.id.get)).flashing("info" -> "Course request denied")
               } else

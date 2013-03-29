@@ -2,13 +2,16 @@ package controllers
 
 import authentication.Authentication
 import play.api._
-import libs.json.Json
+import libs.json.{JsString, Reads, JsObject, Json}
 import libs.ws.WS
 import play.api.mvc._
 import anorm.NotAssigned
 import models.{Content, Course}
 import concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
+import java.io.{ByteArrayInputStream, ObjectInputStream, ByteArrayOutputStream, ObjectOutputStream}
+import org.apache.commons.codec.binary.Base64
+import service.SerializationTools
 
 object Application extends Controller {
 
@@ -26,12 +29,16 @@ object Application extends Controller {
   def test = Action(parse.tolerantText) {
     request =>
 
-      Logger.debug("Headers: " + request.headers)
-      Logger.debug("Body: " + request.body)
-      val obj = Json.obj(
-        "success" -> true
-      )
-      Ok(obj)
+//      Logger.debug("Headers: " + request.headers)
+//      Logger.debug("Body: " + request.body)
+//      val obj = Json.obj(
+//        "success" -> true
+//      )
+//      Ok(obj)
+
+      val someMap = Map("one" -> "two", "three" -> "4")
+      val str = SerializationTools.serializeMap(someMap)
+      Ok(str)
   }
 
   def search = Authentication.authenticatedAction() {

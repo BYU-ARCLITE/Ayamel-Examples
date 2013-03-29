@@ -1,0 +1,43 @@
+@(content: models.Content, resourceLibraryUrl: String)
+
+<!-- Include the Ayamel css files -->
+<link href="@routes.Assets.at("Ayamel.js/css/stage.css")" media="screen" rel="stylesheet" type="text/css" />
+<link href="@routes.Assets.at("Ayamel.js/css/controlBar.css")" media="screen" rel="stylesheet" type="text/css" />
+
+<!-- Ayamel scripts -->
+<script src="@routes.Assets.at("Ayamel.js/js/Ayamel.js")" type="text/javascript"></script>
+<script src="@routes.Assets.at("Ayamel.js/js/ControlBar.js")" type="text/javascript"></script>
+<script src="@routes.Assets.at("Ayamel.js/js/ControlBarComponents.js")" type="text/javascript"></script>
+<script src="@routes.Assets.at("Ayamel.js/js/MediaController.js")" type="text/javascript"></script>
+<script src="@routes.Assets.at("Ayamel.js/js/ProgressBar.js")" type="text/javascript"></script>
+<script src="@routes.Assets.at("Ayamel.js/js/Resource.js")" type="text/javascript"></script>
+<script src="@routes.Assets.at("Ayamel.js/js/TimedMedia.js")" type="text/javascript"></script>
+<script src="@routes.Assets.at("Ayamel.js/js/UniformAspectRatio.js")" type="text/javascript"></script>
+<script src="@routes.Assets.at("Ayamel.js/js/video.js")" type="text/javascript"></script>
+<script src="@routes.Assets.at("Ayamel.js/js/VideoPlayer.js")" type="text/javascript"></script>
+
+<script src="@routes.Assets.at("Ayamel.js/js/wrappers/h5Clip.js")" type="text/javascript"></script>
+
+<div id="player"></div>
+
+<script type="text/javascript">
+
+    $(function() {
+        // Load the resource
+        var resourceUri = "@resourceLibraryUrl/@content.resourceId";
+        new Resource(resourceUri, function (resource) {
+
+            // Install the HTML5 video player
+            Ayamel.AddVideoPlayer(h5PlayerInstall, 1, function() {
+
+                // Create the player
+                var videoPlayer = new Ayamel.VideoPlayer({
+                    element: document.getElementById('player'),
+                    aspectRatio: 45,
+                    resource: resource
+                });
+            });
+        });
+    });
+</script>
+

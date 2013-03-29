@@ -16,3 +16,5 @@ dist
 design
 .metadata/
 .settings/
+/public/Ayamel.js
+/public/TimedText
