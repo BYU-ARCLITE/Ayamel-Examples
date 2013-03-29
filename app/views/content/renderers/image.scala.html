@@ -13,8 +13,13 @@
         var resourceUri = "@resourceLibraryUrl/@content.resourceId";
         new Resource(resourceUri, function (resource) {
 
-            var url = resource.content.files[0].downloadUri;
-            $("#theImage").attr("src", url);
+            for(var i = 0; i<resource.content.files.length; i++){
+                if(resource.content.files[i].representation.match("original")){
+                    var url = resource.content.files[i].downloadUri;
+                    $("#theImage").attr("src", url);
+                    break;
+                }
+            }
 
             // Get the uri from the resource
             // display it
