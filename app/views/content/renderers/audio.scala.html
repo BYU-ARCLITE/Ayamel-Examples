@@ -4,20 +4,22 @@
 
 <script src="@routes.Assets.at("Ayamel.js/js/Resource.js")" type="text/javascript"></script>
 
-<audio id="player">
+<audio id="player" controls="controls">
+</audio>
 
 <script type="text/javascript">
 
     $(function() {
-    // Load the resource
-    var resourceUri = "@resourceLibraryUrl/@content.resourceId";
-    new Resource(resourceUri, function (resource) {
+        // Load the resource
+        var resourceUri = "@resourceLibraryUrl/@content.resourceId";
+        new Resource(resourceUri, function (resource) {
 
-        for(var i = 0; i<resource.content.files.length; i++){
-            if(resource.content.files[i].type.match("audio")){
-                var url = resource.content.files[i].downloadUri;
-                $("#player").attr("src", url);
-                break;
+            for(var i = 0; i<resource.content.files.length; i++){
+            if(resource.content.files[i].representation.match("original")){
+                    var url = resource.content.files[i].downloadUri;
+                    var mime = resource.content.files[i].mime;
+                    $("#player").append('<source src="' + url + '" type="' + mime + '">');
+                    break;
                 }
             }
 

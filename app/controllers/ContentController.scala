@@ -222,8 +222,8 @@ object ContentController extends Controller {
             Courses.getCourse(courseId) {
               course =>
 
-              // Make sure the user is able to edit
-                if (content isEditableBy user) {
+              // Make sure the user is able to edit the course
+                if (user canEdit course) {
                   val contentType = Symbol(request.body("contentType")(0))
                   if (contentType == 'video)
                     setVideoSettings(content, Some(course))
@@ -232,7 +232,7 @@ object ContentController extends Controller {
                   if (contentType == 'image)
                     setImageSettings(content, Some(course))
 
-                  Redirect(routes.ContentController.view(id)).flashing("success" -> "Settings updated.")
+                  Redirect(routes.ContentController.viewInCourse(id, course.id.get)).flashing("success" -> "Settings updated.")
                 } else
                   Errors.forbidden
             }

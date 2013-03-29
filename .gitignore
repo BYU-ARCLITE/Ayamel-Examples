@@ -18,3 +18,4 @@ design
 .settings/
 /public/Ayamel.js
 /public/TimedText
+conf/application.conf
