@@ -1,0 +1,5 @@
+@(stylesheets: Seq[(String, String)])
+
+@stylesheets.map { case (media, stylesheetUrl) =>
+  <link rel="stylesheet" media="@media" href="@routes.Assets.at(stylesheetUrl)">
+}
