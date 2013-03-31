@@ -12,9 +12,15 @@
     }
 }
 
-@main("Ayamel - " + content.name) {
+@moreStyles =  @{
+    List(
+      ("screen", "stylesheets/content.css")
+    )
+}
 
-    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/content.css")">
+@main("Ayamel - " + content.name,moreStyles) {
+
+    
 
     <div class="padded">
 

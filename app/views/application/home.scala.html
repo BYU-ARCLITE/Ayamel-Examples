@@ -1,13 +1,15 @@
 @()(implicit request: RequestHeader, user: User)
 
-@main("Ayamel Examples") {
+@moreStyles = @{
+    List(
+      ("screen", "stylesheets/home.css"),
+      ("screen", "stylesheets/course.css"),
+      ("screen", "stylesheets/content.css")
+    )
+}
 
-    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/home.css")"/>
-    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/course.css")">
-    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/content.css")">
-
-    <script src="@routes.Assets.at("javascripts/swipe.js")" type="text/javascript"></script>
-
+@main("Ayamel Examples",moreStyles) {
+    
     <div class="spotlight">
         <div id="slider" class="swipe">
             <div class="swipe-wrap">
@@ -136,7 +138,7 @@
         </div>
 
     </div>
-
+    <script src="@routes.Assets.at("javascripts/swipe.js")" type="text/javascript"></script>
     <script type="text/javascript">
         $(function() {
 

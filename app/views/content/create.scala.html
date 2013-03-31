@@ -1,8 +1,12 @@
 @()(implicit request: RequestHeader, user: User)
 
-@main("Ayamel - Add Content") {
+@moreStyles =  @{
+    List(
+      ("screen", "stylesheets/content.css")
+    )
+}
 
-    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/content.css")">
+@main("Ayamel - Add Content",moreStyles) {
 
     <div class="padded">
         <h1>Add Content</h1>

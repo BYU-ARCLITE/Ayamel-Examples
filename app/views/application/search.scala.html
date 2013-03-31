@@ -1,8 +1,12 @@
 @(contentList: List[models.Content], courses: List[Course])(implicit request: RequestHeader, user: User)
 
-@main("Ayamel - Search Results") {
+@moreStyles =  @{
+    List(
+      ("screen", "stylesheets/content.css")
+    )
+}
 
-    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/content.css")">
+@main("Ayamel - Search Results",moreStyles) {
 
     <div class="padded">
         <h1>Search Results</h1>
@@ -32,14 +36,12 @@
             </div>
         </div>
     </div>
-
     <style type="text/css">
         .searchHeader {
             color: #666;
             border-bottom: 1px solid #666;
         }
     </style>
-
     <script type="text/javascript">
         $(function() {
             $(".contentEntry").tooltip({
