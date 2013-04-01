@@ -1,8 +1,11 @@
 @(allContent: List[models.Content])(implicit request: RequestHeader, user: User)
 
-@main("Ayamel - Public Content") {
-
-    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/content.css")">
+@moreStyles =  @{
+    List(
+      ("screen", "stylesheets/content.css")
+    )
+}
+@main("Ayamel - Public Content",moreStyles) {
 
     <div class="padded">
 

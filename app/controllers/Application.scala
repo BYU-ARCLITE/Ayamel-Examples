@@ -17,7 +17,11 @@ object Application extends Controller {
 
   def index = Action {
     implicit request =>
-      Ok(views.html.application.index())
+      val user = Authentication.getUserFromRequest()
+      if (user.isDefined) 
+        Redirect(controllers.routes.Application.home()).withSession("userId" -> user.get.id.get.toString)
+      else
+        Ok(views.html.application.index())
   }
 
   def home = Authentication.authenticatedAction() {
