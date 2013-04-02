@@ -1,0 +1,42 @@
+@()(implicit request: RequestHeader, user: User)
+
+@moreStyles =  @{
+    List(
+      ("screen", "stylesheets/content.css")
+    )
+}
+
+@main("Ayamel - Add Content", moreStyles) {
+
+    <div class="padded">
+
+        <h1>Add Content</h1>
+
+        <ul class="nav nav-tabs">
+            <li><a href="@routes.ContentController.createPage("file")">Upload File</a></li>
+            <li><a href="@routes.ContentController.createPage("url")">Link to URL</a></li>
+            <li class="active"><a href="#">Load from Resource</a></li>
+        </ul>
+
+
+        <h2>Create from existing resource</h2>
+
+        <p>If you don't know what to enter here, then you probably want to use a different method of adding content.</p>
+
+        <form class="form-horizontal" method="post" action="@routes.ContentController.createFromResource()">
+            <div class="control-group">
+                <label class="control-label" for="resourceId">Resource ID</label>
+                <div class="controls">
+                    <input type="text" id="resourceId" name="resourceId" placeholder="Resource ID">
+                </div>
+            </div>
+            <div class="control-group">
+                <div class="controls">
+                    <button type="submit" class="btn btn-blue">Create</button>
+                </div>
+            </div>
+        </form>
+
+    </div>
+
+}

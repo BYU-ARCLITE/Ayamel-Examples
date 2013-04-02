@@ -18,13 +18,13 @@
     )
 }
 
-@main("Ayamel - " + content.name,moreStyles) {
+@main("Ayamel - " + content.name, moreStyles) {
 
     
 
     <div class="padded">
 
-        @views.html.content.header.header(content, course)
+        @views.html.content.header.header(content, resourceLibraryUrl, course)
 
         @renderTitle(content)
 

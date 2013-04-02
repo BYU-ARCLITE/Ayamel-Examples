@@ -6,54 +6,48 @@ import anorm.NotAssigned
 import java.io.File
 import ExecutionContext.Implicits.global
 
+
+case class ContentDescriptor(title: String, description: String, keywords: String, categories: List[String],
+                             url: String, mime: String, thumbnail: Option[String] = None)
+
 /**
  * This service helps with the creation and management of content objects and their corresponding resources.
  */
 object ContentManagement {
 
-  def uploadFile(file: File): String = {
-    "TODO"
-  }
-
   /**
    * Creates content depending on the content type
-   * @param name The name of the content
-   * @param description A description about the content
-   * @param url The URL to the content
-   * @param thumbnail A thumbnail of the content
+   * @param info A ContentDescriptor which contains information about the content
    * @param owner The user who is to own the content
    * @param contentType The type of content
    * @return The content object in a future
    */
-  def createContent(name: String, description: String, url: String, thumbnail: String, owner: User,
-                    contentType: Symbol): Future[Content] = {
+  def createContent(info: ContentDescriptor, owner: User, contentType: Symbol): Future[Content] = {
     contentType match {
-      case 'video => createVideo(name, description, url, thumbnail, owner)
-      case 'audio => createAudio(name, description, url, owner)
-      case 'image => createImage(name, description, url, owner)
+      case 'video => createVideo(info, owner)
+      case 'audio => createAudio(info, owner)
+      case 'image => createImage(info, owner)
       case _ => Future { null }
     }
   }
 
   /**
    * Create a video content object with a corresponding resource object from information.
-   * @param name The name of the video
-   * @param description A description about the video
-   * @param url The url of the video
-   * @param thumbnail The url of a thumbnail image to the video
+   * @param info A ContentDescriptor which contains information about the content
    * @param owner The user who is to own the video
    * @return The content object in a future
    */
-  def createVideo(name: String, description: String, url: String, thumbnail: String, owner: User): Future[Content] = {
+  def createVideo(info: ContentDescriptor, owner: User): Future[Content] = {
     // Create the resource
-    ResourceHelper.createResourceWithUri(name, url, description, "video").map(resourceId => {
+    ResourceHelper.createResourceWithUri(info.title, info.description, info.keywords, info.categories, "video",
+      info.url, info.mime).map(resourceId => {
 
       // Set a thumbnail in the resource
-      if (!thumbnail.isEmpty)
-        ResourceHelper.addThumbnail(resourceId, thumbnail)
+      if (info.thumbnail.isDefined)
+        ResourceHelper.addThumbnail(resourceId, info.thumbnail.get)
 
       // Create the content and set the user and the owner
-      val content = Content(NotAssigned, name, 'video, thumbnail, resourceId).save
+      val content = Content(NotAssigned, info.title, 'video, info.thumbnail.getOrElse(""), resourceId).save
       owner.addContent(content)
       content
     })
@@ -61,18 +55,17 @@ object ContentManagement {
 
   /**
    * Creates an audio content object with a corresponding resource object from information
-   * @param name The name of the audio
-   * @param description A description about the audio
-   * @param url The url of the audio
+   * @param info A ContentDescriptor which contains information about the content
    * @param owner The user who is to own the audio
    * @return The content object in a future
    */
-  def createAudio(name: String, description: String, url: String, owner: User): Future[Content] = {
+  def createAudio(info: ContentDescriptor, owner: User): Future[Content] = {
     // Create the resource
-    ResourceHelper.createResourceWithUri(name, url, description, "audio").map(resourceId => {
+    ResourceHelper.createResourceWithUri(info.title, info.description, info.keywords, info.categories, "audio",
+      info.url, info.mime).map(resourceId => {
 
       // Create the content and set the user and the owner
-      val content = Content(NotAssigned, name, 'audio, "", resourceId).save
+      val content = Content(NotAssigned, info.title, 'audio, "", resourceId).save
       owner.addContent(content)
       content
     })
@@ -80,18 +73,17 @@ object ContentManagement {
 
   /**
    * Creates an image content object with a corresponding resource object from information
-   * @param name The name of the image
-   * @param description A description about the image
-   * @param url The url to the image
+   * @param info A ContentDescriptor which contains information about the content
    * @param owner The user who is to own the image
    * @return The content object in a future
    */
-  def createImage(name: String, description: String, url: String, owner: User): Future[Content] = {
+  def createImage(info: ContentDescriptor, owner: User): Future[Content] = {
     // Create the resource
-    ResourceHelper.createResourceWithUri(name, url, description, "image").map(resourceId => {
+    ResourceHelper.createResourceWithUri(info.title, info.description, info.keywords, info.categories, "image",
+      info.url, info.mime).map(resourceId => {
 
       // Create the content and set the user and the owner
-      val content = Content(NotAssigned, name, 'image, url, resourceId).save
+      val content = Content(NotAssigned, info.title, 'image, info.url, resourceId).save
       owner.addContent(content)
       content
     })

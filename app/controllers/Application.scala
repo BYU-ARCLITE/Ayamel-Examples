@@ -45,16 +45,29 @@ object Application extends Controller {
 //      Ok(str)
 
 
-      val json = Json.obj(
-        "L2_data" -> Json.obj(
-          "language" -> "eng",
-          "genre" -> "Action"
-        )
-      )
+//      val json = Json.obj(
+//        "L2_data" -> Json.obj(
+//          "language" -> "eng",
+//          "genre" -> "Action"
+//        )
+//      )
+//
+//      Async {
+//        WS.url("http://ayamel.americancouncils.org/api/v1/resources/5155fbb235e544b119000001").put(json).map(r => Ok(r.json))
+//      }
 
-      Async {
-        WS.url("http://ayamel.americancouncils.org/api/v1/resources/5155fbb235e544b119000001").put(json).map(r => Ok(r.json))
-      }
+//      val json = Json.obj(
+//        "some" -> "thing",
+//        "active" -> true
+//      )
+//      val key = OAuthKey("consumerKey", "consumerSecret", "tokenKey", "tokenSecret")
+//      val oauthRequest = OAuthRequest(None, Some("application/json"), "http://example.com", "", json.toString(), "POST", "/save")
+//      val auth = oauthRequest.getAuthorizationHeader(key)
+//      WS.url("http://example.com/save").withHeaders("Authorization" -> auth).post(json)
+//      parse.tolerantText
+
+
+      Ok
   }
 
   def search = Authentication.authenticatedAction() {

@@ -40,18 +40,17 @@ object ResourceHelper {
    * @param mime The mime type of the file at the uri
    * @return The id of the resource in a future
    */
-  def createResourceWithUri(title: String, uri: String, description: String = "", resourceType: String = "",
-                            mime: Option[String] = None): Future[String] = {
+  def createResourceWithUri(title: String, description: String, keywords: String, categories: List[String],
+                            resourceType: String, uri: String, mime: String): Future[String] = {
 
     // Create the resource
-    ResourceController.createResource(title, description, "video").map(json => {
+    ResourceController.createResource(title, description, keywords, categories, resourceType).map(json => {
       val contentUploadUrl = (json \ "content_upload_url").as[String]
 
       // Add information about the file
-      val mimeType = mime.getOrElse(getMimeFromUri(uri))
       val fileInfo = Json.obj(
         "downloadUri" -> uri,
-        "mime" -> mimeType,
+        "mime" -> mime,
         "representation" -> "original",
         "quality" -> "1"
       )

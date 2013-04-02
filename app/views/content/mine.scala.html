@@ -6,7 +6,7 @@
     )
 }
 
-@main("Ayamel - My Content",moreStyles) {
+@main("Ayamel - My Content", moreStyles) {
 
     <div class="padded">
 
@@ -19,6 +19,6 @@
             @views.html.content.helpers.contentList(content, 'activity, "Activities", "icon-pencil")
         }
 
-        <a href="@routes.ContentController.createPage()" class="btn btn-blue">Add Content</a>
+        <a href="@routes.ContentController.createPage("file")" class="btn btn-blue">Add Content</a>
     </div>
 }

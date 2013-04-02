@@ -39,10 +39,13 @@ object ResourceController {
    * @param resourceType The resource type of the new resource. View the API documentation for valid values.
    * @return The future JSON result
    */
-  def createResource(title: String, description: String = "", resourceType: String): Future[JsValue] = {
+  def createResource(title: String, description: String, keywords: String, categories: List[String],
+                     resourceType: String): Future[JsValue] = {
     val json = Json.obj(
       "title" -> title,
       "description" -> description,
+      "keywords" -> keywords,
+      "categories" -> categories,
       "type" -> resourceType
     )
     WS.url(baseUrl).post(json).map(_.json)

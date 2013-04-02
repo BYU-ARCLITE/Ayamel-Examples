@@ -1,6 +1,6 @@
 package service
 
-import oauth.PlayOAuth
+import joshmonson.oauth.{OAuthKey, OAuthRequest}
 import play.api.mvc.{AnyContent, Request}
 import models.{Course, User}
 import anorm.NotAssigned
@@ -36,7 +36,9 @@ object LMSAuth {
   def ltiAuth(course: Course)(implicit request: Request[String]): Option[User] = {
 
     // Verify the request. There is no token in LTI, so give an empty string
-    val valid = PlayOAuth.verify(request, "", course.lmsKey)
+    val key = OAuthKey(course.id.get.toString, course.lmsKey, "", "")
+    val oauthRequest = OAuthRequest(request.headers.get("Authentication"), request.headers.get("Content-Type"), request.host, request.rawQueryString, request.body, request.method, request.path)
+    val valid = oauthRequest.verify(key)
     if (valid) {
 
       // Get the user info

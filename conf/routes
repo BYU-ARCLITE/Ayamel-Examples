@@ -42,13 +42,16 @@ POST    /course/:courseId/content/:id/settings      controllers.ContentControlle
 # Content pages
 GET     /content                        controllers.ContentController.public
 GET     /content/mine                   controllers.ContentController.mine
-GET     /content/create                 controllers.ContentController.createPage
-POST    /content/create                 controllers.ContentController.create
+GET     /content/create/:page           controllers.ContentController.createPage(page: String)
+POST    /content/create/url             controllers.ContentController.createFromUrl
+POST    /content/create/file            controllers.ContentController.createFromFile
+POST    /content/create/resource        controllers.ContentController.createFromResource
 GET     /content/:id                    controllers.ContentController.view(id: Long)
 GET     /content/:id/delete             controllers.ContentController.delete(id: Long)
 POST    /content/:id/visibility         controllers.ContentController.setVisibility(id: Long)
 POST    /content/:id/shareability       controllers.ContentController.setShareability(id: Long)
 POST    /content/:id/settings           controllers.ContentController.setSettings(id: Long)
+POST    /content/:id/metadata           controllers.ContentController.setMetadata(id: Long)
 
 # User pages
 GET     /user/settings                  controllers.Users.accountSettings
