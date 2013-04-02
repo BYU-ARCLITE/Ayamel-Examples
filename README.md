@@ -2,6 +2,16 @@
 
 This is the Ayamel site developed by the ARCLITE Lab at Brigham Young University as part of the National Flagship Media Library effort.
 
+**Table of Contents**
+ - <a href="#setup">Setup</a>
+    - <a href="#acquire-code">Acquire code</a>
+    - <a href="#configure-mysql">Configure MySQL</a>
+    - <a href="#configure-resource-library-api">Configure Resource Library API</a>
+    - <a href="#configure-file-upload-source">Configure file upload source</a>
+ - <a href="#running">Running</a>
+    - <a href="#development-server">Development Server</a>
+    - <a href="#production-server">Production Server</a>
+
 ## Setup
 
 ### Acquire code
