@@ -1,0 +1,82 @@
+@(contentList: List[models.Content])(implicit request: RequestHeader, user: User)
+
+@shorten(str: String) = {
+    @if(str.length > 15) {
+        <a href="#" class="shortened" data-toggle="tooltip" title="@str">@{str.substring(0, 12) + "..."}</a>
+    } else {
+        @str
+    }
+}
+
+@main("Ayamel - Manage Users") {
+
+    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/admin.css")"/>
+
+    <div class="adminBackground">
+    </div>
+
+    <div class="padded">
+
+        <div class="pad-bottom-med">
+            <a href="@routes.Users.admin()"><i class="icon-arrow-left"></i> Back to dashboard</a>
+        </div>
+
+        <h1>Manage Content</h1>
+
+        <table class="table table-bordered table-striped table-condensed">
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Shareability</th>
+                <th>Visibility</th>
+                <th>Resource Id</th>
+                <th>Type</th>
+                <th>Actions</th>
+            </tr>
+            @for(content <- contentList) {
+                <tr>
+                    <td>@content.id.get</td>
+                    <td>@shorten(content.name)</td>
+                    <td>
+                        @if(content.shareability == models.Content.shareability.notShareable) {
+                            Not Shareable
+                        }
+                        @if(content.shareability == models.Content.shareability.byMeOnly) {
+                            By Owner Only
+                        }
+                        @if(content.shareability == models.Content.shareability.shareable) {
+                            Shareable
+                        }
+                    </td>
+                    <td>
+                        @if(content.visibility == models.Content.visibility._private) {
+                            Private
+                        }
+                        @if(content.visibility == models.Content.visibility.tightlyRestricted) {
+                            Tightly Restricted
+                        }
+                        @if(content.visibility == models.Content.visibility.looselyRestricted) {
+                            Loosely Restricted
+                        }
+                        @if(content.visibility == models.Content.visibility.public) {
+                            Public
+                        }
+                    </td>
+                    <td>@shorten(content.resourceId)</td>
+                    <td>@content.contentType.name</td>
+                    <td>
+                        <a href="@routes.ContentController.view(content.id.get)" class="btn">View</a>
+                    </td>
+                </tr>
+            }
+        </table>
+
+    </div>
+
+    <script type="text/javascript">
+        $(function() {
+            $(".shortened").tooltip();
+        });
+    </script>
+
+}

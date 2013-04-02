@@ -67,6 +67,13 @@ GET     /admin                          controllers.Users.admin
 GET     /admin/teacher                  controllers.Users.teacherApprovalPage
 GET     /admin/teacher/:id/approve      controllers.Users.approveTeacher(id: Long)
 GET     /admin/teacher/:id/deny         controllers.Users.denyTeacher(id: Long)
+GET     /admin/users                    controllers.Users.manageUsers
+POST    /admin/users/setRole            controllers.Users.setRole
+POST    /admin/users/notify             controllers.Users.sendNotification
+POST    /admin/users/:id/delete         controllers.Users.delete(id: Long)
+GET     /admin/courses                  controllers.Users.manageCourses
+GET     /admin/courses/:id/delete       controllers.Users.deleteCourse(id: Long)
+GET     /admin/content                  controllers.Users.manageContent
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file                   controllers.Assets.at(path="/public", file)

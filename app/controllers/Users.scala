@@ -1,9 +1,10 @@
 package controllers
 
 import authentication.Authentication
-import play.api.mvc.{Result, Request, Controller}
-import models.{Notification, User, TeacherRequest}
+import play.api.mvc.{RequestHeader, Result, Request, Controller}
+import models._
 import service.HashTools
+import scala.Some
 
 /**
  * Created with IntelliJ IDEA.
@@ -167,6 +168,105 @@ object Users extends Controller {
               teacherRequest.deny()
               Redirect(routes.Users.teacherApprovalPage()).flashing("info" -> "Teacher request denied")
           }
+        }
+  }
+
+  def manageUsers = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+        Authentication.enforceRole(User.roles.admin) {
+          val users = User.list
+          Ok(views.html.users.admin.users(users))
+        }
+  }
+
+  def getUser(id: Long)(f: User => Result)(implicit request: RequestHeader): Result = {
+    val user = User.findById(id)
+    if (user.isDefined) {
+      val accountLink = user.get.getAccountLink
+      if (accountLink.isDefined)
+        f(accountLink.get.getPrimaryUser)
+      else
+        f(user.get)
+    } else
+      Errors.notFound
+  }
+
+  def setRole() = Authentication.authenticatedAction(parse.urlFormEncoded) {
+    implicit request =>
+      implicit user =>
+        Authentication.enforceRole(User.roles.admin) {
+          val id = request.body("userId")(0).toLong
+          getUser(id) {
+            targetUser =>
+
+              // Set the user's role
+              val role = request.body("role")(0).toInt
+              targetUser.copy(role = role).save
+              Redirect(routes.Users.manageUsers()).flashing("info" -> "User role update")
+          }
+        }
+  }
+
+  def sendNotification = Authentication.authenticatedAction(parse.urlFormEncoded) {
+    implicit request =>
+      implicit user =>
+        Authentication.enforceRole(User.roles.admin) {
+          val id = request.body("userId")(0).toLong
+          getUser(id) {
+            targetUser =>
+
+              // Send a notification to the user
+              val message = request.body("message")(0)
+              targetUser.sendNotification(message)
+              Redirect(routes.Users.manageUsers()).flashing("info" -> "Notification sent to user")
+          }
+        }
+  }
+
+  def delete(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
+    implicit request =>
+      implicit user =>
+        Authentication.enforceRole(User.roles.admin) {
+          getUser(id) {
+            targetUser =>
+
+              // Delete the user
+              targetUser.delete()
+              Redirect(routes.Users.manageUsers()).flashing("info" -> "User deleted")
+          }
+        }
+  }
+
+  def manageCourses = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+        Authentication.enforceRole(User.roles.admin) {
+          val courses = Course.list
+          Ok(views.html.users.admin.courses(courses))
+        }
+  }
+
+  def deleteCourse(id: Long) = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+        Authentication.enforceRole(User.roles.admin) {
+          Courses.getCourse(id) {
+            course =>
+
+              // Delete the course
+              course.delete()
+              Redirect(routes.Users.manageCourses()).flashing("info" -> "Course deleted")
+          }
+        }
+  }
+
+  def manageContent = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+        Authentication.enforceRole(User.roles.admin) {
+          val content = Content.list
+          Ok(views.html.users.admin.content(content))
         }
   }
 
