@@ -59,9 +59,10 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
     Notification.listByUser(this).foreach(_.delete())
 
     // Delete all linked accounts
+    // TODO: This is potentially an endless loop. Fix it
     getAccountLink.map {
       accountLink =>
-        accountLink.getUsers.filterNot(_ == this).foreach(_.delete())
+//        accountLink.getUsers.filterNot(_ == this).foreach(_.delete())
         accountLink.delete()
     }
 
@@ -75,8 +76,17 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
     delete(User.tableName, id)
   }
 
-  //      Logic
-  // ===============
+
+  //                  _   _
+  //        /\       | | (_)
+  //       /  \   ___| |_ _  ___  _ __  ___
+  //      / /\ \ / __| __| |/ _ \| '_ \/ __|
+  //     / ____ \ (__| |_| | (_) | | | \__ \
+  //    /_/    \_\___|\__|_|\___/|_| |_|___/
+  //
+  //   ______ ______ ______ ______ ______ ______ ______ ______ ______
+  // |______|______|______|______|______|______|______|______|______|
+  //
 
   /**
    * Enrolls the user in a course
@@ -111,79 +121,12 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
   }
 
   /**
-   * Gets the enrollment--courses the user is in--of the user
-   * @return The list of courses
-   */
-  def getEnrollment: List[Course] = CourseMembership.listUsersClasses(this)
-
-  /**
-   * Gets the content belonging to this user
-   * @return The list of content
-   */
-  def getContent: List[Content] = ContentOwnership.listUserContent(this)
-
-  /**
    * Create content from a resource and assign this user as the owner
    * @param content The content that will be owned
    * @return The content ownership
    */
   def addContent(content: Content): ContentOwnership =
     ContentOwnership(NotAssigned, this.id.get, content.id.get).save
-
-  /**
-   * Get the profile picture. If it's not set then return the placeholder picture.
-   * @return The url of the picture
-   */
-  def getPicture: String = picture.getOrElse(routes.Assets.at("images/users/facePlaceholder.jpg").url)
-
-  /**
-   * Tries the user's name, if it doesn't exists then returns the username
-   * @return A displayable name
-   */
-  def displayName: String = name.getOrElse(username)
-
-  /**
-   * Check's the user's permission level to see if he/she can create a course.
-   * @return
-   */
-  def canCreateCourse: Boolean = role == User.roles.teacher || role == User.roles.admin
-
-  /**
-   * Admins and non-guest members can add content to a course
-   * @param course The course to check against
-   * @return Can or cannot add content
-   */
-  def canAddContentTo(course: Course): Boolean =
-    role == User.roles.admin || (role != User.roles.guest && course.getMembers.contains(this))
-
-  def canView(course: Course): Boolean =
-    role == User.roles.admin || course.getMembers.contains(this)
-
-  def canApprove(request: AddCourseRequest, course: Course): Boolean =
-    role == User.roles.admin || (canEdit(course) && request.courseId == course.id.get)
-
-  def canEdit(course: Course): Boolean =
-    role == User.roles.admin || (role == User.roles.teacher && course.getTeachers.contains(this))
-
-  /**
-   * Gets the latest content from this user's courses.
-   * @param limit The number of content objects to get
-   * @return The content
-   */
-  def getContentFeed(limit: Int = 5): List[Content] =
-    getEnrollment.flatMap(_.getContent)
-      .sortWith((c1, c2) => TimeTools.dateToTimestamp(c1.dateAdded) > TimeTools.dateToTimestamp(c2.dateAdded))
-      .distinct.take(limit)
-
-  /**
-   * Gets the latest announcements made in this user's courses.
-   * @param limit The number of announcement to get
-   * @return The announcements paired with the course they came from
-   */
-  def getAnnouncementFeed(limit: Int = 5): List[(Announcement, Course)] =
-    getEnrollment.flatMap(course => course.getAnnouncements.map(announcement => (announcement, course)))
-      .sortWith((d1, d2) => TimeTools.dateToTimestamp(d1._1.timeMade) > TimeTools.dateToTimestamp(d2._1.timeMade))
-      .take(limit)
 
   /**
    * Submits a teacher request for this user
@@ -200,14 +143,6 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
   def sendNotification(message: String): Notification = {
     // TODO: Possibly send an email as well
     Notification(NotAssigned, this.id.get, message).save
-  }
-
-  /**
-   * Gets a list of the user's notifications
-   * @return
-   */
-  def getNotifications: List[Notification] = {
-    Notification.listByUser(this)
   }
 
   /**
@@ -299,6 +234,124 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
 
   }
 
+  //       _____      _   _
+  //      / ____|    | | | |
+  //     | |  __  ___| |_| |_ ___ _ __ ___
+  //     | | |_ |/ _ \ __| __/ _ \ '__/ __|
+  //     | |__| |  __/ |_| ||  __/ |  \__ \
+  //      \_____|\___|\__|\__\___|_|  |___/
+  //
+  //   ______ ______ ______ ______ ______ ______ ______ ______ ______
+  // |______|______|______|______|______|______|______|______|______|
+  //
+
+  /**
+   * Any items that are retrieved from the DB should be cached here in order to reduce the number of DB calls
+   */
+  val cacheTarget = this
+  object cache {
+
+    var enrollment: Option[List[Course]] = None
+
+    def getEnrollment = {
+      if (enrollment.isEmpty)
+        enrollment = Some(CourseMembership.listUsersClasses(cacheTarget))
+      enrollment.get
+    }
+
+    var content: Option[List[Content]] = None
+
+    def getContent = {
+      if (content.isEmpty)
+        content = Some(ContentOwnership.listUserContent(cacheTarget))
+      content.get
+    }
+
+    var contentFeed: Option[List[Content]] = None
+
+    def getContentFeed = {
+      if (contentFeed.isEmpty)
+        contentFeed = Some(
+          getEnrollment.flatMap(_.getContent)
+            .sortWith((c1, c2) => TimeTools.dateToTimestamp(c1.dateAdded) > TimeTools.dateToTimestamp(c2.dateAdded))
+            .distinct
+        )
+      contentFeed.get
+    }
+
+    var announcementFeed: Option[List[(Announcement, Course)]] = None
+
+    def getAnnouncementFeed = {
+      if (announcementFeed.isEmpty)
+        announcementFeed = Some(
+          getEnrollment.flatMap(course => course.getAnnouncements.map(announcement => (announcement, course)))
+            .sortWith((d1, d2) => TimeTools.dateToTimestamp(d1._1.timeMade) > TimeTools.dateToTimestamp(d2._1.timeMade))
+        )
+      announcementFeed.get
+    }
+
+    var notifications: Option[List[Notification]] = None
+
+    def getNotifications = {
+      if (notifications.isEmpty)
+        notifications = Some(Notification.listByUser(cacheTarget))
+      notifications.get
+    }
+
+    var accountLink: Option[Option[AccountLink]] = None
+
+    def getAccountLink = {
+      if (accountLink.isEmpty)
+        accountLink = Some(AccountLink.findById(accountLinkId))
+      accountLink.get
+    }
+
+  }
+
+  /**
+   * Gets the enrollment--courses the user is in--of the user
+   * @return The list of courses
+   */
+  def getEnrollment: List[Course] = cache.getEnrollment
+
+  /**
+   * Gets the content belonging to this user
+   * @return The list of content
+   */
+  def getContent: List[Content] = cache.getContent
+
+  /**
+   * Get the profile picture. If it's not set then return the placeholder picture.
+   * @return The url of the picture
+   */
+  def getPicture: String = picture.getOrElse(routes.Assets.at("images/users/facePlaceholder.jpg").url)
+
+  /**
+   * Tries the user's name, if it doesn't exists then returns the username
+   * @return A displayable name
+   */
+  def displayName: String = name.getOrElse(username)
+
+  /**
+   * Gets the latest content from this user's courses.
+   * @param limit The number of content objects to get
+   * @return The content
+   */
+  def getContentFeed(limit: Int = 5): List[Content] = cache.getContentFeed.take(limit)
+
+  /**
+   * Gets the latest announcements made in this user's courses.
+   * @param limit The number of announcement to get
+   * @return The announcements paired with the course they came from
+   */
+  def getAnnouncementFeed(limit: Int = 5): List[(Announcement, Course)] = cache.getAnnouncementFeed.take(limit)
+
+  /**
+   * Gets a list of the user's notifications
+   * @return
+   */
+  def getNotifications: List[Notification] = cache.getNotifications
+
   /**
    * Returns the account link
    * @return If it exists, then Some(AccountLink) otherwise None
@@ -307,7 +360,48 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
     if (accountLinkId == -1)
       None
     else
-      AccountLink.findById(accountLinkId)
+      cache.getAccountLink
+
+  // =======================
+  //   Permission checkers
+  // =======================
+
+  /**
+   * Check's the user's permission level to see if he/she can create a course.
+   * @return
+   */
+  def canCreateCourse: Boolean = role == User.roles.teacher || role == User.roles.admin
+
+  /**
+   * Admins and non-guest members can add content to a course
+   * @param course The course to check against
+   * @return Can or cannot add content
+   */
+  def canAddContentTo(course: Course): Boolean =
+    role == User.roles.admin || (role != User.roles.guest && course.getMembers.contains(this))
+
+  def canView(course: Course): Boolean =
+    role == User.roles.admin || course.getMembers.contains(this)
+
+  def canApprove(request: AddCourseRequest, course: Course): Boolean =
+    role == User.roles.admin || (canEdit(course) && request.courseId == course.id.get)
+
+  def canEdit(course: Course): Boolean =
+    role == User.roles.admin || (role == User.roles.teacher && course.getTeachers.contains(this))
+
+
+  //       _____      _   _
+  //      / ____|    | | | |
+  //     | (___   ___| |_| |_ ___ _ __ ___
+  //      \___ \ / _ \ __| __/ _ \ '__/ __|
+  //      ____) |  __/ |_| ||  __/ |  \__ \
+  //     |_____/ \___|\__|\__\___|_|  |___/
+  //     ____ ______ ______ ______ ______ ______ ______ ______ ______
+  // |______|______|______|______|______|______|______|______|______|
+  //
+
+
+
 }
 
 object User extends SQLSelectable[User] {

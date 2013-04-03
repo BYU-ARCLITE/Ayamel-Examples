@@ -42,45 +42,16 @@ case class Course(id: Pk[Long], name: String, startDate: String, endDate: String
     delete(Course.tableName, id)
   }
 
-  //      Logic
-  // ===============
-
-  /**
-   * Get the enrolled students
-   * @return The list of users who are students
-   */
-  def getStudents: List[User] = CourseMembership.listClassMembers(this, teacher = false)
-
-  /**
-   * Get the enrolled teachers
-   * @return The list of users who are teachers
-   */
-  def getTeachers: List[User] = CourseMembership.listClassMembers(this, teacher = true)
-
-  /**
-   * Get all the members (teachers and students)
-   * @return The list of all members
-   */
-  def getMembers: List[User] = getTeachers ++ getStudents
-
-  /**
-   * Get content posted to this course
-   * @return The list of content
-   */
-  def getContent: List[Content] = ContentListing.listClassContent(this)
-
-  /**
-   * Get the list of announcement for this course
-   * @return The list of announcements
-   */
-  def getAnnouncements: List[Announcement] = Announcement.listByCourse(this)
-
-  /**
-   * Get the list of announcement for this course, ordered by date
-   * @return The list of announcements
-   */
-  def getSortedAnnouncements: List[Announcement] = Announcement.listByCourse(this)
-    .sortWith((a1, a2) => TimeTools.dateToTimestamp(a1.timeMade) > TimeTools.dateToTimestamp(a2.timeMade))
+  //                  _   _
+  //        /\       | | (_)
+  //       /  \   ___| |_ _  ___  _ __  ___
+  //      / /\ \ / __| __| |/ _ \| '_ \/ __|
+  //     / ____ \ (__| |_| | (_) | | | \__ \
+  //    /_/    \_\___|\__|_|\___/|_| |_|___/
+  //
+  //   ______ ______ ______ ______ ______ ______ ______ ______ ______
+  // |______|______|______|______|______|______|______|______|______|
+  //
 
   /**
    * Post content to the course
@@ -117,6 +88,93 @@ case class Course(id: Pk[Long], name: String, startDate: String, endDate: String
   def makeAnnouncement(user: User, message: String): Announcement =
     Announcement(NotAssigned, this.id.get, user.id.get, TimeTools.now(), message).save
 
+  //       _____      _   _
+  //      / ____|    | | | |
+  //     | |  __  ___| |_| |_ ___ _ __ ___
+  //     | | |_ |/ _ \ __| __/ _ \ '__/ __|
+  //     | |__| |  __/ |_| ||  __/ |  \__ \
+  //      \_____|\___|\__|\__\___|_|  |___/
+  //
+  //   ______ ______ ______ ______ ______ ______ ______ ______ ______
+  // |______|______|______|______|______|______|______|______|______|
+  //
+
+  val cacheTarget = this
+  object cache {
+    var students: Option[List[User]] = None
+
+    def getStudents = {
+      if (students.isEmpty)
+        students = Some(CourseMembership.listClassMembers(cacheTarget, teacher = false))
+      students.get
+    }
+
+    var teachers: Option[List[User]] = None
+
+    def getTeachers = {
+      if (teachers.isEmpty)
+        teachers = Some(CourseMembership.listClassMembers(cacheTarget, teacher = true))
+      teachers.get
+    }
+
+    var content: Option[List[Content]] = None
+
+    def getContent = {
+      if (content.isEmpty)
+        content = Some(ContentListing.listClassContent(cacheTarget))
+      content.get
+    }
+
+    var announcements: Option[List[Announcement]] = None
+
+    def getAnnouncements = {
+      if (announcements.isEmpty)
+        announcements = Some(Announcement.listByCourse(cacheTarget))
+      announcements.get
+    }
+  }
+
+  /**
+   * Get the enrolled students
+   * @return The list of users who are students
+   */
+  def getStudents: List[User] = cache.getStudents
+
+  /**
+   * Get the enrolled teachers
+   * @return The list of users who are teachers
+   */
+  def getTeachers: List[User] = cache.getTeachers
+
+  /**
+   * Get all the members (teachers and students)
+   * @return The list of all members
+   */
+  def getMembers: List[User] = getTeachers ++ getStudents
+
+  /**
+   * Get content posted to this course
+   * @return The list of content
+   */
+  def getContent: List[Content] = cache.getContent
+
+  /**
+   * Get the list of announcement for this course
+   * @return The list of announcements
+   */
+  def getAnnouncements: List[Announcement] = cache.getAnnouncements
+
+  /**
+   * Get the list of announcement for this course, ordered by date
+   * @return The list of announcements
+   */
+  def getSortedAnnouncements: List[Announcement] = cache.getAnnouncements
+    .sortWith((a1, a2) => TimeTools.dateToTimestamp(a1.timeMade) > TimeTools.dateToTimestamp(a2.timeMade))
+
+  /**
+   * Get the list of requests by other users to join this course
+   * @return The add course request list
+   */
   def getRequests: List[AddCourseRequest] = AddCourseRequest.listByCourse(this)
 }
 

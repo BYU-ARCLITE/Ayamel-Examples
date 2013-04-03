@@ -88,37 +88,36 @@
                 </p>
                 <div>
                     Account merge status:
-                    @defining(user.getAccountLink) { accountLink =>
-                        @if(accountLink.isDefined) {
-                            <span class="label label-magenta">Merged with @{accountLink.get.userIds.size - 1} other(s)</span>
 
-                            <table class="table table-bordered pad-top-med">
-                                <thead>
+                    @if(user.getAccountLink.isDefined) {
+                        <span class="label label-magenta">Merged with @{user.getAccountLink.get.userIds.size - 1} other(s)</span>
+
+                        <table class="table table-bordered pad-top-med">
+                            <thead>
+                                <tr>
+                                    <th>Login method</th>
+                                    <th>Username</th>
+                                    <th>Primary account? <i class="icon-question-sign color-blue" id="primaryHelp"></i></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for(user <- user.getAccountLink.get.getUsers) {
                                     <tr>
-                                        <th>Login method</th>
-                                        <th>Username</th>
-                                        <th>Primary account? <i class="icon-question-sign color-blue" id="primaryHelp"></i></th>
+                                    <td>@user.authScheme.name</td>
+                                    <td>@user.username</td>
+                                    <td>
+                                        @if(user.id.get == user.getAccountLink.get.primaryAccount) {
+                                            <span class="label label-yellow">Primary</span>
+                                        } else {
+                                            <span class="label label-blue">Secondary</span>
+                                        }
+                                    </td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    @for(user <- accountLink.get.getUsers) {
-                                        <tr>
-                                        <td>@user.authScheme.name</td>
-                                        <td>@user.username</td>
-                                        <td>
-                                            @if(user.id.get == accountLink.get.primaryAccount) {
-                                                <span class="label label-yellow">Primary</span>
-                                            } else {
-                                                <span class="label label-blue">Secondary</span>
-                                            }
-                                        </td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        } else {
-                            <span class="label label-magenta">Not merged</span>
-                        }
+                                }
+                            </tbody>
+                        </table>
+                    } else {
+                        <span class="label label-magenta">Not merged</span>
                     }
                 </div>
                 <div class="pad-top-med">

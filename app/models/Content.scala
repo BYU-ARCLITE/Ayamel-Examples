@@ -52,6 +52,31 @@ case class Content(id: Pk[Long], name: String, contentType: Symbol, thumbnail: S
     delete(Content.tableName, id)
   }
 
+  //                  _   _
+  //        /\       | | (_)
+  //       /  \   ___| |_ _  ___  _ __  ___
+  //      / /\ \ / __| __| |/ _ \| '_ \/ __|
+  //     / ____ \ (__| |_| | (_) | | | \__ \
+  //    /_/    \_\___|\__|_|\___/|_| |_|___/
+  //
+  //   ______ ______ ______ ______ ______ ______ ______ ______ ______
+  // |______|______|______|______|______|______|______|______|______|
+  //
+
+  def setSetting(key: String, value: String): Content =
+    copy(settings = settings.updated(key, value))
+
+  //       _____      _   _
+  //      / ____|    | | | |
+  //     | |  __  ___| |_| |_ ___ _ __ ___
+  //     | | |_ |/ _ \ __| __/ _ \ '__/ __|
+  //     | |__| |  __/ |_| ||  __/ |  \__ \
+  //      \_____|\___|\__|\__\___|_|  |___/
+  //
+  //   ______ ______ ______ ______ ______ ______ ______ ______ ______
+  // |______|______|______|______|______|______|______|______|______|
+  //
+
   /**
    * Visibility has four levels:
    * 1. Private - Only the owner can see this.
@@ -98,9 +123,6 @@ case class Content(id: Pk[Long], name: String, contentType: Symbol, thumbnail: S
    */
   def isEditableBy(user: User): Boolean =
     user.role == User.roles.admin || user.getContent.contains(this)
-
-  def setSetting(key: String, value: String): Content =
-    copy(settings = settings.updated(key, value))
 
   object videoSettings {
     def level = settings.get("level").getOrElse(Content.defaultSettings.video.level)

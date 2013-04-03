@@ -11,13 +11,11 @@
     <div class="padded">
 
         <h1>My Content</h1>
-        @defining(user.getContent) { content =>
-            @views.html.content.helpers.contentList(content, 'video, "Videos", "icon-film")
-            @views.html.content.helpers.contentList(content, 'audio, "Audio", "icon-volume-up")
-            @views.html.content.helpers.contentList(content, 'image, "Images", "icon-picture")
-            @views.html.content.helpers.contentList(content, 'playlist, "Playlists", "icon-list-ol")
-            @views.html.content.helpers.contentList(content, 'activity, "Activities", "icon-pencil")
-        }
+        @views.html.content.helpers.contentList(user.getContent, 'video, "Videos", "icon-film")
+        @views.html.content.helpers.contentList(user.getContent, 'audio, "Audio", "icon-volume-up")
+        @views.html.content.helpers.contentList(user.getContent, 'image, "Images", "icon-picture")
+        @views.html.content.helpers.contentList(user.getContent, 'playlist, "Playlists", "icon-list-ol")
+        @views.html.content.helpers.contentList(user.getContent, 'activity, "Activities", "icon-pencil")
 
         <a href="@routes.ContentController.createPage("file")" class="btn btn-blue">Add Content</a>
     </div>

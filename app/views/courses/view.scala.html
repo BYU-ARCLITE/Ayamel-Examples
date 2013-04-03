@@ -5,106 +5,107 @@
 }
 
 @main("Ayamel - " + course.name) {
-    @defining(course.getContent) { content =>
 
-        <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/course.css")">
-        <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/content.css")">
 
-        <div class="courseBackground">
-            <div class="courseTitle">
-                <h1>@course.name</h1>
-                @if(user canEdit course) {
-                    <a href="#lmsModal" role="button" class="btn btn-yellow" data-toggle="modal"><i class="icon-book"></i> Add to an LMS</a>
-                    @if(!course.getRequests.isEmpty) {
-                        <a href="@routes.Courses.approvePage(course.id.get)" class="btn btn-yellow"><i class="icon-user"></i> Approve/Deny Student Requests</a>
-                    }
+    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/course.css")">
+    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/content.css")">
+
+    <div class="courseBackground">
+        <div class="courseTitle">
+            <h1>@course.name</h1>
+            @if(user canEdit course) {
+                <a href="#lmsModal" role="button" class="btn btn-yellow" data-toggle="modal"><i class="icon-book"></i> Add to an LMS</a>
+                @if(!course.getRequests.isEmpty) {
+                    <a href="@routes.Courses.approvePage(course.id.get)" class="btn btn-yellow"><i class="icon-user"></i> Approve/Deny Student Requests</a>
                 }
-            </div>
-
-
-            <div class="faces">
-                @for(member <- course.getMembers) {
-                    @renderFace(member)
-                }
-
-                @*<a href="#" class="btn btn-yellow addStudent"><i class="icon-user"></i> Add student</a>*@
-            </div>
-        </div>
-
-        <div class="padded">
-            <div class="row-fluid">
-                <div class="span8">
-                    @views.html.content.helpers.contentList(content, 'video, "Videos", "icon-film", course = Some(course))
-                    @views.html.content.helpers.contentList(content, 'audio, "Audio", "icon-volume-up", course = Some(course))
-                    @views.html.content.helpers.contentList(content, 'image, "Images", "icon-picture", course = Some(course))
-                    @views.html.content.helpers.contentList(content, 'playlist, "Playlists", "icon-list-ol", course = Some(course))
-                    @views.html.content.helpers.contentList(content, 'activity, "Activities", "icon-pencil", course = Some(course))
-
-                </div>
-                <div class="span4">
-                    <h3><i class="icon-bullhorn"></i> Announcements</h3>
-
-                    @for(announcement <- course.getSortedAnnouncements) {
-                        @courses.announcement(announcement)
-                    }
-                </div>
-            </div>
-
-            @if(user.role != User.roles.guest) {
-                <hr>
-
-                <a href="#addContentModal" role="button" class="btn btn-blue" data-toggle="modal"><i class="icon-plus"></i> Add content</a>
-                <a href="#announcementModal" role="button" class="btn btn-blue" data-toggle="modal"><i class="icon-comment"></i> Make an announcement</a>
             }
         </div>
 
-        @if(user.role == User.roles.teacher || user.role == User.roles.admin) {
-            <div id="lmsModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="lmsModalLabel" aria-hidden="true">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                    <h3 id="lmsModalLabel">How to add this course to an LMS.</h3>
-                </div>
-                <div class="modal-body">
-                    <p>Ayamel supports two methods of adding course pages into LMSs. They are:</p>
-                    <h4>LTI</h4>
-                    <p>
-                        This is the preferred method. Using this, Ayamel receives from the LMS information about the student.
-                        This is simplest and easiest for the students. Not all LMSs support this.
-                    </p>
-                    <p>
-                        You need three things to set up LTI: a launch url, a consumer key, and a consumer secret. The last two
-                        items are sometimes referred to as the public and private keys. For this course, these items are the
-                        following:
-                    </p>
-                    <ul>
-                        <li><strong>Launch URL:</strong> <code>@routes.Courses.ltiAuth(course.id.get).absoluteURL()</code></li>
-                        <li><strong>Consumer Key:</strong> <code>@course.id.get</code></li>
-                        <li><strong>Consumer Secret:</strong> <code>@course.lmsKey</code></li>
-                    </ul>
 
-                    <h4>Keyed URL</h4>
-                    <p>
-                        For LMSs that do not support LTI, you can link to this page with a special link. When a student clicks
-                        on that link, he or she will be able to view the course page and its content, but will be unable to add
-                        content. To add content, they will need to log in through Ayamel and be added to the course.
-                    </p>
-                    <p>
-                        For this course, the keyed URL is: <code>@{routes.Courses.keyAuth(course.id.get)}?key=@course.lmsKey</code>
-                    </p>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-blue" data-dismiss="modal" aria-hidden="true">Close</button>
-                </div>
+        <div class="faces">
+            @for(member <- course.getMembers) {
+                @renderFace(member)
+            }
+
+            @*<a href="#" class="btn btn-yellow addStudent"><i class="icon-user"></i> Add student</a>*@
+        </div>
+    </div>
+
+    <div class="padded">
+        <div class="row-fluid">
+            <div class="span8">
+                @views.html.content.helpers.contentList(course.getContent, 'video, "Videos", "icon-film", course = Some(course))
+                @views.html.content.helpers.contentList(course.getContent, 'audio, "Audio", "icon-volume-up", course = Some(course))
+                @views.html.content.helpers.contentList(course.getContent, 'image, "Images", "icon-picture", course = Some(course))
+                @views.html.content.helpers.contentList(course.getContent, 'playlist, "Playlists", "icon-list-ol", course = Some(course))
+                @views.html.content.helpers.contentList(course.getContent, 'activity, "Activities", "icon-pencil", course = Some(course))
+
             </div>
-        }
+            <div class="span4">
+                <h3><i class="icon-bullhorn"></i> Announcements</h3>
 
-        @if(user canAddContentTo course) {
-            <div id="addContentModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="addContentModalLabel" aria-hidden="true">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                    <h3 id="addContentModalLabel">Add content to this course.</h3>
-                </div>
-                @defining(user.getContent.filterNot(c => content.contains(c))) { availableContent =>
+                @for(announcement <- course.getSortedAnnouncements) {
+                    @courses.announcement(announcement)
+                }
+            </div>
+        </div>
+
+        @if(user.role != User.roles.guest) {
+            <hr>
+
+            <a href="#addContentModal" role="button" class="btn btn-blue" data-toggle="modal"><i class="icon-plus"></i> Add content</a>
+            <a href="#announcementModal" role="button" class="btn btn-blue" data-toggle="modal"><i class="icon-comment"></i> Make an announcement</a>
+        }
+    </div>
+
+    @if(user.role == User.roles.teacher || user.role == User.roles.admin) {
+        <div id="lmsModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="lmsModalLabel" aria-hidden="true">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h3 id="lmsModalLabel">How to add this course to an LMS.</h3>
+            </div>
+            <div class="modal-body">
+                <p>Ayamel supports two methods of adding course pages into LMSs. They are:</p>
+                <h4>LTI</h4>
+                <p>
+                    This is the preferred method. Using this, Ayamel receives from the LMS information about the student.
+                    This is simplest and easiest for the students. Not all LMSs support this.
+                </p>
+                <p>
+                    You need three things to set up LTI: a launch url, a consumer key, and a consumer secret. The last two
+                    items are sometimes referred to as the public and private keys. For this course, these items are the
+                    following:
+                </p>
+                <ul>
+                    <li><strong>Launch URL:</strong> <code>@routes.Courses.ltiAuth(course.id.get).absoluteURL()</code></li>
+                    <li><strong>Consumer Key:</strong> <code>@course.id.get</code></li>
+                    <li><strong>Consumer Secret:</strong> <code>@course.lmsKey</code></li>
+                </ul>
+
+                <h4>Keyed URL</h4>
+                <p>
+                    For LMSs that do not support LTI, you can link to this page with a special link. When a student clicks
+                    on that link, he or she will be able to view the course page and its content, but will be unable to add
+                    content. To add content, they will need to log in through Ayamel and be added to the course.
+                </p>
+                <p>
+                    For this course, the keyed URL is: <code>@{routes.Courses.keyAuth(course.id.get)}?key=@course.lmsKey</code>
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-blue" data-dismiss="modal" aria-hidden="true">Close</button>
+            </div>
+        </div>
+    }
+
+    @if(user canAddContentTo course) {
+        <div id="addContentModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="addContentModalLabel" aria-hidden="true">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h3 id="addContentModalLabel">Add content to this course.</h3>
+            </div>
+
+            @defining(user.getContent.filterNot(c => course.getContent.contains(c))) { availableContent =>
                 <div class="modal-body">
                     <p>Add content you have uploaded to this course.</p>
 
@@ -132,51 +133,52 @@
                         <button class="btn btn-blue" id="addContentButton">Add Content</button>
                     }
                 </div>
-                }
+            }
+
+        </div>
+
+        <div id="announcementModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="announcementModalLabel" aria-hidden="true">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h3 id="announcementModalLabel">Make an announcement.</h3>
             </div>
 
-            <div id="announcementModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="announcementModalLabel" aria-hidden="true">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                    <h3 id="announcementModalLabel">Make an announcement.</h3>
-                </div>
-
-                <div class="modal-body">
-                    <p>Your announcement will be seen by all members of this course.</p>
-                    <form class="form-horizontal" id="announcementForm" method="post" action="@routes.Courses.addAnnouncement(course.id.get)">
-                        <div class="control-group">
-                            <label class="control-label" for="announcement">Announcement</label>
-                            <div class="controls">
-                                <textarea id="announcement" name="announcement"></textarea>
-                            </div>
-                            <input type="submit" style="position: absolute; left: -9999px; width: 1px; height: 1px;"/>
+            <div class="modal-body">
+                <p>Your announcement will be seen by all members of this course.</p>
+                <form class="form-horizontal" id="announcementForm" method="post" action="@routes.Courses.addAnnouncement(course.id.get)">
+                    <div class="control-group">
+                        <label class="control-label" for="announcement">Announcement</label>
+                        <div class="controls">
+                            <textarea id="announcement" name="announcement"></textarea>
                         </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
-                    <button class="btn btn-blue" id="announcementButton">Publish</button>
-                </div>
+                        <input type="submit" style="position: absolute; left: -9999px; width: 1px; height: 1px;"/>
+                    </div>
+                </form>
             </div>
-
-            <script type="text/javascript">
-                $(function() {
-                    $("#addContentButton").click(function () {
-                        $("#addContentForm").submit();
-                    });
-                    $("#announcementButton").click(function () {
-                        $("#announcementForm").submit();
-                    });
-                });
-            </script>
-        }
+            <div class="modal-footer">
+                <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+                <button class="btn btn-blue" id="announcementButton">Publish</button>
+            </div>
+        </div>
 
         <script type="text/javascript">
             $(function() {
-                $(".face, .contentEntry").tooltip({
-                    placement: "bottom"
+                $("#addContentButton").click(function () {
+                    $("#addContentForm").submit();
+                });
+                $("#announcementButton").click(function () {
+                    $("#announcementForm").submit();
                 });
             });
         </script>
     }
+
+    <script type="text/javascript">
+        $(function() {
+            $(".face, .contentEntry").tooltip({
+                placement: "bottom"
+            });
+        });
+    </script>
+
 }

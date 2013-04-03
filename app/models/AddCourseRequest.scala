@@ -31,9 +31,16 @@ case class AddCourseRequest (id:Pk [Long], userId:Long, courseId:Long, message: 
     delete(AddCourseRequest.tableName, id)
   }
 
-  def getUser: User = User.findById(userId).get
-
-  def getCourse: Course = Course.findById(courseId).get
+  //                  _   _
+  //        /\       | | (_)
+  //       /  \   ___| |_ _  ___  _ __  ___
+  //      / /\ \ / __| __| |/ _ \| '_ \/ __|
+  //     / ____ \ (__| |_| | (_) | | | \__ \
+  //    /_/    \_\___|\__|_|\___/|_| |_|___/
+  //
+  //   ______ ______ ______ ______ ______ ______ ______ ______ ______
+  // |______|______|______|______|______|______|______|______|______|
+  //
 
   def approve() {
     // Notify the user and add him to the course
@@ -50,6 +57,39 @@ case class AddCourseRequest (id:Pk [Long], userId:Long, courseId:Long, message: 
     user.sendNotification("You have been denied access to the course \"" + course.name + "\".")
     delete()
   }
+
+  //       _____      _   _
+  //      / ____|    | | | |
+  //     | |  __  ___| |_| |_ ___ _ __ ___
+  //     | | |_ |/ _ \ __| __/ _ \ '__/ __|
+  //     | |__| |  __/ |_| ||  __/ |  \__ \
+  //      \_____|\___|\__|\__\___|_|  |___/
+  //
+  //   ______ ______ ______ ______ ______ ______ ______ ______ ______
+  // |______|______|______|______|______|______|______|______|______|
+  //
+
+  object cache {
+    var user: Option[User] = None
+
+    def getUser = {
+      if (user.isEmpty)
+        user = User.findById(userId)
+      user.get
+    }
+
+    var course: Option[Course] = None
+
+    def getCourse = {
+      if (course.isEmpty)
+        course = Course.findById(courseId)
+      course.get
+    }
+  }
+
+  def getUser: User = cache.getUser
+
+  def getCourse: Course = cache.getCourse
 }
 
 object AddCourseRequest extends SQLSelectable[AddCourseRequest] {

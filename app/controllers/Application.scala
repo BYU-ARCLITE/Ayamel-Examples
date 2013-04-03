@@ -1,24 +1,18 @@
 package controllers
 
 import authentication.Authentication
-import play.api._
-import libs.json.{JsString, Reads, JsObject, Json}
-import libs.ws.WS
 import play.api.mvc._
-import anorm.NotAssigned
 import models.{Content, Course}
 import concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
-import java.io.{ByteArrayInputStream, ObjectInputStream, ByteArrayOutputStream, ObjectOutputStream}
-import org.apache.commons.codec.binary.Base64
-import service.{VideoTools, SerializationTools}
+import service.VideoTools
 
 object Application extends Controller {
 
   def index = Action {
     implicit request =>
       val user = Authentication.getUserFromRequest()
-      if (user.isDefined) 
+      if (user.isDefined)
         Redirect(controllers.routes.Application.home()).withSession("userId" -> user.get.id.get.toString)
       else
         Ok(views.html.application.index())
@@ -44,7 +38,7 @@ object Application extends Controller {
     implicit request =>
       implicit user =>
 
-        // Search each applicable model
+      // Search each applicable model
         val query = request.queryString("query")(0)
         val courses = Course.search(query)
         val content = Content.search(query)

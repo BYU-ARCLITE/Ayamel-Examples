@@ -40,14 +40,32 @@ case class Announcement(id: Pk[Long], courseId: Long, userId: Long, timeMade: St
     delete(Announcement.tableName, id)
   }
 
-  //      Logic
-  // ===============
+  //       _____      _   _
+  //      / ____|    | | | |
+  //     | |  __  ___| |_| |_ ___ _ __ ___
+  //     | | |_ |/ _ \ __| __/ _ \ '__/ __|
+  //     | |__| |  __/ |_| ||  __/ |  \__ \
+  //      \_____|\___|\__|\__\___|_|  |___/
+  //
+  //   ______ ______ ______ ______ ______ ______ ______ ______ ______
+  // |______|______|______|______|______|______|______|______|______|
+  //
+
+  object cache {
+    var user: Option[User] = None
+
+    def getUser = {
+      if (user.isEmpty)
+        user = User.findById(userId)
+      user.get
+    }
+  }
 
   /**
    * Gets the user that made this announcement
    * @return The announcer
    */
-  def getUser: User = User.findById(userId).get
+  def getUser: User = cache.getUser
 }
 
 object Announcement extends SQLSelectable[Announcement] {

@@ -1,0 +1,5 @@
+@(content: models.Content)(implicit user: User)
+
+@if(content isShareableBy user) {
+    <a href="#" class="btn btn-yellow"><i class="icon-share-alt"></i> Share</a>
+}

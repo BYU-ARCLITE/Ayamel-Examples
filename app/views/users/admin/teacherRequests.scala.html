@@ -19,17 +19,15 @@
                 <th>Actions</th>
             </tr>
             @for(teacherRequest <- requests) {
-                @defining(teacherRequest.getUser) { requester =>
-                    <tr>
-                        <td>@requester.name.get</td>
-                        <td>@requester.email.get</td>
-                        <td>@teacherRequest.reason</td>
-                        <td>
-                            <a href="@routes.Users.approveTeacher(teacherRequest.id.get)" class="btn btn-blue">Approve</a>
-                            <a href="@routes.Users.denyTeacher(teacherRequest.id.get)" class="btn btn-magenta">Deny</a>
-                        </td>
-                    </tr>
-                }
+                <tr>
+                    <td>@teacherRequest.getUser.name.get</td>
+                    <td>@teacherRequest.getUser.email.get</td>
+                    <td>@teacherRequest.reason</td>
+                    <td>
+                        <a href="@routes.Users.approveTeacher(teacherRequest.id.get)" class="btn btn-blue">Approve</a>
+                        <a href="@routes.Users.denyTeacher(teacherRequest.id.get)" class="btn btn-magenta">Deny</a>
+                    </td>
+                </tr>
             }
         </table>
 

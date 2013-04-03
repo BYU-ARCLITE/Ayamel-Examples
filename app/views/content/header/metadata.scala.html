@@ -1,0 +1,82 @@
+@(content: models.Content, resourceLibraryUrl: String)(implicit user: User)
+
+@if(content isEditableBy user) {
+    <a href="#metadataModal" role="button" class="btn" data-toggle="modal"><i class="icon-edit"></i> Edit Metadata</a>
+
+    <div id="metadataModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="metadataModalLabel" aria-hidden="true">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3 id="metadataModalLabel">Edit Metadata</h3>
+        </div>
+        <div class="modal-body">
+            <form id="metadataForm" class="form-horizontal" method="post" action="@routes.ContentController.setMetadata(content.id.get)">
+                <div class="control-group">
+                    <label class="control-label" for="title">Title</label>
+                    <div class="controls">
+                        <input type="text" id="title" name="title" placeholder="Title">
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label" for="description">Description</label>
+                    <div class="controls">
+                        <input type="text" id="description" name="description" placeholder="Description">
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label" for="keywords">Keywords</label>
+                    <div class="controls">
+                        <input type="text" id="keywords" name="keywords" placeholder="Keywords">
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label" for="categories">Categories</label>
+                    <div class="controls">
+                        <select multiple="multiple" id="categories" name="categories">
+                            <option value="Arts">Arts</option>
+                            <option value="Culture">Culture</option>
+                            <option value="Economy">Economy</option>
+                            <option value="Education">Education</option>
+                            <option value="Entertainment">Entertainment</option>
+                            <option value="Food">Food</option>
+                            <option value="Geography">Geography</option>
+                            <option value="Health/beauty">Health/beauty</option>
+                            <option value="Hobbies">Hobbies</option>
+                            <option value="Home/garden">Home/garden</option>
+                            <option value="News">News</option>
+                            <option value="Occupation">Occupation</option>
+                            <option value="Opinion">Opinion</option>
+                            <option value="Politics">Politics</option>
+                            <option value="Social">Social</option>
+                            <option value="Sports">Sports</option>
+                            <option value="Technology">Technology</option>
+                            <option value="Weather">Weather</option>
+                        </select>
+                    </div>
+                </div>
+                <input type="submit" style="position: absolute; left: -9999px; width: 1px; height: 1px;"/>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+            <button id="saveMetadata" class="btn btn-blue">Save</button>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        $(function() {
+
+            $("#saveMetadata").click(function() {
+                $("#metadataForm").submit();
+            });
+
+            // Load metadata
+            var resourceUrl = "@resourceLibraryUrl/@content.resourceId";
+            new Resource(resourceUrl, function(resource) {
+                $("#title").val(resource.title);
+                $("#description").val(resource.description);
+                $("#keywords").val(resource.keywords);
+                $("#categories").val(resource.categories);
+            });
+        });
+    </script>
+}

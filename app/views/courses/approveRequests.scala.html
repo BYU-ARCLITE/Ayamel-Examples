@@ -14,17 +14,15 @@
                 <th>Actions</th>
             </tr>
             @for(addRequest <- course.getRequests) {
-                @defining(addRequest.getUser) { requester =>
-                    <tr>
-                        <td>@requester.name.get</td>
-                        <td>@requester.email.get</td>
-                        <td>@addRequest.message</td>
-                        <td>
-                            <a href="@routes.Courses.approveRequest(course.id.get, addRequest.id.get)" class="btn btn-blue">Approve</a>
-                            <a href="@routes.Courses.denyRequest(course.id.get, addRequest.id.get)" class="btn btn-magenta">Deny</a>
-                        </td>
-                    </tr>
-                }
+                <tr>
+                    <td>@addRequest.getUser.name.get</td>
+                    <td>@addRequest.getUser.email.get</td>
+                    <td>@addRequest.message</td>
+                    <td>
+                        <a href="@routes.Courses.approveRequest(course.id.get, addRequest.id.get)" class="btn btn-blue">Approve</a>
+                        <a href="@routes.Courses.denyRequest(course.id.get, addRequest.id.get)" class="btn btn-magenta">Deny</a>
+                    </td>
+                </tr>
             }
         </table>
 
