@@ -1,6 +1,6 @@
 package service
 
-import play.api.libs.json.{JsArray, Json}
+import play.api.libs.json.{JsValue, JsArray, Json}
 import concurrent.{ExecutionContext, Future}
 import play.api.libs.MimeTypes
 import dataAccess.resourceLibrary.ResourceController
@@ -41,10 +41,10 @@ object ResourceHelper {
    * @return The id of the resource in a future
    */
   def createResourceWithUri(title: String, description: String, keywords: String, categories: List[String],
-                            resourceType: String, uri: String, mime: String): Future[String] = {
+                            resourceType: String, uri: String, mime: String): Future[JsValue] = {
 
     // Create the resource
-    ResourceController.createResource(title, description, keywords, categories, resourceType).map(json => {
+    ResourceController.createResource(title, description, keywords, categories, resourceType).flatMap(json => {
       val contentUploadUrl = (json \ "content_upload_url").as[String]
 
       // Add information about the file
@@ -55,10 +55,9 @@ object ResourceHelper {
         "quality" -> "1"
       )
       val remoteFiles = Json.obj("remoteFiles" -> Json.arr(fileInfo))
-      ResourceController.setRemoteFiles(contentUploadUrl, remoteFiles)
 
-      // Return the id
-      (json \ "resource" \ "id").as[String]
+      // Save this info and return the updated resource
+      ResourceController.setRemoteFiles(contentUploadUrl, remoteFiles).map(_ \ "resource")
     })
   }
 
@@ -69,9 +68,9 @@ object ResourceHelper {
    * @param mime The mime type of the new file
    * @param representation How the file represents the resource
    */
-  def addRemoteFile(id: String, uri: String, mime: Option[String] = None, representation: String = "original") {
+  def addRemoteFile(id: String, uri: String, mime: Option[String] = None, representation: String = "original"): Future[JsValue] = {
     // Get the resource
-    ResourceController.getResource(id).map(resourceResponse => {
+    ResourceController.getResource(id).flatMap(resourceResponse => {
       val resource = resourceResponse \ "resource"
 
       // Set the new file information
@@ -86,12 +85,12 @@ object ResourceHelper {
       val newFiles = JsArray(files ::: List(fileInfo))
 
       // Get an upload url
-      ResourceController.requestUploadUrl(id).map(uploadUrlResponse => {
+      ResourceController.requestUploadUrl(id).flatMap(uploadUrlResponse => {
         val uploadUrl = (uploadUrlResponse \ "content_upload_url").as[String]
 
         // Set the new files
         val obj = Json.obj("remoteFiles" -> newFiles)
-        ResourceController.setRemoteFiles(uploadUrl, obj)
+        ResourceController.setRemoteFiles(uploadUrl, obj).map(_ \ "resource")
       })
     })
   }
@@ -102,8 +101,7 @@ object ResourceHelper {
    * @param thumbnailUri The url of the thumbnail
    * @param mime The mime type of the thumbnail
    */
-  def addThumbnail(id: String, thumbnailUri: String, mime: Option[String] = None) {
+  def addThumbnail(id: String, thumbnailUri: String, mime: Option[String] = None): Future[JsValue] =
     addRemoteFile(id, thumbnailUri, mime, "summary")
-  }
 
 }

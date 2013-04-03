@@ -11,7 +11,7 @@ import concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
 import java.io.{ByteArrayInputStream, ObjectInputStream, ByteArrayOutputStream, ObjectOutputStream}
 import org.apache.commons.codec.binary.Base64
-import service.SerializationTools
+import service.{VideoTools, SerializationTools}
 
 object Application extends Controller {
 
@@ -33,41 +33,11 @@ object Application extends Controller {
   def test = Action(parse.tolerantText) {
     request =>
 
-//      Logger.debug("Headers: " + request.headers)
-//      Logger.debug("Body: " + request.body)
-//      val obj = Json.obj(
-//        "success" -> true
-//      )
-//      Ok(obj)
-
-//      val someMap = Map("one" -> "two", "three" -> "4")
-//      val str = SerializationTools.serializeMap(someMap)
-//      Ok(str)
-
-
-//      val json = Json.obj(
-//        "L2_data" -> Json.obj(
-//          "language" -> "eng",
-//          "genre" -> "Action"
-//        )
-//      )
-//
-//      Async {
-//        WS.url("http://ayamel.americancouncils.org/api/v1/resources/5155fbb235e544b119000001").put(json).map(r => Ok(r.json))
-//      }
-
-//      val json = Json.obj(
-//        "some" -> "thing",
-//        "active" -> true
-//      )
-//      val key = OAuthKey("consumerKey", "consumerSecret", "tokenKey", "tokenSecret")
-//      val oauthRequest = OAuthRequest(None, Some("application/json"), "http://example.com", "", json.toString(), "POST", "/save")
-//      val auth = oauthRequest.getAuthorizationHeader(key)
-//      WS.url("http://example.com/save").withHeaders("Authorization" -> auth).post(json)
-//      parse.tolerantText
-
-
-      Ok
+      Async {
+        VideoTools.generateThumbnail("http://arclite.byu.edu/hvmirror/french/Dreyfus.mp4").map(url => {
+          Ok(url)
+        })
+      }
   }
 
   def search = Authentication.authenticatedAction() {
