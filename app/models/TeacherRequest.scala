@@ -35,12 +35,16 @@ case class TeacherRequest(id: Pk[Long], userId: Long, reason: String) extends SQ
     delete(TeacherRequest.tableName, id)
   }
 
-  /**
-   * Returns the user make this request
-   * @return The user
-   */
-  def getUser: User = User.findById(userId).get
-
+  //                  _   _
+  //        /\       | | (_)
+  //       /  \   ___| |_ _  ___  _ __  ___
+  //      / /\ \ / __| __| |/ _ \| '_ \/ __|
+  //     / ____ \ (__| |_| | (_) | | | \__ \
+  //    /_/    \_\___|\__|_|\___/|_| |_|___/
+  //
+  //   ______ ______ ______ ______ ______ ______ ______ ______ ______
+  // |______|______|______|______|______|______|______|______|______|
+  //
 
   def approve() {
     getUser.copy(role = User.roles.teacher).save.sendNotification("Your request for teacher status has been approved.")
@@ -51,6 +55,34 @@ case class TeacherRequest(id: Pk[Long], userId: Long, reason: String) extends SQ
     getUser.sendNotification("Sorry, but your request for teacher status has been denied.")
     delete()
   }
+
+  //       _____      _   _
+  //      / ____|    | | | |
+  //     | |  __  ___| |_| |_ ___ _ __ ___
+  //     | | |_ |/ _ \ __| __/ _ \ '__/ __|
+  //     | |__| |  __/ |_| ||  __/ |  \__ \
+  //      \_____|\___|\__|\__\___|_|  |___/
+  //
+  //   ______ ______ ______ ______ ______ ______ ______ ______ ______
+  // |______|______|______|______|______|______|______|______|______|
+  //
+
+  object cache {
+    var user: Option[User] = None
+
+    def getUser = {
+      if (user.isEmpty)
+        user = User.findById(userId)
+      user.get
+    }
+  }
+
+  /**
+   * Returns the user make this request
+   * @return The user
+   */
+  def getUser: User = cache.getUser
+
 }
 
 

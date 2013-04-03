@@ -34,11 +34,45 @@ case class AccountLink(id: Pk[Long], userIds: Set[Long], primaryAccount: Long) e
     delete(AccountLink.tableName, id)
   }
 
-  def getUsers: Set[User] = userIds.map(id => User.findById(id).get)
+  //                  _   _
+  //        /\       | | (_)
+  //       /  \   ___| |_ _  ___  _ __  ___
+  //      / /\ \ / __| __| |/ _ \| '_ \/ __|
+  //     / ____ \ (__| |_| | (_) | | | \__ \
+  //    /_/    \_\___|\__|_|\___/|_| |_|___/
+  //
+  //   ______ ______ ______ ______ ______ ______ ______ ______ ______
+  // |______|______|______|______|______|______|______|______|______|
+  //
 
   def addUser(user: User): AccountLink = copy(userIds = userIds + user.id.get)
 
-  def getPrimaryUser: User = User.findById(primaryAccount).get
+  //       _____      _   _
+  //      / ____|    | | | |
+  //     | |  __  ___| |_| |_ ___ _ __ ___
+  //     | | |_ |/ _ \ __| __/ _ \ '__/ __|
+  //     | |__| |  __/ |_| ||  __/ |  \__ \
+  //      \_____|\___|\__|\__\___|_|  |___/
+  //
+  //   ______ ______ ______ ______ ______ ______ ______ ______ ______
+  // |______|______|______|______|______|______|______|______|______|
+  //
+
+  object cache {
+    var users: Option[Set[User]] = None
+
+    def getUsers = {
+      if (users.isEmpty)
+        users = Some(userIds.map(id => User.findById(id).get))
+      users.get
+    }
+  }
+
+  def getUsers: Set[User] = cache.getUsers
+
+  def getPrimaryUser: User = cache.getUsers.find(_.id.get == primaryAccount).get
+
+
 
 }
 

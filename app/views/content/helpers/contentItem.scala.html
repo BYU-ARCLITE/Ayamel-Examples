@@ -1,13 +1,17 @@
 @(content: models.Content, classes: List[String] = List(), course: Option[Course] = None)
 
-@defining(
-    if (content.thumbnail.isEmpty) ""
-    else "background: url('" + content.thumbnail + "') center no-repeat; background-size: cover;"
-) { thumbnail =>
-    @defining(
-        if (course.isDefined) routes.ContentController.viewInCourse(content.id.get, course.get.id.get)
-        else routes.ContentController.view(content.id.get)
-    ) { call =>
-        <a href="@call" class="contentEntry @content.contentType.name @classes.mkString(" ")" data-toggle="tooltip" title="@content.name" style="@thumbnail"></a>
-    }
+@thumbnail = @{
+    if (content.thumbnail.isEmpty)
+        ""
+    else
+        "background: url('" + content.thumbnail + "') center no-repeat; background-size: cover;"
 }
+
+@call = @{
+    if (course.isDefined)
+        routes.ContentController.viewInCourse(content.id.get, course.get.id.get)
+    else
+        routes.ContentController.view(content.id.get)
+}
+
+<a href="@call" class="contentEntry @content.contentType.name @classes.mkString(" ")" data-toggle="tooltip" title="@content.name" style="@thumbnail"></a>

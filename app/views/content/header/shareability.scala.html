@@ -1,0 +1,48 @@
+@(content: models.Content)(implicit user: User)
+
+@isChecked(val1: Any, val2: Any) = {
+    @if(val1 == val2) {
+        checked
+    }
+}
+
+@if(content isEditableBy user) {
+    <a href="#shareabilityModal" role="button" class="btn" data-toggle="modal"><i class="icon-share"></i> Set Shareability</a>
+
+    <div id="shareabilityModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="shareabilityModalLabel" aria-hidden="true">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3 id="shareabilityModalLabel">Set Shareability</h3>
+        </div>
+        <div class="modal-body">
+            <p>Set the shareability of @content.name. </p>
+            <form id="shareabilityForm" method="post" action="@routes.ContentController.setShareability(content.id.get)">
+                <label class="radio">
+                    <input type="radio" name="shareability" value="@Content.shareability.notShareable" @isChecked(content.shareability, Content.shareability.notShareable)>
+                    Not sharable
+                </label>
+                <label class="radio">
+                    <input type="radio" name="shareability" value="@Content.shareability.byMeOnly" @isChecked(content.shareability, Content.shareability.byMeOnly)>
+                    Sharable by me only.
+                </label>
+                <label class="radio">
+                    <input type="radio" name="shareability" value="@Content.shareability.shareable" @isChecked(content.shareability, Content.shareability.shareable)>
+                    Sharable by anybody who can see this.
+                </label>
+                <input type="submit" style="position: absolute; left: -9999px; width: 1px; height: 1px;"/>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+            <button class="btn btn-blue" id="saveShareability">Save</button>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        $(function() {
+            $("#saveShareability").click(function() {
+                $("#shareabilityForm").submit();
+            });
+        });
+    </script>
+}
