@@ -28,7 +28,7 @@ object Fixtures {
     )
 
     val content = List(
-      ("Resource 1", 'video, "", "resource1"),
+      ("Dreyfus by Yves Duteil", 'video, "", "515c9b7d35e544681f000000"),
       ("Resource 2", 'video, "", "resource2"),
       ("Resource 3", 'video, "", "resource3"),
       ("Resource 4", 'video, "", "resource4"),
