@@ -2,7 +2,7 @@ package controllers
 
 import authentication.Authentication
 import play.api.mvc.{Result, Request, Controller}
-import service.{ResourceHelper, ContentDescriptor, FileUploader, ContentManagement}
+import service._
 import models.{Course, User, Content}
 import play.api.Play
 import Play.current
@@ -11,6 +11,10 @@ import dataAccess.resourceLibrary.ResourceController
 import concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
 import anorm.NotAssigned
+import play.api.libs.json.JsArray
+import play.api.libs.json.JsString
+import scala.Some
+import service.ContentDescriptor
 
 /**
  * The controller for dealing with content.
@@ -60,7 +64,7 @@ object ContentController extends Controller {
           val title = data("title")(0)
           val description = data("description")(0)
           val keywords = data("keywords")(0)
-          val categories = data("categories").toList
+          val categories = data.get("categories").map(_.toList).getOrElse(Nil)
           val url = data("url")(0)
           val mime = ResourceHelper.getMimeFromUri(url)
 
@@ -88,22 +92,18 @@ object ContentController extends Controller {
           val title = data("title")(0)
           val description = data("description")(0)
           val keywords = data("keywords")(0)
-          val categories = data("categories").toList
+          val categories = data.get("categories").map(_.toList).getOrElse(Nil)
 
           Async {
-
             // Upload the file
             val file = request.body.file("file").get
-            FileUploader.uploadFile(file).map{
-              url =>
+            FileUploader.normalizeAndUploadFile(file).flatMap { url =>
 
                 // Create the content
                 val info = ContentDescriptor(title, description, keywords, categories, url, file.contentType.get)
-                Async {
-                  ContentManagement.createContent(info, user, contentType).map {
-                    content =>
-                      Redirect(routes.ContentController.view(content.id.get))flashing("success" -> "Content added")
-                  }
+                ContentManagement.createContent(info, user, contentType).map {
+                  content =>
+                    Redirect(routes.ContentController.view(content.id.get))flashing("success" -> "Content added")
                 }
             }
           }
