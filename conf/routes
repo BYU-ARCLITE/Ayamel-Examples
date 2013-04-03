@@ -53,6 +53,7 @@ POST    /content/:id/visibility         controllers.ContentController.setVisibil
 POST    /content/:id/shareability       controllers.ContentController.setShareability(id: Long)
 POST    /content/:id/settings           controllers.ContentController.setSettings(id: Long)
 POST    /content/:id/metadata           controllers.ContentController.setMetadata(id: Long)
+GET     /content/:id/access/:authKey    controllers.ContentController.shareAccess(id: Long, authKey: String)
 
 # User pages
 GET     /user/settings                  controllers.Users.accountSettings
