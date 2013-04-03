@@ -1,7 +1,7 @@
 package controllers
 
 import authentication.Authentication
-import play.api.mvc.{Result, Request, Controller}
+import play.api.mvc.{Action, Result, Request, Controller}
 import service._
 import models.{Course, User, Content}
 import play.api.Play
@@ -156,6 +156,21 @@ object ContentController extends Controller {
             } else
               Errors.forbidden
         }
+  }
+
+  def shareAccess(id: Long, authKey: String) = Action {
+    implicit request =>
+      getContent(id) {
+        content =>
+
+          // Check that everything is in place to view the content
+          if (content.authKey == authKey && content.shareability != Content.shareability.notShareable) {
+            val resourceLibraryUrl = Play.configuration.getString("resourceLibrary.baseUrl").get
+            val embed = request.queryString.get("embed").map(_(0).toBoolean).getOrElse(false)
+            Ok(views.html.content.share.view(content, resourceLibraryUrl, embed))
+          } else
+            Ok("You are not allowed to view this content")
+      }
   }
 
   /**

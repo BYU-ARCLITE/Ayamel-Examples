@@ -1,4 +1,4 @@
-@(content: models.Content, resourceLibraryUrl: String)
+@(content: models.Content, resourceLibraryUrl: String, embed: Boolean = false)
 
 @if(content.videoSettings.level == "1") {
     @views.html.content.renderers.video1(content, resourceLibraryUrl)

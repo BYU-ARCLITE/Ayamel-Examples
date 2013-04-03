@@ -1,5 +1,45 @@
-@(content: models.Content)(implicit user: User)
+@(content: models.Content)(implicit request: RequestHeader, user: User)
 
 @if(content isShareableBy user) {
-    <a href="#" class="btn btn-yellow"><i class="icon-share-alt"></i> Share</a>
+    <a href="#shareModal" role="button" data-toggle="modal" class="btn btn-yellow"><i class="icon-share-alt"></i> Share</a>
+
+    <div id="shareModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="shareModalLabel" aria-hidden="true">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3 id="shareModalLabel">Share</h3>
+        </div>
+        <div class="modal-body">
+            <h4>Social Sharing</h4>
+            <div>
+
+                <!-- Place this tag where you want the share button to render. -->
+                <div class="g-plus" data-action="share" data-annotation="bubble" data-height="24" data-href="@routes.ContentController.shareAccess(content.id.get, content.authKey).absoluteURL()"></div>
+
+                <!-- Place this tag after the last share tag. -->
+                <script type="text/javascript">
+                  (function() {
+                    var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
+                    po.src = 'https://apis.google.com/js/plusone.js';
+                    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+                  })();
+                </script>
+
+                <div>
+                    <a href="https://twitter.com/share" class="twitter-share-button" data-url="@routes.ContentController.shareAccess(content.id.get, content.authKey).absoluteURL()" data-size="large" data-hashtags="ayamel">Tweet</a>
+                    <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+                </div>
+
+                @*<a href="#" class="btn btn-danger"><i class="icon-google-plus-sign"></i> Google+</a>
+                <a href="#" class="btn btn-info"><i class="icon-twitter-sign"></i> Twitter</a>
+                <a href="#" class="btn btn-primary"><i class="icon-facebook-sign"></i> Facebook</a>*@
+            </div>
+
+            <h4>Embed Code</h4>
+            <pre>&lt;iframe src="@{routes.ContentController.shareAccess(content.id.get, content.authKey).absoluteURL()}?embed=true" style="border: none; height: 600px; width: 800px;"&gt;&lt;/iframe&gt;</pre>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+        </div>
+    </div>
+
 }

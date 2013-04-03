@@ -3,7 +3,7 @@ package models
 import anorm.{NotAssigned, ~, Pk}
 import dataAccess.sqlTraits.{SQLSelectable, SQLDeletable, SQLSavable}
 import anorm.SqlParser._
-import service.{SerializationTools, TimeTools}
+import service.{HashTools, SerializationTools, TimeTools}
 import play.api.db.DB
 import play.api.Play.current
 import play.api.libs.json.JsValue
@@ -17,7 +17,8 @@ import concurrent.Future
  */
 case class Content(id: Pk[Long], name: String, contentType: Symbol, thumbnail: String, resourceId: String,
                    dateAdded: String = TimeTools.now(), visibility: Int = Content.visibility.tightlyRestricted,
-                   shareability: Int = Content.shareability.shareable, settings: Map[String, String] = Map())
+                   shareability: Int = Content.shareability.shareable, settings: Map[String, String] = Map(),
+                   authKey: String = HashTools.md5Hex(util.Random.nextString(16)))
   extends SQLSavable with SQLDeletable {
 
   /**
@@ -28,12 +29,12 @@ case class Content(id: Pk[Long], name: String, contentType: Symbol, thumbnail: S
     if (id.isDefined) {
       update(Content.tableName, 'id -> id, 'name -> name, 'contentType -> contentType.name, 'thumbnail -> thumbnail,
         'resourceId -> resourceId, 'dateAdded -> dateAdded, 'visibility -> visibility, 'shareability -> shareability,
-        'settings -> SerializationTools.serializeMap(settings))
+        'settings -> SerializationTools.serializeMap(settings), 'authKey -> authKey)
       this
     } else {
       val id = insert(Content.tableName, 'name -> name, 'contentType -> contentType.name, 'thumbnail -> thumbnail,
         'resourceId -> resourceId, 'dateAdded -> dateAdded, 'visibility -> visibility, 'shareability -> shareability,
-        'settings -> SerializationTools.serializeMap(settings))
+        'settings -> SerializationTools.serializeMap(settings), 'authKey -> authKey)
       this.copy(id)
     }
   }
@@ -175,10 +176,12 @@ object Content extends SQLSelectable[Content] {
       get[String](tableName + ".dateAdded") ~
       get[Int](tableName + ".visibility") ~
       get[Int](tableName + ".shareability") ~
-      get[String](tableName + ".settings") map {
-      case id ~ name ~ contentType ~ thumbnail ~ resourceId ~ dateAdded ~ visibility ~ shareability ~ settings =>
+      get[String](tableName + ".settings") ~
+      get[String](tableName + ".authKey") map {
+      case id ~ name ~ contentType ~ thumbnail ~ resourceId ~ dateAdded ~ visibility ~ shareability ~ settings ~ authKey =>
         Content(id, name, Symbol(contentType), thumbnail, resourceId, dateAdded, visibility, shareability,
-          if (settings.isEmpty) defaultSettings.preset(Symbol(contentType)) else SerializationTools.unserializeMap(settings))
+          if (settings.isEmpty) defaultSettings.preset(Symbol(contentType)) else SerializationTools.unserializeMap(settings),
+          authKey)
     }
   }
 
