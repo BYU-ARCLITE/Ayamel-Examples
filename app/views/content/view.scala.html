@@ -78,7 +78,8 @@
 
                 // Render the content
                 var content = @Html(content.toJson.toString);
-                ContentRenderer.render(content);
+                var contentHolder = $("#contentHolder")[0];
+                ContentRenderer.render(content, contentHolder);
             });
         </script>
 
