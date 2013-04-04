@@ -6,6 +6,7 @@ import models.{Content, Course}
 import concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
 import service.VideoTools
+import dataAccess.PlayGraph
 
 object Application extends Controller {
 
@@ -28,9 +29,13 @@ object Application extends Controller {
     request =>
 
       Async {
-        VideoTools.generateThumbnail("http://arclite.byu.edu/hvmirror/french/Dreyfus.mp4").map(url => {
-          Ok(url)
-        })
+//        VideoTools.generateThumbnail("http://arclite.byu.edu/hvmirror/french/Dreyfus.mp4").map(url => {
+//          Ok(url)
+//        })
+
+        PlayGraph.Player.update(4).map(json =>
+          Ok(json)
+        )
       }
   }
 

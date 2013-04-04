@@ -6,8 +6,7 @@ import service._
 import models.{Course, User, Content}
 import play.api.Play
 import Play.current
-import play.api.libs.json.{JsString, JsArray, Json}
-import dataAccess.resourceLibrary.ResourceController
+import play.api.libs.json.Json
 import concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
 import anorm.NotAssigned
@@ -15,6 +14,7 @@ import play.api.libs.json.JsArray
 import play.api.libs.json.JsString
 import scala.Some
 import service.ContentDescriptor
+import dataAccess.{PlayGraph, ResourceController}
 
 /**
  * The controller for dealing with content.
@@ -44,6 +44,8 @@ object ContentController extends Controller {
             Ok(views.html.content.create.url())
           else if (page == "resource")
             Ok(views.html.content.create.resource())
+          else if (page == "playlist")
+            Ok(views.html.content.create.playlist())
           else
             Ok(views.html.content.create.file())
         }
@@ -136,6 +138,43 @@ object ContentController extends Controller {
                 } else
                   Redirect(routes.ContentController.createPage("resource")).flashing("error" -> "That resource doesn't exist")
             }
+          }
+        }
+  }
+
+  /**
+   * Creates content based on the posted data (File)
+   */
+  def createPlaylist = Authentication.authenticatedAction(parse.urlFormEncoded) {
+    implicit request =>
+      implicit user =>
+
+        // Guests cannot create content
+        Authentication.enforceNotRole(User.roles.guest) {
+
+          Async {
+            // Create the node content
+            val nodeContent = SerializationTools.serializeMap(Map("status" -> "started"))
+            PlayGraph.Author.NodeContent.create(nodeContent).flatMap(nodeContentJson => {
+              val nodeContentId = (nodeContentJson \ "nodeContent" \ "id").as[Long]
+
+              // Create the node
+              PlayGraph.Author.Node.create(nodeContentId, "data", "0").flatMap(nodeJson => {
+                val nodeId = (nodeJson \ "node" \ "id").as[Long]
+
+                // Create the graph
+                PlayGraph.Author.Graph.create(nodeId).map(graphJson => {
+                  val graphId = (graphJson \ "graph" \ "id").as[Long]
+
+                  // Create playlist
+                  val title = request.body("title")(0)
+                  val content = Content(NotAssigned, title, 'playlist, "", graphId.toString).save
+                  user.addContent(content)
+
+                  Redirect(routes.ContentController.view(content.id.get))
+                })
+              })
+            })
           }
         }
   }

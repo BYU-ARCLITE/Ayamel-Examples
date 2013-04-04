@@ -47,6 +47,7 @@ GET     /content/create/:page           controllers.ContentController.createPage
 POST    /content/create/url             controllers.ContentController.createFromUrl
 POST    /content/create/file            controllers.ContentController.createFromFile
 POST    /content/create/resource        controllers.ContentController.createFromResource
+POST    /content/create/playlist        controllers.ContentController.createPlaylist
 GET     /content/:id                    controllers.ContentController.view(id: Long)
 GET     /content/:id/delete             controllers.ContentController.delete(id: Long)
 POST    /content/:id/visibility         controllers.ContentController.setVisibility(id: Long)

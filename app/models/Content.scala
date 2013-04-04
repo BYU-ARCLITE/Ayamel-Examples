@@ -7,8 +7,8 @@ import service.{HashTools, SerializationTools, TimeTools}
 import play.api.db.DB
 import play.api.Play.current
 import play.api.libs.json.JsValue
-import dataAccess.resourceLibrary.ResourceController
 import concurrent.Future
+import dataAccess.ResourceController
 
 /**
  * This links a resource object (in a resource library) to this system
