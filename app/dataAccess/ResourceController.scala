@@ -1,4 +1,4 @@
-package dataAccess.resourceLibrary
+package dataAccess
 
 import play.api.Play
 import Play.current

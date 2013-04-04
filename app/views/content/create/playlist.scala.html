@@ -13,22 +13,21 @@
         <h1>Add Content</h1>
 
         <ul class="nav nav-tabs">
-            <li><a href="@routes.ContentController.createPage("file")">Upload File</a></li>
+            <li><a href="@routes.ContentController.createPage("page")">Upload File</a></li>
             <li><a href="@routes.ContentController.createPage("url")">Link to URL</a></li>
-            <li class="active"><a href="#">Load from Resource</a></li>
-            <li><a href="@routes.ContentController.createPage("playlist")">Create Playlist</a></li>
+            <li><a href="@routes.ContentController.createPage("resource")">Load from Resource</a></li>
+            <li class="active"><a href="#">Create Playlist</a></li>
         </ul>
 
 
-        <h2>Create from existing resource</h2>
+        <h2>Create Playlist</h2>
 
-        <p>If you don't know what to enter here, then you probably want to use a different method of adding content.</p>
-
-        <form class="form-horizontal" method="post" action="@routes.ContentController.createFromResource()">
+        <form class="form-horizontal" method="post" action="@routes.ContentController.createPlaylist()">
+            <input type="hidden" name="contentType" value="playlist">
             <div class="control-group">
-                <label class="control-label" for="resourceId">Resource ID</label>
+                <label class="control-label" for="title">Title</label>
                 <div class="controls">
-                    <input type="text" id="resourceId" name="resourceId" placeholder="Resource ID">
+                    <input type="text" id="title" name="title" placeholder="Title">
                 </div>
             </div>
             <div class="control-group">

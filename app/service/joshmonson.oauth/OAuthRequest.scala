@@ -51,7 +51,7 @@ case class OAuthRequest(
    */
   def verify(implicit key: OAuthKey): Boolean = {
     val signaturePackage = getSignaturePackage
-    signaturePackage._5.isDefined && signaturePackage._1 == signaturePackage._5.get
+    signaturePackage._5.isDefined && OAuthUtil.encode(signaturePackage._1) == signaturePackage._5.get
   }
 
   /**

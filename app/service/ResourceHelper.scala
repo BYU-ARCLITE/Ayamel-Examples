@@ -3,8 +3,8 @@ package service
 import play.api.libs.json.{JsValue, JsArray, Json}
 import concurrent.{ExecutionContext, Future}
 import play.api.libs.MimeTypes
-import dataAccess.resourceLibrary.ResourceController
 import ExecutionContext.Implicits.global
+import dataAccess.ResourceController
 
 /**
  * This builds upon the Resource API wrapper in ResourceController by providing functions which do some level of data

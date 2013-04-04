@@ -56,8 +56,7 @@ logger.play=INFO
 # Logger provided to your application:
 logger.application=DEBUG
 
-#resourceLibrary.baseUrl="http://ayamel.americancouncils.org/api/v1/resources"
-resourceLibrary.baseUrl="http://localhost:9005/api/v1/resources"
+resourceLibrary.baseUrl="http://ayamel.americancouncils.org/api/v1/resources"
 
 # Upload engine settings
 uploadEngine="s3"
@@ -69,3 +68,9 @@ amazon.bucket=""
 media.image.maxWidth=1500
 media.image.maxHeight=1500
 media.video.thumbnailTime=10
+
+# Playgraph settings
+playgraph.author.key=""
+playgraph.author.secret=""
+playgraph.player.key=""
+playgraph.player.secret=""
