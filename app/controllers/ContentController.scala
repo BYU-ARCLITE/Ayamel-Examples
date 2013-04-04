@@ -32,6 +32,15 @@ object ContentController extends Controller {
       Errors.notFound
   }
 
+  def getAsJson(id: Long) = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+        getContent(id) {
+          content =>
+            Ok(content.toJson)
+        }
+  }
+
   /**
    * Content creation page
    */

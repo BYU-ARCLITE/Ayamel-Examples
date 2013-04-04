@@ -49,6 +49,7 @@ POST    /content/create/file            controllers.ContentController.createFrom
 POST    /content/create/resource        controllers.ContentController.createFromResource
 POST    /content/create/playlist        controllers.ContentController.createPlaylist
 GET     /content/:id                    controllers.ContentController.view(id: Long)
+GET     /content/:id/json               controllers.ContentController.getAsJson(id: Long)
 GET     /content/:id/delete             controllers.ContentController.delete(id: Long)
 POST    /content/:id/visibility         controllers.ContentController.setVisibility(id: Long)
 POST    /content/:id/shareability       controllers.ContentController.setShareability(id: Long)

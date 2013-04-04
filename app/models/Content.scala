@@ -6,7 +6,7 @@ import anorm.SqlParser._
 import service.{HashTools, SerializationTools, TimeTools}
 import play.api.db.DB
 import play.api.Play.current
-import play.api.libs.json.JsValue
+import play.api.libs.json.{Json, JsValue}
 import concurrent.Future
 import dataAccess.ResourceController
 
@@ -128,6 +128,19 @@ case class Content(id: Pk[Long], name: String, contentType: Symbol, thumbnail: S
   object videoSettings {
     def level = settings.get("level").getOrElse(Content.defaultSettings.video.level)
   }
+
+  def toJson = Json.obj(
+    "id" -> id.get,
+    "name" -> name,
+    "contentType" -> contentType.name,
+    "thumbnail" -> thumbnail,
+    "resourceId" -> resourceId,
+    "dateAdded" -> dateAdded,
+    "visibility" -> visibility,
+    "shareability" -> shareability,
+    "settings" -> settings,
+    "authKey" -> authKey
+  )
 }
 
 object Content extends SQLSelectable[Content] {
