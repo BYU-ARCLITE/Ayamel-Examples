@@ -15,8 +15,8 @@ import ExecutionContext.Implicits.global
  */
 object PlayGraph {
 
-//    private val host = "http://localhost:9001/"
-  private val host = Play.configuration.getString("playgraph.host").get
+//    val host = "http://localhost:9001/"
+  val host = Play.configuration.getString("playgraph.host").get
 
 //    private val authorKey = OAuthKey(
 //      "o0vouu51k3ufsrms0avipdn1e",
@@ -30,13 +30,13 @@ object PlayGraph {
     "", ""
   )
 
-//  private val playerKey = OAuthKey(
+//  val playerKey = OAuthKey(
 //    "caqehbk929smfstfgk6u9o1s8f",
 //    "nffupsom73ra6p0d3ub3fgc0oe",
 //    "", ""
 //  )
 
-  private val playerKey = OAuthKey(
+  val playerKey = OAuthKey(
     Play.configuration.getString("playgraph.player.key").get,
     Play.configuration.getString("playgraph.player.secret").get,
     "", ""

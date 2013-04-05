@@ -193,7 +193,7 @@ object Content extends SQLSelectable[Content] {
       get[String](tableName + ".authKey") map {
       case id ~ name ~ contentType ~ thumbnail ~ resourceId ~ dateAdded ~ visibility ~ shareability ~ settings ~ authKey =>
         Content(id, name, Symbol(contentType), thumbnail, resourceId, dateAdded, visibility, shareability,
-          if (settings.isEmpty) defaultSettings.preset(Symbol(contentType)) else SerializationTools.unserializeMap(settings),
+          if (settings.isEmpty) defaultSettings.preset(Symbol(contentType)) else SerializationTools.deserializeMap(settings),
           authKey)
     }
   }
