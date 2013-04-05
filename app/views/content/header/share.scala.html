@@ -29,9 +29,16 @@
                     <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
                 </div>
 
-                @*<a href="#" class="btn btn-danger"><i class="icon-google-plus-sign"></i> Google+</a>
-                <a href="#" class="btn btn-info"><i class="icon-twitter-sign"></i> Twitter</a>
-                <a href="#" class="btn btn-primary"><i class="icon-facebook-sign"></i> Facebook</a>*@
+                @if(content.contentType == 'image) {
+                    @defining(java.net.URLEncoder.encode(routes.ContentController.shareAccess(content.id.get, content.authKey).absoluteURL(), "UTF-8")) { encodedUrl =>
+                        @defining(java.net.URLEncoder.encode(content.thumbnail)) { encodedMedia =>
+                            @defining(java.net.URLEncoder.encode(content.name)) { encodedTitle =>
+                                <a data-pin-config="beside" href="//pinterest.com/pin/create/button/?url=@{encodedUrl}&media=@{encodedMedia}&description=@{encodedTitle}" data-pin-do="buttonPin" ><img src="//assets.pinterest.com/images/pidgets/pin_it_button.png" /></a>
+                            }
+                        }
+                    }
+                }
+                <script type="text/javascript" src="//assets.pinterest.com/js/pinit.js"></script>
             </div>
 
             <h4>Embed Code</h4>
