@@ -41,6 +41,11 @@ body.embed {
     height: 130px;
 }
 
+.embedContainer.video {
+    width: 800px;
+    height: 422px;
+}
+
 .embedContainer audio {
     margin-top: 75px;
     width: 100%;
