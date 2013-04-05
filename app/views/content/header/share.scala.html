@@ -31,8 +31,8 @@
 
                 @if(content.contentType == 'image) {
                     @defining(java.net.URLEncoder.encode(routes.ContentController.shareAccess(content.id.get, content.authKey).absoluteURL(), "UTF-8")) { encodedUrl =>
-                        @defining(java.net.URLEncoder.encode(content.thumbnail)) { encodedMedia =>
-                            @defining(java.net.URLEncoder.encode(content.name)) { encodedTitle =>
+                        @defining(java.net.URLEncoder.encode(content.thumbnail, "UTF-8")) { encodedMedia =>
+                            @defining(java.net.URLEncoder.encode(content.name, "UTF-8")) { encodedTitle =>
                                 <a data-pin-config="beside" href="//pinterest.com/pin/create/button/?url=@{encodedUrl}&media=@{encodedMedia}&description=@{encodedTitle}" data-pin-do="buttonPin" ><img src="//assets.pinterest.com/images/pidgets/pin_it_button.png" /></a>
                             }
                         }
