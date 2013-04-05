@@ -32,6 +32,22 @@ object ContentController extends Controller {
       Errors.notFound
   }
 
+  def getAsJson(id: Long) = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+        getContent(id) {
+          content =>
+
+            // A user can get the JSON if he can see the content or has provided the auth key (sharing)
+            val authKey = request.queryString.get("authKey").getOrElse("")
+            if (content.isVisibleBy(user) || (content.shareability != Content.shareability.notShareable && content.authKey == authKey))
+              Ok(content.toJson)
+            else
+              Forbidden
+
+        }
+  }
+
   /**
    * Content creation page
    */

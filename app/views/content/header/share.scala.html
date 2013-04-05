@@ -35,7 +35,14 @@
             </div>
 
             <h4>Embed Code</h4>
-            <pre>&lt;iframe src="@{routes.ContentController.shareAccess(content.id.get, content.authKey).absoluteURL()}?embed=true" style="border: none; height: 600px; width: 800px;"&gt;&lt;/iframe&gt;</pre>
+            @if(content.contentType == 'audio) {
+                <pre>&lt;iframe src="@{routes.ContentController.shareAccess(content.id.get, content.authKey).absoluteURL()}?embed=true" style="border: none; height: 130px; width: 440px;"&gt;&lt;/iframe&gt;</pre>
+            } else {
+                <pre>&lt;iframe src="@{routes.ContentController.shareAccess(content.id.get, content.authKey).absoluteURL()}?embed=true" style="border: none; height: 600px; width: 800px;"&gt;&lt;/iframe&gt;</pre>
+            }
+
+            <h4>URL</h4>
+            <code>@routes.ContentController.shareAccess(content.id.get, content.authKey).absoluteURL()</code>
         </div>
         <div class="modal-footer">
             <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>

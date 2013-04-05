@@ -49,6 +49,7 @@ POST    /content/create/file            controllers.ContentController.createFrom
 POST    /content/create/resource        controllers.ContentController.createFromResource
 POST    /content/create/playlist        controllers.ContentController.createPlaylist
 GET     /content/:id                    controllers.ContentController.view(id: Long)
+GET     /content/:id/json               controllers.ContentController.getAsJson(id: Long)
 GET     /content/:id/delete             controllers.ContentController.delete(id: Long)
 POST    /content/:id/visibility         controllers.ContentController.setVisibility(id: Long)
 POST    /content/:id/shareability       controllers.ContentController.setShareability(id: Long)
@@ -77,6 +78,10 @@ POST    /admin/users/:id/delete         controllers.Users.delete(id: Long)
 GET     /admin/courses                  controllers.Users.manageCourses
 GET     /admin/courses/:id/delete       controllers.Users.deleteCourse(id: Long)
 GET     /admin/content                  controllers.Users.manageContent
+
+# Ajax utilities
+POST    /util/serialize                 controllers.AjaxUtil.serializeMap
+POST    /util/deserialize               controllers.AjaxUtil.deserializeMap
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file                   controllers.Assets.at(path="/public", file)
