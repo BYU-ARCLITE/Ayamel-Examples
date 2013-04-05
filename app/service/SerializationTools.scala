@@ -22,6 +22,6 @@ object SerializationTools {
 
   def serializeMap(map: Map[String, String]): String = objectToString(map)
 
-  def unserializeMap(str: String): Map[String, String] = stringToObject[Map[String, String]](str)
+  def deserializeMap(str: String): Map[String, String] = stringToObject[Map[String, String]](str)
 
 }

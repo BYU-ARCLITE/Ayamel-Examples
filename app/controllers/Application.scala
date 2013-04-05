@@ -5,7 +5,7 @@ import play.api.mvc._
 import models.{Content, Course}
 import concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
-import service.VideoTools
+import service.{SerializationTools, VideoTools}
 import dataAccess.PlayGraph
 
 object Application extends Controller {
@@ -29,13 +29,26 @@ object Application extends Controller {
     request =>
 
       Async {
+
+        val content = SerializationTools.serializeMap(Map(
+          "status" -> "ok",
+          "contentId" -> "38",
+          "advanceMethod" -> "time",
+          "advanceTime" -> "5"
+        ))
+        PlayGraph.Author.NodeContent.update(10, content).map(json => Ok(json))
+
 //        VideoTools.generateThumbnail("http://arclite.byu.edu/hvmirror/french/Dreyfus.mp4").map(url => {
 //          Ok(url)
 //        })
 
-        PlayGraph.Player.update(4).map(json =>
-          Ok(json)
-        )
+
+
+//        Ok(Content.findById(35).toString)
+
+//        PlayGraph.Player.update(4).map(json =>
+//          Ok(json)
+//        )
       }
   }
 

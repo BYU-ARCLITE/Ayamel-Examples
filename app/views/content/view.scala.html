@@ -46,6 +46,13 @@
 
     <!-- Content rendering -->
     <script type="text/javascript" src="@routes.Assets.at("javascripts/ContentRenderer.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/PlaylistRenderer.js")"></script>
+
+    <!-- OAuth and Cryptography -->
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/sha1.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/oauth.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/OAuthSigner.js")"></script>
+
 
     <div class="padded">
 
@@ -59,7 +66,9 @@
 
             @views.html.content.header.share(content)
             @views.html.content.header.courseSettings(content, course)
-            @views.html.content.header.metadata(content, resourceLibraryUrl)
+            @if(content.contentType != 'playlist) {
+                @views.html.content.header.metadata(content, resourceLibraryUrl)
+            }
             @views.html.content.header.settings(content)
             @views.html.content.header.shareability(content)
             @views.html.content.header.visibility(content)
@@ -73,6 +82,13 @@
 
         <script type="text/javascript">
             $(function() {
+
+                // Set up the playlist renderer
+                PlaylistRenderer.setInfo(
+                    "@dataAccess.PlayGraph.host",
+                    ["@dataAccess.PlayGraph.playerKey.consumerKey", "@dataAccess.PlayGraph.playerKey.consumerSecret"]
+                );
+
                 // Set up the environment
                 ContentRenderer.setResourceLibraryUrl("@resourceLibraryUrl");
 

@@ -36,6 +36,16 @@ body.embed {
     height: 600px
 }
 
+.embedContainer.audio {
+    width: 400px;
+    height: 130px;
+}
+
+.embedContainer audio {
+    margin-top: 75px;
+    width: 100%;
+}
+
 h1, h2, h3, h4, h5, h6 {
     font-family: 'Source Sans Pro', sans-serif;
 }

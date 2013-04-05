@@ -79,5 +79,9 @@ GET     /admin/courses                  controllers.Users.manageCourses
 GET     /admin/courses/:id/delete       controllers.Users.deleteCourse(id: Long)
 GET     /admin/content                  controllers.Users.manageContent
 
+# Ajax utilities
+POST    /util/serialize                 controllers.AjaxUtil.serializeMap
+POST    /util/deserialize               controllers.AjaxUtil.deserializeMap
+
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file                   controllers.Assets.at(path="/public", file)
