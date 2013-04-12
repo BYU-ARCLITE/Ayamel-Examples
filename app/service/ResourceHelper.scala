@@ -1,6 +1,6 @@
 package service
 
-import play.api.libs.json.{JsValue, JsArray, Json}
+import play.api.libs.json.{JsObject, JsValue, JsArray, Json}
 import concurrent.{ExecutionContext, Future}
 import play.api.libs.MimeTypes
 import ExecutionContext.Implicits.global
@@ -104,4 +104,25 @@ object ResourceHelper {
   def addThumbnail(id: String, thumbnailUri: String, mime: Option[String] = None): Future[JsValue] =
     addRemoteFile(id, thumbnailUri, mime, "summary")
 
+  def updateDownloadUri(id: String, uri: String): Future[JsValue] = {
+    ResourceController.getResource(id).flatMap { json =>
+      // Update the files
+      val files = json \ "resource" \ "content" \ "files"
+      val newFiles = files.as[JsArray].value.map(file => {
+        if ((file \ "representation").as[String] == "original")
+          file.as[JsObject] ++ Json.obj("downloadUri" -> uri)
+        else
+          file
+      })
+
+      // Save the updated files
+      ResourceController.requestUploadUrl(id).flatMap { uploadUrlResponse =>
+        val uploadUrl = (uploadUrlResponse \ "content_upload_url").as[String]
+
+        // Set the new files
+        val obj = Json.obj("remoteFiles" -> newFiles)
+        ResourceController.setRemoteFiles(uploadUrl, obj).map(_ \ "resource")
+      }
+    }
+  }
 }

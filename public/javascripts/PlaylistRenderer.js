@@ -99,7 +99,7 @@ var PlaylistRenderer = (function() {
 
     return {
 
-        render: function(graphId, holder) {
+        render: function(graphId, holder, callback) {
             startGraph(graphId, function () {
 
                 // Init the playlist display structure. One container where content will be displayed. One for controls.
@@ -116,6 +116,10 @@ var PlaylistRenderer = (function() {
                         advance();
                     }
                 });
+
+                if (callback) {
+                    callback();
+                }
             });
         },
 
