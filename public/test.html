@@ -5,32 +5,10 @@
     <script type="text/javascript" src="javascripts/jquery-1.9.0.min.js"></script>
 </head>
 <body>
-
-<div class="padded">
-    <div class="fileDropper">
-        <h2>Drag and drop file here</h2>
-    </div>
-</div>
-
-<div id="drop" style="width: 500px; height: 500px; border: 2px solid grey"></div>
-<input type="file"/>
-
-<script type="text/javascript">
-    function bindDropArea(element, fileInput) {
-        element.addEventListener("dragover", function(e) {
-            e.preventDefault();
-        });
-        element.addEventListener("drop", function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            fileInput.files = e.dataTransfer.files;
-        });
-    }
-
-    $(function() {
-        bindDropArea($("#drop")[0], $("input[type='file']")[0]);
-    });
-</script>
+<form action="/test" method="post" enctype="multipart/form-data">
+    <input type="file" name="file">
+    <input type="submit">
+</form>
 
 </body>
 </html>

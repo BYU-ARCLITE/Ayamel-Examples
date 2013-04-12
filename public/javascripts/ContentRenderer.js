@@ -18,7 +18,7 @@ var ContentRenderer = (function () {
      *    Image Rendering
      */
 
-    function renderImage(content, resource, holder) {
+    function renderImage(content, resource, holder, callback) {
         var file = findFile(resource, function (file) {
             return file.representation === "original";
         });
@@ -42,6 +42,9 @@ var ContentRenderer = (function () {
                 if (this.width <= $imgHolder.width() && this.height <= $imgHolder.height()) {
                     $imgHolder.css("background-size", "initial");
                 }
+                if (callback) {
+                    callback(this);
+                }
             };
         }
     }
@@ -51,7 +54,7 @@ var ContentRenderer = (function () {
      *    Video Rendering
      */
 
-    function renderVideoLevel1(resource, holder) {
+    function renderVideoLevel1(resource, holder, callback) {
 
         // Install the HTML5 video player
         // TODO: Install other players
@@ -66,47 +69,51 @@ var ContentRenderer = (function () {
                 aspectRatio: 45,
                 resource: resource
             });
+
+            if (callback) {
+                callback();
+            }
         });
     }
 
-    function renderVideoLevel2(resource, holder) {
+    function renderVideoLevel2(resource, holder, callback) {
         $(holder).html("<em>Playback at this level has not been implemented yet.</em>");
     }
 
-    function renderVideoLevel3(resource, holder) {
+    function renderVideoLevel3(resource, holder, callback) {
         $(holder).html("<em>Playback at this level has not been implemented yet.</em>");
     }
 
-    function renderVideoLevel4(resource, holder) {
+    function renderVideoLevel4(resource, holder, callback) {
         $(holder).html("<em>Playback at this level has not been implemented yet.</em>");
     }
 
-    function renderVideoLevel5(resource, holder) {
+    function renderVideoLevel5(resource, holder, callback) {
         $(holder).html("<em>Playback at this level has not been implemented yet.</em>");
     }
 
-    function renderVideo(content, resource, holder) {
+    function renderVideo(content, resource, holder, callback) {
         // Render video
         switch (content.settings.level) {
             case "1":
-                renderVideoLevel1(resource, holder);
+                renderVideoLevel1(resource, holder, callback);
                 break;
             case "2":
-                renderVideoLevel2(resource, holder);
+                renderVideoLevel2(resource, holder, callback);
                 break;
             case "3":
-                renderVideoLevel3(resource, holder);
+                renderVideoLevel3(resource, holder, callback);
                 break;
             case "4":
-                renderVideoLevel4(resource, holder);
+                renderVideoLevel4(resource, holder, callback);
                 break;
             case "5":
-                renderVideoLevel5(resource, holder);
+                renderVideoLevel5(resource, holder, callback);
                 break;
         }
     }
 
-    function renderAudio(content, resource, holder) {
+    function renderAudio(content, resource, holder, callback) {
         var file = findFile(resource, function (file) {
             return file.representation === "original";
         });
@@ -123,14 +130,18 @@ var ContentRenderer = (function () {
             var url =  file.downloadUri;
             var mime = file.mime;
             $audio.append('<source src="' + url + '" type="' + mime + '">');
+
+            if (callback) {
+                callback();
+            }
         }
     }
 
-    function renderPlaylist(content, holder) {
-        PlaylistRenderer.render(content.resourceId, holder);
+    function renderPlaylist(content, holder, callback) {
+        PlaylistRenderer.render(content.resourceId, holder, callback);
     }
 
-    function renderContent(content, holder) {
+    function renderContent(content, holder, callback) {
         var resourceUrl = resourceLibraryUrl + "/" + content.resourceId;
 
         // Check if we are rendering something from the resource library
@@ -138,32 +149,32 @@ var ContentRenderer = (function () {
             new Resource(resourceUrl, function (resource) {
                 switch (resource.type) {
                     case "audio":
-                        renderAudio(content, resource, holder);
+                        renderAudio(content, resource, holder, callback);
                         break;
                     case "image":
-                        renderImage(content, resource, holder);
+                        renderImage(content, resource, holder, callback);
                         break;
                     case "video":
-                        renderVideo(content, resource, holder);
+                        renderVideo(content, resource, holder, callback);
                         break;
                 }
             });
         } else if (content.contentType === "playlist") {
-            renderPlaylist(content, holder);
+            renderPlaylist(content, holder, callback);
         }
     }
 
     return {
 
-        render: function (content, holder) {
+        render: function (content, holder, callback) {
             if (typeof content == "object") {
-                renderContent(content, holder);
+                renderContent(content, holder, callback);
             }
             if (typeof content == "number") {
                 $.ajax("/content/" + content + "/json", {
                     dataType: "json",
                     success: function (data) {
-                        renderContent(data, holder);
+                        renderContent(data, holder, callback);
                     }
                 });
             }

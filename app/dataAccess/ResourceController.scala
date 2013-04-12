@@ -102,6 +102,21 @@ object ResourceController {
    */
   def getRelations(id: String): Future[JsValue] = WS.url(baseUrl + "/" + id + "/relations").get().map(_.json)
 
+  def addRelation(id: String, subjectId: String, objectId: String, relationType: String,
+                  attributes: Map[String, String]): Future[JsValue] = {
+
+    val json = Json.obj(
+      "subjectId" -> subjectId,
+      "objectId" -> objectId,
+      "type" -> relationType,
+      "attributes" -> Json.toJson(attributes)
+    )
+    WS.url(baseUrl + "/" + id + "/relations").post(json).map(_.json)
+  }
+
+  def deleteRelation(id: String, relationId: String): Future[JsValue] =
+    WS.url(baseUrl + "/" + id + "/relations/" + relationId).delete().map(_.json)
+
   /**
    * Gets an upload url for a particular resource.
    * The API endpoint is: GET resources/[id]/request-upload-url
