@@ -53,7 +53,6 @@
     <script type="text/javascript" src="@routes.Assets.at("javascripts/oauth.js")"></script>
     <script type="text/javascript" src="@routes.Assets.at("javascripts/OAuthSigner.js")"></script>
 
-
     <div class="padded">
 
         @if(course.isDefined) {
@@ -65,6 +64,10 @@
         <div class="well">
 
             @views.html.content.header.share(content)
+            @if(content.contentType == 'image) {
+                <a href="@routes.ContentController.editImage(content.id.get)" class="btn"><i class="icon-pencil"></i> Edit Image</a>
+            }
+            @views.html.content.header.addCaptionTrack(content)
             @views.html.content.header.courseSettings(content, course)
             @if(content.contentType != 'playlist) {
                 @views.html.content.header.metadata(content, resourceLibraryUrl)
@@ -78,7 +81,7 @@
 
         <h1><i class="@contentIcons(content.contentType)"></i> @content.name</h1>
 
-        <div id="contentHolder"></div>
+        <div id="contentHolder" class="@content.contentType.name"></div>
 
         <script type="text/javascript">
             $(function() {
@@ -93,7 +96,7 @@
                 ContentRenderer.setResourceLibraryUrl("@resourceLibraryUrl");
 
                 // Render the content
-                var content = @Html(content.toJson.toString);
+                var content = @Html(content.toJson.toString());
                 var contentHolder = $("#contentHolder")[0];
                 ContentRenderer.render(content, contentHolder);
             });

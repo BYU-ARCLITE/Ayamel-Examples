@@ -76,7 +76,7 @@
 
                         <h1><i class="@contentIcons(content.contentType)"></i> @content.name</h1>
 
-                        <div id="contentHolder"></div>
+                        <div id="contentHolder" class="@content.contentType.name"></div>
                         <script type="text/javascript">
                             $(function() {
                                 // Set up the environment
@@ -102,7 +102,7 @@
                     <a id="ayamelLink" class="pad-right-med" href="@routes.Application.index()"><img src="@routes.Assets.at("images/logo-small-light.png")"></a>
                 </div>
             </div>
-            <div class="embedContainer @if(content.contentType == 'audio){audio}">
+            <div class="embedContainer @content.contentType.name">
                 <div id="contentHolder"></div>
                 <script type="text/javascript">
                     $(function() {
