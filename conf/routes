@@ -5,6 +5,7 @@
 # Home/basic pages
 GET     /                               controllers.Application.index
 GET     /test                           controllers.Application.test
+POST    /test                           controllers.Application.test
 GET     /home                           controllers.Application.home
 GET     /search                         controllers.Application.search
 GET     /about                          controllers.Application.about
@@ -56,6 +57,9 @@ POST    /content/:id/shareability       controllers.ContentController.setShareab
 POST    /content/:id/settings           controllers.ContentController.setSettings(id: Long)
 POST    /content/:id/metadata           controllers.ContentController.setMetadata(id: Long)
 GET     /content/:id/access/:authKey    controllers.ContentController.shareAccess(id: Long, authKey: String)
+GET     /content/:id/edit               controllers.ContentController.editImage(id: Long)
+POST    /content/:id/edit               controllers.ContentController.saveImageEdits(id: Long)
+POST    /content/:id/addCaptionTrack    controllers.ContentController.addCaptionTrack(id: Long)
 
 # User pages
 GET     /user/settings                  controllers.Users.accountSettings

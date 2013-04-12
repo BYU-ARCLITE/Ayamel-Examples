@@ -135,4 +135,21 @@
     background-repeat: no-repeat;
     background-position: center;
     background-size: contain;
+    position: relative;
+}
+
+#cropOverlay {
+    /*outline: 2px solid rgba(255, 0, 0, 0.5);*/
+    position: absolute;
+}
+
+#cropOverlay > div {
+    background: rgba(0,0,0,0.5);
+    position: absolute;
+}
+
+#cropOverlay > div.highlight {
+    background: transparent;
+    outline: solid 2px rgba(255, 255, 0, 0.6);
+    position: absolute;
 }

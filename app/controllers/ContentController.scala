@@ -422,4 +422,104 @@ object ContentController extends Controller {
         }
   }
 
+  def editImage(id: Long) = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+        getContent(id) {
+          content =>
+            if (content isEditableBy user) {
+              if (content.contentType == 'image) {
+                val resourceLibraryUrl = Play.configuration.getString("resourceLibrary.baseUrl").get
+                Ok(views.html.content.editImage(content, resourceLibraryUrl))
+              } else
+                Errors.forbidden
+            } else
+              Errors.forbidden
+        }
+  }
+
+  def saveImageEdits(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
+    implicit request =>
+      implicit user =>
+        getContent(id) {
+          content =>
+            if (content isEditableBy user) {
+              if (content.contentType == 'image) {
+
+                // Get the rotation and crop info
+                val rotation = request.body("rotation")(0).toInt
+                val cropTop = request.body("cropTop")(0).toDouble
+                val cropLeft = request.body("cropLeft")(0).toDouble
+                val cropBottom = request.body("cropBottom")(0).toDouble
+                val cropRight = request.body("cropRight")(0).toDouble
+
+                // Load the image
+                Async {
+                  ImageTools.loadImageFromContent(content).flatMap { image =>
+
+                    // Make the changes to the image
+                    val newImage = ImageTools.crop(
+                      if (rotation > 0) ImageTools.rotate(image, rotation) else image,
+                      cropTop, cropLeft, cropBottom, cropRight
+                    )
+
+                    // Save the new image
+                    FileUploader.uploadImage(newImage, FileUploader.uniqueFilename(content.resourceId + ".jpg")).flatMap { url =>
+
+                      // Update the resource
+                      ResourceHelper.updateDownloadUri(content.resourceId, url).map { resource =>
+                        Redirect(routes.ContentController.view(content.id.get)).flashing("info" -> "Image updated")
+                      }
+                    }
+                  }
+                }
+              } else
+                Errors.forbidden
+            } else
+              Errors.forbidden
+        }
+  }
+
+  def addCaptionTrack(id: Long) = Authentication.authenticatedAction(parse.multipartFormData) {
+    implicit request =>
+      implicit user =>
+        getContent(id) {
+          content =>
+            if (content isEditableBy user) {
+              if (content.contentType == 'video || content.contentType == 'audio) {
+
+                // Get the mime type
+                val subtitleMimes = Map(
+                  "srt" -> "text/plain",
+                  "vtt" -> "text/vtt"
+                )
+                val file = request.body.file("file").get
+                val ext = file.filename.substring(file.filename.lastIndexOf(".") + 1)
+                val mime = subtitleMimes(ext)
+
+                // Get the title
+                val title = request.body.dataParts("title")(0)
+
+                Async {
+                  // Upload the file
+                  FileUploader.uploadFile(file.ref.file, FileUploader.uniqueFilename(file.filename), mime).flatMap { url =>
+
+                    // Create subtitle (subject) resource
+                    ResourceHelper.createResourceWithUri(title, "", "subtitles", Nil, "text", url, mime).flatMap { resource =>
+
+                      // Add the relation
+                      val subjectId = (resource \ "id").as[String]
+                      ResourceController.addRelation("1", subjectId, content.resourceId, "transcriptOf", Map()).map(r => {
+                        Redirect(routes.ContentController.view(content.id.get)).flashing("info" -> "Transcript added")
+                      })
+                    }
+                  }
+                }
+
+              } else
+                Errors.forbidden
+            } else
+              Errors.forbidden
+        }
+  }
 }
