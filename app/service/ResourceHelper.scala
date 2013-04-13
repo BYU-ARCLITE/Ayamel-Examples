@@ -41,10 +41,10 @@ object ResourceHelper {
    * @return The id of the resource in a future
    */
   def createResourceWithUri(title: String, description: String, keywords: String, categories: List[String],
-                            resourceType: String, uri: String, mime: String): Future[JsValue] = {
+                            resourceType: String, uri: String, mime: String, language: String = "en"): Future[JsValue] = {
 
     // Create the resource
-    ResourceController.createResource(title, description, keywords, categories, resourceType).flatMap(json => {
+    ResourceController.createResource(title, description, keywords, categories, resourceType, language).flatMap(json => {
       val contentUploadUrl = (json \ "content_upload_url").as[String]
 
       // Add information about the file

@@ -497,15 +497,16 @@ object ContentController extends Controller {
                 val ext = file.filename.substring(file.filename.lastIndexOf(".") + 1)
                 val mime = subtitleMimes(ext)
 
-                // Get the title
+                // Get the title and language
                 val title = request.body.dataParts("title")(0)
+                val language = request.body.dataParts("language")(0)
 
                 Async {
                   // Upload the file
                   FileUploader.uploadFile(file.ref.file, FileUploader.uniqueFilename(file.filename), mime).flatMap { url =>
 
                     // Create subtitle (subject) resource
-                    ResourceHelper.createResourceWithUri(title, "", "subtitles", Nil, "text", url, mime).flatMap { resource =>
+                    ResourceHelper.createResourceWithUri(title, "", "subtitles", Nil, "text", url, mime, language).flatMap { resource =>
 
                       // Add the relation
                       val subjectId = (resource \ "id").as[String]

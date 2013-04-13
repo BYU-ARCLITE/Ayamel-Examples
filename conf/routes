@@ -84,8 +84,10 @@ GET     /admin/courses/:id/delete       controllers.Users.deleteCourse(id: Long)
 GET     /admin/content                  controllers.Users.manageContent
 
 # Ajax utilities
-POST    /util/serialize                 controllers.AjaxUtil.serializeMap
-POST    /util/deserialize               controllers.AjaxUtil.deserializeMap
+POST    /ajax/util/serialize                                controllers.ajax.Util.serializeMap
+POST    /ajax/util/deserialize                              controllers.ajax.Util.deserializeMap
+GET     /ajax/translate/google/:src/:dest/:text             controllers.ajax.Translate.translateGoogle(src: String, dest: String, text: String)
+GET     /ajax/translate/wordReference/:src/:dest/:text      controllers.ajax.Translate.translateWordReference(src: String, dest: String, text: String)
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file                   controllers.Assets.at(path="/public", file)

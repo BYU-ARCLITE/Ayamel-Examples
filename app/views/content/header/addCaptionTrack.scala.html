@@ -1,6 +1,8 @@
 @(content: models.Content)(implicit user: User)
 
 @if(content isEditableBy user) {
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/fileFix.js")"></script>
+
     <a href="#captionTrackModal" role="button" class="btn" data-toggle="modal"><i class="icon-list"></i> Add Caption Track</a>
 
     <div id="captionTrackModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="captionTrackModalLabel" aria-hidden="true">
@@ -15,6 +17,12 @@
                     <label class="control-label" for="captionTrackTitle">Title</label>
                     <div class="controls">
                         <input type="text" id="captionTrackTitle" name="title" placeholder="Title">
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label" for="captionTrackLanguage">Language</label>
+                    <div class="controls">
+                        <input type="text" id="captionTrackLanguage" name="language" placeholder="Language (2 letter code)">
                     </div>
                 </div>
                 <div class="control-group">

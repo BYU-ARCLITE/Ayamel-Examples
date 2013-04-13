@@ -71,7 +71,7 @@
 
             // Load metadata
             var resourceUrl = "@resourceLibraryUrl/@content.resourceId";
-            new Resource(resourceUrl, function(resource) {
+            ResourceLibrary.load(resourceUrl, function(resource) {
                 $("#title").val(resource.title);
                 $("#description").val(resource.description);
                 $("#keywords").val(resource.keywords);

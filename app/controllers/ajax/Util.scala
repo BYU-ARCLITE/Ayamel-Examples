@@ -1,8 +1,15 @@
-package controllers
+package controllers.ajax
 
 import play.api.mvc.{Action, Controller}
 import play.api.libs.json.{JsString, JsObject, Json}
 import service.SerializationTools
+import scala.concurrent.{ExecutionContext, Future, Await}
+import scala.concurrent.duration._
+import ExecutionContext.Implicits.global
+import play.api.libs.ws.WS
+import play.api.cache.Cache
+import play.api.Play
+import Play.current
 
 /**
  * Created with IntelliJ IDEA.
@@ -11,7 +18,7 @@ import service.SerializationTools
  * Time: 1:51 PM
  * To change this template use File | Settings | File Templates.
  */
-object AjaxUtil extends Controller {
+object Util extends Controller {
   def serializeMap = Action(parse.urlFormEncoded) {
     request =>
       val json = Json.parse(request.body("map")(0)).as[JsObject]
@@ -27,4 +34,5 @@ object AjaxUtil extends Controller {
       val json = JsObject(map.mapValues(s => JsString(s)).toSeq)
       Ok(json)
   }
+
 }
