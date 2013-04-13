@@ -27,7 +27,7 @@ var PlaylistRenderer = (function() {
     }
 
     function renderNodeContent(content) {
-        $.ajax("/util/deserialize", {
+        $.ajax("/ajax/util/deserialize", {
             type: "post",
             data: { data: content },
             success: function(data) {

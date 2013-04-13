@@ -71,17 +71,80 @@ var ContentRenderer = (function () {
             });
 
             if (callback) {
-                callback();
+                callback(videoPlayer);
             }
         });
     }
 
     function renderVideoLevel2(resource, holder, callback) {
-        $(holder).html("<em>Playback at this level has not been implemented yet.</em>");
+        // Load the transcripts
+        resource.getTranscripts(function (transcripts) {
+
+            // Install the HTML 5 player
+            Ayamel.AddVideoPlayer(h5PlayerInstall, 1, function() {
+
+                var $player = $('<div id="player"></div>');
+                var videoPlayer;
+                $(holder).html($player);
+
+                // Create the player
+                videoPlayer = new Ayamel.VideoPlayer({
+                    element: $player.get(0),
+                    aspectRatio: 45,
+                    resource: resource,
+                    components: ["play", "volume", "fullScreen", "captions"],
+                    captions: transcripts
+                });
+            });
+        });
     }
 
     function renderVideoLevel3(resource, holder, callback) {
-        $(holder).html("<em>Playback at this level has not been implemented yet.</em>");
+        // Load the transcripts
+        resource.getTranscripts(function (transcripts) {
+
+            // Create the layout
+            var $layout = $(
+                '<div class="row-fluid">' +
+                    '<div class="span9"></div>' +
+                    '<div class="span3"></div>' +
+                '</div>');
+            var $definitions = $layout.find(".span3").html("<h3>Definitions</h3>");
+            $(holder).html($layout);
+
+            // Create the translator
+            var translator = new TextTranslator($definitions[0]);
+            translator.addTranslationEngine(arcliteTranslationEngine, 1);
+            translator.addTranslationEngine(wordReferenceTranslationEngine, 2);
+            translator.addTranslationEngine(googleTranslationEngine, 3);
+
+            // Install the HTML 5 player
+            Ayamel.AddVideoPlayer(h5PlayerInstall, 1, function() {
+
+                var $player = $('<div id="player"></div>');
+                var videoPlayer;
+                $layout.find(".span9").html($player);
+
+                // Create the player
+                videoPlayer = new Ayamel.VideoPlayer({
+                    element: $player.get(0),
+                    aspectRatio: 45,
+                    resource: resource,
+                    components: ["play", "volume", "fullScreen", "captions"],
+                    captions: transcripts,
+                    renderCue: function (cue){
+                        var node = document.createElement('div');
+                        node.appendChild(cue.getCueAsHTML(cue.track.kind==='subtitles'));
+
+                        // Attach the translator the the node
+                        // TODO: Handle languages correctly
+                        translator.attach(node, cue.track.language, "en");
+
+                        return {node:node};
+                    }
+                });
+            });
+        });
     }
 
     function renderVideoLevel4(resource, holder, callback) {
@@ -146,7 +209,7 @@ var ContentRenderer = (function () {
 
         // Check if we are rendering something from the resource library
         if (content.contentType === "video" || content.contentType === "audio" || content.contentType === "image") {
-            new Resource(resourceUrl, function (resource) {
+            ResourceLibrary.load(resourceUrl, function (resource) {
                 switch (resource.type) {
                     case "audio":
                         renderAudio(content, resource, holder, callback);

@@ -2,8 +2,7 @@
     "use strict";
 
     var wordReferenceService = function wordReferenceService(text, srcLang, destLang, callback, error) {
-        var key = "a5819",
-            url = "http://jsonpwrapper.com/?urls%5B%5D=http%3A%2F%2Fapi.wordreference.com%2F0.8%2F" + key + "%2Fjson%2F" + srcLang + destLang + "%2F" + text + "&callback=?";
+        var url = "/ajax/translate/wordReference/" + srcLang + "/" + destLang + "/" + encodeURIComponent(text);
 
         function addTranslations(holder, translation) {
             holder.push(translation.FirstTranslation.term);
@@ -20,13 +19,12 @@
         }
 
         $.ajax(url, {
-            contentType: "application/json",
-            dataType: "jsonp",
-            success: function(json) {
-                var result = JSON.parse(json[0].body),
-                    i, j,
-                    entries = [],
-                    translation;
+            dataType: "json",
+            success: function(result) {
+                var entries = [];
+                var i;
+                var j;
+                var translation;
 
                 /*
                  * Create the new data return object. If there's an error, then we got a different result (redirect,
