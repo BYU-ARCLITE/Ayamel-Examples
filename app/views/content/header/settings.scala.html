@@ -1,4 +1,4 @@
-@(content: models.Content)(implicit user: User)
+@(content: models.Content, resourceLibraryUrl: String)(implicit user: User)
 
 @if(content isEditableBy user) {
     <a href="#settingsModal" role="button" class="btn" data-toggle="modal"><i class="icon-cogs"></i> Edit Settings</a>
@@ -11,7 +11,7 @@
         <div class="modal-body">
 
             @if(content.contentType == 'video) {
-                @views.html.content.header.videoSettings(content)
+                @views.html.content.header.videoSettings(content, resourceLibraryUrl)
             }
             @if(content.contentType == 'audio) {
                 <em>There are no settings defined for this content type.</em>
@@ -34,6 +34,7 @@
 
     <script type="text/javascript">
         $(function() {
+
             $("#saveSettings").click(function() {
                 $("#settingsForm").submit();
             });
