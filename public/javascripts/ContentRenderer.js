@@ -178,88 +178,118 @@ var ContentRenderer = (function () {
                 return captionTracks.indexOf(transcript.id) >= 0;
             });
 
-            // Create the layout
-            var $layout = $(
-                '<div class="row-fluid">' +
-                    '<div class="span8"></div>' +
-                    '<div class="span4">' +
-                        '<ul class="nav nav-tabs" id="videoTabs">' +
-                            '<li class="active"><a href="#translations">Translations</a></li> ' +
-                            '<li><a href="#annotations">Annotations</a></li> ' +
-                        '</ul>' +
-                        '<div class="tab-content">' +
-                            '<div class="tab-pane active" id="translations">' +
-                                '<h2>Translations</h2>' +
-                                '<div></div>' +
-                            '</div>' +
-                            '<div class="tab-pane" id="annotations">' +
-                                '<h2>Annotations</h2>' +
+            // Load the annotations
+            resource.getAnnotations(function (annotations) {
+
+                // Filter the annotations to only include those that are specified
+                var annotationDocuments = [];
+                if (content.settings.enabledAnnotationDocuments) {
+                    annotationDocuments = content.settings.enabledAnnotationDocuments.split(",");
+                }
+                annotations = annotations.filter(function (annotationDoc) {
+                    return annotationDocuments.indexOf(annotationDoc.id) >= 0;
+                });
+
+                // Create the layout
+                var $layout = $(
+                    '<div class="row-fluid">' +
+                        '<div class="span8"></div>' +
+                        '<div class="span4">' +
+                            '<ul class="nav nav-tabs" id="videoTabs">' +
+                                '<li class="active"><a href="#translations">Translations</a></li> ' +
+                                '<li><a href="#annotations">Annotations</a></li> ' +
+                            '</ul>' +
+                            '<div class="tab-content">' +
+                                '<div class="tab-pane active" id="translations">' +
+                                    '<h2>Translations</h2>' +
+                                    '<div></div>' +
+                                '</div>' +
+                                '<div class="tab-pane" id="annotations">' +
+                                    '<h2>Annotations</h2>' +
+                                    '<div></div>' +
+                                '</div>' +
                             '</div>' +
                         '</div>' +
-                    '</div>' +
-                '</div>');
-            var $translations = $layout.find("#translations");
-            var $annotations = $layout.find("#annotations");
+                    '</div>');
+                var $translations = $layout.find("#translations");
+                var $annotations = $layout.find("#annotations");
 
-            // Enable the tabs
-            $layout.find("#videoTabs a").click(function (e) {
-                e.preventDefault();
-                $(this).tab('show');
-            });
+                // Enable the tabs
+                $layout.find("#videoTabs a").click(function (e) {
+                    e.preventDefault();
+                    $(this).tab('show');
+                });
 
-            $(holder).html($layout);
+                $(holder).html($layout);
 
-            // Create the translator
-            var translator = new TextTranslator($translations.children("div")[0]);
-            translator.addTranslationEngine(arcliteTranslationEngine, 1);
-            translator.addTranslationEngine(wordReferenceTranslationEngine, 2);
-            translator.addTranslationEngine(googleTranslationEngine, 3);
+                // Create the translator
+                var translator = new TextTranslator($translations.children("div")[0]);
+                translator.addTranslationEngine(arcliteTranslationEngine, 1);
+                translator.addTranslationEngine(wordReferenceTranslationEngine, 2);
+                translator.addTranslationEngine(googleTranslationEngine, 3);
 
-            // Install the HTML 5 player
-            Ayamel.AddVideoPlayer(h5PlayerInstall, 1, function() {
+                // Load the annotation files
+                async.map(annotations, function (annotation, asyncCallback) {
+                    $.ajax(annotation.content.files[0].downloadUri, {
+                        dataType: "json",
+                        success: function(data) {
+                            SimpleAnnotator.load(data, function(manifest) {
+                                asyncCallback(null, manifest);
+                            });
+                        }
+                    })
+                }, function (err, results) {
 
-                var $player = $('<div id="player"></div>');
-                var videoPlayer;
-                $layout.find(".span8").html($player);
-
-                // Create the player
-                videoPlayer = new Ayamel.VideoPlayer({
-                    element: $player.get(0),
-                    aspectRatio: 45,
-                    resource: resource,
-                    components: ["play", "volume", "fullScreen", "captions"],
-                    captions: transcripts,
-                    renderCue: function (cue){
-                        var node = document.createElement('div');
-                        node.appendChild(cue.getCueAsHTML(cue.track.kind==='subtitles'));
-
-                        // Add annotations
-                        $.ajax("/ajax/util/annotate/" + cue.track.language + "/" + encodeURIComponent(node.textContent), {
-                            dataType: "json",
-                            success: function(data) {
-
-                                console.log(data);
-
-                                if (data.success) {
-                                    var regex = new RegExp(data.token, "gi");
-                                    var matchData = [
-                                        new SimpleAnnotator.MatchData(regex, data.url)
-                                    ];
-                                    SimpleAnnotator.annotate(matchData, node, function (item, content) {
-                                        $annotations
-                                            .html("<h4>" + item.textContent + "</h4>")
-                                            .append('<iframe class="annotationHolder" src="' + content + '"></iframe>');
-                                    });
-                                }
+                    // Define the text annotation renderer
+                    var renderer = function ($annotation, data) {
+                        // Associate the data with the annotation
+                        $annotation.click(function () {
+                            if (data.type === "image") {
+                                var image = new Image();
+                                image.src = data.value;
+                                $annotations.children("div").html(image);
                             }
+
+                            if (data.type === "text") {
+                                $annotations.children("div").html(data.value);
+                            }
+
+                            // Flip to the annotation tab
+                            $layout.find("#videoTabs li:nth-child(2) a").tab("show");
                         });
 
-                        // Attach the translator the the node
-                        // TODO: Handle languages correctly
-                        translator.attach(node, cue.track.language, "en");
+                        return $annotation;
+                    };
 
-                        return {node:node};
-                    }
+                    // Install the HTML 5 player
+                    Ayamel.AddVideoPlayer(h5PlayerInstall, 1, function() {
+
+                        var $player = $('<div id="player"></div>');
+                        var videoPlayer;
+                        $layout.find(".span8").html($player);
+
+                        // Create the player
+                        videoPlayer = new Ayamel.VideoPlayer({
+                            element: $player.get(0),
+                            aspectRatio: 45,
+                            resource: resource,
+                            components: ["play", "volume", "fullScreen", "captions"],
+                            captions: transcripts,
+                            renderCue: function (cue){
+                                var node = document.createElement('div');
+                                node.appendChild(cue.getCueAsHTML(cue.track.kind==='subtitles'));
+
+                                // Add annotations
+                                SimpleAnnotator.annotate(results, node, renderer);
+
+                                // Attach the translator the the node
+                                // TODO: Handle languages correctly
+                                translator.attach(node, cue.track.language, "en");
+
+                                return {node:node};
+                            }
+                        });
+                    });
                 });
             });
         });

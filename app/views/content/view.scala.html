@@ -81,6 +81,7 @@
                 <a href="@routes.ContentController.editImage(content.id.get)" class="btn"><i class="icon-pencil"></i> Edit Image</a>
             }
             @views.html.content.header.addCaptionTrack(content)
+            @views.html.content.header.addAnnotations(content)
             @views.html.content.header.courseSettings(content, course)
             @if(content.contentType != 'playlist) {
                 @views.html.content.header.metadata(content, resourceLibraryUrl)

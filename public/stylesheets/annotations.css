@@ -1,5 +1,10 @@
-a.annotation {
+.annotation {
     color: yellow;
+    cursor: pointer;
+}
+
+.annotation:hover {
+    text-decoration: underline;
 }
 
 iframe.annotationHolder {
