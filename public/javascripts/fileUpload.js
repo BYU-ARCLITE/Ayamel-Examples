@@ -67,6 +67,7 @@ function capitalize(str) {
 }
 
 $(function() {
+    var maxFileSize = 20971520; // 20 MB
     var $fileDropper = $(".fileDropper");
     var $file = $("#file");
     var $fileInfo = $("#fileInfo");
@@ -85,10 +86,20 @@ $(function() {
         // Set the content type
         var contentType = detectType(this.files[0]);
         if (contentType !== "unknown") {
-            var $contentType = $("#contentType");
-            $contentType.parent().append("<input type='hidden' name='contentType' value='" + contentType +
-                "'><div class='pad-top-low'>" + capitalize(contentType) + "</div>");
-            $contentType.remove();
+
+            // Check the file size
+            if (this.files[0].size <= maxFileSize) {
+                var $contentType = $("#contentType");
+                $contentType.parent().append("<input type='hidden' name='contentType' value='" + contentType +
+                    "'><div class='pad-top-low'>" + capitalize(contentType) + "</div>");
+                $contentType.remove();
+            } else {
+                alert("File too big! 20 MB max.");
+                location.reload();
+            }
+        } else {
+            alert("Unsupported file type.");
+            location.reload();
         }
     });
 

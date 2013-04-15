@@ -71,7 +71,8 @@
         <div class="well">
 
             @views.html.content.header.share(content)
-            @if(content.contentType == 'image) {
+            @views.html.content.header.addToCourse(content)
+            @if(content.contentType == 'image && content.isEditableBy(user)) {
                 <a href="@routes.ContentController.editImage(content.id.get)" class="btn"><i class="icon-pencil"></i> Edit Image</a>
             }
             @views.html.content.header.addCaptionTrack(content)

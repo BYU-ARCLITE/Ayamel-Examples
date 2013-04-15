@@ -3,8 +3,11 @@ package controllers
 import authentication.Authentication
 import play.api.mvc.{RequestHeader, Result, Request, Controller}
 import models._
-import service.HashTools
+import service.{FileUploader, ImageTools, HashTools}
 import scala.Some
+import javax.imageio.ImageIO
+import scala.concurrent.ExecutionContext
+import ExecutionContext.Implicits.global
 
 /**
  * Created with IntelliJ IDEA.
@@ -70,6 +73,25 @@ object Users extends Controller {
           Redirect(routes.Users.accountSettings()).flashing("info" -> "Password changed.")
         } else
           Redirect(routes.Users.accountSettings()).flashing("alert" -> "Passwords don't match.")
+  }
+
+  def uploadProfilePicture = Authentication.authenticatedAction(parse.multipartFormData) {
+    implicit request =>
+      implicit user =>
+
+        // Load the image from the file and make it into a thumbnail
+        val file = request.body.file("file").get
+        val image = ImageTools.makeThumbnail(ImageIO.read(file.ref.file))
+
+        // Upload the file
+        Async {
+          FileUploader.uploadImage(image, file.filename).map { url =>
+
+            // Save the user info about the profile picture
+            user.copy(picture = Some(url)).save
+            Redirect(routes.Users.accountSettings()).flashing("info" -> "Profile picture updated")
+          }
+        }
   }
 
   def teacherRequestPage = Authentication.authenticatedAction() {

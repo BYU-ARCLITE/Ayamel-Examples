@@ -82,6 +82,20 @@ object CourseMembership extends SQLSelectable[CourseMembership] {
   }
 
   /**
+   * Finds all courses that a certain user is teaching
+   * @param user The user for whom the course list will be
+   * @return The list of courses
+   */
+  def listTeacherClasses(user: User): List[Course] = {
+    DB.withConnection {
+      implicit connection =>
+        anorm.SQL("select * from " + Course.tableName + " join " + tableName + " on " + Course.tableName + ".id = " +
+          tableName + ".courseId where " + tableName + ".userId = {id} and " + tableName + ".teacher = true")
+          .on('id -> user.id).as(Course.simple *)
+    }
+  }
+
+  /**
    * Finds all students or teachers who are enrolled in a certain course
    * @param course The course in which the users are enrolled
    * @param teacher Get teachers instead of students?

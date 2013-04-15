@@ -1,0 +1,84 @@
+@(user: User, course: Course)
+
+@availableContent = @{
+    user.getContent.filterNot(c => course.getContent.contains(c))
+}
+
+@if(user canAddContentTo course) {
+    <div id="addContentModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="addContentModalLabel" aria-hidden="true">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3 id="addContentModalLabel">Add content to this course.</h3>
+        </div>
+
+        <div class="modal-body">
+            <p>You can add content that you have uploaded to this course.</p>
+            @if(user canEdit course) {
+                <p>
+                    If you want to add other content to this course, then view that content and click the "Add to
+                    Course" button.
+                </p>
+            }
+
+            @if(availableContent.isEmpty) {
+                <strong><em>All your content has been added to this course.</em></strong>
+            } else {
+                <form class="form-horizontal" id="addContentForm" method="post" action="@routes.Courses.addContent(course.id.get)">
+                    <div class="control-group">
+                        <label class="control-label" for="addContent">Content to add:</label>
+                        <div class="controls">
+                            <select id="addContent" name="addContent">
+                                @for(contentObj <- availableContent) {
+                                    <option value="@contentObj.id.get">@contentObj.name (@contentObj.contentType.name)</option>
+                                }
+                            </select>
+                        </div>
+                        <input type="submit" style="position: absolute; left: -9999px; width: 1px; height: 1px;"/>
+                    </div>
+                </form>
+            }
+        </div>
+        <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+            @if(!availableContent.isEmpty) {
+                <button class="btn btn-blue" id="addContentButton">Add Content</button>
+            }
+        </div>
+
+    </div>
+
+    <div id="announcementModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="announcementModalLabel" aria-hidden="true">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3 id="announcementModalLabel">Make an announcement.</h3>
+        </div>
+
+        <div class="modal-body">
+            <p>Your announcement will be seen by all members of this course.</p>
+            <form class="form-horizontal" id="announcementForm" method="post" action="@routes.Courses.addAnnouncement(course.id.get)">
+                <div class="control-group">
+                    <label class="control-label" for="announcement">Announcement</label>
+                    <div class="controls">
+                        <textarea id="announcement" name="announcement"></textarea>
+                    </div>
+                    <input type="submit" style="position: absolute; left: -9999px; width: 1px; height: 1px;"/>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+            <button class="btn btn-blue" id="announcementButton">Publish</button>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        $(function() {
+            $("#addContentButton").click(function () {
+                $("#addContentForm").submit();
+            });
+            $("#announcementButton").click(function () {
+                $("#announcementForm").submit();
+            });
+        });
+    </script>
+}
