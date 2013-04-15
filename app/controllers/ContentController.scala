@@ -530,6 +530,42 @@ object ContentController extends Controller {
         }
   }
 
+  def addAnnotations(id: Long) = Authentication.authenticatedAction(parse.multipartFormData) {
+    implicit request =>
+      implicit user =>
+        getContent(id) {
+          content =>
+            if (content isEditableBy user) {
+
+              val file = request.body.file("file").get
+              val mime = "application/json"
+              val title = request.body.dataParts("title")(0)
+
+              Async {
+                // Upload the file
+                FileUploader.uploadFile(file.ref.file, FileUploader.uniqueFilename(file.filename), mime).flatMap { url =>
+
+                  // Create subtitle (subject) resource
+                  ResourceHelper.createResourceWithUri(title, "", "annotations", Nil, "text", url, mime).flatMap { resource =>
+
+                    // Have this annotation document  enabled
+                    val subjectId = (resource \ "id").as[String]
+                    val annotationDocuments = subjectId :: content.videoSettings.enabledAnnotationDocuments
+                    content.setSetting("enabledAnnotationDocuments", annotationDocuments.mkString(",")).save
+
+                    // Add the relation
+                    ResourceController.addRelation("1", subjectId, content.resourceId, "references", Map("type" -> "simple annotations")).map(r => {
+                      Redirect(routes.ContentController.view(content.id.get)).flashing("info" -> "Annotations added")
+                    })
+                  }
+                }
+              }
+
+            } else
+              Errors.forbidden
+        }
+  }
+
   def addToCourse(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>

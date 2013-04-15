@@ -60,6 +60,7 @@ GET     /content/:id/access/:authKey    controllers.ContentController.shareAcces
 GET     /content/:id/edit               controllers.ContentController.editImage(id: Long)
 POST    /content/:id/edit               controllers.ContentController.saveImageEdits(id: Long)
 POST    /content/:id/addCaptionTrack    controllers.ContentController.addCaptionTrack(id: Long)
+POST    /content/:id/addAnnotations     controllers.ContentController.addAnnotations(id: Long)
 POST    /content/:id/addToCourse        controllers.ContentController.addToCourse(id: Long)
 
 # User pages
