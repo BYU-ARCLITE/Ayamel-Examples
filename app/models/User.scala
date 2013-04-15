@@ -259,6 +259,14 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
       enrollment.get
     }
 
+    var teacherEnrollment: Option[List[Course]] = None
+
+    def getTeacherEnrollment = {
+      if (teacherEnrollment.isEmpty)
+        teacherEnrollment = Some(CourseMembership.listTeacherClasses(cacheTarget))
+      teacherEnrollment.get
+    }
+
     var content: Option[List[Content]] = None
 
     def getContent = {
@@ -313,6 +321,12 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
    * @return The list of courses
    */
   def getEnrollment: List[Course] = cache.getEnrollment
+
+  /**
+   * Gets the courses this user is teaching
+   * @return The list of courses
+   */
+  def getTeacherEnrollment: List[Course] = cache.getTeacherEnrollment
 
   /**
    * Gets the content belonging to this user

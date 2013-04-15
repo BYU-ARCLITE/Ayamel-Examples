@@ -60,11 +60,13 @@ GET     /content/:id/access/:authKey    controllers.ContentController.shareAcces
 GET     /content/:id/edit               controllers.ContentController.editImage(id: Long)
 POST    /content/:id/edit               controllers.ContentController.saveImageEdits(id: Long)
 POST    /content/:id/addCaptionTrack    controllers.ContentController.addCaptionTrack(id: Long)
+POST    /content/:id/addToCourse        controllers.ContentController.addToCourse(id: Long)
 
 # User pages
 GET     /user/settings                  controllers.Users.accountSettings
 POST    /user/settings                  controllers.Users.saveSettings
 POST    /user/changePassword            controllers.Users.changePassword
+POST    /user/uploadPicture             controllers.Users.uploadProfilePicture
 GET     /user/notifications             controllers.Users.notifications
 GET     /user/notifications/mark/:id    controllers.Users.markNotification(id: Long)
 GET     /user/teacher/request           controllers.Users.teacherRequestPage
@@ -86,6 +88,7 @@ GET     /admin/content                  controllers.Users.manageContent
 # Ajax utilities
 POST    /ajax/util/serialize                                controllers.ajax.Util.serializeMap
 POST    /ajax/util/deserialize                              controllers.ajax.Util.deserializeMap
+GET     /ajax/util/annotate/:language/:text                 controllers.ajax.Util.annotate(language: String, text: String)
 GET     /ajax/translate/google/:src/:dest/:text             controllers.ajax.Translate.translateGoogle(src: String, dest: String, text: String)
 GET     /ajax/translate/wordReference/:src/:dest/:text      controllers.ajax.Translate.translateWordReference(src: String, dest: String, text: String)
 

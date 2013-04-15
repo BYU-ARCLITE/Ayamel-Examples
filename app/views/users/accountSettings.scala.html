@@ -1,12 +1,40 @@
 @()(implicit request: RequestHeader, user: User)
 
-@main("Ayamel - Account Settings") {
+@moreStyles =  @{
+    List(
+        ("screen", "stylesheets/course.css")
+    )
+}
+
+@main("Ayamel - Account Settings", moreStyles) {
+
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/fileFix.js")"></script>
 
     <div class="padded">
         <h1>Account Settings</h1>
 
         <div class="row-fluid">
             <div class="span6">
+
+                <h2>Profile Picture</h2>
+                <div class="row-fluid">
+                    <div class="span3">
+                        <div class="face" data-toggle="tooltip" title="@user.displayName" style="background: url('@user.getPicture'); background-size: cover;"></div>
+                    </div>
+                    <div class="span9">
+                        <form action="@routes.Users.uploadProfilePicture()" method="post" enctype="multipart/form-data">
+                            <div>
+                                <label for="file">Upload a new image:</label>
+                                <input type="file" id="file" name="file">
+                            </div>
+                            <div class="pad-top-high">
+                                <input type="submit" class="btn btn-blue" value="Update"/>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+
                 <h2>Personal Information</h2>
 
                 <form class="form-horizontal" method="post" action="@routes.Users.saveSettings()">

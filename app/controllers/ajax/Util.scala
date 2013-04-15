@@ -35,4 +35,30 @@ object Util extends Controller {
       Ok(json)
   }
 
+  def annotate(language: String, text: String) = Action {
+    request =>
+
+      // Select a random token
+      val tokens = text.split("\\s+")
+      val token = tokens(util.Random.nextInt(tokens.size))
+
+      // Look it up in wikipedia
+      Async {
+        val url = "http://" + language + ".wikipedia.org/w/api.php?action=query&format=xml&titles=" + token
+        WS.url(url).get().map(response => {
+          val xml = response.xml
+
+          // Does it exist?
+          val pageId = (xml \ "query" \ "pages" \ "page")(0).attribute("pageid")
+          if (pageId.isDefined) {
+
+            // Yes, so give a link to it
+            val title = (xml \ "query" \ "pages" \ "page")(0).attribute("title").get
+            Ok(Json.obj("success" -> true, "token" -> token, "url" -> ("http://en.wikipedia.7val.com/wiki/" + title)))
+          } else
+            Ok(Json.obj("success" -> false))
+        })
+      }
+  }
+
 }

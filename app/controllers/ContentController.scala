@@ -523,4 +523,20 @@ object ContentController extends Controller {
               Errors.forbidden
         }
   }
+
+  def addToCourse(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
+    implicit request =>
+      implicit user =>
+        getContent(id) {
+          content =>
+
+            val courseId = request.body("course")(0).toLong
+            Courses.getCourse(courseId) {
+              course =>
+
+                course.addContent(content)
+                Redirect(routes.ContentController.view(id)).flashing("info" -> "Content added to course")
+            }
+        }
+  }
 }
