@@ -363,8 +363,10 @@ object ContentController extends Controller {
   def setVideoSettings(content: Content, course: Option[Course] = None)(implicit request: Request[Map[String, Seq[String]]]) {
     val prefix = course.map(c => "course_" + c.id.get + ":").getOrElse("")
     val level = request.body("level")(0)
+    val enabledCaptionTracks = request.body("captionTracks").mkString(",")
 
     content.setSetting(prefix + "level", level).save
+    content.setSetting(prefix + "enabledCaptionTracks", enabledCaptionTracks).save
   }
 
   def setAudioSettings(content: Content, course: Option[Course] = None)(implicit request: Request[Map[String, Seq[String]]]) {
@@ -508,8 +510,12 @@ object ContentController extends Controller {
                     // Create subtitle (subject) resource
                     ResourceHelper.createResourceWithUri(title, "", "subtitles", Nil, "text", url, mime, language).flatMap { resource =>
 
-                      // Add the relation
+                      // Have this caption track enabled
                       val subjectId = (resource \ "id").as[String]
+                      val captionTracks = subjectId :: content.videoSettings.enabledCaptionTracks
+                      content.setSetting("enabledCaptionTracks", captionTracks.mkString(",")).save
+
+                      // Add the relation
                       ResourceController.addRelation("1", subjectId, content.resourceId, "transcriptOf", Map()).map(r => {
                         Redirect(routes.ContentController.view(content.id.get)).flashing("info" -> "Transcript added")
                       })

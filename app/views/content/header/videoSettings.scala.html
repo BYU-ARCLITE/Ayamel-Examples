@@ -1,4 +1,4 @@
-@(content: models.Content)
+@(content: models.Content, resourceLibraryUrl: String)
 
 @isChecked(val1: Any, val2: Any) = {
     @if(val1 == val2) {
@@ -34,5 +34,36 @@
             </label>
         </div>
     </div>
+
+    <div class="control-group">
+        <label class="control-label" for="captionTracks">Enabled Caption Tracks</label>
+        <div class="controls">
+            <select multiple="multiple" name="captionTracks" id="captionTracks">
+            </select>
+        </div>
+    </div>
     <input type="submit" style="position: absolute; left: -9999px; width: 1px; height: 1px;"/>
 </form>
+
+<script type="text/javascript">
+    $(function() {
+        var content = @Html(content.toJson.toString());
+        var url = "@resourceLibraryUrl/@content.resourceId";
+        var captionTracks = [];
+
+        if (content.settings.enabledCaptionTracks && content.settings.enabledCaptionTracks !== "") {
+            captionTracks = content.settings.enabledCaptionTracks.split(",");
+        }
+
+        ResourceLibrary.load(url, function(resource) {
+            resource.getTranscripts(function (transcripts) {
+                var $captionTracks = $("#captionTracks");
+                transcripts.forEach(function(transcript) {
+                    var html = '<option value="' + transcript.id + '">' + transcript.title + ' (' + transcript.language + ')</option>';
+                    $captionTracks.append(html);
+                });
+                $captionTracks.val(captionTracks);
+            });
+        });
+    });
+</script>

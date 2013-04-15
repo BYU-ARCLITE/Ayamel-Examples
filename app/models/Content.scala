@@ -127,6 +127,11 @@ case class Content(id: Pk[Long], name: String, contentType: Symbol, thumbnail: S
 
   object videoSettings {
     def level = settings.get("level").getOrElse(Content.defaultSettings.video.level)
+    def enabledCaptionTracks: List[String] =
+      if (settings.get("enabledCaptionTracks").isDefined)
+        settings("enabledCaptionTracks").split(",").toList
+      else
+        Nil
   }
 
   def toJson = Json.obj(
@@ -172,7 +177,9 @@ object Content extends SQLSelectable[Content] {
     }
 
     val preset = Map(
-      'video -> Map("level" -> video.level),
+      'video -> Map(
+        "level" -> video.level
+      ),
       'image -> Map("allowAnnotations" -> image.allowAnnotations),
       'audio -> Map("blah" -> "blah"),
       'playlist -> Map("blah" -> "blah"),

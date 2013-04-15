@@ -12,7 +12,8 @@
 
 @moreStyles =  @{
     List(
-      ("screen", "stylesheets/content.css")
+      ("screen", "stylesheets/content.css"),
+      ("screen", "stylesheets/annotations.css")
     )
 }
 
@@ -24,6 +25,7 @@
 
     <!-- Ayamel scripts -->
     <script src="@routes.Assets.at("Ayamel.js/js/async.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.at("Ayamel.js/js/annotator.js")" type="text/javascript"></script>
     <script src="@routes.Assets.at("Ayamel.js/js/Ayamel.js")" type="text/javascript"></script>
     <script src="@routes.Assets.at("Ayamel.js/js/ControlBar.js")" type="text/javascript"></script>
     <script src="@routes.Assets.at("Ayamel.js/js/ControlBarComponents.js")" type="text/javascript"></script>
@@ -55,6 +57,9 @@
     <script type="text/javascript" src="@routes.Assets.at("javascripts/ContentRenderer.js")"></script>
     <script type="text/javascript" src="@routes.Assets.at("javascripts/PlaylistRenderer.js")"></script>
 
+    <!-- Annotations -->
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/old/SimpleAnnotator.js")"></script>
+
     <!-- OAuth and Cryptography -->
     <script type="text/javascript" src="@routes.Assets.at("javascripts/sha1.js")"></script>
     <script type="text/javascript" src="@routes.Assets.at("javascripts/oauth.js")"></script>
@@ -80,7 +85,7 @@
             @if(content.contentType != 'playlist) {
                 @views.html.content.header.metadata(content, resourceLibraryUrl)
             }
-            @views.html.content.header.settings(content)
+            @views.html.content.header.settings(content, resourceLibraryUrl)
             @views.html.content.header.shareability(content)
             @views.html.content.header.visibility(content)
             @views.html.content.header.delete(content)

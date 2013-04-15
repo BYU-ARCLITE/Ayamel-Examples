@@ -54,7 +54,7 @@ object Util extends Controller {
 
             // Yes, so give a link to it
             val title = (xml \ "query" \ "pages" \ "page")(0).attribute("title").get
-            Ok(Json.obj("success" -> true, "token" -> token, "url" -> ("http://en.wikipedia.7val.com/wiki/" + title)))
+            Ok(Json.obj("success" -> true, "token" -> token, "url" -> ("http://" + language + ".wikipedia.7val.com/wiki/" + title)))
           } else
             Ok(Json.obj("success" -> false))
         })
