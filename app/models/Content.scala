@@ -139,6 +139,8 @@ case class Content(id: Pk[Long], name: String, contentType: Symbol, thumbnail: S
     else
       Nil
 
+  def includeTranscriptions: String = settings.get("includeTranscriptions").getOrElse("false")
+
   def toJson = Json.obj(
     "id" -> id.get,
     "name" -> name,

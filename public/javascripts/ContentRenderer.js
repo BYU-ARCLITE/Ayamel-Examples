@@ -13,6 +13,79 @@ var ContentRenderer = (function () {
         return null;
     }
 
+    function getTranscripts(content, resource, callback) {
+        resource.getTranscripts(function (transcripts) {
+
+            // Filter the transcripts to only include those that are specified
+            var captionTracks = [];
+            if (content.settings.enabledCaptionTracks) {
+                captionTracks = content.settings.enabledCaptionTracks.split(",");
+            }
+            transcripts = transcripts.filter(function (transcript) {
+                return captionTracks.indexOf(transcript.id) >= 0;
+            });
+            callback(transcripts);
+        });
+    }
+
+    function getAnnotations(content, resource, callback) {
+        // First get the annotation resources from the relations
+        resource.getAnnotations(function (annotations) {
+
+            // Filter the annotations to only include those that are specified
+            var annotationDocuments = [];
+            if (content.settings.enabledAnnotationDocuments) {
+                annotationDocuments = content.settings.enabledAnnotationDocuments.split(",");
+            }
+            annotations = annotations.filter(function (annotationDoc) {
+                return annotationDocuments.indexOf(annotationDoc.id) >= 0;
+            });
+
+            // Load the annotation files
+            // TODO: Look at other formats
+            async.map(annotations, function (annotation, asyncCallback) {
+                $.ajax(annotation.content.files[0].downloadUri, {
+                    dataType: "json",
+                    success: function(data) {
+                        SimpleAnnotator.load(data, function(manifest) {
+                            asyncCallback(null, manifest);
+                        });
+                    }
+                })
+            }, function (err, results) {
+                callback(results);
+            });
+        });
+    }
+
+    function createRenderCue(translator, annotations) {
+        return function (cue) {
+            var node = document.createElement('div');
+            node.appendChild(cue.getCueAsHTML(cue.track.kind==='subtitles'));
+
+            // Attach the translator the the node
+            // TODO: Handle languages correctly
+            if (translator) {
+                translator.attach(node, cue.track.language, "en");
+            }
+
+            // Add annotations
+            if (annotations) {
+                SimpleAnnotator.annotate(annotations, node, AnnotationRenderers.video);
+            }
+
+            return {node:node};
+        };
+    }
+
+    function createTranslator($container) {
+        var translator = new TextTranslator($container);
+        translator.addTranslationEngine(arcliteTranslationEngine, 1);
+        translator.addTranslationEngine(wordReferenceTranslationEngine, 2);
+        translator.addTranslationEngine(googleTranslationEngine, 3);
+        return translator;
+    }
+
     /*
      * =====================
      *    Image Rendering
@@ -40,7 +113,7 @@ var ContentRenderer = (function () {
         }
     }
 
-    function renderImage(content, resource, holder, callback) {
+    function renderImage(content, resource, holder, callback, annotate) {
         var file = findFile(resource, function (file) {
             return file.representation === "original";
         });
@@ -65,74 +138,80 @@ var ContentRenderer = (function () {
                     $imgHolder.css("background-size", "initial");
                 }
 
-                // Add a container the exact size of the image for holding annotations
-                var size = computeRenderedSize(this, $imgHolder);
-                var top = ($imgHolder.height() - size.height) / 2;
-                var left = ($imgHolder.width() - size.width) / 2;
-                var $annotationHolder = $("<div id='annotationHolder'></div>")
-                    .width(size.width)
-                    .height(size.height)
-                    .css("position", "absolute")
-                    .css("top", top)
-                    .css("left", left);
-                $imgHolder.append($annotationHolder);
+                if (annotate) {
+                    // Add a container the exact size of the image for holding annotations
+                    var size = computeRenderedSize(this, $imgHolder);
+                    var top = ($imgHolder.height() - size.height) / 2;
+                    var left = ($imgHolder.width() - size.width) / 2;
+                    var $annotationHolder = $("<div id='annotationHolder'></div>")
+                        .width(size.width)
+                        .height(size.height)
+                        .css("position", "absolute")
+                        .css("top", top)
+                        .css("left", left);
+                    $imgHolder.append($annotationHolder);
 
-                // Add the annotations
-                // Load the annotations
-                resource.getAnnotations(function (annotations) {
+                    // Add the annotations
+                    // Load the annotations
+                    resource.getAnnotations(function (annotations) {
 
-                    // Filter the annotations to only include those that are specified
-                    var annotationDocuments = [];
-                    if (content.settings.enabledAnnotationDocuments) {
-                        annotationDocuments = content.settings.enabledAnnotationDocuments.split(",");
-                    }
-                    annotations = annotations.filter(function (annotationDoc) {
-                        return annotationDocuments.indexOf(annotationDoc.id) >= 0;
-                    });
-
-                    // Load the annotation files
-                    // TODO: Look at other formats
-                    async.map(annotations, function (annotation, asyncCallback) {
-                        $.ajax(annotation.content.files[0].downloadUri, {
-                            dataType: "json",
-                            success: function(data) {
-                                SimpleAnnotator.load(data, function(manifest) {
-                                    asyncCallback(null, manifest);
-                                });
-                            }
-                        })
-                    }, function (err, results) {
-
-                        // Define the image annotation renderer
-                        var renderer = function ($annotation, data) {
-                            $annotation
-                                .css("background-color", "rgba(0,0,0,0.5)")
-                                .css("color", "white");
-
-                            // For now only allow image and text annotations on images
-
-                            if (data.type === "image") {
-                                $annotation
-                                    .css("background-size", "contain")
-                                    .css("background-position", "center")
-                                    .css("background-repeat", "no-repeat")
-                                    .css("background-image", "url('" + data.value + "')");
-                            }
-
-                            if (data.type === "text") {
-                                $annotation.html(data.value);
-                            }
-
-                            return $annotation;
-                        };
-
-                        SimpleAnnotator.annotate(results, $annotationHolder, renderer);
-
-                        if (callback) {
-                            callback(this);
+                        // Filter the annotations to only include those that are specified
+                        var annotationDocuments = [];
+                        if (content.settings.enabledAnnotationDocuments) {
+                            annotationDocuments = content.settings.enabledAnnotationDocuments.split(",");
                         }
+                        annotations = annotations.filter(function (annotationDoc) {
+                            return annotationDocuments.indexOf(annotationDoc.id) >= 0;
+                        });
+
+                        // Load the annotation files
+                        // TODO: Look at other formats
+                        async.map(annotations, function (annotation, asyncCallback) {
+                            $.ajax(annotation.content.files[0].downloadUri, {
+                                dataType: "json",
+                                success: function(data) {
+                                    SimpleAnnotator.load(data, function(manifest) {
+                                        asyncCallback(null, manifest);
+                                    });
+                                }
+                            })
+                        }, function (err, results) {
+
+                            // Define the image annotation renderer
+                            var renderer = function ($annotation, data) {
+                                $annotation
+                                    .css("background-color", "rgba(0,0,0,0.5)")
+                                    .css("color", "white");
+
+                                // For now only allow image and text annotations on images
+
+                                if (data.type === "image") {
+                                    $annotation
+                                        .css("background-size", "contain")
+                                        .css("background-position", "center")
+                                        .css("background-repeat", "no-repeat")
+                                        .css("background-image", "url('" + data.value + "')");
+                                }
+
+                                if (data.type === "text") {
+                                    $annotation.html(data.value);
+                                }
+
+                                return $annotation;
+                            };
+
+                            SimpleAnnotator.annotate(results, $annotationHolder, renderer);
+
+                            if (callback) {
+                                callback(this);
+                            }
+                        });
                     });
-                });
+                } else {
+                    if (callback) {
+                        callback(this);
+                    }
+                }
             };
         }
     }
@@ -145,15 +224,12 @@ var ContentRenderer = (function () {
     function renderVideoLevel1(resource, holder, callback) {
 
         // Install the HTML5 video player
-        // TODO: Install other players
-
-        var $player = $('<div id="player"></div>');
-        $(holder).html($player);
+        var panes = VideoLayoutManager.onePanel($(holder));
         Ayamel.AddVideoPlayer(h5PlayerInstall, 1, function() {
 
             // Create the player
             var videoPlayer = new Ayamel.VideoPlayer({
-                element: $player[0],
+                element: panes.$player[0],
                 aspectRatio: 45,
                 resource: resource
             });
@@ -166,27 +242,23 @@ var ContentRenderer = (function () {
 
     function renderVideoLevel2(content, resource, holder, callback) {
         // Load the transcripts
-        resource.getTranscripts(function (transcripts) {
+        getTranscripts(content, resource, function(transcripts) {
 
-            // Filter the transcripts to only include those that are specified
-            var captionTracks = [];
-            if (content.settings.enabledCaptionTracks) {
-                captionTracks = content.settings.enabledCaptionTracks.split(",");
+            // Create the layout
+            var panes;
+            if (content.settings.includeTranscriptions && content.settings.includeTranscriptions === "true") {
+                panes = VideoLayoutManager.twoPanel($(holder), ["Transcript"]);
+                TranscriptRenderer.add(transcripts, panes.$Transcript);
+            } else {
+                panes = VideoLayoutManager.onePanel($(holder));
             }
-            transcripts = transcripts.filter(function (transcript) {
-                return captionTracks.indexOf(transcript.id) >= 0;
-            });
 
             // Install the HTML 5 player
             Ayamel.AddVideoPlayer(h5PlayerInstall, 1, function() {
 
-                var $player = $('<div id="player"></div>');
-                var videoPlayer;
-                $(holder).html($player);
-
                 // Create the player
-                videoPlayer = new Ayamel.VideoPlayer({
-                    element: $player.get(0),
+                var videoPlayer = new Ayamel.VideoPlayer({
+                    element: panes.$player[0],
                     aspectRatio: 45,
                     resource: resource,
                     components: ["play", "volume", "fullScreen", "captions"],
@@ -198,201 +270,86 @@ var ContentRenderer = (function () {
 
     function renderVideoLevel3(content, resource, holder, callback) {
         // Load the transcripts
-        resource.getTranscripts(function (transcripts) {
-
-            // Filter the transcripts to only include those that are specified
-            var captionTracks = [];
-            if (content.settings.enabledCaptionTracks) {
-                captionTracks = content.settings.enabledCaptionTracks.split(",");
-            }
-            transcripts = transcripts.filter(function (transcript) {
-                return captionTracks.indexOf(transcript.id) >= 0;
-            });
+        getTranscripts(content, resource, function(transcripts) {
 
             // Create the layout
-            var $layout = $(
-                '<div class="row-fluid">' +
-                    '<div class="span9"></div>' +
-                    '<div class="span3"></div>' +
-                '</div>');
-            var $definitions = $layout.find(".span3").html("<h3>Definitions</h3>");
-            $(holder).html($layout);
+            var panes;
+            var $definitions;
+            if (content.settings.includeTranscriptions && content.settings.includeTranscriptions === "true") {
+                panes = VideoLayoutManager.twoPanel($(holder), ["Definitions", "Transcription"]);
+                $definitions = panes.Definitions.$content[0];
+                TranscriptRenderer.add(transcripts, panes.Transcription.$content);
+            } else {
+                panes = VideoLayoutManager.twoPanel($(holder), ["Definitions"]);
+                $definitions = panes.Definitions.$Definitions[0];
+            }
 
             // Create the translator
-            var translator = new TextTranslator($definitions[0]);
-            translator.addTranslationEngine(arcliteTranslationEngine, 1);
-            translator.addTranslationEngine(wordReferenceTranslationEngine, 2);
-            translator.addTranslationEngine(googleTranslationEngine, 3);
+            var translator = createTranslator($definitions);
 
             // Install the HTML 5 player
             Ayamel.AddVideoPlayer(h5PlayerInstall, 1, function() {
 
-                var $player = $('<div id="player"></div>');
-                var videoPlayer;
-                $layout.find(".span9").html($player);
-
                 // Create the player
-                videoPlayer = new Ayamel.VideoPlayer({
-                    element: $player.get(0),
+                var videoPlayer = new Ayamel.VideoPlayer({
+                    element: panes.$player[0],
                     aspectRatio: 45,
                     resource: resource,
                     components: ["play", "volume", "fullScreen", "captions"],
                     captions: transcripts,
-                    renderCue: function (cue){
-                        var node = document.createElement('div');
-                        node.appendChild(cue.getCueAsHTML(cue.track.kind==='subtitles'));
+                    renderCue: createRenderCue(translator)
+                });
+            });
+        });
+    }
 
-                        // Attach the translator the the node
-                        // TODO: Handle languages correctly
-                        translator.attach(node, cue.track.language, "en");
+    function renderVideoLevel4(content, resource, holder, callback, annotate) {
+        // Load the transcripts
+        getTranscripts(content, resource, function(transcripts) {
 
-                        return {node:node};
+            // Load the annotations
+            getAnnotations(content, resource, function (annotations) {
+
+                // Create the layout
+                var tabs = ["Definitions", "Annotations"];
+                if (content.settings.includeTranscriptions && content.settings.includeTranscriptions === "true") {
+                    tabs.push("Transcription");
+                }
+                var panes = VideoLayoutManager.twoPanel($(holder), tabs);
+
+                // Create the translator
+                var translator = createTranslator(panes.Definitions.$content[0]);
+
+                // Initialize the annotation renderer
+                AnnotationRenderers.init(panes.Annotations.$tab, panes.Annotations.$content);
+
+                // Install the HTML 5 player
+                Ayamel.AddVideoPlayer(h5PlayerInstall, 1, function() {
+
+                    // Create the player
+                    var videoPlayer = new Ayamel.VideoPlayer({
+                        element: panes.$player[0],
+                        aspectRatio: 45,
+                        resource: resource,
+                        components: ["play", "volume", "fullScreen", "captions"],
+                        captions: transcripts,
+                        renderCue: createRenderCue(translator, annotations)
+                    });
+
+                    // Create the transcription
+                    if (content.settings.includeTranscriptions && content.settings.includeTranscriptions === "true") {
+                        var $transcriptHolder = TranscriptRenderer.add(transcripts, panes.Transcription.$content, videoPlayer);
                     }
                 });
             });
         });
     }
 
-    function renderVideoLevel4(content, resource, holder, callback) {
-        // Load the transcripts
-        resource.getTranscripts(function (transcripts) {
-
-            // Filter the transcripts to only include those that are specified
-            var captionTracks = [];
-            if (content.settings.enabledCaptionTracks) {
-                captionTracks = content.settings.enabledCaptionTracks.split(",");
-            }
-            transcripts = transcripts.filter(function (transcript) {
-                return captionTracks.indexOf(transcript.id) >= 0;
-            });
-
-            // Load the annotations
-            resource.getAnnotations(function (annotations) {
-
-                // Filter the annotations to only include those that are specified
-                var annotationDocuments = [];
-                if (content.settings.enabledAnnotationDocuments) {
-                    annotationDocuments = content.settings.enabledAnnotationDocuments.split(",");
-                }
-                annotations = annotations.filter(function (annotationDoc) {
-                    return annotationDocuments.indexOf(annotationDoc.id) >= 0;
-                });
-
-                // Create the layout
-                var $layout = $(
-                    '<div class="row-fluid">' +
-                        '<div class="span8"></div>' +
-                        '<div class="span4">' +
-                            '<ul class="nav nav-tabs" id="videoTabs">' +
-                                '<li class="active"><a href="#translations">Translations</a></li> ' +
-                                '<li><a href="#annotations">Annotations</a></li> ' +
-                            '</ul>' +
-                            '<div class="tab-content">' +
-                                '<div class="tab-pane active" id="translations">' +
-                                    '<h2>Translations</h2>' +
-                                    '<div></div>' +
-                                '</div>' +
-                                '<div class="tab-pane" id="annotations">' +
-                                    '<h2>Annotations</h2>' +
-                                    '<div></div>' +
-                                '</div>' +
-                            '</div>' +
-                        '</div>' +
-                    '</div>');
-                var $translations = $layout.find("#translations");
-                var $annotations = $layout.find("#annotations");
-
-                // Enable the tabs
-                $layout.find("#videoTabs a").click(function (e) {
-                    e.preventDefault();
-                    $(this).tab('show');
-                });
-
-                $(holder).html($layout);
-
-                // Create the translator
-                var translator = new TextTranslator($translations.children("div")[0]);
-                translator.addTranslationEngine(arcliteTranslationEngine, 1);
-                translator.addTranslationEngine(wordReferenceTranslationEngine, 2);
-                translator.addTranslationEngine(googleTranslationEngine, 3);
-
-                // Load the annotation files
-                // TODO: Look at other formats
-                async.map(annotations, function (annotation, asyncCallback) {
-                    $.ajax(annotation.content.files[0].downloadUri, {
-                        dataType: "json",
-                        success: function(data) {
-                            SimpleAnnotator.load(data, function(manifest) {
-                                asyncCallback(null, manifest);
-                            });
-                        }
-                    })
-                }, function (err, results) {
-
-                    // Define the text annotation renderer
-                    var renderer = function ($annotation, data) {
-                        // Associate the data with the annotation
-                        $annotation.click(function () {
-                            if (data.type === "image") {
-                                var image = new Image();
-                                image.src = data.value;
-                                $annotations.children("div").html(image);
-                            }
-
-                            if (data.type === "text") {
-                                $annotations.children("div").html(data.value);
-                            }
-
-                            if (data.type === "content") {
-                                ContentRenderer.render(+data.value, $annotations.children("div"));
-                            }
-
-                            // Flip to the annotation tab
-                            $layout.find("#videoTabs li:nth-child(2) a").tab("show");
-                        });
-
-                        return $annotation;
-                    };
-
-                    // Install the HTML 5 player
-                    Ayamel.AddVideoPlayer(h5PlayerInstall, 1, function() {
-
-                        var $player = $('<div id="player"></div>');
-                        var videoPlayer;
-                        $layout.find(".span8").html($player);
-
-                        // Create the player
-                        videoPlayer = new Ayamel.VideoPlayer({
-                            element: $player.get(0),
-                            aspectRatio: 45,
-                            resource: resource,
-                            components: ["play", "volume", "fullScreen", "captions"],
-                            captions: transcripts,
-                            renderCue: function (cue){
-                                var node = document.createElement('div');
-                                node.appendChild(cue.getCueAsHTML(cue.track.kind==='subtitles'));
-
-                                // Add annotations
-                                SimpleAnnotator.annotate(results, node, renderer);
-
-                                // Attach the translator the the node
-                                // TODO: Handle languages correctly
-                                translator.attach(node, cue.track.language, "en");
-
-                                return {node:node};
-                            }
-                        });
-                    });
-                });
-            });
-        });
-    }
-
-    function renderVideoLevel5(resource, holder, callback) {
+    function renderVideoLevel5(resource, holder, callback, annotate) {
         $(holder).html("<em>Playback at this level has not been implemented yet.</em>");
     }
 
-    function renderVideo(content, resource, holder, callback) {
+    function renderVideo(content, resource, holder, callback, annotate) {
         // Render video
         switch (content.settings.level) {
             case "1":
@@ -405,15 +362,15 @@ var ContentRenderer = (function () {
                 renderVideoLevel3(content, resource, holder, callback);
                 break;
             case "4":
-                renderVideoLevel4(content, resource, holder, callback);
+                renderVideoLevel4(content, resource, holder, callback, annotate);
                 break;
             case "5":
-                renderVideoLevel5(content, resource, holder, callback);
+                renderVideoLevel5(content, resource, holder, callback, annotate);
                 break;
         }
     }
 
-    function renderAudio(content, resource, holder, callback) {
+    function renderAudio(content, resource, holder, callback, annotate) {
         var file = findFile(resource, function (file) {
             return file.representation === "original";
         });
@@ -437,11 +394,11 @@ var ContentRenderer = (function () {
         }
     }
 
-    function renderPlaylist(content, holder, callback) {
+    function renderPlaylist(content, holder, callback, annotate) {
         PlaylistRenderer.render(content.resourceId, holder, callback);
     }
 
-    function renderContent(content, holder, callback) {
+    function renderContent(content, holder, callback, annotate) {
         var resourceUrl = resourceLibraryUrl + "/" + content.resourceId;
 
         // Check if we are rendering something from the resource library
@@ -449,32 +406,32 @@ var ContentRenderer = (function () {
             ResourceLibrary.load(resourceUrl, function (resource) {
                 switch (resource.type) {
                     case "audio":
-                        renderAudio(content, resource, holder, callback);
+                        renderAudio(content, resource, holder, callback, annotate);
                         break;
                     case "image":
-                        renderImage(content, resource, holder, callback);
+                        renderImage(content, resource, holder, callback, annotate);
                         break;
                     case "video":
-                        renderVideo(content, resource, holder, callback);
+                        renderVideo(content, resource, holder, callback, annotate);
                         break;
                 }
             });
         } else if (content.contentType === "playlist") {
-            renderPlaylist(content, holder, callback);
+            renderPlaylist(content, holder, callback, annotate);
         }
     }
 
     return {
 
-        render: function (content, holder, callback) {
+        render: function (content, holder, callback, annotate) {
             if (typeof content == "object") {
-                renderContent(content, holder, callback);
+                renderContent(content, holder, callback, annotate);
             }
             if (typeof content == "number") {
                 $.ajax("/content/" + content + "/json", {
                     dataType: "json",
                     success: function (data) {
-                        renderContent(data, holder, callback);
+                        renderContent(data, holder, callback, annotate);
                     }
                 });
             }

@@ -36,6 +36,13 @@
     </div>
 
     <div class="control-group">
+        <label class="control-label" for="includeTranscriptions">Show Transcriptions?</label>
+        <div class="controls">
+            <input type="checkbox" name="includeTranscriptions" id="includeTranscriptions" value="true" @isChecked(content.includeTranscriptions, "true")>
+        </div>
+    </div>
+
+    <div class="control-group">
         <label class="control-label" for="captionTracks">Enabled Caption Tracks</label>
         <div class="controls">
             <select multiple="multiple" name="captionTracks" id="captionTracks">
