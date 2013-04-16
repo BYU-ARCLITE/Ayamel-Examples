@@ -125,21 +125,19 @@ case class Content(id: Pk[Long], name: String, contentType: Symbol, thumbnail: S
   def isEditableBy(user: User): Boolean =
     user.role == User.roles.admin || user.getContent.contains(this)
 
-  object videoSettings {
-    def level = settings.get("level").getOrElse(Content.defaultSettings.video.level)
+  def level = settings.get("level").getOrElse(Content.defaultSettings.video.level)
 
-    def enabledCaptionTracks: List[String] =
-      if (settings.get("enabledCaptionTracks").isDefined)
-        settings("enabledCaptionTracks").split(",").toList
-      else
-        Nil
+  def enabledCaptionTracks: List[String] =
+    if (settings.get("enabledCaptionTracks").isDefined)
+      settings("enabledCaptionTracks").split(",").toList
+    else
+      Nil
 
-    def enabledAnnotationDocuments: List[String] =
-      if (settings.get("enabledAnnotationDocuments").isDefined)
-        settings("enabledAnnotationDocuments").split(",").toList
-      else
-        Nil
-  }
+  def enabledAnnotationDocuments: List[String] =
+    if (settings.get("enabledAnnotationDocuments").isDefined)
+      settings("enabledAnnotationDocuments").split(",").toList
+    else
+      Nil
 
   def toJson = Json.obj(
     "id" -> id.get,

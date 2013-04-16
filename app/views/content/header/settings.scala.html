@@ -1,7 +1,6 @@
 @(content: models.Content, resourceLibraryUrl: String)(implicit user: User)
 
 @if(content isEditableBy user) {
-    <a href="#settingsModal" role="button" class="btn" data-toggle="modal"><i class="icon-cogs"></i> Edit Settings</a>
 
     <div id="settingsModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="settingsModalLabel" aria-hidden="true">
         <div class="modal-header">
@@ -17,7 +16,7 @@
                 <em>There are no settings defined for this content type.</em>
             }
             @if(content.contentType == 'image) {
-                <em>There are no settings defined for this content type.</em>
+                @views.html.content.header.imageSettings(content, resourceLibraryUrl)
             }
             @if(content.contentType == 'playlist) {
                 <em>There are no settings defined for this content type.</em>

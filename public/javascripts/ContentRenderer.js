@@ -18,6 +18,28 @@ var ContentRenderer = (function () {
      *    Image Rendering
      */
 
+    function computeRenderedSize(image, $imgHolder) {
+        if (image.width <= $imgHolder.width() && image.height <= $imgHolder.height()) {
+
+            // Rendering the image as it is
+            return {
+                width: image.width,
+                height: image.height
+            }
+        } else {
+
+            // Figure out the scale factor
+            var xScale = $imgHolder.width() / image.width;
+            var yScale = $imgHolder.height() / image.height;
+            var scale = Math.min(xScale, yScale);
+
+            return {
+                width: image.width * scale,
+                height: image.height * scale
+            }
+        }
+    }
+
     function renderImage(content, resource, holder, callback) {
         var file = findFile(resource, function (file) {
             return file.representation === "original";
@@ -42,9 +64,75 @@ var ContentRenderer = (function () {
                 if (this.width <= $imgHolder.width() && this.height <= $imgHolder.height()) {
                     $imgHolder.css("background-size", "initial");
                 }
-                if (callback) {
-                    callback(this);
-                }
+
+                // Add a container the exact size of the image for holding annotations
+                var size = computeRenderedSize(this, $imgHolder);
+                var top = ($imgHolder.height() - size.height) / 2;
+                var left = ($imgHolder.width() - size.width) / 2;
+                var $annotationHolder = $("<div id='annotationHolder'></div>")
+                    .width(size.width)
+                    .height(size.height)
+                    .css("position", "absolute")
+                    .css("top", top)
+                    .css("left", left);
+                $imgHolder.append($annotationHolder);
+
+                // Add the annotations
+                // Load the annotations
+                resource.getAnnotations(function (annotations) {
+
+                    // Filter the annotations to only include those that are specified
+                    var annotationDocuments = [];
+                    if (content.settings.enabledAnnotationDocuments) {
+                        annotationDocuments = content.settings.enabledAnnotationDocuments.split(",");
+                    }
+                    annotations = annotations.filter(function (annotationDoc) {
+                        return annotationDocuments.indexOf(annotationDoc.id) >= 0;
+                    });
+
+                    // Load the annotation files
+                    // TODO: Look at other formats
+                    async.map(annotations, function (annotation, asyncCallback) {
+                        $.ajax(annotation.content.files[0].downloadUri, {
+                            dataType: "json",
+                            success: function(data) {
+                                SimpleAnnotator.load(data, function(manifest) {
+                                    asyncCallback(null, manifest);
+                                });
+                            }
+                        })
+                    }, function (err, results) {
+
+                        // Define the image annotation renderer
+                        var renderer = function ($annotation, data) {
+                            $annotation
+                                .css("background-color", "rgba(0,0,0,0.5)")
+                                .css("color", "white");
+
+                            // For now only allow image and text annotations on images
+
+                            if (data.type === "image") {
+                                $annotation
+                                    .css("background-size", "contain")
+                                    .css("background-position", "center")
+                                    .css("background-repeat", "no-repeat")
+                                    .css("background-image", "url('" + data.value + "')");
+                            }
+
+                            if (data.type === "text") {
+                                $annotation.html(data.value);
+                            }
+
+                            return $annotation;
+                        };
+
+                        SimpleAnnotator.annotate(results, $annotationHolder, renderer);
+
+                        if (callback) {
+                            callback(this);
+                        }
+                    });
+                });
             };
         }
     }
@@ -229,6 +317,7 @@ var ContentRenderer = (function () {
                 translator.addTranslationEngine(googleTranslationEngine, 3);
 
                 // Load the annotation files
+                // TODO: Look at other formats
                 async.map(annotations, function (annotation, asyncCallback) {
                     $.ajax(annotation.content.files[0].downloadUri, {
                         dataType: "json",
@@ -252,6 +341,10 @@ var ContentRenderer = (function () {
 
                             if (data.type === "text") {
                                 $annotations.children("div").html(data.value);
+                            }
+
+                            if (data.type === "content") {
+                                ContentRenderer.render(+data.value, $annotations.children("div"));
                             }
 
                             // Flip to the annotation tab
