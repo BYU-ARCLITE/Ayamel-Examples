@@ -53,12 +53,16 @@
     <script type="text/javascript" src="@routes.Assets.at("javascripts/Translate.js/GoogleTranslationEngine.js")"></script>
     <script type="text/javascript" src="@routes.Assets.at("javascripts/Translate.js/WordReferenceTranslationEngine.js")"></script>
 
-    <!-- Content rendering -->
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/ContentRenderer.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/PlaylistRenderer.js")"></script>
-
     <!-- Annotations -->
     <script type="text/javascript" src="@routes.Assets.at("javascripts/old/SimpleAnnotator.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/AnnotationRenderers.js")"></script>
+
+    <!-- Content rendering -->
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/old/mustache.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/TranscriptRenderer.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/VideoLayoutManager.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/ContentRenderer.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/PlaylistRenderer.js")"></script>
 
     <!-- OAuth and Cryptography -->
     <script type="text/javascript" src="@routes.Assets.at("javascripts/sha1.js")"></script>
@@ -105,7 +109,7 @@
                 // Render the content
                 var content = @Html(content.toJson.toString());
                 var contentHolder = $("#contentHolder")[0];
-                ContentRenderer.render(content, contentHolder);
+                ContentRenderer.render(content, contentHolder, null, true);
             });
         </script>
 

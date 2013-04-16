@@ -365,10 +365,12 @@ object ContentController extends Controller {
     val level = request.body("level")(0)
     val enabledCaptionTracks = request.body.get("captionTracks").map(_.mkString(",")).getOrElse("")
     val enabledAnnotationDocuments = request.body.get("annotationDocs").map(_.mkString(",")).getOrElse("")
+    val includeTranscriptions = request.body.get("includeTranscriptions").map(_(0)).getOrElse("false")
 
     content.setSetting(prefix + "level", level)
       .setSetting(prefix + "enabledCaptionTracks", enabledCaptionTracks)
-      .setSetting(prefix + "enabledAnnotationDocuments", enabledAnnotationDocuments).save
+      .setSetting(prefix + "enabledAnnotationDocuments", enabledAnnotationDocuments)
+      .setSetting(prefix + "includeTranscriptions", includeTranscriptions).save
   }
 
   def setAudioSettings(content: Content, course: Option[Course] = None)(implicit request: Request[Map[String, Seq[String]]]) {

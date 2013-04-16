@@ -8,6 +8,9 @@
 
 @main("Ayamel - " + content.name, moreStyles) {
 
+    <script src="@routes.Assets.at("Ayamel.js/js/async.js")" type="text/javascript"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/old/SimpleAnnotator.js")"></script>
+
     <div class="padded">
 
         <h1>Edit Image</h1>
@@ -35,7 +38,7 @@
                             $("#cropBottom").val(data.bottom);
                             $("#cropRight").val(data.right);
                         });
-                    });
+                    }, false);
 
                     $("#resetCrop").click(function() {
                         ImageEditor.reset();
