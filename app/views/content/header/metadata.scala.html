@@ -1,7 +1,6 @@
 @(content: models.Content, resourceLibraryUrl: String)(implicit user: User)
 
-@if(content isEditableBy user) {
-    <a href="#metadataModal" role="button" class="btn" data-toggle="modal"><i class="icon-edit"></i> Edit Metadata</a>
+@if(content.isEditableBy(user) && content.contentType != 'playlist) {
 
     <div id="metadataModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="metadataModalLabel" aria-hidden="true">
         <div class="modal-header">

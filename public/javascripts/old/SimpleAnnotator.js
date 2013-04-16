@@ -46,10 +46,10 @@ var SimpleAnnotator = (function () {
         $annotation = renderer($annotation, this.data);
 
         $annotation
-            .css("left",   this.location[0][0] + "%")
-            .css("top",    this.location[0][1] + "%")
-            .css("right",  this.location[1][0] + "%")
-            .css("bottom", this.location[1][1] + "%")
+            .css("left",   (this.location[0][0] * 100) + "%")
+            .css("top",    (this.location[0][1] * 100) + "%")
+            .css("right",  ((1 - this.location[1][0]) * 100) + "%")
+            .css("bottom", ((1 - this.location[1][1]) * 100) + "%")
             .css("z-index", 50)
             .css("position", "absolute");
 

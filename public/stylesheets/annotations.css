@@ -12,3 +12,7 @@ iframe.annotationHolder {
     height: 300px;
     border: 0;
 }
+
+#annotations #imgHolder {
+    height: 300px;
+}

@@ -363,18 +363,22 @@ object ContentController extends Controller {
   def setVideoSettings(content: Content, course: Option[Course] = None)(implicit request: Request[Map[String, Seq[String]]]) {
     val prefix = course.map(c => "course_" + c.id.get + ":").getOrElse("")
     val level = request.body("level")(0)
-    val enabledCaptionTracks = request.body("captionTracks").mkString(",")
+    val enabledCaptionTracks = request.body.get("captionTracks").map(_.mkString(",")).getOrElse("")
+    val enabledAnnotationDocuments = request.body.get("annotationDocs").map(_.mkString(",")).getOrElse("")
 
     content.setSetting(prefix + "level", level).save
     content.setSetting(prefix + "enabledCaptionTracks", enabledCaptionTracks).save
+    content.setSetting(prefix + "enabledAnnotationDocuments", enabledAnnotationDocuments).save
   }
 
   def setAudioSettings(content: Content, course: Option[Course] = None)(implicit request: Request[Map[String, Seq[String]]]) {
-
+    val prefix = course.map(c => "course_" + c.id.get + ":").getOrElse("")
   }
 
   def setImageSettings(content: Content, course: Option[Course] = None)(implicit request: Request[Map[String, Seq[String]]]) {
-
+    val prefix = course.map(c => "course_" + c.id.get + ":").getOrElse("")
+    val enabledAnnotationDocuments = request.body.get("annotationDocs").map(_.mkString(",")).getOrElse("")
+    content.setSetting(prefix + "enabledAnnotationDocuments", enabledAnnotationDocuments).save
   }
 
   def setSettings(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
@@ -512,7 +516,7 @@ object ContentController extends Controller {
 
                       // Have this caption track enabled
                       val subjectId = (resource \ "id").as[String]
-                      val captionTracks = subjectId :: content.videoSettings.enabledCaptionTracks
+                      val captionTracks = subjectId :: content.enabledCaptionTracks
                       content.setSetting("enabledCaptionTracks", captionTracks.mkString(",")).save
 
                       // Add the relation
@@ -550,11 +554,11 @@ object ContentController extends Controller {
 
                     // Have this annotation document  enabled
                     val subjectId = (resource \ "id").as[String]
-                    val annotationDocuments = subjectId :: content.videoSettings.enabledAnnotationDocuments
+                    val annotationDocuments = subjectId :: content.enabledAnnotationDocuments
                     content.setSetting("enabledAnnotationDocuments", annotationDocuments.mkString(",")).save
 
                     // Add the relation
-                    ResourceController.addRelation("1", subjectId, content.resourceId, "references", Map("type" -> "simple annotations")).map(r => {
+                    ResourceController.addRelation("1", subjectId, content.resourceId, "references", Map("type" -> "annotations")).map(r => {
                       Redirect(routes.ContentController.view(content.id.get)).flashing("info" -> "Annotations added")
                     })
                   }

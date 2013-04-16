@@ -65,6 +65,8 @@
     <script type="text/javascript" src="@routes.Assets.at("javascripts/oauth.js")"></script>
     <script type="text/javascript" src="@routes.Assets.at("javascripts/OAuthSigner.js")"></script>
 
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/fileFix.js")"></script>
+
     <div class="padded">
 
         @if(course.isDefined) {
@@ -77,18 +79,9 @@
 
             @views.html.content.header.share(content)
             @views.html.content.header.addToCourse(content)
-            @if(content.contentType == 'image && content.isEditableBy(user)) {
-                <a href="@routes.ContentController.editImage(content.id.get)" class="btn"><i class="icon-pencil"></i> Edit Image</a>
-            }
-            @views.html.content.header.addCaptionTrack(content)
-            @views.html.content.header.addAnnotations(content)
             @views.html.content.header.courseSettings(content, course)
-            @if(content.contentType != 'playlist) {
-                @views.html.content.header.metadata(content, resourceLibraryUrl)
-            }
-            @views.html.content.header.settings(content, resourceLibraryUrl)
-            @views.html.content.header.shareability(content)
-            @views.html.content.header.visibility(content)
+            @views.html.content.header.addRelatedDocs(content)
+            @views.html.content.header.edit(content, resourceLibraryUrl)
             @views.html.content.header.delete(content)
 
         </div>

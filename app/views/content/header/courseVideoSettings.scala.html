@@ -13,31 +13,31 @@
         <div class="controls">
 
             <label class="radio">
-                <input type="radio" name="level" value="1" @isChecked(content.videoSettings.level, "1")>
+                <input type="radio" name="level" value="1" @isChecked(content.level, "1")>
                     1 - Video playback
             </label>
 
-            @if(content.videoSettings.level.toInt >= 2) {
+            @if(content.level.toInt >= 2) {
                 <label class="radio">
-                    <input type="radio" name="level" value="2" @isChecked(content.videoSettings.level, "2")>
+                    <input type="radio" name="level" value="2" @isChecked(content.level, "2")>
                         2 - Video playback and subtitles
                 </label>
             }
-            @if(content.videoSettings.level.toInt >= 3) {
+            @if(content.level.toInt >= 3) {
                 <label class="radio">
-                    <input type="radio" name="level" value="3" @isChecked(content.videoSettings.level, "3")>
+                    <input type="radio" name="level" value="3" @isChecked(content.level, "3")>
                         3 - Video, subtitles, and interactions
                 </label>
             }
-            @if(content.videoSettings.level.toInt >= 4) {
+            @if(content.level.toInt >= 4) {
                 <label class="radio">
-                    <input type="radio" name="level" value="4" @isChecked(content.videoSettings.level, "4")>
+                    <input type="radio" name="level" value="4" @isChecked(content.level, "4")>
                         4 - Video, subtitles, interactions, and annotations
                 </label>
             }
-            @if(content.videoSettings.level.toInt >= 5) {
+            @if(content.level.toInt >= 5) {
                 <label class="radio">
-                    <input type="radio" name="level" value="5" @isChecked(content.videoSettings.level, "5")>
+                    <input type="radio" name="level" value="5" @isChecked(content.level, "5")>
                         5 - Video, subtitles, interactions, annotations, and auto-generated activities
                 </label>
             }
