@@ -14,7 +14,20 @@ var TranscriptRenderer = (function() {
     var pillContentContainer = '<div>{{>contents}}</div>';
     var pillContent          = '<div class="transcriptContent" id="{{id}}"></div>';
 
-    var cueTemplate = '<div class="transcriptCue" data-start="{{start}}" data-end="{{end}}">{{text}}</div>';
+    var cueTemplate = '<div class="transcriptCue {{direction}}" data-start="{{start}}" data-end="{{end}}">{{>text}}</div>';
+
+    var rtlLanguages = [
+        "ar", "ara",        // Arabic
+        "fa", "per", "fas", // Persian
+        "ur", "urd",        // Urdu
+        "he", "heb",        // Hebrew
+        "syr", "syc",       // Syriac and Classical Syriac
+        "dv", "div",        // Dhivehi
+        "nqo",              // N'Ko
+        "arc", "sam",       // Official Aramaic and Samaritan Aramaic
+        "ae", "ave",        // Avestan
+        "pal"               // Pahlavi
+    ];
 
     function makeId(title) {
         return title.replace(/\s/g, "");
@@ -57,16 +70,20 @@ var TranscriptRenderer = (function() {
 
             transcript.content.files.forEach(function (file) {
                 if (file.mime === "text/vtt") {
+                    var language = transcript.language || "en";
                     TextTrack.get({
                         kind: "subtitles",
                         label: transcript.title || "Unnamed",
-                        lang: transcript.language || "en",
+                        lang: language,
                         url: file.downloadUri,
                         success: function(){
                             this.cues.forEach(function (cue) {
+                                var direction = rtlLanguages.indexOf(language) >= 0 ? "rtl" : "ltr";
                                 var html = Mustache.to_html(cueTemplate, {
+                                    direction: direction,
                                     start: cue.startTime,
-                                    end: cue.endTime,
+                                    end: cue.endTime
+                                }, {
                                     text: cue.text
                                 });
                                 var $cue = $(html).click(function() {
@@ -78,6 +95,21 @@ var TranscriptRenderer = (function() {
                     });
                 }
             });
+        });
+
+        videoPlayer.addEventListener("timeupdate", function(event) {
+            var currentTime = videoPlayer.currentTime;
+
+            // Highlight cues
+            $holder.find(".transcriptCue").each(function() {
+                var start = + $(this).attr("data-start");
+                var end = + $(this).attr("data-end");
+                if (currentTime >= start && currentTime <= end) {
+                    $(this).addClass("active");
+                } else {
+                    $(this).removeClass("active");
+                }
+            })
         });
     }
 

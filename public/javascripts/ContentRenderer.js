@@ -2,6 +2,12 @@ var ContentRenderer = (function () {
     "use strict";
 
     var resourceLibraryUrl = "";
+    var host = "";
+
+    /*
+     * =====================
+     *    Helper functions
+     */
 
     function findFile(resource, criteriaFunction) {
         for (var i = 0; i < resource.content.files.length; i++) {
@@ -86,6 +92,10 @@ var ContentRenderer = (function () {
         return translator;
     }
 
+    function showTranscript(content) {
+        return content.settings.includeTranscriptions && content.settings.includeTranscriptions === "true";
+    }
+
     /*
      * =====================
      *    Image Rendering
@@ -141,71 +151,19 @@ var ContentRenderer = (function () {
                 if (annotate) {
                     // Add a container the exact size of the image for holding annotations
                     var size = computeRenderedSize(this, $imgHolder);
-                    var top = ($imgHolder.height() - size.height) / 2;
-                    var left = ($imgHolder.width() - size.width) / 2;
-                    var $annotationHolder = $("<div id='annotationHolder'></div>")
-                        .width(size.width)
-                        .height(size.height)
-                        .css("position", "absolute")
-                        .css("top", top)
-                        .css("left", left);
+                    var $annotationHolder = $("<div id='annotationHolder'></div>").css("position", "absolute")
+                        .width(size.width).height(size.height)
+                        .css("top", ($imgHolder.height() - size.height) / 2)
+                        .css("left", ($imgHolder.width() - size.width) / 2);
                     $imgHolder.append($annotationHolder);
 
                     // Add the annotations
-                    // Load the annotations
-                    resource.getAnnotations(function (annotations) {
+                    getAnnotations(content, resource, function (annotations) {
+                        SimpleAnnotator.annotate(annotations, $annotationHolder, AnnotationRenderers.image);
 
-                        // Filter the annotations to only include those that are specified
-                        var annotationDocuments = [];
-                        if (content.settings.enabledAnnotationDocuments) {
-                            annotationDocuments = content.settings.enabledAnnotationDocuments.split(",");
+                        if (callback) {
+                            callback(this);
                         }
-                        annotations = annotations.filter(function (annotationDoc) {
-                            return annotationDocuments.indexOf(annotationDoc.id) >= 0;
-                        });
-
-                        // Load the annotation files
-                        // TODO: Look at other formats
-                        async.map(annotations, function (annotation, asyncCallback) {
-                            $.ajax(annotation.content.files[0].downloadUri, {
-                                dataType: "json",
-                                success: function(data) {
-                                    SimpleAnnotator.load(data, function(manifest) {
-                                        asyncCallback(null, manifest);
-                                    });
-                                }
-                            })
-                        }, function (err, results) {
-
-                            // Define the image annotation renderer
-                            var renderer = function ($annotation, data) {
-                                $annotation
-                                    .css("background-color", "rgba(0,0,0,0.5)")
-                                    .css("color", "white");
-
-                                // For now only allow image and text annotations on images
-
-                                if (data.type === "image") {
-                                    $annotation
-                                        .css("background-size", "contain")
-                                        .css("background-position", "center")
-                                        .css("background-repeat", "no-repeat")
-                                        .css("background-image", "url('" + data.value + "')");
-                                }
-
-                                if (data.type === "text") {
-                                    $annotation.html(data.value);
-                                }
-
-                                return $annotation;
-                            };
-
-                            SimpleAnnotator.annotate(results, $annotationHolder, renderer);
-
-                            if (callback) {
-                                callback(this);
-                            }
-                        });
                     });
                 } else {
                     if (callback) {
@@ -246,9 +204,8 @@ var ContentRenderer = (function () {
 
             // Create the layout
             var panes;
-            if (content.settings.includeTranscriptions && content.settings.includeTranscriptions === "true") {
+            if (showTranscript(content)) {
                 panes = VideoLayoutManager.twoPanel($(holder), ["Transcript"]);
-                TranscriptRenderer.add(transcripts, panes.$Transcript);
             } else {
                 panes = VideoLayoutManager.onePanel($(holder));
             }
@@ -264,6 +221,10 @@ var ContentRenderer = (function () {
                     components: ["play", "volume", "fullScreen", "captions"],
                     captions: transcripts
                 });
+
+                if (showTranscript(content)) {
+                    TranscriptRenderer.add(transcripts, panes.$Transcript, videoPlayer);
+                }
             });
         });
     }
@@ -351,7 +312,8 @@ var ContentRenderer = (function () {
 
     function renderVideo(content, resource, holder, callback, annotate) {
         // Render video
-        switch (content.settings.level) {
+        var level = content.settings.level || "1";
+        switch (level) {
             case "1":
                 renderVideoLevel1(resource, holder, callback);
                 break;
