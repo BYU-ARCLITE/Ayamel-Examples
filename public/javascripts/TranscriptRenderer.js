@@ -9,10 +9,10 @@ var TranscriptRenderer = (function() {
     "use strict";
 
     var pillHeaderContainer = '<ul class="nav nav-pills">{{>headers}}</ul>';
-    var pillHeader          = '<li><a href="#{{id}}">{{name}}</a></li>';
+    var pillHeader          = '<li><a href="#transcript_{{id}}">{{name}}</a></li>';
 
     var pillContentContainer = '<div>{{>contents}}</div>';
-    var pillContent          = '<div class="transcriptContent" id="{{id}}"></div>';
+    var pillContent          = '<div class="transcriptContent" id="transcript_{{id}}"></div>';
 
     var cueTemplate = '<div class="transcriptCue {{direction}}" data-start="{{start}}" data-end="{{end}}">{{>text}}</div>';
 
@@ -66,7 +66,7 @@ var TranscriptRenderer = (function() {
     function addTranscripts($holder, transcripts, videoPlayer) {
         transcripts.forEach(function (transcript) {
 
-            var $transcriptHolder = $holder.find("#" + makeId(transcript.title));
+            var $transcriptHolder = $holder.find("#transcript_" + makeId(transcript.title));
 
             transcript.content.files.forEach(function (file) {
                 if (file.mime === "text/vtt") {

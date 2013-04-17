@@ -236,10 +236,9 @@ var ContentRenderer = (function () {
             // Create the layout
             var panes;
             var $definitions;
-            if (content.settings.includeTranscriptions && content.settings.includeTranscriptions === "true") {
+            if (showTranscript(content)) {
                 panes = VideoLayoutManager.twoPanel($(holder), ["Definitions", "Transcription"]);
                 $definitions = panes.Definitions.$content[0];
-                TranscriptRenderer.add(transcripts, panes.Transcription.$content);
             } else {
                 panes = VideoLayoutManager.twoPanel($(holder), ["Definitions"]);
                 $definitions = panes.Definitions.$Definitions[0];
@@ -260,6 +259,10 @@ var ContentRenderer = (function () {
                     captions: transcripts,
                     renderCue: createRenderCue(translator)
                 });
+
+                if (showTranscript(content)) {
+                    TranscriptRenderer.add(transcripts, panes.Transcription.$content, videoPlayer);
+                }
             });
         });
     }
