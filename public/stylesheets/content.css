@@ -160,5 +160,24 @@
 }
 
 .transcriptCue:hover {
+    background: rgba(33, 132, 174, 0.5);
+    color: white;
+}
+
+.transcriptCue {
+    border-radius: 5px;
+    padding: 0 6px;
+}
+
+.transcriptCue.rtl {
+    direction: rtl;
+}
+
+.transcriptCue.active {
     background: #ffffaa;
+}
+
+.transcriptCue.active:hover {
+    background: #ffff00;
+    color: black;
 }

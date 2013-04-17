@@ -176,7 +176,7 @@ object Content extends SQLSelectable[Content] {
   /* Default settings */
   object defaultSettings {
     object video {
-      val level = "2"
+      val level = "1"
     }
 
     object image {
