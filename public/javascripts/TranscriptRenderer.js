@@ -63,7 +63,7 @@ var TranscriptRenderer = (function() {
         return $holder;
     }
 
-    function addTranscripts($holder, transcripts, videoPlayer) {
+    function addTranscripts($holder, transcripts, videoPlayer, translator, annotations) {
         transcripts.forEach(function (transcript) {
 
             var $transcriptHolder = $holder.find("#transcript_" + makeId(transcript.title));
@@ -86,9 +86,23 @@ var TranscriptRenderer = (function() {
                                 }, {
                                     text: cue.text
                                 });
-                                var $cue = $(html).click(function() {
-                                    videoPlayer.currentTime = cue.startTime;
-                                });
+
+                                // Possibly bind the video player
+                                if (videoPlayer) {
+                                    var $cue = $(html).click(function() {
+                                        videoPlayer.currentTime = cue.startTime;
+                                    });
+                                }
+
+                                // Possibly add the translator
+                                if (translator && language != "en") {
+                                    translator.attach($cue[0], language, "en");
+                                }
+
+                                if (annotations) {
+                                    SimpleAnnotator.annotate(annotations, $cue[0], AnnotationRenderers.video)
+                                }
+
                                 $transcriptHolder.append($cue);
                             });
                         }
@@ -97,27 +111,29 @@ var TranscriptRenderer = (function() {
             });
         });
 
-        videoPlayer.addEventListener("timeupdate", function(event) {
-            var currentTime = videoPlayer.currentTime;
+        if (videoPlayer) {
+            videoPlayer.addEventListener("timeupdate", function(event) {
+                var currentTime = videoPlayer.currentTime;
 
-            // Highlight cues
-            $holder.find(".transcriptCue").each(function() {
-                var start = + $(this).attr("data-start");
-                var end = + $(this).attr("data-end");
-                if (currentTime >= start && currentTime <= end) {
-                    $(this).addClass("active");
-                } else {
-                    $(this).removeClass("active");
-                }
-            })
-        });
+                // Highlight cues
+                $holder.find(".transcriptCue").each(function() {
+                    var start = + $(this).attr("data-start");
+                    var end = + $(this).attr("data-end");
+                    if (currentTime >= start && currentTime <= end) {
+                        $(this).addClass("active");
+                    } else {
+                        $(this).removeClass("active");
+                    }
+                })
+            });
+        }
     }
 
     return {
-        add: function(transcripts, $container, videoPlayer) {
+        add: function(transcripts, $container, videoPlayer, translator, annotations) {
             var $holder = createHolder(transcripts);
             $container.append($holder);
-            addTranscripts($holder, transcripts, videoPlayer);
+            addTranscripts($holder, transcripts, videoPlayer, translator, annotations);
         }
     };
 

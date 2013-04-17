@@ -3,6 +3,11 @@
     cursor: pointer;
 }
 
+.transcriptCue .annotation {
+    color: #DE2174;
+    cursor: pointer;
+}
+
 .annotation:hover {
     text-decoration: underline;
 }

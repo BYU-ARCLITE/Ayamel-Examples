@@ -25,10 +25,12 @@
     /**
      * The text translator object
      * @param element
+     * @param tab
      * @constructor
      */
-    function TextTranslator(element) {
+    function TextTranslator(element, tab) {
         this.element = element;
+        this.tab = tab;
         this.translationEngines = [];
     }
 
@@ -74,7 +76,12 @@
 
         // The success function. For now, just append the results to the designated element
         function success(result) {
-            var code = "<div><strong>" + text + ":</strong><br />" + result + "</div>"
+            var code = "<div><strong>" + text + ":</strong><br />" + result + "</div>";
+
+            if (translator.tab) {
+                $(translator.tab).tab("show");
+            }
+
             $(element).append(code);
         }
 
