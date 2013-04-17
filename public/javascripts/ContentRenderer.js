@@ -84,8 +84,8 @@ var ContentRenderer = (function () {
         };
     }
 
-    function createTranslator($container) {
-        var translator = new TextTranslator($container);
+    function createTranslator(container, tab) {
+        var translator = new TextTranslator(container, tab);
         translator.addTranslationEngine(arcliteTranslationEngine, 1);
         translator.addTranslationEngine(wordReferenceTranslationEngine, 2);
         translator.addTranslationEngine(googleTranslationEngine, 3);
@@ -236,16 +236,18 @@ var ContentRenderer = (function () {
             // Create the layout
             var panes;
             var $definitions;
+            var $definitionsTab = null;
             if (showTranscript(content)) {
                 panes = VideoLayoutManager.twoPanel($(holder), ["Definitions", "Transcription"]);
-                $definitions = panes.Definitions.$content[0];
+                $definitions = panes.Definitions.$content;
+                $definitionsTab = panes.Definitions.$tab;
             } else {
                 panes = VideoLayoutManager.twoPanel($(holder), ["Definitions"]);
-                $definitions = panes.Definitions.$Definitions[0];
+                $definitions = panes.$Definitions[0];
             }
 
             // Create the translator
-            var translator = createTranslator($definitions);
+            var translator = createTranslator($definitions[0], $definitionsTab[0]);
 
             // Install the HTML 5 player
             Ayamel.AddVideoPlayer(h5PlayerInstall, 1, function() {
@@ -261,7 +263,7 @@ var ContentRenderer = (function () {
                 });
 
                 if (showTranscript(content)) {
-                    TranscriptRenderer.add(transcripts, panes.Transcription.$content, videoPlayer);
+                    TranscriptRenderer.add(transcripts, panes.Transcription.$content, videoPlayer, translator);
                 }
             });
         });
@@ -276,13 +278,13 @@ var ContentRenderer = (function () {
 
                 // Create the layout
                 var tabs = ["Definitions", "Annotations"];
-                if (content.settings.includeTranscriptions && content.settings.includeTranscriptions === "true") {
+                if (showTranscript(content)) {
                     tabs.push("Transcription");
                 }
                 var panes = VideoLayoutManager.twoPanel($(holder), tabs);
 
                 // Create the translator
-                var translator = createTranslator(panes.Definitions.$content[0]);
+                var translator = createTranslator(panes.Definitions.$content[0], panes.Definitions.$tab[0]);
 
                 // Initialize the annotation renderer
                 AnnotationRenderers.init(panes.Annotations.$tab, panes.Annotations.$content);
@@ -301,8 +303,8 @@ var ContentRenderer = (function () {
                     });
 
                     // Create the transcription
-                    if (content.settings.includeTranscriptions && content.settings.includeTranscriptions === "true") {
-                        var $transcriptHolder = TranscriptRenderer.add(transcripts, panes.Transcription.$content, videoPlayer);
+                    if (showTranscript(content)) {
+                        TranscriptRenderer.add(transcripts, panes.Transcription.$content, videoPlayer, translator, annotations);
                     }
                 });
             });
