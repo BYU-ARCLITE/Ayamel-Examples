@@ -162,12 +162,18 @@ var ContentRenderer = (function () {
                         SimpleAnnotator.annotate(annotations, $annotationHolder, AnnotationRenderers.image);
 
                         if (callback) {
-                            callback(this);
+                            callback({
+                                image: img,
+                                $imgHolder: $imgHolder
+                            });
                         }
                     });
                 } else {
                     if (callback) {
-                        callback(this);
+                        callback({
+                            image: img,
+                            $imgHolder: $imgHolder
+                        });
                     }
                 }
             };
@@ -193,7 +199,9 @@ var ContentRenderer = (function () {
             });
 
             if (callback) {
-                callback(videoPlayer);
+                callback({
+                    videoPlayer: videoPlayer
+                });
             }
         });
     }
@@ -224,6 +232,12 @@ var ContentRenderer = (function () {
 
                 if (showTranscript(content)) {
                     TranscriptRenderer.add(transcripts, panes.$Transcript, videoPlayer);
+                }
+
+                if (callback) {
+                    callback({
+                        videoPlayer: videoPlayer
+                    });
                 }
             });
         });
@@ -265,6 +279,12 @@ var ContentRenderer = (function () {
                 if (showTranscript(content)) {
                     TranscriptRenderer.add(transcripts, panes.Transcription.$content, videoPlayer, translator);
                 }
+
+                if (callback) {
+                    callback({
+                        videoPlayer: videoPlayer
+                    });
+                }
             });
         });
     }
@@ -287,7 +307,10 @@ var ContentRenderer = (function () {
                 var translator = createTranslator(panes.Definitions.$content[0], panes.Definitions.$tab[0]);
 
                 // Initialize the annotation renderer
-                AnnotationRenderers.init(panes.Annotations.$tab, panes.Annotations.$content);
+                AnnotationRenderers.init(panes.Annotations.$content, null, function () {
+                    // Flip to the annotation tab
+                    panes.Annotations.$tab.tab("show");
+                });
 
                 // Install the HTML 5 player
                 Ayamel.AddVideoPlayer(h5PlayerInstall, 1, function() {
@@ -304,7 +327,18 @@ var ContentRenderer = (function () {
 
                     // Create the transcription
                     if (showTranscript(content)) {
-                        TranscriptRenderer.add(transcripts, panes.Transcription.$content, videoPlayer, translator, annotations);
+                        TranscriptRenderer.add(transcripts, panes.Transcription.$content, videoPlayer, function ($cue, cue, language) {
+                            if (language != "en") {
+                                translator.attach($cue[0], language, "en");
+                            }
+                            SimpleAnnotator.annotate(annotations, $cue[0], AnnotationRenderers.video)
+                        });
+                    }
+
+                    if (callback) {
+                        callback({
+                            videoPlayer: videoPlayer
+                        });
                     }
                 });
             });

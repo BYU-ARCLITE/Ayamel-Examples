@@ -1,0 +1,169 @@
+@(content: models.Content, resourceLibraryUrl: String)(implicit request: RequestHeader, user: User)
+
+@contentIcons = @{
+    Map(
+        'video -> "icon-film",
+        'audio -> "icon-volume-up",
+        'image -> "icon-picture",
+        'playlist -> "icon-list-ol",
+        'activity -> "icon-pencil"
+    )
+}
+
+@moreStyles =  @{
+    List(
+      ("screen", "stylesheets/content.css"),
+      ("screen", "stylesheets/annotations.css")
+    )
+}
+
+@main("Ayamel - " + content.name, moreStyles) {
+
+    <!-- Ayamel scripts -->
+    <script src="@routes.Assets.at("Ayamel.js/js/async.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.at("Ayamel.js/js/annotator.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.at("Ayamel.js/js/Resource.js")" type="text/javascript"></script>
+
+    <!-- Timed text -->
+    <script type="text/javascript" src="@routes.Assets.at("TimedText/TimedText.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("TimedText/TextTrack.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("TimedText/TextTrackCue.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("TimedText/WebVTT.js")"></script>
+
+
+    <!-- Annotations -->
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/BoxDrawingCanvas.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/old/SimpleAnnotator.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/AnnotationRenderers.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/AnnotationEditor.js")"></script>
+
+    <!-- Content rendering -->
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/old/mustache.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/TranscriptRenderer.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/VideoLayoutManager.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/ContentRenderer.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/PlaylistRenderer.js")"></script>
+
+    <!-- OAuth and Cryptography -->
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/sha1.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/oauth.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/OAuthSigner.js")"></script>
+
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/fileFix.js")"></script>
+
+    <div class="padded">
+
+        <h1><i class="@contentIcons(content.contentType)"></i> @content.name <small>Edit Annotations</small></h1>
+
+        <div class="row-fluid">
+            <div class="span8">
+                @if(content.contentType == 'image) {
+                    <div id="contentHolder" class="@content.contentType.name"></div>
+                }
+                @if(content.contentType == 'video || content.contentType == 'audio) {
+                    <div class="row-fluid">
+                        <div class="span6">
+                            <div id="annotationHolder"></div>
+                        </div>
+                        <div class="span6">
+                            <div id="transcriptHolder"></div>
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="span4">
+                <div class="well" id="activeAnnotation">
+                    <h2>Active Annotation</h2>
+
+                    <form>
+                        @if(content.contentType == 'video || content.contentType == 'audio) {
+                            <div class="control-group">
+                                <label class="control-label" for="regex">Regular Expression</label>
+                                <div class="controls">
+                                    <input type="text" id="regex" name="regex" placeholder="Regular Expression">
+                                </div>
+                            </div>
+                        }
+                        <div class="control-group">
+                            <label class="control-label" for="annotationType">Annotation Type</label>
+                            <div class="controls">
+                                <select id="annotationType">
+                                    <option value="text">Text/HTML</option>
+                                    <option value="image">Image</option>
+                                    <option value="content">Content</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="annotationValue">Value</label>
+                            <div class="controls">
+                                <input id="annotationValue" type="text" />
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <div class="controls">
+                                <button class="btn btn-blue" id="updateAnnotation"><i class="icon-refresh"></i> Update</button>
+                                <button class="btn btn-magenta" id="deleteAnnotation"><i class="icon-trash"></i> Delete</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <h2>Save Annotations</h2>
+                <form id="saveAnnotationsForm" method="post" action="@routes.ContentController.saveAnnotations(content.id.get)">
+                    <div class="control-group">
+                        <label class="control-label" for="title">Title</label>
+                        <div class="controls">
+                            <input type="text" id="title" name="title" placeholder="Title">
+                        </div>
+                    </div>
+                    <input id="saveAnnotations" type="hidden" name="annotations"/>
+                    <div class="control-group">
+                        <div class="controls">
+                            <button type="submit" class="btn btn-blue">Save</button>
+                            <a class="btn" href="@routes.ContentController.view(content.id.get)">Cancel</a>
+                        </div>
+                    </div>
+                </form>
+                <form id="updateAnnotationsForm" method="post" action="@routes.ContentController.saveAnnotations(content.id.get)">
+                    <input id="filename" type="hidden" name="filename"/>
+                    <input id="updateAnnotations" type="hidden" name="annotations"/>
+                    <div class="control-group">
+                        <div class="controls">
+                            <button type="submit" class="btn btn-blue"><i class="icon-save"></i> Save Changes</button>
+                            <a class="btn" href="@routes.ContentController.view(content.id.get)">Cancel</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            $(function() {
+
+                // Set up the playlist renderer
+                PlaylistRenderer.setInfo(
+                    "@dataAccess.PlayGraph.host",
+                    ["@dataAccess.PlayGraph.playerKey.consumerKey", "@dataAccess.PlayGraph.playerKey.consumerSecret"]
+                );
+
+                // Set up the environment
+                ContentRenderer.setResourceLibraryUrl("@resourceLibraryUrl");
+
+                // Render the content
+                var resourceLibraryUrl = "@resourceLibraryUrl";
+                var content = @Html(content.toJson.toString());
+                var contentHolder = $("#contentHolder")[0];
+                if (content.contentType === "image") {
+                    ContentRenderer.render(content, contentHolder, function(data) {
+                        AnnotationEditor.bindImage(content, data, resourceLibraryUrl);
+                    }, false);
+                }
+                if (content.contentType === "video" || content.contentType === "audio") {
+                    AnnotationEditor.bindText(content, resourceLibraryUrl);
+                }
+            });
+        </script>
+
+    </div>
+}

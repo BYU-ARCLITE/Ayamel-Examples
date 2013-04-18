@@ -130,7 +130,10 @@ var SimpleAnnotator = (function () {
             }
         },
 
-        AnnotationManifest: AnnotationManifest
+        AnnotationManifest: AnnotationManifest,
+        TextAnnotation: TextAnnotation,
+        ImageAnnotation: ImageAnnotation,
+        TimeAnnotation: TimeAnnotation
 
     };
 }());

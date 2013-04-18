@@ -1,4 +1,4 @@
-@(content: models.Content)(implicit user: User)
+@(content: models.Content, resourceLibraryUrl: String)(implicit user: User)
 
 @if(content isEditableBy user) {
 
@@ -65,30 +65,18 @@
         </div>
         <div class="modal-body">
 
-            <p>
-                You can upload an Ayamel annotation file in <code>.json</code> format.
-            </p>
+            <h4>New Annotations</h4>
+            <a id="annotationLink" href="@routes.ContentController.editAnnotations(content.id.get)">Create a new Annotation Set</a>
 
-            <form class="form-horizontal" id="annotationsForm" method="post" enctype="multipart/form-data" action="@routes.ContentController.addAnnotations(content.id.get)">
-                <div class="control-group">
-                    <label class="control-label" for="annotationTitle">Title</label>
-                    <div class="controls">
-                        <input type="text" id="annotationTitle" name="title" placeholder="Title">
-                    </div>
-                </div>
-                <div class="control-group">
-                    <label class="control-label" for="annotationFile">File</label>
-                    <div class="controls">
-                        <input type="file" id="annotationFile" name="file">
-                    </div>
-                </div>
-                <input type="submit" style="position: absolute; left: -9999px; width: 1px; height: 1px;"/>
-            </form>
+            <h4>Edit Existing Annotations</h4>
+            <table id="existingAnnotations" class="table table-bordered">
+                <tbody>
+                </tbody>
+            </table>
 
         </div>
         <div class="modal-footer">
             <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
-            <button class="btn btn-blue" id="annotationsButton">Add</button>
         </div>
     </div>
 
@@ -97,8 +85,17 @@
             $("#addCaptionTrackButton").click(function() {
                 $("#captionTrackForm").submit();
             });
-            $("#annotationsButton").click(function() {
-                $("#annotationsForm").submit();
+
+            var url = "@resourceLibraryUrl/@content.resourceId";
+            ResourceLibrary.load(url, function(resource) {
+                var $tbody = $("#existingAnnotations").children("tbody");
+                var annotationUrl = $("#annotationLink").attr("href");
+                resource.getAnnotations(function (annotations) {
+                    annotations.forEach(function (annotation) {
+                        $tbody.append("<tr><td>" + annotation.title + "</td><td><a href='" + annotationUrl + "?doc=" +
+                            annotation.id + "' class='btn'>Edit</a></td>");
+                    });
+                });
             });
         });
     </script>

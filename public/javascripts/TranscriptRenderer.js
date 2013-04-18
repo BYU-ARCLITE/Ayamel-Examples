@@ -63,7 +63,7 @@ var TranscriptRenderer = (function() {
         return $holder;
     }
 
-    function addTranscripts($holder, transcripts, videoPlayer, translator, annotations) {
+    function addTranscripts($holder, transcripts, videoPlayer, callback) {
         transcripts.forEach(function (transcript) {
 
             var $transcriptHolder = $holder.find("#transcript_" + makeId(transcript.title));
@@ -86,21 +86,17 @@ var TranscriptRenderer = (function() {
                                 }, {
                                     text: cue.text
                                 });
+                                var $cue = $(html);
 
                                 // Possibly bind the video player
                                 if (videoPlayer) {
-                                    var $cue = $(html).click(function() {
+                                    $cue.click(function() {
                                         videoPlayer.currentTime = cue.startTime;
                                     });
                                 }
 
-                                // Possibly add the translator
-                                if (translator && language != "en") {
-                                    translator.attach($cue[0], language, "en");
-                                }
-
-                                if (annotations) {
-                                    SimpleAnnotator.annotate(annotations, $cue[0], AnnotationRenderers.video)
+                                if (callback) {
+                                    callback($cue, cue, language);
                                 }
 
                                 $transcriptHolder.append($cue);
@@ -130,10 +126,10 @@ var TranscriptRenderer = (function() {
     }
 
     return {
-        add: function(transcripts, $container, videoPlayer, translator, annotations) {
+        add: function(transcripts, $container, videoPlayer, callback) {
             var $holder = createHolder(transcripts);
-            $container.append($holder);
-            addTranscripts($holder, transcripts, videoPlayer, translator, annotations);
+            $container.html($holder);
+            addTranscripts($holder, transcripts, videoPlayer, callback);
         }
     };
 
