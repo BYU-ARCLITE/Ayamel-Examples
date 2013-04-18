@@ -62,6 +62,8 @@ POST    /content/:id/edit               controllers.ContentController.saveImageE
 POST    /content/:id/addCaptionTrack    controllers.ContentController.addCaptionTrack(id: Long)
 POST    /content/:id/addAnnotations     controllers.ContentController.addAnnotations(id: Long)
 POST    /content/:id/addToCourse        controllers.ContentController.addToCourse(id: Long)
+GET     /content/:id/annotations        controllers.ContentController.editAnnotations(id: Long)
+POST    /content/:id/annotations        controllers.ContentController.saveAnnotations(id: Long)
 
 # User pages
 GET     /user/settings                  controllers.Users.accountSettings

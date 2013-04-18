@@ -1,201 +1,101 @@
 var ImageEditor = (function () {
     "use strict";
 
-    var active = false;
-    var startPos = {x: 0, y: 0};
-    var endPos = {x: 0, y: 0};
-    var size;
-    var position;
-    var $cropOverlay;
-    var cropChildren;
+    var canvas;
+
+    // Boxes
+    var top;
+    var left;
+    var bottom;
+    var right;
+    var outline;
+
+    var start = [0, 0];
+    var crop = [0, 0, 1, 1];
+
     var updateCallback;
 
-    function restrictOverlaySize() {
-        if (endPos.x < position.left) {
-            endPos.x = position.left;
-        }
-        if (endPos.x > position.left + size.width) {
-            endPos.x = position.left + size.width;
-        }
-        if (endPos.y < position.top) {
-            endPos.y = position.top;
-        }
-        if (endPos.y > position.top + size.height) {
-            endPos.y = position.top + size.height;
-        }
+    function updateResults() {
+        updateCallback({
+            top: crop[1],
+            left: crop[0],
+            bottom: crop[3],
+            right: crop[2]
+        });
     }
 
-    function computeRenderedSize(image, $imgHolder) {
-        if (image.width <= $imgHolder.width() && image.height <= $imgHolder.height()) {
-
-            // Rendering the image as it is
-            return {
-                width: image.width,
-                height: image.height
-            }
-        } else {
-
-            // Figure out the scale factor
-            var xScale = $imgHolder.width() / image.width;
-            var yScale = $imgHolder.height() / image.height;
-            var scale = Math.min(xScale, yScale);
-
-            return {
-                width: image.width * scale,
-                height: image.height * scale
-            }
-        }
+    function updateShadeBoxes() {
+        top.position = {x1: 0, y1: 0, x2: 1, y2: crop[1]};
+        left.position = {x1: 0, y1: crop[1], x2: crop[0], y2: crop[3]};
+        bottom.position = {x1: 0, y1: crop[3], x2: 1, y2: 1};
+        right.position = {x1: crop[2], y1: crop[1], x2: 1, y2: crop[3]};
     }
 
-    function renderCropOverlay() {
-        var top = Math.min(startPos.y, endPos.y) - position.top;
-        var left = Math.min(startPos.x, endPos.x) - position.left;
-        var bottom = size.height - Math.max(startPos.y, endPos.y) + position.top;
-        var right = size.width - Math.max(startPos.x, endPos.x) + position.left;
-        var height = Math.abs(startPos.y - endPos.y);
-        var width = Math.abs(startPos.x - endPos.x);
-
-        cropChildren.$top.height(top);
-        cropChildren.$bottom.height(bottom);
-        cropChildren.$left
-            .width(left)
-            .height(height)
-            .css("top", top + "px");
-        cropChildren.$right
-            .width(right)
-            .height(height)
-            .css("top", top + "px");
-        cropChildren.$highlight
-            .width(width)
-            .height(height)
-            .css("top", top)
-            .css("left", left);
+    function updateOutlineBox() {
+        outline.position = {x1: crop[0], y1: crop[1], x2: crop[2], y2: crop[3]};
     }
 
-    function setupCropOverlay($element) {
-        // Create a parent container with children
-        $cropOverlay = $('<div id="cropOverlay"></div>');
-        cropChildren = {
-            $top: $('<div></div>'),
-            $left: $('<div></div>'),
-            $bottom: $('<div></div>'),
-            $right: $('<div></div>'),
-            $highlight: $('<div class="highlight"></div>')
-        };
-        $cropOverlay
-            .append(cropChildren.$top)
-            .append(cropChildren.$left)
-            .append(cropChildren.$bottom)
-            .append(cropChildren.$right)
-            .append(cropChildren.$highlight);
-
-        // Add the overlay the parent and set up the cursor
-        $element.append($cropOverlay).css("cursor", "crosshair");
+    function startDraw(event) {
+        start[0] = crop[0] = crop[2] = event.drawX;
+        start[1] = crop[1] = crop[3] = event.drawY;
+        updateShadeBoxes();
+        updateOutlineBox();
     }
 
-    function setupOverlaySize() {
-        $cropOverlay
-            .width(size.width)
-            .height(size.height)
-            .css("left", position.left)
-            .css("top", position.top);
-
-        // Set up the non-changing properties in the children
-        cropChildren.$top
-            .css("left", 0)
-            .css("top", 0)
-            .width(size.width);
-        cropChildren.$bottom
-            .css("left", 0)
-            .css("bottom", 0)
-            .width(size.width);
-        cropChildren.$left.css("left", 0);
-        cropChildren.$right.css("right", 0);
+    function updateDraw(event) {
+        crop[0] = Math.max(Math.min(event.drawX, start[0]), 0);
+        crop[1] = Math.max(Math.min(event.drawY, start[1]), 0);
+        crop[2] = Math.min(Math.max(event.drawX, start[0]), 1);
+        crop[3] = Math.min(Math.max(event.drawY, start[1]), 1);
+        updateShadeBoxes();
+        updateOutlineBox();
     }
 
-    function triggerUpdate() {
-        if (updateCallback) {
-            var data = {
-                top: (Math.min(startPos.y, endPos.y) - position.top) / size.height,
-                bottom: (Math.max(startPos.y, endPos.y) - position.top) / size.height,
-                left: (Math.min(startPos.x, endPos.x) - position.left) / size.width,
-                right: (Math.max(startPos.x, endPos.x) - position.left) / size.width
-            };
-            updateCallback(data)
-        }
+    function endDraw(event) {
+        crop[0] = Math.max(Math.min(event.drawX, start[0]), 0);
+        crop[1] = Math.max(Math.min(event.drawY, start[1]), 0);
+        crop[2] = Math.min(Math.max(event.drawX, start[0]), 1);
+        crop[3] = Math.min(Math.max(event.drawY, start[1]), 1);
+        updateShadeBoxes();
+        updateOutlineBox();
+
+        // Send out the results
+        updateResults();
+    }
+
+    function outlineResize(event) {
+        crop = [
+            event.size.x1,
+            event.size.y1,
+            event.size.x2,
+            event.size.y2
+        ];
+        updateShadeBoxes();
     }
 
     return {
         attach: function($element, image, callback) {
-            var offset;
+            canvas = new BoxDrawingCanvas(image, $element);
+            canvas.drawable = true;
+            canvas.addEventListener("drawstart", startDraw);
+            canvas.addEventListener("drawupdate", updateDraw);
+            canvas.addEventListener("drawend", endDraw);
 
-            // Figure out the size and position of the rendered image
-            size = computeRenderedSize(image, $element);
-            position = {
-                left: ($element.width() / 2) - (size.width / 2),
-                top: ($element.height() / 2) - (size.height / 2)
-            };
+            top = canvas.drawBox(0, 0, 1, 0, ["cropShader"]);
+            left = canvas.drawBox(0, 0, 0, 1, ["cropShader"]);
+            bottom = canvas.drawBox(0, 1, 1, 1, ["cropShader"]);
+            right = canvas.drawBox(1, 0, 1, 1, ["cropShader"]);
+            outline = canvas.drawBox(0, 0, 1, 1, ["cropOutline"]);
+            outline.resizable = true;
+            outline.addEventListener("resize", outlineResize);
+
             updateCallback = callback;
-
-            // Set up the drawing interface
-            setupCropOverlay($element);
-
-            // Size the overlay
-            startPos = {
-                x: position.left,
-                y: position.top
-            };
-            endPos = {
-                x: position.left + size.width,
-                y: position.top + size.height
-            };
-            setupOverlaySize();
-            renderCropOverlay();
-
-            // Set up the draw functionality
-            offset = $element.offset();
-            $element
-                .mousedown(function (e) {
-                    var clickPosition = {
-                        x: e.pageX - offset.left,
-                        y: e.pageY - offset.top
-                    };
-
-                    // Ignore this click if not on the image
-                    if (clickPosition.x >= position.left && clickPosition.x <= position.left + size.width
-                        && clickPosition.y >= position.top && clickPosition.y <= position.top + size.height) {
-                        startPos = endPos = clickPosition;
-                        active = true;
-                    }
-                }).mouseup(function (e) {
-                    endPos = {
-                        x: e.pageX - offset.left,
-                        y: e.pageY - offset.top
-                    };
-                    active = false;
-                }).mousemove(function (e) {
-                    if (active) {
-                        endPos = {
-                            x: e.pageX - offset.left,
-                            y: e.pageY - offset.top
-                        };
-                        restrictOverlaySize();
-                        renderCropOverlay();
-                        triggerUpdate();
-                    }
-                });
         },
         reset: function() {
-            startPos = {
-                x: position.left,
-                y: position.top
-            };
-            endPos = {
-                x: position.left + size.width,
-                y: position.top + size.height
-            };
-            renderCropOverlay();
-            triggerUpdate();
+            crop = [0, 0, 1, 1];
+            updateShadeBoxes();
+            updateOutlineBox();
+            updateResults();
         }
     };
 }());

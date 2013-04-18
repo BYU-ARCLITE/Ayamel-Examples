@@ -7,7 +7,7 @@ import models.{Course, User, Content}
 import play.api.Play
 import Play.current
 import play.api.libs.json.Json
-import concurrent.ExecutionContext
+import scala.concurrent.{Future, ExecutionContext}
 import ExecutionContext.Implicits.global
 import anorm.NotAssigned
 import play.api.libs.json.JsArray
@@ -15,6 +15,7 @@ import play.api.libs.json.JsString
 import scala.Some
 import service.ContentDescriptor
 import dataAccess.{PlayGraph, ResourceController}
+import java.io.ByteArrayInputStream
 
 /**
  * The controller for dealing with content.
@@ -585,6 +586,66 @@ object ContentController extends Controller {
                 course.addContent(content)
                 Redirect(routes.ContentController.view(id)).flashing("info" -> "Content added to course")
             }
+        }
+  }
+
+  def editAnnotations(id: Long) = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+        getContent(id) {
+          content =>
+
+            if (content isEditableBy user) {
+              val resourceLibraryUrl = Play.configuration.getString("resourceLibrary.baseUrl").get
+              Ok(views.html.content.annotationEditor(content, resourceLibraryUrl))
+            } else
+              Errors.forbidden
+        }
+  }
+
+  def saveAnnotations(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
+    implicit request =>
+      implicit user =>
+        getContent(id) {
+          content =>
+
+            if (content isEditableBy user) {
+              val title = request.body.get("title").map(_(0))
+              val annotations = request.body("annotations")(0)
+              val stream = new ByteArrayInputStream(annotations.getBytes("UTF-8"))
+              val mime = "application/json"
+              val filename = request.body.get("filename").map(_(0)).getOrElse(FileUploader.uniqueFilename(annotations + ".json"))
+
+              Async {
+                // Upload the annotations
+                FileUploader.uploadStream(stream, filename, annotations.length, mime).flatMap { url =>
+
+                  // If there is a title defined then this is a new annotation document
+                  if (title.isDefined) {
+                    // Create subtitle (subject) resource
+                    ResourceHelper.createResourceWithUri(title.get, "", "annotations", Nil, "text", url, mime).flatMap { resource =>
+
+                    // Have this annotation document  enabled
+                      val subjectId = (resource \ "id").as[String]
+                      val annotationDocuments = subjectId :: content.enabledAnnotationDocuments
+                      content.setSetting("enabledAnnotationDocuments", annotationDocuments.mkString(",")).save
+
+                      // Add the relation
+                      ResourceController.addRelation("1", subjectId, content.resourceId, "references", Map("type" -> "annotations")).map(r => {
+                        Redirect(routes.ContentController.view(content.id.get)).flashing("info" -> "Annotations added")
+                      })
+                    }
+                  } else {
+
+                    // We are just updating
+                    Future {
+                      Redirect(routes.ContentController.view(content.id.get)).flashing("info" -> "Annotations updated")
+                    }
+                  }
+                }
+              }
+            } else
+              Errors.forbidden
         }
   }
 }
