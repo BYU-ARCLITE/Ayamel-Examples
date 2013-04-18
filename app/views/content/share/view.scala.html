@@ -90,9 +90,13 @@
                                 ContentRenderer.setResourceLibraryUrl("@resourceLibraryUrl");
 
                                 // Render the content
-                                var content = @Html(content.toJson.toString);
+                                var content = @Html(content.toJson.toString());
                                 var contentHolder = $("#contentHolder")[0];
-                                ContentRenderer.render(content, contentHolder);
+                                ContentRenderer.render({
+                                    content: content,
+                                    holder: contentHolder,
+                                    annotate: true
+                                });
                             });
                         </script>
 
@@ -126,7 +130,11 @@
                         // Render the content
                         var content = @Html(content.toJson.toString);
                         var contentHolder = $("#contentHolder")[0];
-                        ContentRenderer.render(content, contentHolder);
+                        ContentRenderer.render({
+                            content: content,
+                            holder: contentHolder,
+                            annotate: true
+                        });
                     });
                 </script>
             </div>

@@ -1,7 +1,10 @@
 @(content: models.Content)(implicit user: User)
 
 @possibleCourses = @{
-    user.getTeacherEnrollment.filterNot(_.getContent.contains(content))
+    if (user.role == User.roles.admin)
+        Course.list.filterNot(_.getContent.contains(content))
+    else
+        user.getTeacherEnrollment.filterNot(_.getContent.contains(content))
 }
 
 @if(user.role == User.roles.teacher || user.role == User.roles.admin) {

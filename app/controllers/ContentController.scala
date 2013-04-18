@@ -583,8 +583,12 @@ object ContentController extends Controller {
             Courses.getCourse(courseId) {
               course =>
 
-                course.addContent(content)
-                Redirect(routes.ContentController.view(id)).flashing("info" -> "Content added to course")
+                // Make sure the user is allowed to edit the course
+                if (user canEdit course) {
+                  course.addContent(content)
+                  Redirect(routes.ContentController.view(id)).flashing("info" -> "Content added to course")
+                } else
+                  Errors.forbidden
             }
         }
   }
