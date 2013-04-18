@@ -50,7 +50,10 @@ var PlaylistRenderer = (function() {
 
                 // Pull out the content ID and render it
                 var contentId = + data.contentId;
-                ContentRenderer.render(contentId, $playlistContainer);
+                ContentRenderer.render({
+                    content: contentId,
+                    holder: $playlistContainer
+                });
             }
         })
     }

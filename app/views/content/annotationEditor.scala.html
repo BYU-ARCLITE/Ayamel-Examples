@@ -155,9 +155,14 @@
                 var content = @Html(content.toJson.toString());
                 var contentHolder = $("#contentHolder")[0];
                 if (content.contentType === "image") {
-                    ContentRenderer.render(content, contentHolder, function(data) {
-                        AnnotationEditor.bindImage(content, data, resourceLibraryUrl);
-                    }, false);
+                    ContentRenderer.render({
+                        content: content,
+                        holder: contentHolder,
+                        callback: function(data) {
+                            AnnotationEditor.bindImage(content, data, resourceLibraryUrl);
+                        },
+                        annotate: false
+                    });
                 }
                 if (content.contentType === "video" || content.contentType === "audio") {
                     AnnotationEditor.bindText(content, resourceLibraryUrl);

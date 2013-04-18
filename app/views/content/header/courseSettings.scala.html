@@ -1,4 +1,4 @@
-@(content: models.Content, course: Option[Course])(implicit user: User)
+@(content: models.Content, course: Option[Course], resourceLibraryUrl: String)(implicit user: User)
 
 @if(course.isDefined && user.canEdit(course.get)) {
     <a href="#courseSettingsModal" role="button" class="btn" data-toggle="modal"><i class="icon-edit"></i> Edit Course Settings</a>
@@ -11,7 +11,7 @@
         <div class="modal-body">
 
             @if(content.contentType == 'video) {
-                @views.html.content.header.courseVideoSettings(content, course.get)
+                @views.html.content.header.courseVideoSettings(content, course.get, resourceLibraryUrl)
             }
             @if(content.contentType == 'audio) {
                 <em>There are no settings defined for this content type.</em>

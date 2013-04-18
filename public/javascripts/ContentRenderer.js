@@ -19,32 +19,43 @@ var ContentRenderer = (function () {
         return null;
     }
 
-    function getTranscripts(content, resource, callback) {
+    function getTranscripts(content, resource, coursePrefix, callback) {
         resource.getTranscripts(function (transcripts) {
 
             // Filter the transcripts to only include those that are specified
-            var captionTracks = [];
+
+            var allowedCaptionTracks = [];
             if (content.settings.enabledCaptionTracks) {
-                captionTracks = content.settings.enabledCaptionTracks.split(",");
+                allowedCaptionTracks = content.settings.enabledCaptionTracks.split(",");
+            }
+
+            var captionTracks = [];
+            if (content.settings[coursePrefix + "enabledCaptionTracks"]) {
+                captionTracks = content.settings[coursePrefix + "enabledCaptionTracks"].split(",");
             }
             transcripts = transcripts.filter(function (transcript) {
-                return captionTracks.indexOf(transcript.id) >= 0;
+                return captionTracks.indexOf(transcript.id) >= 0 && allowedCaptionTracks.indexOf(transcript.id) >= 0;
             });
             callback(transcripts);
         });
     }
 
-    function getAnnotations(content, resource, callback) {
+    function getAnnotations(content, resource, coursePrefix, callback) {
         // First get the annotation resources from the relations
         resource.getAnnotations(function (annotations) {
 
             // Filter the annotations to only include those that are specified
-            var annotationDocuments = [];
+            var allowedAnnotationDocuments = [];
             if (content.settings.enabledAnnotationDocuments) {
-                annotationDocuments = content.settings.enabledAnnotationDocuments.split(",");
+                allowedAnnotationDocuments = content.settings.enabledAnnotationDocuments.split(",");
+            }
+
+            var annotationDocuments = [];
+            if (content.settings[coursePrefix + "enabledAnnotationDocuments"]) {
+                annotationDocuments = content.settings[coursePrefix + "enabledAnnotationDocuments"].split(",");
             }
             annotations = annotations.filter(function (annotationDoc) {
-                return annotationDocuments.indexOf(annotationDoc.id) >= 0;
+                return annotationDocuments.indexOf(annotationDoc.id) >= 0 && allowedAnnotationDocuments.indexOf(annotationDoc.id) >= 0;
             });
 
             // Load the annotation files
@@ -123,17 +134,17 @@ var ContentRenderer = (function () {
         }
     }
 
-    function renderImage(content, resource, holder, callback, annotate) {
-        var file = findFile(resource, function (file) {
+    function renderImage(args) {
+        var file = findFile(args.resource, function (file) {
             return file.representation === "original";
         });
         if (file === null) {
-            $(holder).html("<em>There was an error displaying this content</em>");
+            $(args.holder).html("<em>There was an error displaying this content</em>");
         } else {
 
             // Create a container for the image
             var $imgHolder = $("<div id='imgHolder'></div>");
-            $(holder).html($imgHolder);
+            $(args.holder).html($imgHolder);
 
             // Display the image
             var url = file.downloadUri;
@@ -148,7 +159,7 @@ var ContentRenderer = (function () {
                     $imgHolder.css("background-size", "initial");
                 }
 
-                if (annotate) {
+                if (args.annotate) {
                     // Add a container the exact size of the image for holding annotations
                     var size = computeRenderedSize(this, $imgHolder);
                     var $annotationHolder = $("<div id='annotationHolder'></div>").css("position", "absolute")
@@ -158,19 +169,19 @@ var ContentRenderer = (function () {
                     $imgHolder.append($annotationHolder);
 
                     // Add the annotations
-                    getAnnotations(content, resource, function (annotations) {
+                    getAnnotations(args.content, args.resource, args.coursePrefix, function (annotations) {
                         SimpleAnnotator.annotate(annotations, $annotationHolder, AnnotationRenderers.image);
 
-                        if (callback) {
-                            callback({
+                        if (args.callback) {
+                            args.callback({
                                 image: img,
                                 $imgHolder: $imgHolder
                             });
                         }
                     });
                 } else {
-                    if (callback) {
-                        callback({
+                    if (args.callback) {
+                        args.callback({
                             image: img,
                             $imgHolder: $imgHolder
                         });
@@ -185,37 +196,37 @@ var ContentRenderer = (function () {
      *    Video Rendering
      */
 
-    function renderVideoLevel1(resource, holder, callback) {
+    function renderVideoLevel1(args) {
 
         // Install the HTML5 video player
-        var panes = VideoLayoutManager.onePanel($(holder));
+        var panes = VideoLayoutManager.onePanel($(args.holder));
         Ayamel.AddVideoPlayer(h5PlayerInstall, 1, function() {
 
             // Create the player
             var videoPlayer = new Ayamel.VideoPlayer({
                 element: panes.$player[0],
                 aspectRatio: 45,
-                resource: resource
+                resource: args.resource
             });
 
-            if (callback) {
-                callback({
+            if (args.callback) {
+                args.callback({
                     videoPlayer: videoPlayer
                 });
             }
         });
     }
 
-    function renderVideoLevel2(content, resource, holder, callback) {
+    function renderVideoLevel2(args) {
         // Load the transcripts
-        getTranscripts(content, resource, function(transcripts) {
+        getTranscripts(args.content, args.resource, args.coursePrefix, function(transcripts) {
 
             // Create the layout
             var panes;
-            if (showTranscript(content)) {
-                panes = VideoLayoutManager.twoPanel($(holder), ["Transcript"]);
+            if (showTranscript(args.content)) {
+                panes = VideoLayoutManager.twoPanel($(args.holder), ["Transcript"]);
             } else {
-                panes = VideoLayoutManager.onePanel($(holder));
+                panes = VideoLayoutManager.onePanel($(args.holder));
             }
 
             // Install the HTML 5 player
@@ -225,17 +236,17 @@ var ContentRenderer = (function () {
                 var videoPlayer = new Ayamel.VideoPlayer({
                     element: panes.$player[0],
                     aspectRatio: 45,
-                    resource: resource,
+                    resource: args.resource,
                     components: ["play", "volume", "fullScreen", "captions"],
                     captions: transcripts
                 });
 
-                if (showTranscript(content)) {
+                if (showTranscript(args.content)) {
                     TranscriptRenderer.add(transcripts, panes.$Transcript, videoPlayer);
                 }
 
-                if (callback) {
-                    callback({
+                if (args.callback) {
+                    args.callback({
                         videoPlayer: videoPlayer
                     });
                 }
@@ -243,25 +254,25 @@ var ContentRenderer = (function () {
         });
     }
 
-    function renderVideoLevel3(content, resource, holder, callback) {
+    function renderVideoLevel3(args) {
         // Load the transcripts
-        getTranscripts(content, resource, function(transcripts) {
+        getTranscripts(args.content, args.resource, args.coursePrefix,function(transcripts) {
 
             // Create the layout
             var panes;
             var $definitions;
             var $definitionsTab = null;
-            if (showTranscript(content)) {
-                panes = VideoLayoutManager.twoPanel($(holder), ["Definitions", "Transcription"]);
-                $definitions = panes.Definitions.$content;
-                $definitionsTab = panes.Definitions.$tab;
+            if (showTranscript(args.content)) {
+                panes = VideoLayoutManager.twoPanel($(args.holder), ["Definitions", "Transcription"]);
+                $definitions = panes.Definitions.$content[0];
+                $definitionsTab = panes.Definitions.$tab[0];
             } else {
-                panes = VideoLayoutManager.twoPanel($(holder), ["Definitions"]);
+                panes = VideoLayoutManager.twoPanel($(args.holder), ["Definitions"]);
                 $definitions = panes.$Definitions[0];
             }
 
             // Create the translator
-            var translator = createTranslator($definitions[0], $definitionsTab[0]);
+            var translator = createTranslator($definitions, $definitionsTab);
 
             // Install the HTML 5 player
             Ayamel.AddVideoPlayer(h5PlayerInstall, 1, function() {
@@ -270,18 +281,22 @@ var ContentRenderer = (function () {
                 var videoPlayer = new Ayamel.VideoPlayer({
                     element: panes.$player[0],
                     aspectRatio: 45,
-                    resource: resource,
+                    resource: args.resource,
                     components: ["play", "volume", "fullScreen", "captions"],
                     captions: transcripts,
                     renderCue: createRenderCue(translator)
                 });
 
-                if (showTranscript(content)) {
-                    TranscriptRenderer.add(transcripts, panes.Transcription.$content, videoPlayer, translator);
+                if (showTranscript(args.content)) {
+                    TranscriptRenderer.add(transcripts, panes.Transcription.$content, videoPlayer, function ($cue, cue, language) {
+                        if (language != "en") {
+                            translator.attach($cue[0], language, "en");
+                        }
+                    });
                 }
 
-                if (callback) {
-                    callback({
+                if (args.callback) {
+                    args.callback({
                         videoPlayer: videoPlayer
                     });
                 }
@@ -289,19 +304,19 @@ var ContentRenderer = (function () {
         });
     }
 
-    function renderVideoLevel4(content, resource, holder, callback, annotate) {
+    function renderVideoLevel4(args) {
         // Load the transcripts
-        getTranscripts(content, resource, function(transcripts) {
+        getTranscripts(args.content, args.resource, args.coursePrefix,function(transcripts) {
 
             // Load the annotations
-            getAnnotations(content, resource, function (annotations) {
+            getAnnotations(args.content, args.resource, args.coursePrefix, function (annotations) {
 
                 // Create the layout
                 var tabs = ["Definitions", "Annotations"];
-                if (showTranscript(content)) {
+                if (showTranscript(args.content)) {
                     tabs.push("Transcription");
                 }
-                var panes = VideoLayoutManager.twoPanel($(holder), tabs);
+                var panes = VideoLayoutManager.twoPanel($(args.holder), tabs);
 
                 // Create the translator
                 var translator = createTranslator(panes.Definitions.$content[0], panes.Definitions.$tab[0]);
@@ -319,14 +334,14 @@ var ContentRenderer = (function () {
                     var videoPlayer = new Ayamel.VideoPlayer({
                         element: panes.$player[0],
                         aspectRatio: 45,
-                        resource: resource,
+                        resource: args.resource,
                         components: ["play", "volume", "fullScreen", "captions"],
                         captions: transcripts,
                         renderCue: createRenderCue(translator, annotations)
                     });
 
                     // Create the transcription
-                    if (showTranscript(content)) {
+                    if (showTranscript(args.content)) {
                         TranscriptRenderer.add(transcripts, panes.Transcription.$content, videoPlayer, function ($cue, cue, language) {
                             if (language != "en") {
                                 translator.attach($cue[0], language, "en");
@@ -335,8 +350,8 @@ var ContentRenderer = (function () {
                         });
                     }
 
-                    if (callback) {
-                        callback({
+                    if (args.callback) {
+                        args.callback({
                             videoPlayer: videoPlayer
                         });
                     }
@@ -345,94 +360,101 @@ var ContentRenderer = (function () {
         });
     }
 
-    function renderVideoLevel5(resource, holder, callback, annotate) {
-        $(holder).html("<em>Playback at this level has not been implemented yet.</em>");
+    function renderVideoLevel5(args) {
+        $(args.holder).html("<em>Playback at this level has not been implemented yet.</em>");
     }
 
-    function renderVideo(content, resource, holder, callback, annotate) {
+    function renderVideo(args) {
         // Render video
-        var level = content.settings.level || "1";
+        var levelAttr = args.coursePrefix + "level";
+        var courseLevel = args.content.settings[levelAttr] || "1";
+        var globalLevel = args.content.settings.level || "1";
+        var level = Math.min(+courseLevel, +globalLevel);
         switch (level) {
-            case "1":
-                renderVideoLevel1(resource, holder, callback);
+            case 1:
+                renderVideoLevel1(args);
                 break;
-            case "2":
-                renderVideoLevel2(content, resource, holder, callback);
+            case 2:
+                renderVideoLevel2(args);
                 break;
-            case "3":
-                renderVideoLevel3(content, resource, holder, callback);
+            case 3:
+                renderVideoLevel3(args);
                 break;
-            case "4":
-                renderVideoLevel4(content, resource, holder, callback, annotate);
+            case 4:
+                renderVideoLevel4(args);
                 break;
-            case "5":
-                renderVideoLevel5(content, resource, holder, callback, annotate);
+            case 5:
+                renderVideoLevel5(args);
                 break;
         }
     }
 
-    function renderAudio(content, resource, holder, callback, annotate) {
-        var file = findFile(resource, function (file) {
+    function renderAudio(args) {
+        var file = findFile(args.resource, function (file) {
             return file.representation === "original";
         });
         if (file === null) {
-            $(holder).html("<em>There was an error displaying this content</em>");
+            $(args.holder).html("<em>There was an error displaying this content</em>");
         } else {
 
             // TODO: Add an audio player to the Ayamel.js player
             // Create the audio player
             var $audio = $('<audio id="player" controls="controls"></audio>');
-            $(holder).html($audio);
+            $(args.holder).html($audio);
 
             // Get the URL from the resource and add it as an audio source
             var url =  file.downloadUri;
             var mime = file.mime;
             $audio.append('<source src="' + url + '" type="' + mime + '">');
 
-            if (callback) {
-                callback();
+            if (args.callback) {
+                args.callback();
             }
         }
     }
 
-    function renderPlaylist(content, holder, callback, annotate) {
+    function renderPlaylist(args) {
         PlaylistRenderer.render(content.resourceId, holder, callback);
     }
 
-    function renderContent(content, holder, callback, annotate) {
-        var resourceUrl = resourceLibraryUrl + "/" + content.resourceId;
+    function renderContent(args) {
+        var resourceUrl = resourceLibraryUrl + "/" + args.content.resourceId;
 
         // Check if we are rendering something from the resource library
-        if (content.contentType === "video" || content.contentType === "audio" || content.contentType === "image") {
+        if (args.content.contentType === "video" || args.content.contentType === "audio" || args.content.contentType === "image") {
             ResourceLibrary.load(resourceUrl, function (resource) {
+                args.resource = resource;
                 switch (resource.type) {
                     case "audio":
-                        renderAudio(content, resource, holder, callback, annotate);
+                        renderAudio(args);
                         break;
                     case "image":
-                        renderImage(content, resource, holder, callback, annotate);
+                        renderImage(args);
                         break;
                     case "video":
-                        renderVideo(content, resource, holder, callback, annotate);
+                        renderVideo(args);
                         break;
                 }
             });
-        } else if (content.contentType === "playlist") {
-            renderPlaylist(content, holder, callback, annotate);
+        } else if (args.content.contentType === "playlist") {
+            renderPlaylist(args);
         }
     }
 
     return {
 
-        render: function (content, holder, callback, annotate) {
-            if (typeof content == "object") {
-                renderContent(content, holder, callback, annotate);
+        render: function (args) {
+            args.coursePrefix = args.coursePrefix || "";
+
+            if (typeof args.content == "object") {
+                renderContent(args);
             }
-            if (typeof content == "number") {
-                $.ajax("/content/" + content + "/json", {
+            if (typeof args.content == "number") {
+                $.ajax("/content/" + args.content + "/json", {
                     dataType: "json",
                     success: function (data) {
-                        renderContent(data, holder, callback, annotate);
+                        args.content = data;
+                        renderContent(args);
                     }
                 });
             }

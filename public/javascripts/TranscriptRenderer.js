@@ -29,6 +29,8 @@ var TranscriptRenderer = (function() {
         "pal"               // Pahlavi
     ];
 
+    var allCues = [];
+
     function makeId(title) {
         return title.replace(/\s/g, "");
     }
@@ -99,6 +101,12 @@ var TranscriptRenderer = (function() {
                                     callback($cue, cue, language);
                                 }
 
+                                allCues.push({
+                                    $cue: $cue,
+                                    startTime: cue.startTime,
+                                    endTime: cue.endTime,
+                                    active: false
+                                });
                                 $transcriptHolder.append($cue);
                             });
                         }
@@ -112,13 +120,17 @@ var TranscriptRenderer = (function() {
                 var currentTime = videoPlayer.currentTime;
 
                 // Highlight cues
-                $holder.find(".transcriptCue").each(function() {
-                    var start = + $(this).attr("data-start");
-                    var end = + $(this).attr("data-end");
-                    if (currentTime >= start && currentTime <= end) {
-                        $(this).addClass("active");
+                allCues.forEach(function(cueState) {
+                    if (currentTime >= cueState.startTime && currentTime <= cueState.endTime) {
+                        if (!cueState.active) {
+                            cueState.$cue.addClass("active");
+                            cueState.active = true;
+                        }
                     } else {
-                        $(this).removeClass("active");
+                        if (cueState.active) {
+                            $cue.removeClass("active");
+                            cueState.active = false;
+                        }
                     }
                 })
             });

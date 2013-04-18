@@ -83,7 +83,7 @@
 
             @views.html.content.header.share(content)
             @views.html.content.header.addToCourse(content)
-            @views.html.content.header.courseSettings(content, course)
+            @views.html.content.header.courseSettings(content, course, resourceLibraryUrl)
             @views.html.content.header.addRelatedDocs(content, resourceLibraryUrl)
             @views.html.content.header.edit(content, resourceLibraryUrl)
             @views.html.content.header.delete(content)
@@ -109,7 +109,13 @@
                 // Render the content
                 var content = @Html(content.toJson.toString());
                 var contentHolder = $("#contentHolder")[0];
-                ContentRenderer.render(content, contentHolder, null, true);
+                var coursePrefix = "@course.map(c => "course_" + c.id.get + ":").getOrElse("")";
+                ContentRenderer.render({
+                    content: content,
+                    holder: contentHolder,
+                    coursePrefix: coursePrefix,
+                    annotate: true
+                });
             });
         </script>
 

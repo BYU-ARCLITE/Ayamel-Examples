@@ -34,14 +34,18 @@
                     // Render the content
                     var content = @Html(content.toJson.toString());
                     var contentHolder = $("#contentHolder")[0];
-                    ContentRenderer.render(content, contentHolder, function(data) {
-                        ImageEditor.attach($("#imgHolder"), data.image, function(data) {
-                            $("#cropTop").val(data.top);
-                            $("#cropLeft").val(data.left);
-                            $("#cropBottom").val(data.bottom);
-                            $("#cropRight").val(data.right);
-                        });
-                    }, false);
+                    ContentRenderer.render({
+                        content: content,
+                        holder: contentHolder,
+                        callback: function(data) {
+                            ImageEditor.attach($("#imgHolder"), data.image, function(data) {
+                                $("#cropTop").val(data.top);
+                                $("#cropLeft").val(data.left);
+                                $("#cropBottom").val(data.bottom);
+                                $("#cropRight").val(data.right);
+                            });
+                        }
+                    });
 
                     $("#resetCrop").click(function() {
                         ImageEditor.reset();

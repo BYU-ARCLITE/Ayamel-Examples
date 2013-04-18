@@ -24,7 +24,10 @@ var AnnotationRenderers = (function() {
         }
 
         if (data.type === "content") {
-            ContentRenderer.render(+data.value, $annotationContent);
+            ContentRenderer.render({
+                content: +data.value,
+                holder: $annotationContent
+            });
         }
     }
 
