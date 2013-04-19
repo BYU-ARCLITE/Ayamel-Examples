@@ -14,7 +14,7 @@ var AnnotationLoader = (function(){
         if (target === "text") {
             annotations = doc.annotations.map(function (obj) {
                 var regex = new RegExp(obj.regex);
-//                return new TextAnnotation(regex, obj.data);
+                return new TextAnnotation(regex, obj.data);
             });
         }
         if (target === "image") {

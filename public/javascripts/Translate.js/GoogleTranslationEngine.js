@@ -6,8 +6,8 @@
         $.ajax(url, {
             dataType: "json",
             success: function (data) {
-                var result = data.translation + " (from Google Translate)";
-                callback(result);
+                var results = [data.translation];
+                callback(results, "(From Google Translate)");
             },
             error: function (data) {
                 error();

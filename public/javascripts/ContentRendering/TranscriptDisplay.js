@@ -68,7 +68,7 @@ var TranscriptDisplay = (function() {
         return $element;
     }
 
-    function addTranscripts(display, mediaPlayer) {
+    function addTranscripts(display, filter) {
         display.transcripts.forEach(function (transcript) {
 
             // Find the place where we will display the transcript
@@ -94,6 +94,11 @@ var TranscriptDisplay = (function() {
                                     display.cueClick(cue.startTime);
                                 });
 
+                                // Possibly do additional work with the cue
+                                if (filter) {
+                                    filter(cue, $cue);
+                                }
+
                                 display.cueStates.push({
                                     $cue: $cue,
                                     startTime: cue.startTime,
@@ -117,7 +122,7 @@ var TranscriptDisplay = (function() {
         this.cueStates = [];
 
         // Generate the transcripts
-        addTranscripts(this);
+        addTranscripts(this, args.filter);
     }
 
     TranscriptDisplay.prototype.cueClick = function(time) {
