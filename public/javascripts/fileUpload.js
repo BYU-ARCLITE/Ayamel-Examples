@@ -1,5 +1,5 @@
 var supportedMimeTypes = {
-    "types": ["audio", "image", "video"],
+    "types": ["audio", "image", "video", "text"],
     "audio": [
         "audio/mp3",
         "audio/mpeg",
@@ -49,6 +49,9 @@ var supportedMimeTypes = {
         "video/x-msvideo",
         "video/x-ms-wmv",
         "video/x-sgi-movie"
+    ],
+    "text": [
+        "text/plain"
     ]
 };
 
@@ -98,7 +101,7 @@ $(function() {
                 location.reload();
             }
         } else {
-            alert("Unsupported file type.");
+            alert("Unsupported file type: " + contentType);
             location.reload();
         }
     });

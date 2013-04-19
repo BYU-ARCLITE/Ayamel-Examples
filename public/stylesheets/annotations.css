@@ -8,6 +8,11 @@
     cursor: pointer;
 }
 
+#textHolder .annotation {
+    color: #DE2174;
+    cursor: pointer;
+}
+
 .annotation:hover {
     text-decoration: underline;
 }
