@@ -21,6 +21,10 @@ var ImageAnnotation = (function(){
     ImageAnnotation.prototype.annotate = function(canvas, filter) {
 
         // Create the box annotation
+        var x1 = this.location[0][0];
+        var y1 = this.location[0][1];
+        var x2 = this.location[1][0];
+        var y2 = this.location[1][1];
         var box = canvas.drawBox(x1, y1, x2, y2, ["annotationBox"]);
 
         // Fill the contents appropriately
@@ -30,9 +34,9 @@ var ImageAnnotation = (function(){
                 .css("background-size", "contain")
                 .css("background-position", "center")
                 .css("background-repeat", "no-repeat")
-                .css("background-image", "url('" + data.value + "')");
+                .css("background-image", "url('" + this.data.value + "')");
         }
-        if (data.type === "text") {
+        if (this.data.type === "text") {
             box.$element.html(this.data.value);
         }
 

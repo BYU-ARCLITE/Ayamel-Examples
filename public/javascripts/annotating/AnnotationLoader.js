@@ -14,7 +14,7 @@ var AnnotationLoader = (function(){
         if (target === "text") {
             annotations = doc.annotations.map(function (obj) {
                 var regex = new RegExp(obj.regex);
-                return new TextAnnotation(regex, obj.data);
+//                return new TextAnnotation(regex, obj.data);
             });
         }
         if (target === "image") {
@@ -24,7 +24,7 @@ var AnnotationLoader = (function(){
         }
         if (target === "time") {
             annotations = doc.annotations.map(function (obj) {
-                return new TimeAnnotation(obj.start, obj.end, obj.data);
+//                return new TimeAnnotation(obj.start, obj.end, obj.data);
             });
         }
 
@@ -36,8 +36,9 @@ var AnnotationLoader = (function(){
         /**
          * Loads an annotation manifest from a source
          * @param source Either a URL or an object
+         * @param callback A callback where the newly generated AnnotationManifest will be passed
          */
-        load: function(source) {
+        load: function(source, callback) {
             if (typeof source === "object") {
                 callback(loadDocument(source));
             }
