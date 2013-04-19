@@ -75,10 +75,10 @@ var AnnotationRenderers = (function() {
 
 
     return {
-        init: function($content, callback1, callback2) {
+        init: function($content, _renderCallback, _clickCallback) {
             $annotationContent = $content;
-            renderCallback = callback1;
-            clickCallback = callback2;
+            renderCallback = _renderCallback;
+            clickCallback = _clickCallback;
         },
 
         videoRenderAnnotation: videoRenderAnnotation,

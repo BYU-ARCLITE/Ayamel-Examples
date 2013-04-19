@@ -199,7 +199,7 @@ var ContentRenderer = (function () {
     function renderVideoLevel1(args) {
 
         // Install the HTML5 video player
-        var panes = VideoLayoutManager.onePanel($(args.holder));
+        var panes = ContentLayoutManager.onePanel($(args.holder));
         Ayamel.AddVideoPlayer(h5PlayerInstall, 1, function() {
 
             // Create the player
@@ -224,9 +224,9 @@ var ContentRenderer = (function () {
             // Create the layout
             var panes;
             if (showTranscript(args.content)) {
-                panes = VideoLayoutManager.twoPanel($(args.holder), ["Transcript"]);
+                panes = ContentLayoutManager.twoPanel($(args.holder), ["Transcript"]);
             } else {
-                panes = VideoLayoutManager.onePanel($(args.holder));
+                panes = ContentLayoutManager.onePanel($(args.holder));
             }
 
             // Install the HTML 5 player
@@ -263,11 +263,11 @@ var ContentRenderer = (function () {
             var $definitions;
             var $definitionsTab = null;
             if (showTranscript(args.content)) {
-                panes = VideoLayoutManager.twoPanel($(args.holder), ["Definitions", "Transcription"]);
+                panes = ContentLayoutManager.twoPanel($(args.holder), ["Definitions", "Transcription"]);
                 $definitions = panes.Definitions.$content[0];
                 $definitionsTab = panes.Definitions.$tab[0];
             } else {
-                panes = VideoLayoutManager.twoPanel($(args.holder), ["Definitions"]);
+                panes = ContentLayoutManager.twoPanel($(args.holder), ["Definitions"]);
                 $definitions = panes.$Definitions[0];
             }
 
@@ -316,7 +316,7 @@ var ContentRenderer = (function () {
                 if (showTranscript(args.content)) {
                     tabs.push("Transcription");
                 }
-                var panes = VideoLayoutManager.twoPanel($(args.holder), tabs);
+                var panes = ContentLayoutManager.twoPanel($(args.holder), tabs);
 
                 // Create the translator
                 var translator = createTranslator(panes.Definitions.$content[0], panes.Definitions.$tab[0]);
@@ -413,6 +413,53 @@ var ContentRenderer = (function () {
         }
     }
 
+    function renderText(args) {
+        var file = findFile(args.resource, function (file) {
+            return file.representation === "original";
+        });
+        if (file === null) {
+            $(args.holder).html("<em>There was an error displaying this content</em>");
+        } else {
+
+            // Load the annotations
+            getAnnotations(args.content, args.resource, args.coursePrefix, function (annotations) {
+
+                var panes;
+                var tabs = [];
+                if (annotations && args.annotate) {
+                    tabs.push("Annotations");
+                    panes = ContentLayoutManager.twoPanel($(args.holder), tabs);
+                } else {
+                    panes = ContentLayoutManager.onePanel($(args.holder));
+                }
+
+                // Load the text
+                $.ajax(file.downloadUri, {
+                    success: function(data) {
+                        var $textHolder = $('<pre id="textHolder"></pre>');
+                        $textHolder.text(data);
+                        panes.$player.html($textHolder);
+
+                        if (annotations && args.annotate) {
+                            AnnotationRenderers.init(panes.Annotations.$content, null, function () {
+                                // Flip to the annotation tab
+                                panes.Annotations.$tab.tab("show");
+                            });
+                            SimpleAnnotator.annotate(annotations, $cue[0], AnnotationRenderers.video)
+                        }
+
+                        if (args.callback) {
+                            args.callback({
+                                text: data,
+                                $textHolder: $textHolder
+                            });
+                        }
+                    }
+                });
+            });
+        }
+    }
+
     function renderPlaylist(args) {
         PlaylistRenderer.render(content.resourceId, holder, callback);
     }
@@ -421,7 +468,9 @@ var ContentRenderer = (function () {
         var resourceUrl = resourceLibraryUrl + "/" + args.content.resourceId;
 
         // Check if we are rendering something from the resource library
-        if (args.content.contentType === "video" || args.content.contentType === "audio" || args.content.contentType === "image") {
+        if (args.content.contentType === "video" || args.content.contentType === "audio"
+            || args.content.contentType === "image" || args.content.contentType === "text") {
+
             ResourceLibrary.load(resourceUrl, function (resource) {
                 args.resource = resource;
                 switch (resource.type) {
@@ -429,7 +478,10 @@ var ContentRenderer = (function () {
                         renderAudio(args);
                         break;
                     case "image":
-                        renderImage(args);
+                        ImageRenderer.render(args);
+                        break;
+                    case "text":
+                        renderText(args);
                         break;
                     case "video":
                         renderVideo(args);
@@ -442,6 +494,8 @@ var ContentRenderer = (function () {
     }
 
     return {
+
+        findFile: findFile,
 
         render: function (args) {
             args.coursePrefix = args.coursePrefix || "";

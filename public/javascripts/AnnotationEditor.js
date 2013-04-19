@@ -16,6 +16,9 @@ var AnnotationEditor = (function() {
     var contentTranscripts;
     var annotationManifest;
 
+    // For text documents
+    var contentObj;
+
     var start = [0, 0];
     var activeAnnotation;
 
@@ -93,7 +96,7 @@ var AnnotationEditor = (function() {
                 if (contentType === "text") {
                     setActiveTextAnnotation(null);
                     annotations.splice(annotations.indexOf(activeAnnotation), 1);
-                    renderTranscript();
+                    renderText();
                 }
             }
 
@@ -125,6 +128,52 @@ var AnnotationEditor = (function() {
             $("#filename").val(filename);
         });
     });
+
+    function renderText() {
+        if (contentObj) {
+            renderDoc();
+        } else {
+            renderTranscript();
+        }
+    }
+
+    /*
+     * ===================
+     *   Text Annotating
+     * ===================
+     */
+
+    function renderDoc() {
+        ContentRenderer.render({
+            content: contentObj,
+            holder: $("#transcriptHolder")[0],
+            annotate: false,
+            callback: function(data) {
+
+                // Annotate the document
+                SimpleAnnotator.annotate(annotationManifest, data.$textHolder[0], AnnotationRenderers.video);
+
+                // Setup the select functionality
+                data.$textHolder.mouseup(function () {
+                    // Get the text selection
+                    var text = window.getSelection().toString().trim();
+
+                    // Create an annotation if not empty
+                    if (text !== '') {
+                        var regex = new RegExp(text);
+                        var data = {
+                            type: "text",
+                            value: ""
+                        };
+                        var annotation = new SimpleAnnotator.TextAnnotation(regex, data);
+                        annotations.push(annotation);
+                        setActiveTextAnnotation(annotation);
+                        renderDoc();
+                    }
+                });
+            }
+        });
+    }
 
     /*
      * =====================
@@ -199,7 +248,7 @@ var AnnotationEditor = (function() {
         };
 
         // Rerender the annotations
-        renderTranscript();
+        renderText();
         AnnotationRenderers.videoRenderAnnotation(activeAnnotation.data);
     }
 
@@ -339,7 +388,7 @@ var AnnotationEditor = (function() {
             });
         },
 
-        bindText: function(content, resourceLibraryUrl) {
+        bindMedia: function(content, resourceLibraryUrl) {
             contentType = "text";
 
             // Load all the transcripts
@@ -364,6 +413,29 @@ var AnnotationEditor = (function() {
                         renderTranscript();
                     });
                 });
+            });
+        },
+
+        bindText: function(content, resourceLibraryUrl) {
+            contentType = "text";
+            contentObj = content;
+            contentHolder = $("#transcriptHolder")[0];
+
+            AnnotationRenderers.init($("#annotationHolder"), null, setActiveTextAnnotation);
+
+            // Check if we are loading an annotation doc
+            loadAnnotationDoc(resourceLibraryUrl, function (manifest) {
+                if (manifest) {
+                    annotations = manifest.annotations;
+                    manifest = [manifest];
+                } else {
+                    manifest = [
+                        new SimpleAnnotator.AnnotationManifest("text", annotations)
+                    ];
+                }
+                annotationManifest = manifest;
+
+                renderDoc();
             });
         }
     };
