@@ -5,30 +5,32 @@
  * Time: 11:01 AM
  * To change this template use File | Settings | File Templates.
  */
-var ImageRenderer = (function(){
+var ImageRenderer = (function(ContentRenderer){
 
-    function createLayout() {
+    function createLayout(args) {
+        var $imgHolder = $('<div id="imgHolder"></div>');
+
+        $(args.holder).html($imgHolder);
+
         return {
-
+            $imgHolder: $imgHolder
         };
     }
 
     function setImage(args, callback) {
         var img = new Image();
-        img.src = url;
+        img.src = args.backgroundUrl;
         img.onload = function () {
 
             // Set the background
-            args.layout.$imgHolder.css("background-image", "url('" + args.url + "')");
+            args.layout.$imgHolder.css("background-image", "url('" + args.backgroundUrl + "')");
 
             // Possibly resize it smaller to the actual size
             if (this.width <= args.layout.$imgHolder.width() && this.height <= args.layout.$imgHolder.height()) {
                 args.layout.$imgHolder.css("background-size", "initial");
             }
 
-            if (callback) {
-                callback(image);
-            }
+            callback(img);
         };
     }
 
@@ -39,21 +41,27 @@ var ImageRenderer = (function(){
             var file = ContentRenderer.findFile(args.resource, function (file) {
                 return file.representation === "original";
             });
-            // TODO: Load annotations
 
-            // Create the layout
-            args.layout = createLayout();
+            // Load annotations
+            ContentRenderer.getAnnotations(args, function (manifests) {
+                args.manifests = manifests;
 
-            // Load the image and set the background
-            args.backgroundUrl = file.downloadUri;
-            setImage(args, function (image) {
+                // Create the layout
+                args.layout = createLayout(args);
 
-                // TODO: Load annotations
+                // Load the image and set the background
+                args.backgroundUrl = file.downloadUri;
+                setImage(args, function (image) {
+                    args.image = image;
 
-                if (args.callback) {
-                    args.callback();
-                }
+                    // Add annotations
+                    ImageAnnotator.annotate(args);
+
+                    if (args.callback) {
+                        args.callback();
+                    }
+                });
             });
         }
     };
-}());
+}(ContentRenderer));

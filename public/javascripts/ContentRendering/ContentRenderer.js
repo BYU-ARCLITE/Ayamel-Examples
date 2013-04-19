@@ -19,19 +19,19 @@ var ContentRenderer = (function () {
         return null;
     }
 
-    function getTranscripts(content, resource, coursePrefix, callback) {
-        resource.getTranscripts(function (transcripts) {
+    function getTranscripts(args, callback) {
+        args.resource.getTranscripts(function (transcripts) {
 
             // Filter the transcripts to only include those that are specified
 
             var allowedCaptionTracks = [];
-            if (content.settings.enabledCaptionTracks) {
-                allowedCaptionTracks = content.settings.enabledCaptionTracks.split(",");
+            if (args.content.settings.enabledCaptionTracks) {
+                allowedCaptionTracks = args.content.settings.enabledCaptionTracks.split(",");
             }
 
             var captionTracks = [];
-            if (content.settings[coursePrefix + "enabledCaptionTracks"]) {
-                captionTracks = content.settings[coursePrefix + "enabledCaptionTracks"].split(",");
+            if (args.content.settings[args.coursePrefix + "enabledCaptionTracks"]) {
+                captionTracks = args.content.settings[args.coursePrefix + "enabledCaptionTracks"].split(",");
             }
             transcripts = transcripts.filter(function (transcript) {
                 return captionTracks.indexOf(transcript.id) >= 0 && allowedCaptionTracks.indexOf(transcript.id) >= 0;
@@ -40,35 +40,34 @@ var ContentRenderer = (function () {
         });
     }
 
-    function getAnnotations(content, resource, coursePrefix, callback) {
+    function getAnnotations(args, callback) {
         // First get the annotation resources from the relations
-        resource.getAnnotations(function (annotations) {
+        args.resource.getAnnotations(function (annotations) {
 
             // Filter the annotations to only include those that are specified
             var allowedAnnotationDocuments = [];
-            if (content.settings.enabledAnnotationDocuments) {
-                allowedAnnotationDocuments = content.settings.enabledAnnotationDocuments.split(",");
+            if (args.content.settings.enabledAnnotationDocuments) {
+                allowedAnnotationDocuments = args.content.settings.enabledAnnotationDocuments.split(",");
             }
 
             var annotationDocuments = [];
-            if (content.settings[coursePrefix + "enabledAnnotationDocuments"]) {
-                annotationDocuments = content.settings[coursePrefix + "enabledAnnotationDocuments"].split(",");
+            if (args.content.settings[args.coursePrefix + "enabledAnnotationDocuments"]) {
+                annotationDocuments = args.content.settings[args.coursePrefix + "enabledAnnotationDocuments"].split(",");
             }
             annotations = annotations.filter(function (annotationDoc) {
                 return annotationDocuments.indexOf(annotationDoc.id) >= 0 && allowedAnnotationDocuments.indexOf(annotationDoc.id) >= 0;
             });
 
             // Load the annotation files
-            // TODO: Look at other formats
             async.map(annotations, function (annotation, asyncCallback) {
                 $.ajax(annotation.content.files[0].downloadUri, {
                     dataType: "json",
                     success: function(data) {
-                        SimpleAnnotator.load(data, function(manifest) {
+                        AnnotationLoader.load(data, function(manifest) {
                             asyncCallback(null, manifest);
                         });
                     }
-                })
+                });
             }, function (err, results) {
                 callback(results);
             });
@@ -105,90 +104,6 @@ var ContentRenderer = (function () {
 
     function showTranscript(content) {
         return content.settings.includeTranscriptions && content.settings.includeTranscriptions === "true";
-    }
-
-    /*
-     * =====================
-     *    Image Rendering
-     */
-
-    function computeRenderedSize(image, $imgHolder) {
-        if (image.width <= $imgHolder.width() && image.height <= $imgHolder.height()) {
-
-            // Rendering the image as it is
-            return {
-                width: image.width,
-                height: image.height
-            }
-        } else {
-
-            // Figure out the scale factor
-            var xScale = $imgHolder.width() / image.width;
-            var yScale = $imgHolder.height() / image.height;
-            var scale = Math.min(xScale, yScale);
-
-            return {
-                width: image.width * scale,
-                height: image.height * scale
-            }
-        }
-    }
-
-    function renderImage(args) {
-        var file = findFile(args.resource, function (file) {
-            return file.representation === "original";
-        });
-        if (file === null) {
-            $(args.holder).html("<em>There was an error displaying this content</em>");
-        } else {
-
-            // Create a container for the image
-            var $imgHolder = $("<div id='imgHolder'></div>");
-            $(args.holder).html($imgHolder);
-
-            // Display the image
-            var url = file.downloadUri;
-            $imgHolder.css("background-image", "url('" + url + "')");
-
-            // Load the image and check its dimensions to see if it is smaller than our display area. If so, change the
-            // sizing of it.
-            var img = new Image();
-            img.src = url;
-            img.onload = function () {
-                if (this.width <= $imgHolder.width() && this.height <= $imgHolder.height()) {
-                    $imgHolder.css("background-size", "initial");
-                }
-
-                if (args.annotate) {
-                    // Add a container the exact size of the image for holding annotations
-                    var size = computeRenderedSize(this, $imgHolder);
-                    var $annotationHolder = $("<div id='annotationHolder'></div>").css("position", "absolute")
-                        .width(size.width).height(size.height)
-                        .css("top", ($imgHolder.height() - size.height) / 2)
-                        .css("left", ($imgHolder.width() - size.width) / 2);
-                    $imgHolder.append($annotationHolder);
-
-                    // Add the annotations
-                    getAnnotations(args.content, args.resource, args.coursePrefix, function (annotations) {
-                        SimpleAnnotator.annotate(annotations, $annotationHolder, AnnotationRenderers.image);
-
-                        if (args.callback) {
-                            args.callback({
-                                image: img,
-                                $imgHolder: $imgHolder
-                            });
-                        }
-                    });
-                } else {
-                    if (args.callback) {
-                        args.callback({
-                            image: img,
-                            $imgHolder: $imgHolder
-                        });
-                    }
-                }
-            };
-        }
     }
 
     /*
@@ -461,7 +376,7 @@ var ContentRenderer = (function () {
     }
 
     function renderPlaylist(args) {
-        PlaylistRenderer.render(content.resourceId, holder, callback);
+//        PlaylistRenderer.render(content.resourceId, holder, callback);
     }
 
     function renderContent(args) {
@@ -484,7 +399,7 @@ var ContentRenderer = (function () {
                         renderText(args);
                         break;
                     case "video":
-                        renderVideo(args);
+                        VideoRenderer.render(args);
                         break;
                 }
             });
@@ -496,6 +411,8 @@ var ContentRenderer = (function () {
     return {
 
         findFile: findFile,
+        getTranscripts: getTranscripts,
+        getAnnotations: getAnnotations,
 
         render: function (args) {
             args.coursePrefix = args.coursePrefix || "";
