@@ -8,12 +8,13 @@
 var ImageAnnotator = (function() {
     return {
         annotate: function (args) {
-            var canvas = new BoxDrawingCanvas(args.image, args.$imgHolder);
-            args.annotations.forEach(function (annotation) {
-                annotation.annotate(canvas, args.filter);
-            });
-        },
+            var canvas = new BoxDrawingCanvas(args.image, args.layout.$imgHolder);
 
-        ImageAnnotation: ImageAnnotation
+            args.manifests.forEach(function (manifest) {
+                manifest.annotations.forEach(function (annotation) {
+                    annotation.annotate(canvas, args.filter);
+                });
+            });
+        }
     };
 }());
