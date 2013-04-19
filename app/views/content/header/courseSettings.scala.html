@@ -17,7 +17,7 @@
                 <em>There are no settings defined for this content type.</em>
             }
             @if(content.contentType == 'image) {
-                <em>There are no settings defined for this content type.</em>
+                @views.html.content.header.courseImageSettings(content, course.get, resourceLibraryUrl)
             }
             @if(content.contentType == 'playlist) {
                 <em>There are no settings defined for this content type.</em>
