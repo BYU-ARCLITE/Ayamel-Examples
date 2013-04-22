@@ -87,7 +87,9 @@ var ImageEditor = (function () {
             right = canvas.drawBox(1, 0, 1, 1, ["cropShader"]);
             outline = canvas.drawBox(0, 0, 1, 1, ["cropOutline"]);
             outline.resizable = true;
-            outline.addEventListener("resize", outlineResize);
+            outline.addEventListener("resizestart", outlineResize);
+            outline.addEventListener("resizeupdate", outlineResize);
+            outline.addEventListener("resizeend", outlineResize);
 
             updateCallback = callback;
         },

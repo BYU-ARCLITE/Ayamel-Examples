@@ -18,6 +18,9 @@
             @if(content.contentType == 'image) {
                 @views.html.content.header.imageSettings(content, resourceLibraryUrl)
             }
+            @if(content.contentType == 'text) {
+                @views.html.content.header.textSettings(content, resourceLibraryUrl)
+            }
             @if(content.contentType == 'playlist) {
                 <em>There are no settings defined for this content type.</em>
             }

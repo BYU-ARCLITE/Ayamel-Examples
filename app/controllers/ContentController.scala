@@ -89,9 +89,11 @@ object ContentController extends Controller {
 
           // Create the content
           val info = ContentDescriptor(title, description, keywords, categories, url, mime)
-          ContentManagement.createContent(info, user, contentType)
-
-          Redirect(routes.Application.home()).flashing("success" -> "Content added")
+          Async {
+            ContentManagement.createContent(info, user, contentType).map(content => {
+              Redirect(routes.ContentController.view(content.id.get)).flashing("success" -> "Content added")
+            })
+          }
         }
   }
 
@@ -384,6 +386,12 @@ object ContentController extends Controller {
     content.setSetting(prefix + "enabledAnnotationDocuments", enabledAnnotationDocuments).save
   }
 
+  def setTextSettings(content: Content, course: Option[Course] = None)(implicit request: Request[Map[String, Seq[String]]]) {
+    val prefix = course.map(c => "course_" + c.id.get + ":").getOrElse("")
+    val enabledAnnotationDocuments = request.body.get("annotationDocs").map(_.mkString(",")).getOrElse("")
+    content.setSetting(prefix + "enabledAnnotationDocuments", enabledAnnotationDocuments).save
+  }
+
   def setSettings(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
@@ -399,6 +407,8 @@ object ContentController extends Controller {
                 setAudioSettings(content)
               if (contentType == 'image)
                 setImageSettings(content)
+              if (contentType == 'text)
+                setTextSettings(content)
 
               Redirect(routes.ContentController.view(id)).flashing("success" -> "Settings updated.")
             } else
