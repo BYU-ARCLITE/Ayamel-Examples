@@ -53,23 +53,24 @@ object VideoTools {
 
   def generateThumbnail(videoUrl: String): Future[String] = {
     Future {
-      val reader = ToolFactory.makeReader(videoUrl)
-
-      // stipulate that we want BufferedImages created in BGR 24bit color space
-      reader.setBufferedImageTypeToGenerate(BufferedImage.TYPE_3BYTE_BGR)
-
-      // Add the image grabber
-      val filename = FileUploader.uniqueFilename(videoUrl + ".jpg")
-      val isListener = new ImageSnapListener(filename)
-      reader.addListener(isListener)
-
-      // Read packets until we get a thumbnail
-      while (!isListener.imageGrabbed)
-        reader.readPacket()
-
-      reader.close()
-      isListener.futureUrl
-    }.flatMap(_.map(s => s)) // Combine the futures
+//      val reader = ToolFactory.makeReader(videoUrl)
+//
+//      // stipulate that we want BufferedImages created in BGR 24bit color space
+//      reader.setBufferedImageTypeToGenerate(BufferedImage.TYPE_3BYTE_BGR)
+//
+//      // Add the image grabber
+//      val filename = FileUploader.uniqueFilename(videoUrl + ".jpg")
+//      val isListener = new ImageSnapListener(filename)
+//      reader.addListener(isListener)
+//
+//      // Read packets until we get a thumbnail
+//      while (!isListener.imageGrabbed)
+//        reader.readPacket()
+//
+//      reader.close()
+//      isListener.futureUrl
+      ""
+    }//.flatMap(_.map(s => s)) // Combine the futures
   }
 
 }

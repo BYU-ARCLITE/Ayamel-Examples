@@ -1,37 +1,13 @@
-(function (scope) {
+var TextTranslator = (function () {
     "use strict";
 
     /**
-     * The translation engine object. This will be used to build specific translation services
-     * @constructor
-     */
-    function TranslationEngine(name, service) {
-        this.name = name || "Unknown";
-
-        /**
-         * The service function should accept a string and return the translated text. Can be formatted HTML.
-         * @param text The text to be translated
-         * @param srcLang The source language of the text
-         * @param destLang The destination or desired language of the translation
-         * @param callback The callback the result will be passed to
-         * @param error This is a callback which is called if the translation failed
-         */
-        this.service = service || function (text, srcLang, destLang, callback, error) {
-            throw "Undefined translation engine service.";
-        };
-    }
-    scope.TranslationEngine = TranslationEngine;
-
-    /**
      * The text translator object
-     * @param element
-     * @param tab
      * @constructor
      */
-    function TextTranslator(element, tab) {
-        this.element = element;
-        this.tab = tab;
+    function TextTranslator() {
         this.translationEngines = [];
+        this.eventListeners = [];
     }
 
     /**
@@ -54,45 +30,47 @@
      * @param destLang
      */
     TextTranslator.prototype.attach = function attach(DOMNode, srcLang, destLang) {
-        var translator = this;
+        var _this = this;
         $(DOMNode).mouseup(function () {
             // Get the text selection
             var text = window.getSelection().toString().trim();
 
             // Translate it if it's not empty
             if (text !== '') {
-                translator.translate(text, srcLang, destLang);
+                _this.translate(text, srcLang, destLang);
             }
         });
     };
+
     TextTranslator.prototype.translate = function translate(text, srcLang, destLang, element) {
-        var translator = this;
-        element = element || translator.element;
+        var _this = this;
+        element = element || _this.element;
 
         // The error function. For now, just alert and say there was a problem.
         function error() {
             alert("Error translating: " + text);
         }
 
-        // The success function. For now, just append the results to the designated element
-        function success(result) {
-            var code = "<div><strong>" + text + ":</strong><br />" + result + "</div>";
-
-            if (translator.tab) {
-                $(translator.tab).tab("show");
-            }
-
-            $(element).append(code);
+        // The success function. Creates and dispatches an event
+        function success(results, engine) {
+            var event = {
+                sourceText: text,
+                translations: results,
+                engine: engine
+            };
+            _this.eventListeners.forEach(function (callback) {
+                callback(event);
+            });
         }
 
         // Recursively go through the translation engines until we either get a translation or hit the end
         function callEngine(index) {
-            if (index >= translator.translationEngines.length) {
+            if (index >= _this.translationEngines.length) {
                 error();
             } else {
-                translator.translationEngines[index][0].service(text, srcLang, destLang, function (result) {
+                _this.translationEngines[index][0].service(text, srcLang, destLang, function (results, engine) {
                     // This engine successfully translated. Display the results
-                    success(result);
+                    success(results, engine);
                 }, function () {
                     // This engine failed, so call the next one
                     callEngine(index + 1);
@@ -102,5 +80,10 @@
 
         callEngine(0);
     };
-    scope.TextTranslator = TextTranslator;
-}(window));
+
+    TextTranslator.prototype.addTranslationListener = function(callback) {
+        this.eventListeners.push(callback);
+    };
+
+    return TextTranslator;
+}());

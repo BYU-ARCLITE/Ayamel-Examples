@@ -6,8 +6,8 @@
         $.ajax(url, {
             dataType: "json",
             success: function (data) {
-                var result = data.entries.join(", ");
-                callback(result);
+                var results = data.entries;
+                callback(results, "(From the ARCLITE Dictionaries)");
             },
             error: function (data) {
                 error();
