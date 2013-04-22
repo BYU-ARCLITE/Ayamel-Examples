@@ -34,10 +34,15 @@
 
 <div class="contentItem">
     <div class="well">
-        <a href="@call" class="contentEntry @content.contentType.name @classes.mkString(" ")" data-toggle="tooltip" title="@content.name" style="@thumbnail"></a>
-        <a href="@call">
-            <div class="contentItemName">@content.name</div>
-        </a>
+        <div class="row-fluid">
+            <div class="span4"><a href="@call" class="contentEntry @content.contentType.name @classes.mkString(" ")" data-toggle="tooltip" title="@content.name" style="@thumbnail"></a></div>
+            <div class="span8">
+                <a href="@call">
+                    <div class="contentItemName">@content.name</div>
+                </a>
+            </div>
+        </div>
+
         <div class="contentIcons">
             @captions
             @annotations
