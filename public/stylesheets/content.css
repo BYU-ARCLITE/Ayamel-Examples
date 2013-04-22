@@ -182,3 +182,15 @@
 .boxDrawingCanvas.drawable {
     cursor: crosshair;
 }
+
+/* Text Document */
+
+#textHolder {
+    width: auto;
+    word-break: normal;
+    word-wrap: normal;
+    white-space: pre;
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: 300px;
+}

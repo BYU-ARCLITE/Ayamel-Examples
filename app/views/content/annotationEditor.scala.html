@@ -31,123 +31,128 @@
     <script type="text/javascript" src="@routes.Assets.at("TimedText/TextTrackCue.js")"></script>
     <script type="text/javascript" src="@routes.Assets.at("TimedText/WebVTT.js")"></script>
 
-
-    <!-- Annotations -->
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/BoxDrawingCanvas.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/old/SimpleAnnotator.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/AnnotationRenderers.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/AnnotationEditor.js")"></script>
-
     <!-- Content rendering -->
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/old/mustache.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/TranscriptDisplay.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/ContentLayoutManager.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/ContentRenderer.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/PlaylistRenderer.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/mustache.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/BoxDrawingCanvas.js")"></script>
 
-    <!-- OAuth and Cryptography -->
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/sha1.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/oauth.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/OAuthSigner.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/contentRendering/ContentLayoutManager.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/contentRendering/ContentRenderer.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/contentRendering/TranscriptDisplay.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/contentRendering/ImageRenderer.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/contentRendering/TextRenderer.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/contentRendering/VideoRenderer.js")"></script>
 
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/fileFix.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/annotating/ImageAnnotation.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/annotating/TextAnnotation.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/annotating/AnnotationManifest.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/annotating/ImageAnnotator.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/annotating/TextAnnotator.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/annotating/AnnotationLoader.js")"></script>
+
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/annotationEditing/AnnotationEditor.js")"></script>
 
     <div class="padded">
 
         <h1><i class="@contentIcons(content.contentType)"></i> @content.name <small>Edit Annotations</small></h1>
 
-        <div class="row-fluid">
-            <div class="span8">
-                @if(content.contentType == 'image) {
-                    <div id="contentHolder" class="@content.contentType.name"></div>
-                }
-                @if(content.contentType == 'video || content.contentType == 'audio || content.contentType == 'text) {
-                    <div class="row-fluid">
-                        <div class="span6">
-                            <div id="annotationHolder"></div>
-                        </div>
-                        <div class="span6">
-                            <div id="transcriptHolder"></div>
-                        </div>
-                    </div>
-                }
-            </div>
-            <div class="span4">
-                <div class="well" id="activeAnnotation">
-                    <h2>Active Annotation</h2>
+        <div id="annotationEditor"></div>
+        @*<div class="row-fluid">*@
+            @*<div class="span8">*@
+                @*@if(content.contentType == 'image) {*@
+                    @*<div id="contentHolder" class="@content.contentType.name"></div>*@
+                @*}*@
+                @*@if(content.contentType == 'video || content.contentType == 'audio || content.contentType == 'text) {*@
+                    @*<div class="row-fluid">*@
+                        @*<div class="span6">*@
+                            @*<div id="annotationHolder"></div>*@
+                        @*</div>*@
+                        @*<div class="span6">*@
+                            @*<div id="transcriptHolder"></div>*@
+                        @*</div>*@
+                    @*</div>*@
+                @*}*@
+            @*</div>*@
+            @*<div class="span4">*@
+                @*<div class="well" id="activeAnnotation">*@
+                    @*<h2>Active Annotation</h2>*@
 
-                    <form>
-                        @if(content.contentType == 'video || content.contentType == 'audio || content.contentType == 'text) {
-                            <div class="control-group">
-                                <label class="control-label" for="regex">Regular Expression</label>
-                                <div class="controls">
-                                    <input type="text" id="regex" name="regex" placeholder="Regular Expression">
-                                </div>
-                            </div>
-                        }
-                        <div class="control-group">
-                            <label class="control-label" for="annotationType">Annotation Type</label>
-                            <div class="controls">
-                                <select id="annotationType">
-                                    <option value="text">Text/HTML</option>
-                                    <option value="image">Image</option>
-                                    <option value="content">Content</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="control-group">
-                            <label class="control-label" for="annotationValue">Value</label>
-                            <div class="controls">
-                                <input id="annotationValue" type="text" />
-                            </div>
-                        </div>
-                        <div class="control-group">
-                            <div class="controls">
-                                <button class="btn btn-blue" id="updateAnnotation"><i class="icon-refresh"></i> Update</button>
-                                <button class="btn btn-magenta" id="deleteAnnotation"><i class="icon-trash"></i> Delete</button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
+                    @*<form>*@
+                        @*@if(content.contentType == 'video || content.contentType == 'audio || content.contentType == 'text) {*@
+                            @*<div class="control-group">*@
+                                @*<label class="control-label" for="regex">Regular Expression</label>*@
+                                @*<div class="controls">*@
+                                    @*<input type="text" id="regex" name="regex" placeholder="Regular Expression">*@
+                                @*</div>*@
+                            @*</div>*@
+                        @*}*@
+                        @*<div class="control-group">*@
+                            @*<label class="control-label" for="annotationType">Annotation Type</label>*@
+                            @*<div class="controls">*@
+                                @*<select id="annotationType">*@
+                                    @*<option value="text">Text/HTML</option>*@
+                                    @*<option value="image">Image</option>*@
+                                    @*<option value="content">Content</option>*@
+                                @*</select>*@
+                            @*</div>*@
+                        @*</div>*@
+                        @*<div class="control-group">*@
+                            @*<label class="control-label" for="annotationValue">Value</label>*@
+                            @*<div class="controls">*@
+                                @*<input id="annotationValue" type="text" />*@
+                            @*</div>*@
+                        @*</div>*@
+                        @*<div class="control-group">*@
+                            @*<div class="controls">*@
+                                @*<button class="btn btn-blue" id="updateAnnotation"><i class="icon-refresh"></i> Update</button>*@
+                                @*<button class="btn btn-magenta" id="deleteAnnotation"><i class="icon-trash"></i> Delete</button>*@
+                            @*</div>*@
+                        @*</div>*@
+                    @*</form>*@
+                @*</div>*@
 
-                <h2>Save Annotations</h2>
-                <form id="saveAnnotationsForm" method="post" action="@routes.ContentController.saveAnnotations(content.id.get)">
-                    <div class="control-group">
-                        <label class="control-label" for="title">Title</label>
-                        <div class="controls">
-                            <input type="text" id="title" name="title" placeholder="Title">
-                        </div>
-                    </div>
-                    <input id="saveAnnotations" type="hidden" name="annotations"/>
-                    <div class="control-group">
-                        <div class="controls">
-                            <button type="submit" class="btn btn-blue">Save</button>
-                            <a class="btn" href="@routes.ContentController.view(content.id.get)">Cancel</a>
-                        </div>
-                    </div>
-                </form>
-                <form id="updateAnnotationsForm" method="post" action="@routes.ContentController.saveAnnotations(content.id.get)">
-                    <input id="filename" type="hidden" name="filename"/>
-                    <input id="updateAnnotations" type="hidden" name="annotations"/>
-                    <div class="control-group">
-                        <div class="controls">
-                            <button type="submit" class="btn btn-blue"><i class="icon-save"></i> Save Changes</button>
-                            <a class="btn" href="@routes.ContentController.view(content.id.get)">Cancel</a>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
+                @*<h2>Save Annotations</h2>*@
+                @*<form id="saveAnnotationsForm" method="post" action="@routes.ContentController.saveAnnotations(content.id.get)">*@
+                    @*<div class="control-group">*@
+                        @*<label class="control-label" for="title">Title</label>*@
+                        @*<div class="controls">*@
+                            @*<input type="text" id="title" name="title" placeholder="Title">*@
+                        @*</div>*@
+                    @*</div>*@
+                    @*<input id="saveAnnotations" type="hidden" name="annotations"/>*@
+                    @*<div class="control-group">*@
+                        @*<div class="controls">*@
+                            @*<button type="submit" class="btn btn-blue">Save</button>*@
+                            @*<a class="btn" href="@routes.ContentController.view(content.id.get)">Cancel</a>*@
+                        @*</div>*@
+                    @*</div>*@
+                @*</form>*@
+                @*<form id="updateAnnotationsForm" method="post" action="@routes.ContentController.saveAnnotations(content.id.get)">*@
+                    @*<input id="filename" type="hidden" name="filename"/>*@
+                    @*<input id="updateAnnotations" type="hidden" name="annotations"/>*@
+                    @*<div class="control-group">*@
+                        @*<div class="controls">*@
+                            @*<button type="submit" class="btn btn-blue"><i class="icon-save"></i> Save Changes</button>*@
+                            @*<a class="btn" href="@routes.ContentController.view(content.id.get)">Cancel</a>*@
+                        @*</div>*@
+                    @*</div>*@
+                @*</form>*@
+            @*</div>*@
+        @*</div>*@
 
         <script type="text/javascript">
             $(function() {
 
-                // Set up the playlist renderer
-                PlaylistRenderer.setInfo(
-                    "@dataAccess.PlayGraph.host",
-                    ["@dataAccess.PlayGraph.playerKey.consumerKey", "@dataAccess.PlayGraph.playerKey.consumerSecret"]
-                );
+                ContentRenderer.setResourceLibraryUrl("@resourceLibraryUrl");
+                var content = @Html(content.toJson.toString());
 
+                var $annotationEditor = $("#annotationEditor");
+                var editor = new AnnotationEditor({
+                    $container: $annotationEditor,
+                    content: content,
+                    resourceLibraryUrl : "@resourceLibraryUrl"
+                });
+
+                /*
                 // Set up the environment
                 ContentRenderer.setResourceLibraryUrl("@resourceLibraryUrl");
 
@@ -171,6 +176,8 @@
                 if (content.contentType === "text") {
                     AnnotationEditor.bindText(content, resourceLibraryUrl);
                 }
+
+                */
             });
         </script>
 

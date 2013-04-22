@@ -52,7 +52,7 @@ var TranscriptDisplay = (function() {
 
         // Finalize
         var $element =  $('<div id="transcriptDisplay"></div>').append(header + content);
-        args.$holder.append($element);
+        args.$holder.html($element);
 
         // Enable the tabs
         $element.find("a").click(function (e) {

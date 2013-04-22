@@ -45,5 +45,15 @@ var ImageAnnotation = (function(){
         }
     };
 
+    ImageAnnotation.prototype.isEqualTo = function(annotation) {
+        var locationsMatch =
+            this.location[0][0] === annotation.location[0][0] &&
+            this.location[0][1] === annotation.location[0][1] &&
+            this.location[1][0] === annotation.location[1][0] &&
+            this.location[1][1] === annotation.location[1][1];
+        var dataMatch = this.data.type == annotation.data.type && this.data.value == annotation.data.value;
+        return locationsMatch && dataMatch;
+    };
+
     return ImageAnnotation;
 }());

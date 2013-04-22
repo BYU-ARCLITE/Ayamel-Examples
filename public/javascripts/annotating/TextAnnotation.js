@@ -34,5 +34,11 @@ var TextAnnotation = (function(){
         }
     };
 
+    TextAnnotation.prototype.isEqualTo = function(annotation) {
+        var regexMatch = this.regex.source === annotation.regex.source;
+        var dataMatch = this.data.type === annotation.data.type && this.data.value === annotation.data.value;
+        return regexMatch && dataMatch;
+    };
+
     return TextAnnotation;
 }());
