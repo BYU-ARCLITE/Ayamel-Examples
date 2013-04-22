@@ -5,7 +5,7 @@
  * Time: 11:01 AM
  * To change this template use File | Settings | File Templates.
  */
-var ImageRenderer = (function(ContentRenderer){
+var ImageRenderer = (function(){
 
     function createLayout(args) {
         var $imgHolder = $('<div id="imgHolder"></div>');
@@ -55,13 +55,15 @@ var ImageRenderer = (function(ContentRenderer){
                     args.image = image;
 
                     // Add annotations
-                    ImageAnnotator.annotate(args);
+                    if (args.annotate) {
+                        ImageAnnotator.annotate(args);
+                    }
 
                     if (args.callback) {
-                        args.callback();
+                        args.callback(args);
                     }
                 });
             });
         }
     };
-}(ContentRenderer));
+}());

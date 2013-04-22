@@ -9,12 +9,17 @@ var ImageAnnotator = (function() {
     return {
         annotate: function (args) {
             var canvas = new BoxDrawingCanvas(args.image, args.layout.$imgHolder);
+            if (args.drawable) {
+                canvas.drawable = true;
+            }
 
             args.manifests.forEach(function (manifest) {
                 manifest.annotations.forEach(function (annotation) {
                     annotation.annotate(canvas, args.filter);
                 });
             });
+
+            return canvas;
         }
     };
 }());

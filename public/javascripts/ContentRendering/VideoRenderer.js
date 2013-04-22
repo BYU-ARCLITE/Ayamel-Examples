@@ -37,9 +37,106 @@ var VideoRenderer = (function() {
                 } else {
                     layout = ContentLayoutManager.onePanel($(args.holder));
                 }
+                break;
+            case 3:
+                if (showTranscript(args)) {
+                    panes = ContentLayoutManager.twoPanel($(args.holder), ["Definitions", "Transcript"]);
+                    layout = {
+                        $player: panes.$player,
+                        $definitions: panes.Definitions.$content,
+                        $definitionsTab: panes.Definitions.$tab,
+                        $transcript: panes.Transcript.$content
+                    };
+                } else {
+                    panes = ContentLayoutManager.twoPanel($(args.holder), ["Definitions"]);
+                    layout = {
+                        $player: panes.$player,
+                        $definitions: panes.$Definitions
+                    };
+                }
+                break;
+            case 4:
+                if (showTranscript(args)) {
+                    panes = ContentLayoutManager.twoPanel($(args.holder), ["Definitions", "Transcript", "Annotations"]);
+                    layout = {
+                        $player: panes.$player,
+                        $definitions: panes.Definitions.$content,
+                        $definitionsTab: panes.Definitions.$tab,
+                        $annotations: panes.Annotations.$content,
+                        $annotationsTab: panes.Annotations.$tab,
+                        $transcript: panes.Transcript.$content
+                    };
+                } else {
+                    panes = ContentLayoutManager.twoPanel($(args.holder), ["Definitions", "Annotations"]);
+                    layout = {
+                        $player: panes.$player,
+                        $definitions: panes.Definitions.$content,
+                        $definitionsTab: panes.Definitions.$tab,
+                        $annotations: panes.Annotations.$content,
+                        $annotationsTab: panes.Annotations.$tab
+                    };
+                }
         }
 
         return layout;
+    }
+
+    function createTranslator(args) {
+        if (getLevel(args) >= 3) {
+            // Create the translator
+            var translator = new TextTranslator();
+            translator.addTranslationEngine(arcliteTranslationEngine, 1);
+            translator.addTranslationEngine(wordReferenceTranslationEngine, 2);
+            translator.addTranslationEngine(googleTranslationEngine, 3);
+
+            // Add translation listeners
+            translator.addTranslationListener(function (event) {
+
+                var sourceText = event.sourceText;
+                var translations = event.translations;
+                var engine = event.engine;
+
+                var html =
+                    '<div class="translationResult">' +
+                        '<div class="sourceText">' + sourceText + '</div>' +
+                        '<div class="translations">' + translations.join(", ") + '</div>' +
+                        '<div class="engine">' + engine + '</div>' +
+                    '</div>';
+                args.layout.$definitions.append(html);
+
+                if (args.layout.$definitionsTab) {
+                    args.layout.$definitionsTab.tab("show");
+                }
+            });
+
+            return translator;
+        }
+        return null;
+    }
+
+    function createAnnotator(args) {
+
+        if (getLevel(args) >= 4) {
+
+            return new TextAnnotator({
+                manifests: args.manifests,
+                filter: function ($annotation, data) {
+                    $annotation.click(function() {
+                        if (data.type === "text") {
+                            args.layout.$annotations.html(data.value);
+                        }
+
+                        if (data.type === "image") {
+                            args.layout.$annotations.html('<img src="' + data.value + '">');
+                        }
+
+                        args.layout.$annotationsTab.tab("show");
+                    });
+                    return $annotation;
+                }
+            });
+        }
+        return null;
     }
 
     function setupVideoPlayer(args, callback) {
@@ -59,7 +156,23 @@ var VideoRenderer = (function() {
                 aspectRatio: 45,
                 resource: args.resource,
                 components: components,
-                captions: captions
+                captions: captions,
+                renderCue: function (cue) {
+                    var node = document.createElement('div');
+                    node.appendChild(cue.getCueAsHTML(cue.track.kind==='subtitles'));
+
+                    // Attach the translator
+                    if (args.translator) {
+                        args.translator.attach(node, cue.track.language, "en");
+                    }
+
+                    // Add annotations
+                    if (args.annotator) {
+                        args.annotator.annotate($(node));
+                    }
+
+                    return {node:node};
+                }
             });
 
             callback(videoPlayer);
@@ -67,12 +180,27 @@ var VideoRenderer = (function() {
     }
 
     function setupTranscripts(args) {
-        var transcriptDisplay = new TranscriptDisplay({
-            transcripts: args.transcripts,
-            $holder: args.layout.$transcript
-        });
-        transcriptDisplay.bindToMediaPlayer(args.videoPlayer);
-        return transcriptDisplay;
+        if (showTranscript(args)) {
+            var transcriptDisplay = new TranscriptDisplay({
+                transcripts: args.transcripts,
+                $holder: args.layout.$transcript,
+                filter: function (cue, $cue) {
+
+                    // Attach the translator
+                    if (args.translator) {
+                        args.translator.attach($cue[0], cue.track.language, "en");
+                    }
+
+                    // Add annotations
+                    if (args.annotator) {
+                        args.annotator.annotate($cue);
+                    }
+                }
+            });
+            transcriptDisplay.bindToMediaPlayer(args.videoPlayer);
+            return transcriptDisplay;
+        }
+        return null;
     }
 
     return {
@@ -83,29 +211,30 @@ var VideoRenderer = (function() {
                 args.transcripts = transcripts;
 
                 // Load the annotations
-                ContentRenderer.getAnnotations(args, function (annotations) {
-                    args.annotations = annotations;
+                ContentRenderer.getAnnotations(args, function (manifests) {
+                    args.manifests = manifests;
 
                     // Create the layout
                     args.layout = createLayout(args);
+
+                    // Create the translator
+                    args.translator = createTranslator(args);
+
+                    // Create the annotator
+                    args.annotator = createAnnotator(args);
 
                     // Set up the video player
                     setupVideoPlayer(args, function (videoPlayer) {
                         args.videoPlayer = videoPlayer;
 
                         // Set up the transcription
-                        setupTranscripts(args, function() {
+                        setupTranscripts(args);
 
-                            if (args.callback) {
-                                args.callback();
-                            }
-
-                        });
+                        if (args.callback) {
+                            args.callback();
+                        }
                     });
                 })
-            });
-            var file = ContentRenderer.findFile(args.resource, function (file) {
-                return file.representation === "original";
             });
         }
     };
