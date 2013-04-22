@@ -38,6 +38,28 @@ var TextRenderer = (function(){
                     success: function(text) {
                         args.layout.$textHolder.text(text);
 
+                        // Annotate the document
+                        if (args.annotate) {
+                            args.filter = function($annotation, data) {
+
+                                // Show the annotations in a popover
+                                var content = data.value;
+                                if (data.type === "image") {
+                                    content = '<img src="' + data.value + '">';
+                                }
+                                $annotation.popover({
+                                    placement: "bottom",
+                                    html: true,
+                                    title: $annotation.text(),
+                                    content: content,
+                                    container: "body",
+                                    trigger: "hover"
+                                });
+                            };
+                            var translator = new TextAnnotator(args);
+                            translator.annotate(args.layout.$textHolder);
+                        }
+
                         if (args.callback) {
                             args.callback(args);
                         }

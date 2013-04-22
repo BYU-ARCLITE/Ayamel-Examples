@@ -1,0 +1,47 @@
+@(content: models.Content, course: Course, resourceLibraryUrl: String)
+
+<form id="courseSettingsForm" class="form-horizontal" method="post" action="@routes.ContentController.setCourseSettings(content.id.get, course.id.get)">
+    <input type="hidden" name="contentType" value="text">
+
+    <div class="control-group">
+        <label class="control-label" for="courseAnnotationDocs">Enabled Annotations</label>
+        <div class="controls">
+            <select multiple="multiple" name="annotationDocs" id="courseAnnotationDocs">
+            </select>
+        </div>
+    </div>
+    <input type="submit" style="position: absolute; left: -9999px; width: 1px; height: 1px;"/>
+</form>
+
+<script type="text/javascript">
+    $(function() {
+        var content = @Html(content.toJson.toString());
+        var url = "@resourceLibraryUrl/@content.resourceId";
+        var coursePrefix = "course_@{course.id.get}:";
+
+        var allowedAnnotationDocs = [];
+        if (content.settings.enabledAnnotationDocuments) {
+            allowedAnnotationDocs = content.settings.enabledAnnotationDocuments.split(",");
+        }
+
+        var annotationDocs = [];
+        if (content.settings[coursePrefix + "enabledAnnotationDocuments"]) {
+            annotationDocs = content.settings[coursePrefix + "enabledAnnotationDocuments"].split(",");
+        }
+
+        ResourceLibrary.load(url, function(resource) {
+
+            // Load the annotations
+            resource.getAnnotations(function (annotations) {
+                var $annotationDocs = $("#courseAnnotationDocs");
+                annotations.forEach(function(annotationDoc) {
+                    if (allowedAnnotationDocs.indexOf(annotationDoc.id) >= 0) {
+                        var html = '<option value="' + annotationDoc.id + '">' + annotationDoc.title + '</option>';
+                        $annotationDocs.append(html);
+                    }
+                });
+                $annotationDocs.val(annotationDocs);
+            });
+        });
+    });
+</script>

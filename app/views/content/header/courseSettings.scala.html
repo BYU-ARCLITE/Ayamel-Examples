@@ -19,6 +19,9 @@
             @if(content.contentType == 'image) {
                 @views.html.content.header.courseImageSettings(content, course.get, resourceLibraryUrl)
             }
+            @if(content.contentType == 'image) {
+                @views.html.content.header.courseTextSettings(content, course.get, resourceLibraryUrl)
+            }
             @if(content.contentType == 'playlist) {
                 <em>There are no settings defined for this content type.</em>
             }
