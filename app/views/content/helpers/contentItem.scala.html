@@ -14,4 +14,35 @@
         routes.ContentController.view(content.id.get)
 }
 
-<a href="@call" class="contentEntry @content.contentType.name @classes.mkString(" ")" data-toggle="tooltip" title="@content.name" style="@thumbnail"></a>
+@playbackLevel = {
+    @if(content.contentType == 'video) {
+        <span class="badge badge-magenta" title="Video playback at level @content.level">@content.level</span>
+    }
+}
+
+@captions = {
+    @if((content.contentType == 'video || content.contentType == 'audio) && content.level.toInt >= 2 && !content.enabledCaptionTracks.isEmpty) {
+        <img src="@routes.Assets.at("images/videos/captions.png")" title="This @content.contentType.name has captions" />
+    }
+}
+
+@annotations = {
+    @if(!content.enabledAnnotationDocuments.isEmpty) {
+        <i class="icon-tags" title="This @content.contentType.name has annotations"></i>
+    }
+}
+
+<div class="contentItem">
+    <div class="well">
+        <a href="@call" class="contentEntry @content.contentType.name @classes.mkString(" ")" data-toggle="tooltip" title="@content.name" style="@thumbnail"></a>
+        <a href="@call">
+            <div class="contentItemName">@content.name</div>
+        </a>
+        <div class="contentIcons">
+            @captions
+            @annotations
+            @playbackLevel
+        </div>
+    </div>
+</div>
+
