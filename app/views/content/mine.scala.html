@@ -10,7 +10,11 @@
 
     <div class="padded">
 
+
         <h1>My Content</h1>
+
+        <a href="@routes.ContentController.createPage("file")" class="btn btn-blue">Add Content</a>
+
         @views.html.content.helpers.contentList(user.getContent, 'video, "Videos", "icon-film")
         @views.html.content.helpers.contentList(user.getContent, 'audio, "Audio", "icon-volume-up")
         @views.html.content.helpers.contentList(user.getContent, 'image, "Images", "icon-picture")
