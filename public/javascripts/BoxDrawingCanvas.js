@@ -201,6 +201,14 @@ var BoxDrawingCanvas = (function(){
 
                     if (resizeDir === 0) {
                         $(this).css("cursor", "inherit");
+                    } else {
+                        event.stopPropagation();
+
+                        // Create and dispatch an event
+                        var newEvent = document.createEvent('HTMLEvents');
+                        newEvent.initEvent("resizestart", true, true);
+                        newEvent.box = _this;
+                        this.dispatchEvent(newEvent);
                     }
                 }
             }).mousedown(function (event) {
@@ -244,7 +252,7 @@ var BoxDrawingCanvas = (function(){
 
                     // Create and dispatch an event
                     var newEvent = document.createEvent('HTMLEvents');
-                    newEvent.initEvent("resize", true, true);
+                    newEvent.initEvent("resizeupdate", true, true);
                     newEvent.size = {
                         x1: x1,
                         y1: y1,
@@ -260,7 +268,7 @@ var BoxDrawingCanvas = (function(){
 
                     // Create and dispatch an event
                     var newEvent = document.createEvent('HTMLEvents');
-                    newEvent.initEvent("resize", true, true);
+                    newEvent.initEvent("resizeend", true, true);
                     newEvent.size = {
                         x1: x1,
                         y1: y1,

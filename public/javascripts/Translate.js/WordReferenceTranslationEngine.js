@@ -14,10 +14,6 @@
                 holder.push(translation.FourthTranslation.term);
         }
 
-        function formatEntries(entries) {
-            return entries.join(", ") + ' <a href="http://www.wordreference.com/' + srcLang + destLang + '/' + text + '">at WordReference.com</a>';
-        }
-
         $.ajax(url, {
             dataType: "json",
             success: function(result) {
@@ -47,8 +43,8 @@
                     }
 
                     // Return the translations
-                    result = formatEntries(entries);
-                    callback(result);
+                    var link = '<a href="http://www.wordreference.com/' + srcLang + destLang + '/' + text + '">at WordReference.com</a>';
+                    callback(entries, link);
                 } catch(e) {
                     error();
                 }

@@ -39,6 +39,9 @@ object ContentManagement {
           createVideo(videoInfo, owner)
         })
       }
+      case 'text => {
+        createText(info, owner)
+      }
       case _ => Future { null }
     }
   }
@@ -82,6 +85,26 @@ object ContentManagement {
 
       // Create the content and set the user and the owner
       val content = Content(NotAssigned, info.title, 'audio, info.thumbnail.getOrElse(""), resourceId).save
+      owner.addContent(content)
+      content
+    })
+  }
+
+  /**
+   * Creates a text content object with a corresponding resource object from information
+   * @param info A ContentDescriptor which contains information about the content
+   * @param owner The user who is to own the audio
+   * @return The content object in a future
+   */
+  def createText(info: ContentDescriptor, owner: User): Future[Content] = {
+    // Create the resource
+    ResourceHelper.createResourceWithUri(info.title, info.description, info.keywords, info.categories, "text",
+      info.url, info.mime).map(resource => {
+
+      val resourceId = (resource \ "id").as[String]
+
+      // Create the content and set the user and the owner
+      val content = Content(NotAssigned, info.title, 'text, info.thumbnail.getOrElse(""), resourceId).save
       owner.addContent(content)
       content
     })

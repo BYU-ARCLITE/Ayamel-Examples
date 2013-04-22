@@ -5,7 +5,7 @@
  * Time: 2:31 PM
  * To change this template use File | Settings | File Templates.
  */
-var VideoLayoutManager = (function() {
+var ContentLayoutManager = (function() {
     "use strict";
 
     var noTabs = '<h2>{{name}}</h2><div id="{{name}}"></div>';
@@ -58,7 +58,7 @@ var VideoLayoutManager = (function() {
             var tabs = generateTabs(tabNames);
             var html = Mustache.to_html(twoPanelLayout, {}, {tabs: tabs});
             var $layout = $(html);
-            $container.html($layout)
+            $container.html($layout);
 
             // Return the player and tab panes
             var panes = {

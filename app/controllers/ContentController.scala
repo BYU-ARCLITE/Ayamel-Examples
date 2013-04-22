@@ -304,7 +304,7 @@ object ContentController extends Controller {
               val title = request.body("title")(0)
               val description = request.body("description")(0)
               val keywords = request.body("keywords")(0)
-              val categories = request.body("categories")
+              val categories = request.body.get("categories").map(_.toList).getOrElse(Nil)
 
               // Create the JSON object
               val obj = Json.obj(
@@ -617,12 +617,13 @@ object ContentController extends Controller {
               val title = request.body.get("title").map(_(0))
               val annotations = request.body("annotations")(0)
               val stream = new ByteArrayInputStream(annotations.getBytes("UTF-8"))
+              val length = annotations.getBytes("UTF-8").size // Don't use string length. Breaks if there are 2-byte characters
               val mime = "application/json"
               val filename = request.body.get("filename").map(_(0)).getOrElse(FileUploader.uniqueFilename(annotations + ".json"))
 
               Async {
                 // Upload the annotations
-                FileUploader.uploadStream(stream, filename, annotations.length, mime).flatMap { url =>
+                FileUploader.uploadStream(stream, filename, length, mime).flatMap { url =>
 
                   // If there is a title defined then this is a new annotation document
                   if (title.isDefined) {

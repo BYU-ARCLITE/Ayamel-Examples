@@ -5,6 +5,7 @@
         'video -> "icon-film",
         'audio -> "icon-volume-up",
         'image -> "icon-picture",
+        'text -> "icon-file",
         'playlist -> "icon-list-ol",
         'activity -> "icon-pencil"
     )
@@ -48,21 +49,35 @@
     <script type="text/javascript" src="@routes.Assets.at("TimedText/WebVTT.js")"></script>
 
     <!-- Translation Engines -->
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/Translate.js/TranslationEngine.js")"></script>
     <script type="text/javascript" src="@routes.Assets.at("javascripts/Translate.js/TextTranslator.js")"></script>
     <script type="text/javascript" src="@routes.Assets.at("javascripts/Translate.js/ArcliteTranslationEngine.js")"></script>
     <script type="text/javascript" src="@routes.Assets.at("javascripts/Translate.js/GoogleTranslationEngine.js")"></script>
     <script type="text/javascript" src="@routes.Assets.at("javascripts/Translate.js/WordReferenceTranslationEngine.js")"></script>
 
     <!-- Annotations -->
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/old/SimpleAnnotator.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/AnnotationRenderers.js")"></script>
+    @*<script type="text/javascript" src="@routes.Assets.at("javascripts/old/SimpleAnnotator.js")"></script>*@
+    @*<script type="text/javascript" src="@routes.Assets.at("javascripts/AnnotationRenderers.js")"></script>*@
 
     <!-- Content rendering -->
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/old/mustache.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/TranscriptRenderer.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/VideoLayoutManager.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/ContentRenderer.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/PlaylistRenderer.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/mustache.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/BoxDrawingCanvas.js")"></script>
+
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/contentRendering/ContentLayoutManager.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/contentRendering/ContentRenderer.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/contentRendering/TranscriptDisplay.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/contentRendering/ImageRenderer.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/contentRendering/TextRenderer.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/contentRendering/VideoRenderer.js")"></script>
+
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/annotating/ImageAnnotation.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/annotating/TextAnnotation.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/annotating/AnnotationManifest.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/annotating/ImageAnnotator.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/annotating/TextAnnotator.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/annotating/AnnotationLoader.js")"></script>
+
+    @*<script type="text/javascript" src="@routes.Assets.at("javascripts/PlaylistRenderer.js")"></script>*@
 
     <!-- OAuth and Cryptography -->
     <script type="text/javascript" src="@routes.Assets.at("javascripts/sha1.js")"></script>
@@ -98,10 +113,10 @@
             $(function() {
 
                 // Set up the playlist renderer
-                PlaylistRenderer.setInfo(
-                    "@dataAccess.PlayGraph.host",
-                    ["@dataAccess.PlayGraph.playerKey.consumerKey", "@dataAccess.PlayGraph.playerKey.consumerSecret"]
-                );
+                @*PlaylistRenderer.setInfo(*@
+                    @*"@dataAccess.PlayGraph.host",*@
+                    @*["@dataAccess.PlayGraph.playerKey.consumerKey", "@dataAccess.PlayGraph.playerKey.consumerSecret"]*@
+                @*);*@
 
                 // Set up the environment
                 ContentRenderer.setResourceLibraryUrl("@resourceLibraryUrl");
