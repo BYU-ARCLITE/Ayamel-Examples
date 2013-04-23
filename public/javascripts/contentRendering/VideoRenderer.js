@@ -7,6 +7,10 @@
  */
 var VideoRenderer = (function() {
 
+    var translationHighlight;
+    var captionTrackId;
+    var cueNumber;
+
     function getLevel(args) {
         var levelAttr = args.coursePrefix + "level";
         var courseLevel = args.content.settings[levelAttr] || "1";
@@ -92,6 +96,12 @@ var VideoRenderer = (function() {
             // Add translation listeners
             translator.addTranslationListener(function (event) {
 
+                if (translationHighlight === "caption") {
+                    ActivityStreams.predefined.captionTranslation(captionTrackId, cueNumber, event.sourceText);
+                } else {
+                    ActivityStreams.predefined.transcriptionTranslation(captionTrackId, cueNumber, event.sourceText);
+                }
+
                 var sourceText = event.sourceText;
                 var translations = event.translations;
                 var engine = event.engine;
@@ -132,6 +142,19 @@ var VideoRenderer = (function() {
                             args.layout.$annotations.html('<img src="' + data.value + '">');
                         }
 
+                        // Find the annotation doc
+                        var annotationDocId = "unknown";
+                        var text = $annotation.text();
+                        args.manifests.forEach(function (manifest) {
+                            manifest.annotations.forEach(function (annotation) {
+                                if (annotation.data.type === data.type && annotation.data.value === data.value && annotation.regex.test(text)) {
+                                    annotationDocId = manifest.resourceId;
+                                }
+                            });
+                        });
+
+                        ActivityStreams.predefined.viewTextAnnotation(annotationDocId, text);
+
                         args.layout.$annotationsTab.tab("show");
                     });
                     return $annotation;
@@ -165,7 +188,19 @@ var VideoRenderer = (function() {
 
                     // Attach the translator
                     if (args.translator) {
-                        args.translator.attach(node, cue.track.language, "en");
+                        args.translator.attach(node, cue.track.language, "en", function() {
+                            translationHighlight = "caption";
+
+                            // Figure out which caption track was selected
+                            args.transcripts.forEach(function (transcript) {
+                                if (transcript.title === cue.track.label && transcript.language === cue.track.language) {
+                                    captionTrackId = transcript.id;
+                                }
+                            });
+
+                            // Figure out which cue was selected
+                            cueNumber = "" + cue.track.cues.indexOf(cue);
+                        });
                     }
 
                     // Add annotations
@@ -175,6 +210,20 @@ var VideoRenderer = (function() {
 
                     return {node:node};
                 }
+            });
+
+            var playCount = 0;
+            videoPlayer.addEventListener("play", function (event) {
+                // Two events are thrown, so only save on the second
+                playCount = (playCount + 1) % 2;
+                if (playCount) {
+                    var time = "" + videoPlayer.currentTime;
+                    ActivityStreams.predefined.playClick(time);
+                }
+            });
+            videoPlayer.addEventListener("pause", function (event) {
+                var time = "" + videoPlayer.currentTime;
+                ActivityStreams.predefined.pauseClick(time);
             });
 
             callback(videoPlayer);
@@ -190,7 +239,19 @@ var VideoRenderer = (function() {
 
                     // Attach the translator
                     if (args.translator) {
-                        args.translator.attach($cue[0], cue.track.language, "en");
+                        args.translator.attach($cue[0], cue.track.language, "en", function () {
+                            translationHighlight = "transcription";
+
+                            // Figure out which caption track was selected
+                            args.transcripts.forEach(function (transcript) {
+                                if (transcript.title === cue.track.label && transcript.language === cue.track.language) {
+                                    captionTrackId = transcript.id;
+                                }
+                            });
+
+                            // Figure out which cue was selected
+                            cueNumber = "" + cue.track.cues.indexOf(cue);
+                        });
                     }
 
                     // Add annotations

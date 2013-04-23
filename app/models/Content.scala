@@ -153,6 +153,24 @@ case class Content(id: Pk[Long], name: String, contentType: Symbol, thumbnail: S
     "settings" -> settings,
     "authKey" -> authKey
   )
+
+  object cache {
+    var activity: Option[List[Activity]] = None
+
+    def getActivity: List[Activity] = {
+      if (activity.isEmpty)
+        activity = Some(Activity.listByPage("content", "view", id.get))
+      activity.get
+    }
+  }
+
+  def getActivity = cache.getActivity
+
+  def views = getActivity.filter(_.verb == "pageload")
+
+  def translations = getActivity.filter(_.verb == "translate")
+
+  def annotations = getActivity.filter(_.verb == "view annotation")
 }
 
 object Content extends SQLSelectable[Content] {

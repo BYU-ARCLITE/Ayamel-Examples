@@ -1,0 +1,76 @@
+@(content: models.Content, resourceLibraryUrl: String)(implicit request: RequestHeader, user: User)
+
+@moreStyles =  @{
+    List(
+      ("screen", "stylesheets/content.css")
+    )
+}
+
+@main("Ayamel - Content stats", moreStyles) {
+
+    <div class="padded">
+
+        <h1>Content Stats</h1>
+
+        <h2>Basic stats</h2>
+        <table class="table table-bordered">
+            <tr>
+                <th>Views</th>
+                <td>@content.views.size</td>
+            </tr>
+        </table>
+
+        @if(!content.translations.isEmpty) {
+            <h2>Translations</h2>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Text</th>
+                        <th>Component</th>
+                        <th>Caption Track</th>
+                        <th>Caption #</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for(translation <- content.translations) {
+                        <tr>
+                            <td>@translation.getUser.displayName</td>
+                            <td>@translation.activityObject.itemRef</td>
+                            <td>@translation.activityContext.generatorContext.objectType</td>
+                            <td>@translation.activityContext.generatorContext.id</td>
+                            <td>@translation.activityContext.generatorContext.itemRef</td>
+                            <td>@service.TimeTools.prettyTime(translation.published)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+
+        @if(!content.annotations.isEmpty) {
+            <h2>Annotations Viewed</h2>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Text</th>
+                        <th>Annotation Document</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for(annotations <- content.annotations) {
+                        <tr>
+                            <td>@annotations.getUser.displayName</td>
+                            <td>@annotations.activityObject.itemRef</td>
+                            <td>@annotations.activityObject.id</td>
+                            <td>@service.TimeTools.prettyTime(annotations.published)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+
+    </div>
+}

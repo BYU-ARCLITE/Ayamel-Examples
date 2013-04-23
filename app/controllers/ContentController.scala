@@ -216,6 +216,24 @@ object ContentController extends Controller {
         }
   }
 
+  /**
+   * Content stats page
+   */
+  def stats(id: Long) = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+        getContent(id) {
+          content =>
+
+            // Only owners can view stats
+            if (content isEditableBy user) {
+              val resourceLibraryUrl = Play.configuration.getString("resourceLibrary.baseUrl").get
+              Ok(views.html.content.stats(content, resourceLibraryUrl))
+            } else
+              Errors.forbidden
+        }
+  }
+
   def shareAccess(id: Long, authKey: String) = Action {
     implicit request =>
       getContent(id) {

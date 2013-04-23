@@ -4,6 +4,8 @@ import anorm.{~, Pk}
 import dataAccess.sqlTraits.{SQLDeletable, SQLSavable, SQLSelectable}
 import anorm.SqlParser._
 import service.TimeTools
+import play.api.db.DB
+import play.api.Play.current
 
 /**
  * The Activity model is based of the activity stream specification found here:
@@ -67,6 +69,18 @@ case class Activity(id: Pk[Long], actor: Long, verb: String, activityContext: Ac
     delete(Activity.tableName, id)
   }
 
+  object cache {
+    var user: Option[User] = None
+
+    def getUser = {
+      if (user.isEmpty)
+        user = User.findById(actor)
+      user.get
+    }
+  }
+
+  def getUser: User = cache.getUser
+
 }
 
 case class ActivityContext(pageContext: PageContext, generatorContext: ActivityObject)
@@ -112,4 +126,17 @@ object Activity extends SQLSelectable[Activity] {
    * @return The list of activitys
    */
   def list: List[Activity] = list(Activity.tableName, simple)
+
+  /**
+   * Gets all activitys in the DB
+   * @return The list of activitys
+   */
+  def listByPage(category: String, action: String, id: Long): List[Activity] =
+    DB.withConnection {
+      implicit connection =>
+        anorm.SQL("select * from " + tableName +
+          " where pageCategory = {pageCategory} and pageAction = {pageAction} and pageId = {pageId}")
+          .on('pageCategory -> category, 'pageAction -> action, 'pageId -> id)
+          .as(simple *)
+    }
 }
