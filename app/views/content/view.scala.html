@@ -20,6 +20,16 @@
 
 @main("Ayamel - " + content.name, moreStyles) {
 
+    <script type="text/javascript">
+        $(function() {
+            // Register the page for later activity stream calls
+            ActivityStreams.registerPage("content", "view", [@content.id.get][0]);
+
+            // Save the page load
+            ActivityStreams.predefined.pageload();
+        });
+    </script>
+
     <!-- Include the Ayamel css files -->
     <link href="@routes.Assets.at("Ayamel.js/css/stage.css")" media="screen" rel="stylesheet" type="text/css" />
     <link href="@routes.Assets.at("Ayamel.js/css/controlBar.css")" media="screen" rel="stylesheet" type="text/css" />
@@ -100,6 +110,9 @@
             @views.html.content.header.courseSettings(content, course, resourceLibraryUrl)
             @views.html.content.header.addRelatedDocs(content, resourceLibraryUrl)
             @views.html.content.header.edit(content, resourceLibraryUrl)
+            @if(content.isEditableBy(user)) {
+                <a href="@routes.ContentController.stats(content.id.get)" class="btn"><i class="icon-bar-chart"></i> View Stats</a>
+            }
             @views.html.content.header.delete(content)
 
         </div>
@@ -121,7 +134,7 @@
                 ContentRenderer.setResourceLibraryUrl("@resourceLibraryUrl");
 
                 // Render the content
-                var content = @Html(content.toJson.toString());
+                var content = [@Html(content.toJson.toString())][0];
                 var contentHolder = $("#contentHolder")[0];
                 var coursePrefix = "@course.map(c => "course_" + c.id.get + ":").getOrElse("")";
                 ContentRenderer.render({

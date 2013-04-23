@@ -29,7 +29,7 @@ var TextTranslator = (function () {
      * @param srcLang
      * @param destLang
      */
-    TextTranslator.prototype.attach = function attach(DOMNode, srcLang, destLang) {
+    TextTranslator.prototype.attach = function attach(DOMNode, srcLang, destLang, callback) {
         var _this = this;
         $(DOMNode).mouseup(function () {
             // Get the text selection
@@ -38,6 +38,10 @@ var TextTranslator = (function () {
             // Translate it if it's not empty
             if (text !== '') {
                 _this.translate(text, srcLang, destLang);
+
+                if (callback) {
+                    callback(text);
+                }
             }
         });
     };
