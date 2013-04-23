@@ -103,9 +103,11 @@ var VideoRenderer = (function() {
                         '<div class="engine">' + engine + '</div>' +
                     '</div>';
                 args.layout.$definitions.append(html);
+                args.layout.$definitions[0].scrollTop = args.layout.$definitions[0].scrollHeight;
 
                 if (args.layout.$definitionsTab) {
                     args.layout.$definitionsTab.tab("show");
+                    args.layout.$definitions[0].scrollTop = args.layout.$definitions[0].scrollHeight;
                 }
             });
 
