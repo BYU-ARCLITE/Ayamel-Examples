@@ -10,17 +10,26 @@
 
     <div class="padded">
 
+        <div>
+            <h1 class="pull-left">My Content</h1>
+            <a href="@routes.ContentController.createPage("file")" class="btn btn-blue pull-right pad-right-high pad-top-med">Add Content</a>
+        </div>
 
-        <h1>My Content</h1>
+        <div class="clearfix"></div>
 
-        <a href="@routes.ContentController.createPage("file")" class="btn btn-blue">Add Content</a>
-
-        @views.html.content.helpers.contentList(user.getContent, 'video, "Videos", "icon-film")
-        @views.html.content.helpers.contentList(user.getContent, 'audio, "Audio", "icon-volume-up")
-        @views.html.content.helpers.contentList(user.getContent, 'image, "Images", "icon-picture")
-        @views.html.content.helpers.contentList(user.getContent, 'text, "Text", "icon-file")
-        @views.html.content.helpers.contentList(user.getContent, 'playlist, "Playlists", "icon-list-ol")
-        @views.html.content.helpers.contentList(user.getContent, 'activity, "Activities", "icon-pencil")
+        <div id="myContent" class="pad-top-high pad-bottom-high"></div>
+        <script type="text/javascript">
+            $(function() {
+                ContentItemRenderer.renderAll({
+                    content: [@Html(user.getContent.map(_.toJson).mkString(","))],
+                    $holder: $("#myContent"),
+                    format: "auto",
+                    sizing: true,
+                    sorting: true,
+                    filters: ContentItemRenderer.standardFilters
+                });
+            });
+        </script>
 
         <a href="@routes.ContentController.createPage("file")" class="btn btn-blue">Add Content</a>
     </div>

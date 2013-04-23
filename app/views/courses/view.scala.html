@@ -37,11 +37,19 @@
     <div class="padded">
         <div class="row-fluid">
             <div class="span8">
-                @views.html.content.helpers.contentList(course.getContent, 'video, "Videos", "icon-film", course = Some(course))
-                @views.html.content.helpers.contentList(course.getContent, 'audio, "Audio", "icon-volume-up", course = Some(course))
-                @views.html.content.helpers.contentList(course.getContent, 'image, "Images", "icon-picture", course = Some(course))
-                @views.html.content.helpers.contentList(course.getContent, 'playlist, "Playlists", "icon-list-ol", course = Some(course))
-                @views.html.content.helpers.contentList(course.getContent, 'activity, "Activities", "icon-pencil", course = Some(course))
+                <div id="courseContent"></div>
+                <script type="text/javascript">
+                    $(function() {
+                        ContentItemRenderer.renderAll({
+                            content: [@Html(course.getContent.map(_.toJson).mkString(","))],
+                            $holder: $("#courseContent"),
+                            format: "auto",
+                            sizing: true,
+                            sorting: true,
+                            filters: ContentItemRenderer.standardFilters
+                        });
+                    });
+                </script>
 
             </div>
             <div class="span4">
