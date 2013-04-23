@@ -10,12 +10,19 @@
     <div class="padded">
 
         <h1>Public Content</h1>
-        @views.html.content.helpers.contentList(allContent, 'video, "Videos", "icon-film")
-        @views.html.content.helpers.contentList(allContent, 'audio, "Audio", "icon-volume-up")
-        @views.html.content.helpers.contentList(allContent, 'image, "Images", "icon-picture")
-        @views.html.content.helpers.contentList(allContent, 'text, "Text", "icon-file")
-        @views.html.content.helpers.contentList(allContent, 'playlist, "Playlists", "icon-list-ol")
-        @views.html.content.helpers.contentList(allContent, 'activity, "Activities", "icon-pencil")
+        <div id="publicContent"></div>
+        <script type="text/javascript">
+            $(function() {
+                ContentItemRenderer.renderAll({
+                    content: [@Html(allContent.map(_.toJson).mkString(","))],
+                    $holder: $("#publicContent"),
+                    format: "auto",
+                    sizing: true,
+                    sorting: true,
+                    filters: ContentItemRenderer.standardFilters
+                });
+            });
+        </script>
 
     </div>
 }

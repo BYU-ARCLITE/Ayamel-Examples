@@ -1,9 +1,0 @@
-@(contentList: List[models.Content], contentType: Symbol, title: String, icon: String, headerTag: String = "h2", course: Option[Course] = None)
-
-@defining(contentList.filter(_.contentType == contentType)) { filteredContent =>
-    @if(!filteredContent.isEmpty) {
-        <@headerTag><i class="@icon"></i> @title</@headerTag>
-
-        @views.html.content.helpers.contentHolder(filteredContent, course)
-    }
-}

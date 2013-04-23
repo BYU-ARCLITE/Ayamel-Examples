@@ -27,12 +27,21 @@
                 <h2 class="searchHeader"><i class="icon-play-circle"></i> Public Content</h2>
                 @if(contentList.isEmpty) {
                     <em>There were no content results for your search.</em>
+                } else {
+                    <div id="searchContent"></div>
+                    <script type="text/javascript">
+                        $(function() {
+                            ContentItemRenderer.renderAll({
+                                content: [@Html(contentList.map(_.toJson).mkString(","))],
+                                $holder: $("#searchContent"),
+                                format: "auto",
+                                sizing: true,
+                                sorting: true,
+                                filters: ContentItemRenderer.standardFilters
+                            });
+                        });
+                    </script>
                 }
-                @views.html.content.helpers.contentList(contentList, 'video, "Videos", "icon-film", "h3")
-                @views.html.content.helpers.contentList(contentList, 'audio, "Audio", "icon-volume-up", "h3")
-                @views.html.content.helpers.contentList(contentList, 'image, "Images", "icon-picture", "h3")
-                @views.html.content.helpers.contentList(contentList, 'playlist, "Playlists", "icon-list-ol", "h3")
-                @views.html.content.helpers.contentList(contentList, 'activity, "Activities", "icon-pencil", "h3")
             </div>
         </div>
     </div>

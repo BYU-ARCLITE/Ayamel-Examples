@@ -8,7 +8,7 @@
     )
 }
 
-@main("Ayamel Examples",moreStyles) {
+@main("Ayamel Examples", moreStyles) {
     
     <div class="spotlight">
         <div id="slider" class="swipe">
@@ -51,7 +51,16 @@
                 <div class="homeContent">
                     <div class="homeContentContainer">
                         <h3>Latest Content</h3>
-                        @views.html.content.helpers.contentHolder(user.getContentFeed(6))
+                        <div id="latestContent"></div>
+                        <script type="text/javascript">
+                            $(function() {
+                                ContentItemRenderer.renderAll({
+                                    content: [@Html(user.getContentFeed(6).map(_.toJson).mkString(","))],
+                                    $holder: $("#latestContent"),
+                                    format: "icon"
+                                });
+                            });
+                        </script>
                     </div>
                 </div>
             </div>

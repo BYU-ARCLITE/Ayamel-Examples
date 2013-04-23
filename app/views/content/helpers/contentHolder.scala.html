@@ -1,7 +1,0 @@
-@(contentList: List[models.Content], course: Option[Course] = None)
-
-<div class="contentHolder">
-    @for(content <- contentList) {
-        @views.html.content.helpers.contentItem(content, course = course)
-    }
-</div>
