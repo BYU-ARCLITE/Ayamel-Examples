@@ -62,6 +62,7 @@ POST    /content/:id/visibility         controllers.ContentController.setVisibil
 POST    /content/:id/shareability       controllers.ContentController.setShareability(id: Long)
 POST    /content/:id/settings           controllers.ContentController.setSettings(id: Long)
 POST    /content/:id/metadata           controllers.ContentController.setMetadata(id: Long)
+POST    /content/:id/thumbnail          controllers.ContentController.changeThumbnail(id: Long)
 GET     /content/:id/access/:authKey    controllers.ContentController.shareAccess(id: Long, authKey: String)
 GET     /content/:id/edit               controllers.ContentController.editImage(id: Long)
 POST    /content/:id/edit               controllers.ContentController.saveImageEdits(id: Long)

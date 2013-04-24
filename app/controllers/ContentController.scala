@@ -16,6 +16,7 @@ import scala.Some
 import service.ContentDescriptor
 import dataAccess.{PlayGraph, ResourceController}
 import java.io.ByteArrayInputStream
+import javax.imageio.ImageIO
 
 /**
  * The controller for dealing with content.
@@ -424,6 +425,9 @@ object ContentController extends Controller {
               val keywords = request.body("keywords")(0)
               val categories = request.body.get("categories").map(_.toList).getOrElse(Nil)
 
+              // Update the name of the content
+              content.copy(name = title).save
+
               // Create the JSON object
               val obj = Json.obj(
                 "title" -> title,
@@ -777,6 +781,34 @@ object ContentController extends Controller {
               }
             } else
               Errors.forbidden
+        }
+  }
+
+  def changeThumbnail(id: Long) = Authentication.authenticatedAction(parse.multipartFormData) {
+    implicit request =>
+      implicit user =>
+        getContent(id) {
+          content =>
+
+            val file = request.body.file("file").get
+            val url = request.body.dataParts("url")(0)
+
+            Async {
+              if (url.isEmpty) {
+
+                val image = ImageIO.read(file.ref.file)
+                val thumbnail = ImageTools.makeThumbnail(image)
+                FileUploader.uploadImage(thumbnail, FileUploader.uniqueFilename("thumbnail.jpg")).map { thumbnailUrl =>
+                  content.copy(thumbnail = thumbnailUrl).save
+                  Redirect(routes.ContentController.view(content.id.get)).flashing("info" -> "Thumbnail changed")
+                }
+              } else {
+                ImageTools.generateThumbnail(url).map { thumbnailUrl =>
+                  content.copy(thumbnail = thumbnailUrl).save
+                  Redirect(routes.ContentController.view(content.id.get)).flashing("info" -> "Thumbnail changed")
+                }
+              }
+            }
         }
   }
 }
