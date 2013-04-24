@@ -111,7 +111,7 @@ var ContentItemRenderer = (function() {
     function enablePopover(content, $element) {
         var data = Mustache.to_html(contentTemplates.iconContent, {
             type: content.contentType,
-            views: contentTemplates.helpers.views,
+            views: contentTemplates.helpers.views(content),
             level: contentTemplates.helpers.level(content),
             annotations: contentTemplates.conditions.annotations(content),
             captions: contentTemplates.conditions.captions(content),
