@@ -151,8 +151,29 @@ case class Content(id: Pk[Long], name: String, contentType: Symbol, thumbnail: S
     "visibility" -> visibility,
     "shareability" -> shareability,
     "settings" -> settings,
-    "authKey" -> authKey
+    "authKey" -> authKey,
+    "views" -> views("").size
   )
+
+  object cache {
+    var activity: Option[List[Activity]] = None
+
+    def getActivity: List[Activity] = {
+      if (activity.isEmpty)
+        activity = Some(Activity.listByPage("content", "view", id.get))
+      activity.get
+    }
+  }
+
+  def getActivity(coursePrefix: String) = cache.getActivity.filter(_.activityContext.pageContext.action.startsWith(coursePrefix))
+
+  def views(coursePrefix: String) = getActivity(coursePrefix).filter(_.verb == "pageload")
+
+  def translations(coursePrefix: String) = getActivity(coursePrefix).filter(_.verb == "translate")
+
+  def annotations(coursePrefix: String) = getActivity(coursePrefix).filter(_.verb == "view annotation")
+
+  def cueClicks(coursePrefix: String) = getActivity(coursePrefix).filter(_.verb == "cueClick")
 }
 
 object Content extends SQLSelectable[Content] {

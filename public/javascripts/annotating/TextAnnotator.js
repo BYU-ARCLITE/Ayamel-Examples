@@ -21,5 +21,13 @@ var TextAnnotator = (function() {
         });
     };
 
+    TextAnnotator.prototype.addEventListener = function(event, callback) {
+        this.manifests.forEach(function (manifest) {
+            manifest.annotations.forEach(function (annotation) {
+                annotation.addEventListener(event, callback);
+            });
+        });
+    };
+
     return TextAnnotator;
 }());

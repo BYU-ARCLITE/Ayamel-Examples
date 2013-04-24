@@ -64,6 +64,9 @@ var ContentRenderer = (function () {
                     dataType: "json",
                     success: function(data) {
                         AnnotationLoader.load(data, function(manifest) {
+                            if (manifest) {
+                                manifest.resourceId = annotation.id;
+                            }
                             asyncCallback(null, manifest);
                         });
                     }, error: function(data){

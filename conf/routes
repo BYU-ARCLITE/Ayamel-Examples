@@ -25,21 +25,24 @@ POST    /auth/createAccount             controllers.authentication.Password.crea
 GET     /auth/logout                    controllers.authentication.Authentication.logout
 
 # Course pages
-GET     /course                                     controllers.Courses.list
-GET     /course/create                              controllers.Courses.createPage
-POST    /course/create                              controllers.Courses.create
-GET     /course/:id                                 controllers.Courses.view(id: Long)
-POST    /course/:id/ltiAuth                         controllers.Courses.ltiAuth(id: Long)
-GET     /course/:id/keyAuth                         controllers.Courses.keyAuth(id: Long)
-POST    /course/:id/addContent                      controllers.Courses.addContent(id: Long)
-POST    /course/:id/announce                        controllers.Courses.addAnnouncement(id: Long)
-GET     /course/:id/request                         controllers.Courses.courseRequestPage(id: Long)
-POST    /course/:id/request                         controllers.Courses.submitCourseRequest(id: Long)
-GET     /course/:id/request/manage                  controllers.Courses.approvePage(id: Long)
-GET     /course/:id/request/:requestId/approve      controllers.Courses.approveRequest(id: Long, requestId: Long)
-GET     /course/:id/request/:requestId/deny         controllers.Courses.denyRequest(id: Long, requestId: Long)
-GET     /course/:courseId/content/:id               controllers.ContentController.viewInCourse(id: Long, courseId: Long)
-POST    /course/:courseId/content/:id/settings      controllers.ContentController.setCourseSettings(id: Long, courseId: Long)
+GET     /course                                         controllers.Courses.list
+GET     /course/create                                  controllers.Courses.createPage
+POST    /course/create                                  controllers.Courses.create
+GET     /course/:id                                     controllers.Courses.view(id: Long)
+POST    /course/:id/ltiAuth                             controllers.Courses.ltiAuth(id: Long)
+GET     /course/:id/keyAuth                             controllers.Courses.keyAuth(id: Long)
+POST    /course/:id/addContent                          controllers.Courses.addContent(id: Long)
+POST    /course/:id/announce                            controllers.Courses.addAnnouncement(id: Long)
+GET     /course/:id/request                             controllers.Courses.courseRequestPage(id: Long)
+POST    /course/:id/request                             controllers.Courses.submitCourseRequest(id: Long)
+GET     /course/:id/request/manage                      controllers.Courses.approvePage(id: Long)
+GET     /course/:id/request/:requestId/approve          controllers.Courses.approveRequest(id: Long, requestId: Long)
+GET     /course/:id/request/:requestId/deny             controllers.Courses.denyRequest(id: Long, requestId: Long)
+GET     /course/:courseId/content/:id                   controllers.ContentController.viewInCourse(id: Long, courseId: Long)
+GET     /course/:courseId/content/:id/stats             controllers.ContentController.statsInCourse(id: Long, courseId: Long)
+GET     /course/:courseId/content/:id/stats/download    controllers.ContentController.downloadStatsInCourse(id: Long, courseId: Long)
+GET     /course/:courseId/content/:id/stats/clear       controllers.ContentController.clearStatsInCourse(id: Long, courseId: Long)
+POST    /course/:courseId/content/:id/settings          controllers.ContentController.setCourseSettings(id: Long, courseId: Long)
 
 # Content pages
 GET     /content                        controllers.ContentController.public
@@ -50,6 +53,9 @@ POST    /content/create/file            controllers.ContentController.createFrom
 POST    /content/create/resource        controllers.ContentController.createFromResource
 POST    /content/create/playlist        controllers.ContentController.createPlaylist
 GET     /content/:id                    controllers.ContentController.view(id: Long)
+GET     /content/:id/stats              controllers.ContentController.stats(id: Long)
+GET     /content/:id/stats/download     controllers.ContentController.downloadStats(id: Long)
+GET     /content/:id/stats/clear        controllers.ContentController.clearStats(id: Long)
 GET     /content/:id/json               controllers.ContentController.getAsJson(id: Long)
 GET     /content/:id/delete             controllers.ContentController.delete(id: Long)
 POST    /content/:id/visibility         controllers.ContentController.setVisibility(id: Long)
@@ -94,6 +100,7 @@ POST    /ajax/util/deserialize                              controllers.ajax.Uti
 GET     /ajax/util/annotate/:language/:text                 controllers.ajax.Util.annotate(language: String, text: String)
 GET     /ajax/translate/google/:src/:dest/:text             controllers.ajax.Translate.translateGoogle(src: String, dest: String, text: String)
 GET     /ajax/translate/wordReference/:src/:dest/:text      controllers.ajax.Translate.translateWordReference(src: String, dest: String, text: String)
+POST    /ajax/activity                                      controllers.ajax.ActivitySaver.save
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file                   controllers.Assets.at(path="/public", file)
