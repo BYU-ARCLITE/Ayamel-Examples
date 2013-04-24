@@ -15,7 +15,8 @@ object ApplicationBuild extends Build {
     "commons-io" % "commons-io" % "2.4",
     "com.google.gdata" % "core" % "1.47.1",
     "com.amazonaws" % "aws-java-sdk" % "1.4.1",
-    "xuggle" % "xuggle-xuggler" % "5.4"
+    "xuggle" % "xuggle-xuggler" % "5.4",
+    "org.apache.poi" % "poi-ooxml" % "3.9"
   )
 
 

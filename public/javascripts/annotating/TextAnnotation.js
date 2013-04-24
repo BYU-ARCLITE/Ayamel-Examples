@@ -10,10 +10,12 @@ var TextAnnotation = (function(){
     function TextAnnotation(regex, data) {
         this.regex = regex;
         this.data = data;
+        this.e = document.createElement("div");
     }
 
     TextAnnotation.prototype.annotate = function ($content, filter) {
         var nodes = [];
+        var _this = this;
         for (var i=0; i<$content[0].childNodes.length; i += 1) {
             var node = $content[0].childNodes.item(i);
             if (node.nodeType === Node.ELEMENT_NODE) {
@@ -34,9 +36,20 @@ var TextAnnotation = (function(){
                         // If this isn't the last element then save the annotation as well
                         if (j !== parts.length - 1) {
                             var $annotation = $("<span class='annotation'>" + match[0] + "</span>");
+
+                            // Create and dispatch an event when clicked
+                            $annotation.click(function () {
+                                var event = document.createEvent("HTMLEvents");
+                                event.initEvent("textAnnotationClick", true, true);
+                                event.annotation = _this;
+                                event.sourceElement = this;
+                                _this.e.dispatchEvent(event);
+                            });
+
                             if (filter) {
-                                filter($annotation, this.data)
+                                filter($annotation, this);
                             }
+
                             nodes.push($annotation[0]);
                         }
                     }
@@ -57,32 +70,16 @@ var TextAnnotation = (function(){
         nodes.forEach(function (node) {
             $content[0].appendChild(node);
         });
-
-//        // Get the matches
-//        var text = $content.text();
-//        var match;
-//        var newText;
-//
-//        // Add a tags around each match
-//        match = this.regex.exec(text);
-//        if (match !== null) {
-//
-//            // Create the annotation and process it
-//            var $annotation = $("<span class='annotation'>" + match[0] + "</span>");
-//            if (filter) {
-//                $annotation = filter($annotation, this.data);
-//            }
-//
-//            // Replace the html with the annotated html
-//            newText = text.split(this.regex);
-//            $content.html(newText[0]).append($annotation).append(newText[1]);
-//        }
     };
 
     TextAnnotation.prototype.isEqualTo = function(annotation) {
         var regexMatch = this.regex.source === annotation.regex.source;
         var dataMatch = this.data.type === annotation.data.type && this.data.value === annotation.data.value;
         return regexMatch && dataMatch;
+    };
+
+    TextAnnotation.prototype.addEventListener = function(event, callback) {
+        this.e.addEventListener(event, callback);
     };
 
     return TextAnnotation;

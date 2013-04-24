@@ -152,7 +152,7 @@ case class Content(id: Pk[Long], name: String, contentType: Symbol, thumbnail: S
     "shareability" -> shareability,
     "settings" -> settings,
     "authKey" -> authKey,
-    "views" -> views.size
+    "views" -> views("").size
   )
 
   object cache {
@@ -165,13 +165,15 @@ case class Content(id: Pk[Long], name: String, contentType: Symbol, thumbnail: S
     }
   }
 
-  def getActivity = cache.getActivity
+  def getActivity(coursePrefix: String) = cache.getActivity.filter(_.activityContext.pageContext.action.startsWith(coursePrefix))
 
-  def views = getActivity.filter(_.verb == "pageload")
+  def views(coursePrefix: String) = getActivity(coursePrefix).filter(_.verb == "pageload")
 
-  def translations = getActivity.filter(_.verb == "translate")
+  def translations(coursePrefix: String) = getActivity(coursePrefix).filter(_.verb == "translate")
 
-  def annotations = getActivity.filter(_.verb == "view annotation")
+  def annotations(coursePrefix: String) = getActivity(coursePrefix).filter(_.verb == "view annotation")
+
+  def cueClicks(coursePrefix: String) = getActivity(coursePrefix).filter(_.verb == "cueClick")
 }
 
 object Content extends SQLSelectable[Content] {

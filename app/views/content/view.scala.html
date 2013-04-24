@@ -21,9 +21,10 @@
 @main("Ayamel - " + content.name, moreStyles) {
 
     <script type="text/javascript">
+        var coursePrefix = "@course.map(c => "course_" + c.id.get + ":").getOrElse("")";
         $(function() {
             // Register the page for later activity stream calls
-            ActivityStreams.registerPage("content", "view", [@content.id.get][0]);
+            ActivityStreams.registerPage("content", coursePrefix + "view", [@content.id.get][0]);
 
             // Save the page load
             ActivityStreams.predefined.pageload();
@@ -113,6 +114,9 @@
             @if(content.isEditableBy(user)) {
                 <a href="@routes.ContentController.stats(content.id.get)" class="btn"><i class="icon-bar-chart"></i> View Stats</a>
             }
+            @if(course.isDefined && user.canEdit(course.get)) {
+                <a href="@routes.ContentController.statsInCourse(content.id.get, course.get.id.get)" class="btn"><i class="icon-bar-chart"></i> View Course Stats</a>
+            }
             @views.html.content.header.delete(content)
 
         </div>
@@ -136,7 +140,6 @@
                 // Render the content
                 var content = [@Html(content.toJson.toString())][0];
                 var contentHolder = $("#contentHolder")[0];
-                var coursePrefix = "@course.map(c => "course_" + c.id.get + ":").getOrElse("")";
                 ContentRenderer.render({
                     content: content,
                     holder: contentHolder,

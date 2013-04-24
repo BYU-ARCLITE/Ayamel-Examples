@@ -29,8 +29,6 @@ var TranscriptDisplay = (function() {
         "pal"               // Pahlavi
     ];
 
-    var allCues = [];
-
     function makeId(title) {
         return title.replace(/\s/g, "");
     }
@@ -61,6 +59,14 @@ var TranscriptDisplay = (function() {
 
             $element.find(".transcriptContent").hide();
             $($(this).attr("href")).show();
+
+            // Throw a tab change event
+            var event = document.createEvent("HTMLEvents");
+            event.initEvent("transcriptionTabChange", true, true);
+            event.tabName = $(this).text();
+            var index = names.indexOf($(this).text());
+            event.transcript = args.transcripts[index];
+            $element[0].dispatchEvent(event);
         });
         $element.find("li:first-child a").tab("show");
         $element.find(".transcriptContent:not(:first-child)").hide();
@@ -91,7 +97,14 @@ var TranscriptDisplay = (function() {
 
                                 var html = Mustache.to_html(cueTemplate, {direction: direction}, {text: cue.text});
                                 var $cue = $(html).click(function() {
-                                    display.cueClick(cue.startTime);
+
+                                    // Throw a transcription cue click event
+                                    var event = document.createEvent("HTMLEvents");
+                                    event.initEvent("transcriptionCueClick", true, true);
+                                    event.cue = cue;
+                                    event.cueIndex = cue.track.cues.indexOf(cue);
+                                    event.transcript = transcript;
+                                    display.$element[0].dispatchEvent(event);
                                 });
 
                                 // Possibly do additional work with the cue
@@ -116,7 +129,6 @@ var TranscriptDisplay = (function() {
 
     function TranscriptDisplay(args) {
         this.transcripts = args.transcripts;
-        this.mediaPlayer = null;
         this.$holder = args.$holder;
         this.$element = createElement(args);
         this.cueStates = [];
@@ -125,15 +137,12 @@ var TranscriptDisplay = (function() {
         addTranscripts(this, args.filter);
     }
 
-    TranscriptDisplay.prototype.cueClick = function(time) {
-        if (this.mediaPlayer) {
-            this.mediaPlayer.currentTime = time;
-        }
+    TranscriptDisplay.prototype.addEventListener = function(event, callback) {
+        this.$element[0].addEventListener(event, callback);
     };
 
     TranscriptDisplay.prototype.bindToMediaPlayer = function(mediaPlayer) {
         var _this = this;
-        this.mediaPlayer = mediaPlayer;
 
         // Possibly link this with a media player
         mediaPlayer.addEventListener("timeupdate", function(event) {
@@ -153,6 +162,10 @@ var TranscriptDisplay = (function() {
                     }
                 }
             })
+        });
+
+        this.addEventListener("transcriptionCueClick", function (event) {
+            mediaPlayer.currentTime = event.cue.startTime;
         });
     };
 

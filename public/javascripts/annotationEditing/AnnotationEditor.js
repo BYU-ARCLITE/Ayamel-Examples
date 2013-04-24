@@ -315,24 +315,11 @@ var AnnotationEditor = (function() {
                     // Set up the text annotator
                     var textAnnotator = new TextAnnotator({
                         manifests: [manifest],
-                        filter: function ($annotation, data) {
-                            // Find the annotation that matched this
-                            var annotation = findMatchingAnnotation($annotation.text(), data);
-
-                            $annotation.click(function() {
-                                activeAnnotation = annotation;
-
-                                // Create and dispatch an event
-                                var newEvent = document.createEvent('HTMLEvents');
-                                newEvent.initEvent("select", true, true);
-                                newEvent.annotation = annotation;
-                                _this.$element[0].dispatchEvent(newEvent);
-                            });
-
+                        filter: function ($annotation, annotation) {
                             // Show the annotations in a popover
-                            var content = data.value;
-                            if (data.type === "image") {
-                                content = '<img src="' + data.value + '">';
+                            var content = annotation.data.value;
+                            if (annotation.data.type === "image") {
+                                content = '<img src="' + annotation.data.value + '">';
                             }
                             $annotation.popover({
                                 placement: "bottom",
@@ -342,9 +329,17 @@ var AnnotationEditor = (function() {
                                 container: "body",
                                 trigger: "hover"
                             });
-
-                            return $annotation;
                         }
+                    });
+
+                    textAnnotator.addEventListener("textAnnotationClick", function (event) {
+                        activeAnnotation = event.annotation;
+
+                        // Create and dispatch an event
+                        var newEvent = document.createEvent('HTMLEvents');
+                        newEvent.initEvent("select", true, true);
+                        newEvent.annotation = event.annotation;
+                        _this.$element[0].dispatchEvent(newEvent);
                     });
 
                     // Render the text

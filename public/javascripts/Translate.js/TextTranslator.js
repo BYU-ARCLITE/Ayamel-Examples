@@ -7,7 +7,8 @@ var TextTranslator = (function () {
      */
     function TextTranslator() {
         this.translationEngines = [];
-        this.eventListeners = [];
+//        this.eventListeners = [];
+        this.e = document.createElement("div");
     }
 
     /**
@@ -28,8 +29,9 @@ var TextTranslator = (function () {
      * @param DOMNode
      * @param srcLang
      * @param destLang
+     * @param eventData
      */
-    TextTranslator.prototype.attach = function attach(DOMNode, srcLang, destLang, callback) {
+    TextTranslator.prototype.attach = function attach(DOMNode, srcLang, destLang, eventData) {
         var _this = this;
         $(DOMNode).mouseup(function () {
             // Get the text selection
@@ -39,9 +41,13 @@ var TextTranslator = (function () {
             if (text !== '') {
                 _this.translate(text, srcLang, destLang);
 
-                if (callback) {
-                    callback(text);
-                }
+                // Dispatches a translate event
+                var event = document.createEvent("HTMLEvents");
+                event.initEvent("translate", true, true);
+                event.text = text;
+                event.sourceElement = DOMNode;
+                event.data = eventData;
+                _this.e.dispatchEvent(event);
             }
         });
     };
@@ -50,21 +56,22 @@ var TextTranslator = (function () {
         var _this = this;
         element = element || _this.element;
 
-        // The error function. For now, just alert and say there was a problem.
+        // The error function. Creates and dispatches a translate error event
         function error() {
-            alert("Error translating: " + text);
+            var event = document.createEvent("HTMLEvents");
+            event.initEvent("translateError", true, true);
+            event.text = text;
+            _this.e.dispatchEvent(event);
         }
 
-        // The success function. Creates and dispatches an event
+        // The success function. Creates and dispatches a translate success event
         function success(results, engine) {
-            var event = {
-                sourceText: text,
-                translations: results,
-                engine: engine
-            };
-            _this.eventListeners.forEach(function (callback) {
-                callback(event);
-            });
+            var event = document.createEvent("HTMLEvents");
+            event.initEvent("translateSuccess", true, true);
+            event.text = text;
+            event.translations = results;
+            event.engine = engine;
+            _this.e.dispatchEvent(event);
         }
 
         // Recursively go through the translation engines until we either get a translation or hit the end
@@ -85,8 +92,8 @@ var TextTranslator = (function () {
         callEngine(0);
     };
 
-    TextTranslator.prototype.addTranslationListener = function(callback) {
-        this.eventListeners.push(callback);
+    TextTranslator.prototype.addEventListener = function(event, callback) {
+        this.e.addEventListener(event, callback);
     };
 
     return TextTranslator;
