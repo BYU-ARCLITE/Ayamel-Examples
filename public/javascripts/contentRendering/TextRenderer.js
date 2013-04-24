@@ -40,12 +40,12 @@ var TextRenderer = (function(){
 
                         // Annotate the document
                         if (args.annotate) {
-                            args.filter = function($annotation, data) {
+                            args.filter = function($annotation, annotation) {
 
                                 // Show the annotations in a popover
-                                var content = data.value;
-                                if (data.type === "image") {
-                                    content = '<img src="' + data.value + '">';
+                                var content = annotation.data.value;
+                                if (annotation.data.type === "image") {
+                                    content = '<img src="' + annotation.data.value + '">';
                                 }
                                 $annotation.popover({
                                     placement: "bottom",

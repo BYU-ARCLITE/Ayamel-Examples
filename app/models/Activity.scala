@@ -135,8 +135,8 @@ object Activity extends SQLSelectable[Activity] {
     DB.withConnection {
       implicit connection =>
         anorm.SQL("select * from " + tableName +
-          " where pageCategory = {pageCategory} and pageAction = {pageAction} and pageId = {pageId}")
-          .on('pageCategory -> category, 'pageAction -> action, 'pageId -> id)
+          " where pageCategory = {pageCategory} and pageAction like {pageAction} and pageId = {pageId}")
+          .on('pageCategory -> category, 'pageAction -> ("%" + action), 'pageId -> id)
           .as(simple *)
     }
 }

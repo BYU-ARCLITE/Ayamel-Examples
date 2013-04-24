@@ -234,6 +234,104 @@ object ContentController extends Controller {
         }
   }
 
+  /**
+   * Content stats page within a course
+   */
+  def statsInCourse(id: Long, courseId: Long) = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+        getContent(id) {
+          content =>
+            Courses.getCourse(courseId) {
+              course =>
+
+                // Only teachers can view stats
+                if (user canEdit course) {
+                  val resourceLibraryUrl = Play.configuration.getString("resourceLibrary.baseUrl").get
+                  Ok(views.html.content.stats(content, resourceLibraryUrl, Some(course)))
+                } else
+                  Errors.forbidden
+            }
+        }
+  }
+
+  def downloadStats(id: Long) = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+        getContent(id) {
+          content =>
+
+            // Only owners can view stats
+            if (content isEditableBy user) {
+              val activity = content.getActivity("")
+              Async {
+                ExcelWriter.writeActivity(activity).map { url =>
+                  Redirect(url)
+                }
+              }
+            } else
+              Errors.forbidden
+        }
+  }
+
+  def downloadStatsInCourse(id: Long, courseId: Long) = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+        getContent(id) {
+          content =>
+            Courses.getCourse(courseId) {
+              course =>
+
+              // Only teachers can view stats
+                if (user canEdit course) {
+                  val coursePrefix = "course_" + course.id.get + ":"
+                  val activity = content.getActivity(coursePrefix)
+                  Async {
+                    ExcelWriter.writeActivity(activity).map { url =>
+                      Redirect(url)
+                    }
+                  }
+                } else
+                  Errors.forbidden
+            }
+        }
+  }
+
+  def clearStats(id: Long) = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+        getContent(id) {
+          content =>
+
+          // Only owners can clear stats
+            if (content isEditableBy user) {
+              content.getActivity("").foreach(_.delete())
+              Redirect(routes.ContentController.stats(content.id.get)).flashing("info" -> "Data cleared")
+            } else
+              Errors.forbidden
+        }
+  }
+
+  def clearStatsInCourse(id: Long, courseId: Long) = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+        getContent(id) {
+          content =>
+            Courses.getCourse(courseId) {
+              course =>
+
+              // Only teachers can clear stats
+                if (user canEdit course) {
+                  val coursePrefix = "course_" + course.id.get + ":"
+                  content.getActivity(coursePrefix).foreach(_.delete())
+                  Redirect(routes.ContentController.statsInCourse(content.id.get, course.id.get))
+                    .flashing("info" -> "Data cleared")
+                } else
+                  Errors.forbidden
+            }
+        }
+  }
+
   def shareAccess(id: Long, authKey: String) = Action {
     implicit request =>
       getContent(id) {
