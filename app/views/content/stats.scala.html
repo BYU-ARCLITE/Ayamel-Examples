@@ -1,0 +1,163 @@
+@(content: models.Content, resourceLibraryUrl: String, course: Option[Course] = None)(implicit request: RequestHeader, user: User)
+
+@moreStyles =  @{
+    List(
+      ("screen", "stylesheets/content.css")
+    )
+}
+
+@coursePrefix = @{course.map(c => "course_" + c.id.get + ":").getOrElse("")}
+
+@clearCall = {
+    @if(course.isDefined) {
+        @routes.ContentController.clearStatsInCourse(content.id.get, course.get.id.get)
+    } else {
+        @routes.ContentController.clearStats(content.id.get)
+    }
+}
+
+@downloadCall = {
+    @if(course.isDefined) {
+        @routes.ContentController.downloadStatsInCourse(content.id.get, course.get.id.get)
+    } else {
+        @routes.ContentController.downloadStats(content.id.get)
+    }
+}
+
+@main("Ayamel - Content stats", moreStyles) {
+
+    <script src="@routes.Assets.at("Ayamel.js/js/Resource.js")" type="text/javascript"></script>
+
+    <div class="padded">
+
+        @if(course.isDefined) {
+            <a href="@routes.ContentController.viewInCourse(content.id.get, course.get.id.get)"><i class="icon-arrow-left"></i> Back to content</a>
+        } else {
+            <a href="@routes.ContentController.view(content.id.get)"><i class="icon-arrow-left"></i> Back to content</a>
+        }
+
+        <h1>Content Stats</h1>
+
+        <div class="btn-group">
+            <a class="btn" href="@downloadCall"><i class="icon-download"></i> Download</a>
+            <a class="btn" role="button" href="#clearModal" data-toggle="modal"><i class="icon-trash"></i> Clear</a>
+        </div>
+
+        <div id="clearModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="clearModalLabel" aria-hidden="true">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h3 id="clearModalLabel">Clear all data</h3>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to clear all the data?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
+                <a href="@clearCall" class="btn btn-magenta">Yes</a>
+            </div>
+        </div>
+
+        <h2>Basic stats</h2>
+        <table class="table table-bordered">
+            <tr>
+                <th>Views</th>
+                <td>@content.views(coursePrefix).size</td>
+            </tr>
+        </table>
+
+        @if(!content.translations(coursePrefix).isEmpty) {
+            <h2>Translations</h2>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Text</th>
+                        <th>Component</th>
+                        <th>Caption Track</th>
+                        <th>Cue #</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for(translation <- content.translations(coursePrefix)) {
+                        <tr>
+                            <td>@translation.getUser.displayName</td>
+                            <td>@translation.activityObject.itemRef</td>
+                            <td>@translation.activityContext.generatorContext.objectType</td>
+                            <td class="resourceName">@translation.activityContext.generatorContext.id</td>
+                            <td>@translation.activityContext.generatorContext.itemRef</td>
+                            <td>@service.TimeTools.prettyTime(translation.published)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+
+        @if(!content.annotations(coursePrefix).isEmpty) {
+            <h2>Annotations Viewed</h2>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Text</th>
+                        <th>Annotation Document</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for(annotations <- content.annotations(coursePrefix)) {
+                        <tr>
+                            <td>@annotations.getUser.displayName</td>
+                            <td>@annotations.activityObject.itemRef</td>
+                            <td class="resourceName">@annotations.activityObject.id</td>
+                            <td>@service.TimeTools.prettyTime(annotations.published)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+
+        @if(!content.cueClicks(coursePrefix).isEmpty) {
+            <h2>Transcription Cue Clicks</h2>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Caption Track</th>
+                        <th>Cue #</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for(cueClick <- content.cueClicks(coursePrefix)) {
+                        <tr>
+                            <td>@cueClick.getUser.displayName</td>
+                            <td class="resourceName">@cueClick.activityContext.generatorContext.id</td>
+                            <td>@cueClick.activityContext.generatorContext.itemRef</td>
+                            <td>@service.TimeTools.prettyTime(cueClick.published)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+
+    </div>
+
+    <script type="text/javascript">
+        $(function() {
+
+            var resourceLibraryUrl = "@resourceLibraryUrl";
+
+            $(".resourceName").each(function () {
+                var $this = $(this);
+                var id = $this.text();
+                if (id) {
+                    var url = resourceLibraryUrl + "/" + id;
+                    ResourceLibrary.load(url, function (resource) {
+                        $this.text(resource.title);
+                    });
+                }
+            });
+        });
+    </script>
+}

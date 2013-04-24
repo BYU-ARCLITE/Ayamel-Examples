@@ -74,29 +74,34 @@ var ContentItemRenderer = (function() {
                 return 1;
             },
             views: function (content) {
-                // TODO: Get the views from a content
-                return 0;
+                return content.views;
             }
         }
     };
 
-    function renderContent(content, template) {
+    function renderContent(args) {
+        var template = contentTemplates[args.format];
+
         var html = Mustache.to_html(template, {
-            title: content.name,
-            type: content.contentType,
-            views: contentTemplates.helpers.views,
-            level: contentTemplates.helpers.level(content),
-            annotations: contentTemplates.conditions.annotations(content),
-            captions: contentTemplates.conditions.captions(content),
-            isVideo: contentTemplates.conditions.isVideo(content)
+            title: args.content.name,
+            type: args.content.contentType,
+            views: contentTemplates.helpers.views(args.content),
+            level: contentTemplates.helpers.level(args.content),
+            annotations: contentTemplates.conditions.annotations(args.content),
+            captions: contentTemplates.conditions.captions(args.content),
+            isVideo: contentTemplates.conditions.isVideo(args.content)
         });
 
         var $element = $(html).click(function () {
-            window.location = "/content/" + content.id;
+            if (args.courseId) {
+                window.location = "/course/" + args.courseId + "/content/" + args.content.id;
+            } else {
+                window.location = "/content/" + args.content.id;
+            }
         });
-        if (content.thumbnail) {
+        if (args.content.thumbnail) {
             $element.children(".contentBadge")
-                .css("background", "url('" + content.thumbnail + "') center no-repeat")
+                .css("background", "url('" + args.content.thumbnail + "') center no-repeat")
                 .css("background-size", "cover");
         }
 
@@ -150,7 +155,8 @@ var ContentItemRenderer = (function() {
                 format: format,
                 sizing: true,
                 sorting: args.sorting,
-                filters: args.filters
+                filters: args.filters,
+                courseId: args.courseId
             });
         });
 
@@ -159,7 +165,7 @@ var ContentItemRenderer = (function() {
 
     return {
         render: function(args) {
-            var $element = renderContent(args.content, contentTemplates[args.format]);
+            var $element = renderContent(args);
             args.$holder.append($element);
 
             if (args.format === "icon") {
@@ -211,7 +217,8 @@ var ContentItemRenderer = (function() {
                             ContentItemRenderer.render({
                                 content: content,
                                 $holder: $contentHolder,
-                                format: args.format
+                                format: args.format,
+                                courseId: args.courseId
                             })
                         });
                     }
@@ -225,7 +232,8 @@ var ContentItemRenderer = (function() {
                     ContentItemRenderer.render({
                         content: content,
                         $holder: $contentHolder,
-                        format: args.format
+                        format: args.format,
+                        courseId: args.courseId
                     });
                 });
             }
