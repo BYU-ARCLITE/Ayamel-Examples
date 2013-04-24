@@ -151,7 +151,8 @@ case class Content(id: Pk[Long], name: String, contentType: Symbol, thumbnail: S
     "visibility" -> visibility,
     "shareability" -> shareability,
     "settings" -> settings,
-    "authKey" -> authKey
+    "authKey" -> authKey,
+    "views" -> views.size
   )
 
   object cache {
