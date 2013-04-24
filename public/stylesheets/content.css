@@ -112,6 +112,11 @@
     background-size: cover;
 }
 
+.contentBadge.text {
+    background: url("../images/text/placeholder.jpg") center;
+    background-size: cover;
+}
+
 .contentItem.blockFormat .contentDescription {
     position: absolute;
     top: 0;

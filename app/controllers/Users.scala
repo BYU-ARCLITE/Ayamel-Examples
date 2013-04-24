@@ -8,6 +8,7 @@ import scala.Some
 import javax.imageio.ImageIO
 import scala.concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
+import anorm.NotAssigned
 
 /**
  * Created with IntelliJ IDEA.
@@ -289,6 +290,68 @@ object Users extends Controller {
         Authentication.enforceRole(User.roles.admin) {
           val content = Content.list
           Ok(views.html.users.admin.content(content))
+        }
+  }
+
+  def homePageContent = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+        Authentication.enforceRole(User.roles.admin) {
+          Ok(views.html.users.admin.homePageContent())
+        }
+  }
+
+  def createHomePageContent = Authentication.authenticatedAction(parse.multipartFormData) {
+    implicit request =>
+      implicit user =>
+        Authentication.enforceRole(User.roles.admin) {
+
+          val data = request.body.dataParts.mapValues(_(0))
+          val homePageContent = HomePageContent(NotAssigned,
+            data("title"),
+            data("text"),
+            data("link"),
+            data("linkText"),
+            data("background"),
+            active = false
+          )
+          if (data("background").isEmpty) {
+            val file = request.body.file("file").get
+            Async {
+              FileUploader.uploadFile(file).map { url =>
+                homePageContent.copy(background = url).save
+                Redirect(routes.Users.homePageContent()).flashing("info" -> "Home page content created")
+              }
+            }
+          } else {
+            homePageContent.save
+            Redirect(routes.Users.homePageContent()).flashing("info" -> "Home page content created")
+          }
+        }
+  }
+
+  def toggleHomePageContent(id: Long) = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+        Authentication.enforceRole(User.roles.admin) {
+
+          val homePageContent = HomePageContent.findById(id).get
+          homePageContent.copy(active = !homePageContent.active).save
+          val message =
+            if (homePageContent.active) "no longer active."
+            else "now active."
+          Redirect(routes.Users.homePageContent()).flashing("info" -> ("Home page content is " + message))
+        }
+  }
+
+  def deleteHomePageContent(id: Long) = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+        Authentication.enforceRole(User.roles.admin) {
+
+          val homePageContent = HomePageContent.findById(id).get
+          homePageContent.delete()
+          Redirect(routes.Users.homePageContent()).flashing("info" -> "Home page content deleted")
         }
   }
 

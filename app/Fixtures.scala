@@ -6,25 +6,24 @@ import scala.Some
 import service.HashTools
 
 
-
 object Fixtures {
 
   object data {
     val passwordHash = HashTools.sha256Base64("test123")
     val users = List(
-      (passwordHash, 'password, "student1",  Some("Student 1"),  Some("s1@ayamel.byu.edu"), User.roles.student),
-      (passwordHash, 'password, "student2",  Some("Student 2"),  Some("s2@ayamel.byu.edu"), User.roles.student),
-      (passwordHash, 'password, "student3",  Some("Student 3"),  Some("s3@ayamel.byu.edu"), User.roles.student),
-      (passwordHash, 'password, "student4",  Some("Student 4"),  Some("s4@ayamel.byu.edu"), User.roles.student),
-      (passwordHash, 'password, "student5",  Some("Student 5"),  Some("s5@ayamel.byu.edu"), User.roles.student),
-      (passwordHash, 'password, "student6",  Some("Student 6"),  Some("s6@ayamel.byu.edu"), User.roles.student),
-      (passwordHash, 'password, "teacher1",  Some("Teacher 1"),  Some("t1@ayamel.byu.edu"), User.roles.teacher),
-      (passwordHash, 'password, "teacher2",  Some("Teacher 2"),  Some("t2@ayamel.byu.edu"), User.roles.teacher),
-      (passwordHash, 'password, "teacher3",  Some("Teacher 3"),  Some("t3@ayamel.byu.edu"), User.roles.teacher),
-      (passwordHash, 'password, "teacher4",  Some("Teacher 4"),  Some("t4@ayamel.byu.edu"), User.roles.teacher),
-      (passwordHash, 'password, "teacher5",  Some("Teacher 5"),  Some("t5@ayamel.byu.edu"), User.roles.teacher),
-      (passwordHash, 'password, "teacher6",  Some("Teacher 6"),  Some("t6@ayamel.byu.edu"), User.roles.teacher),
-      (passwordHash, 'password, "admin",     Some("Admin"),      Some("admin@ayamel.byu.edu"), User.roles.admin)
+      (passwordHash, 'password, "student1", Some("Student 1"), Some("s1@ayamel.byu.edu"), User.roles.student),
+      (passwordHash, 'password, "student2", Some("Student 2"), Some("s2@ayamel.byu.edu"), User.roles.student),
+      (passwordHash, 'password, "student3", Some("Student 3"), Some("s3@ayamel.byu.edu"), User.roles.student),
+      (passwordHash, 'password, "student4", Some("Student 4"), Some("s4@ayamel.byu.edu"), User.roles.student),
+      (passwordHash, 'password, "student5", Some("Student 5"), Some("s5@ayamel.byu.edu"), User.roles.student),
+      (passwordHash, 'password, "student6", Some("Student 6"), Some("s6@ayamel.byu.edu"), User.roles.student),
+      (passwordHash, 'password, "teacher1", Some("Teacher 1"), Some("t1@ayamel.byu.edu"), User.roles.teacher),
+      (passwordHash, 'password, "teacher2", Some("Teacher 2"), Some("t2@ayamel.byu.edu"), User.roles.teacher),
+      (passwordHash, 'password, "teacher3", Some("Teacher 3"), Some("t3@ayamel.byu.edu"), User.roles.teacher),
+      (passwordHash, 'password, "teacher4", Some("Teacher 4"), Some("t4@ayamel.byu.edu"), User.roles.teacher),
+      (passwordHash, 'password, "teacher5", Some("Teacher 5"), Some("t5@ayamel.byu.edu"), User.roles.teacher),
+      (passwordHash, 'password, "teacher6", Some("Teacher 6"), Some("t6@ayamel.byu.edu"), User.roles.teacher),
+      (passwordHash, 'password, "admin", Some("Admin"), Some("admin@ayamel.byu.edu"), User.roles.admin)
     )
 
     val content = List(
@@ -55,20 +54,20 @@ object Fixtures {
     )
 
     val courseMembership = List(
-      (0, 0,  false),
-      (1, 0,  false),
-      (1, 1,  false),
-      (2, 1,  false),
-      (2, 2,  false),
-      (3, 2,  false),
-      (3, 3,  false),
-      (4, 3,  false),
-      (0, 4,  false),
-      (0, 5,  false),
-      (0, 6,  true),
-      (1, 7,  true),
-      (2, 8,  true),
-      (3, 9,  true),
+      (0, 0, false),
+      (1, 0, false),
+      (1, 1, false),
+      (2, 1, false),
+      (2, 2, false),
+      (3, 2, false),
+      (3, 3, false),
+      (4, 3, false),
+      (0, 4, false),
+      (0, 5, false),
+      (0, 6, true),
+      (1, 7, true),
+      (2, 8, true),
+      (3, 9, true),
       (4, 10, true),
       (0, 11, true)
     )
@@ -85,13 +84,13 @@ object Fixtures {
     )
 
     val contentOwnership = List(
-      (0,  0),
-      (1,  1),
-      (3,  2),
-      (4,  3),
-      (6,  4),
-      (7,  5),
-      (9,  6),
+      (0, 0),
+      (1, 1),
+      (3, 2),
+      (4, 3),
+      (6, 4),
+      (7, 5),
+      (9, 6),
       (10, 7)
     )
 
@@ -134,5 +133,17 @@ object Fixtures {
       data => ContentOwnership(NotAssigned, users(data._1).id.get, content(data._2).id.get).save
     }
 
+  }
+
+  def createHomePageContent() {
+    Logger.info("Creating home page content fixtures")
+
+    HomePageContent(NotAssigned, "Enrich your studies",
+      "With Ayamel, increase your language speaking ability.",
+      "", "", "/assets/images/home/byu-campus.jpg", active = true).save
+
+    HomePageContent(NotAssigned, "Pardon our dust",
+      "We're working hard to provide language learning magic, so there may be some things don't work well, or at all. Please be patient. You will be rewarded as awesomeness occurs.",
+      "", "", "/assets/images/home/construction.jpg", active = true).save
   }
 }
