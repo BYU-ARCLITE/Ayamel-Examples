@@ -16,11 +16,13 @@
                 <li><a href="@routes.ContentController.editImage(content.id.get)"><i class="icon-picture"></i> Crop/Rotate Image</a></li>
             }
             <li><a tabindex="-1" href="#settingsModal" data-toggle="modal"><i class="icon-cogs"></i> Edit Settings</a></li>
+            <li><a tabindex="-1" href="#thumbnailModal" data-toggle="modal"><i class="icon-camera"></i> Set Thumbnail</a></li>
             <li><a tabindex="-1" href="#shareabilityModal" data-toggle="modal"><i class="icon-share"></i> Set Shareability</a></li>
             <li><a tabindex="-1" href="#visibilityModal" data-toggle="modal"><i class="icon-eye-open"></i> Set Visibility</a></li>
         </ul>
     </div>
 
+    @views.html.content.header.thumbnail(content)
     @views.html.content.header.metadata(content, resourceLibraryUrl)
     @views.html.content.header.settings(content, resourceLibraryUrl)
     @views.html.content.header.shareability(content)

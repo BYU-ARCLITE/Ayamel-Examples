@@ -25,6 +25,20 @@ body.embed {
     background: rgba(0,0,0,0.5);
     color: white;
     z-index: 100;
+
+    -webkit-transition: 0.4s ease top;
+    -moz-transition: 0.4s ease top;
+    -ms-transition: 0.4s ease top;
+    -o-transition: 0.4s ease top;
+    transition: 0.4s ease top;
+}
+
+.embedHeader.outOfTheWay {
+    top: -40px;
+}
+
+.embedHeader.outOfTheWay:hover {
+    top: 0;
 }
 
 .embedHeader h3 {
@@ -203,8 +217,15 @@ h1, h2, h3, h4, h5, h6 {
 .messageContainer {
     position: absolute;
     top: 25px;
-    width: 90%;
-    margin-left: 5%;
+    width: 500px;
+    margin-left: -250px;
+    left: 50%;
+}
+
+.messageContainer .alert {
+    -webkit-box-shadow: 2px 2px 20px rgba(0, 0, 0, 0.7);
+    -moz-box-shadow: 2px 2px 20px rgba(0, 0, 0, 0.7);
+    box-shadow: 2px 2px 20px rgba(0, 0, 0, 0.7);
 }
 
 /*

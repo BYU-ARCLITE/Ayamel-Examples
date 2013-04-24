@@ -88,34 +88,6 @@
             <div class="mainContent">
                 @content
 
-                <div class="messageContainer">
-                    <!-- Messages/alerts -->
-                    @if(request.flash.get("alert").isDefined) {
-                        <div class="alert">
-                            <a class="close" data-dismiss="alert">×</a>
-                            <strong>Just a sec...</strong> @request.flash("alert")
-                        </div>
-                    }
-                    @if(request.flash.get("error").isDefined) {
-                        <div class="alert alert-error">
-                            <a class="close" data-dismiss="alert">×</a>
-                            <strong>Oh snap!</strong> @request.flash("error")
-                        </div>
-                    }
-                    @if(request.flash.get("success").isDefined) {
-                        <div class="alert alert-success">
-                            <a class="close" data-dismiss="alert">×</a>
-                            <strong>Alright!</strong> @request.flash("success")
-                        </div>
-                    }
-                    @if(request.flash.get("info").isDefined) {
-                        <div class="alert alert-info">
-                            <a class="close" data-dismiss="alert">×</a>
-                            <strong>Heads up.</strong> @request.flash("info")
-                        </div>
-                    }
-                </div>
-
                 <div class="footer">
                     <div class="padded">
                         <div class="row-fluid">
@@ -147,6 +119,34 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <div class="messageContainer">
+                <!-- Messages/alerts -->
+            @if(request.flash.get("alert").isDefined) {
+                <div class="alert">
+                    <a class="close" data-dismiss="alert">×</a>
+                    <strong>Just a sec...</strong> @request.flash("alert")
+                </div>
+            }
+            @if(request.flash.get("error").isDefined) {
+                <div class="alert alert-error">
+                    <a class="close" data-dismiss="alert">×</a>
+                    <strong>Oh snap!</strong> @request.flash("error")
+                </div>
+            }
+            @if(request.flash.get("success").isDefined) {
+                <div class="alert alert-success">
+                    <a class="close" data-dismiss="alert">×</a>
+                    <strong>Alright!</strong> @request.flash("success")
+                </div>
+            }
+            @if(request.flash.get("info").isDefined) {
+                <div class="alert alert-info">
+                    <a class="close" data-dismiss="alert">×</a>
+                    <strong>Heads up.</strong> @request.flash("info")
+                </div>
+            }
         </div>
 
         <script type="text/javascript">
