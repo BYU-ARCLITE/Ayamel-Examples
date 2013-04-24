@@ -36,7 +36,7 @@ var ContentItemRenderer = (function() {
 
         icon:
             '<div class="contentItem iconFormat">' +
-            '    <div class="contentBadge video"></div>' +
+            '    <div class="contentBadge {{type}}"></div>' +
             '</div>',
 
         iconContent:

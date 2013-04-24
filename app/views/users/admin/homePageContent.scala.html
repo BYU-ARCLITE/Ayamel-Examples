@@ -1,0 +1,107 @@
+@()(implicit request: RequestHeader, user: User)
+
+@main("Ayamel - Home Page Content") {
+
+    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/admin.css")"/>
+    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/home.css")"/>
+
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/fileFix.js")"></script>
+
+    <div class="adminBackground">
+    </div>
+
+    <div class="padded">
+
+        <div class="pad-bottom-med">
+            <a href="@routes.Users.admin()"><i class="icon-arrow-left"></i> Back to dashboard</a>
+        </div>
+
+        <h1>Home Page Content</h1>
+
+        @for(homePageContent <- HomePageContent.list) {
+            <div class="spotlight">
+                <div class="slide" style="background-image: url('@homePageContent.background'); background-size: cover; background-position: center;">
+                    <div class="slideTextHolder">
+                        <h1>@homePageContent.title</h1>
+                        <p>@homePageContent.text</p>
+                        @if(!homePageContent.link.isEmpty) {
+                            <a class="btn btn-blue" href="@homePageContent.link">@homePageContent.linkText</a>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="pad-top-high">
+                @if(homePageContent.active) {
+                    <span class="badge badge-yellow">Active</span>
+                    <a class="btn" href="@routes.Users.toggleHomePageContent(homePageContent.id.get)"><i class="icon-remove"></i> Deactivate</a>
+                } else {
+                    <span class="badge badge-blue">Not Active</span>
+                    <a class="btn" href="@routes.Users.toggleHomePageContent(homePageContent.id.get)"><i class="icon-ok"></i> Activate</a>
+                }
+                <a class="btn" href="@routes.Users.deleteHomePageContent(homePageContent.id.get)"><i class="icon-trash"></i> Delete</a>
+            </div>
+
+            <hr>
+        }
+
+        <h2>Create new content</h2>
+
+        <form class="form-horizontal" action="@routes.Users.createHomePageContent()" method="post" enctype="multipart/form-data">
+            <div class="control-group">
+                <label class="control-label" for="title">Title</label>
+                <div class="controls">
+                    <input type="text" id="title" name="title" placeholder="Title">
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="text">Text</label>
+                <div class="controls">
+                    <textarea name="text" id="text"></textarea>
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="background">Background Image URL</label>
+                <div class="controls">
+                    <div class="inline-block">
+                        <div class="well">
+                            <p>
+                                You can either upload an image or enter in the URL.
+                            </p>
+                            <div class="pad-top-high">
+                                <p>Image URL</p>
+                                <input type="text" id="background" name="background" placeholder="Background Image URL">
+                            </div>
+                            <div class="pad-top-high">
+                                <p>Upload image</p>
+                                <input type="file" name="file"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="link">Link URL</label>
+                <div class="controls">
+                    <input type="text" id="link" name="link" placeholder="Link">
+                    <p>
+                        (Leave field blank for no link)
+                    </p>
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="linkText">Link Text</label>
+                <div class="controls">
+                    <input type="text" id="linkText" name="linkText" placeholder="Link Text">
+                </div>
+            </div>
+            <div class="control-group">
+                <div class="controls">
+                    <button type="submit" class="btn">Create</button>
+                </div>
+            </div>
+        </form>
+
+    </div>
+
+}

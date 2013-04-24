@@ -13,25 +13,17 @@
     <div class="spotlight">
         <div id="slider" class="swipe">
             <div class="swipe-wrap">
-                <div class="slide" style="background: url('/assets/images/home/byu-campus.jpg') center; background-size: cover">
-                    <div class="slideTextHolder">
-                        <h1>Enrich your studies</h1>
-                        <p>
-                            With Ayamel, increase your language speaking ability.
-                        </p>
+                @for(homePageContent <- HomePageContent.list.filter(_.active)) {
+                    <div class="slide" style="background: url('@homePageContent.background') center; background-size: cover">
+                        <div class="slideTextHolder">
+                            <h1>@homePageContent.title</h1>
+                            <p>@homePageContent.text</p>
+                            @if(!homePageContent.link.isEmpty) {
+                                <a href="@homePageContent.link" class="btn btn-blue">@homePageContent.linkText</a>
+                            }
+                        </div>
                     </div>
-                </div>
-                <div class="slide" style="background: url('/assets/images/home/construction.jpg') center; background-size: cover">
-                    <div class="slideTextHolder">
-                        <h1>Pardon our dust</h1>
-                        <p>
-                            We're working hard to provide language learning magic, so there may be some things don't
-                            work well, or at all. Please be patient. You will be rewarded as awesomeness occurs.
-                        </p>
-                    </div>
-                </div>
-                @*<div>Two</div>*@
-                @*<div>Three</div>*@
+                }
             </div>
         </div>
         <div class="spotlightNavigation">
