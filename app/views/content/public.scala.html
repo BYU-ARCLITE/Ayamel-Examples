@@ -19,6 +19,7 @@
                     format: "auto",
                     sizing: true,
                     sorting: true,
+                    labels: [@Html(user.getContent.flatMap(_.labels).map(s => "\"" + s + "\"").mkString(","))],
                     filters: ContentItemRenderer.standardFilters
                 });
             });
