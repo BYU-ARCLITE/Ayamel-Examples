@@ -1,12 +1,12 @@
-@(content: models.Content, course: Course, resourceLibraryUrl: String)(implicit user: User)
+@(content: models.Content, resourceLibraryUrl: String)(implicit user: User)
 
-<form id="courseSettingsForm" class="form-horizontal" method="post" action="@routes.ContentController.setCourseSettings(content.id.get, course.id.get)">
-    <input type="hidden" name="contentType" value="image">
+<form id="personalSettingsForm" class="form-horizontal" method="post" action="@routes.ContentController.setPersonalSettings(content.id.get)">
+    <input type="hidden" name="contentType" value="text">
 
     <div class="control-group">
-        <label class="control-label" for="courseAnnotationDocs">Enabled Annotations</label>
+        <label class="control-label" for="personalAnnotationDocs">Enabled Annotations</label>
         <div class="controls">
-            <select multiple="multiple" name="annotationDocs" id="courseAnnotationDocs">
+            <select multiple="multiple" name="annotationDocs" id="personalAnnotationDocs">
             </select>
         </div>
     </div>
@@ -17,21 +17,21 @@
     $(function() {
         var content = @Html(content.toJson.toString());
         var url = "@resourceLibraryUrl/@content.resourceId";
-        var coursePrefix = "course_@{course.id.get}:";
+        var userPrefix = "user_@{user.id.get}:";
 
         var annotationDocs = [];
-        if (content.settings[coursePrefix + "enabledAnnotationDocuments"]) {
-            annotationDocs = content.settings[coursePrefix + "enabledAnnotationDocuments"].split(",");
+        if (content.settings[userPrefix + "enabledAnnotationDocuments"]) {
+            annotationDocs = content.settings[userPrefix + "enabledAnnotationDocuments"].split(",");
         }
 
         ResourceLibrary.load(url, function(resource) {
 
-            var $annotationDocs = $("#courseAnnotationDocs");
+            var $annotationDocs = $("#personalAnnotationDocs");
             AdditionalDocumentLoader.annotations.loadEnablable({
                 userId: "@user.id.get",
                 owner: [@content.isEditableBy(user)][0],
-                teacher: [@user.canEdit(course)][0],
-                courseId: [@course.id.get][0],
+                teacher: false,
+                courseId: 0,
                 content: [@Html(content.toJson.toString())][0],
                 resource: resource,
                 allowCourse: true,

@@ -486,8 +486,9 @@ object ContentController extends Controller {
         }
   }
 
-  def setVideoSettings(content: Content, course: Option[Course] = None)(implicit request: Request[Map[String, Seq[String]]]) {
-    val prefix = course.map(c => "course_" + c.id.get + ":").getOrElse("")
+  def setVideoSettings(content: Content, course: Option[Course] = None, user: Option[User] = None)(implicit request: Request[Map[String, Seq[String]]]) {
+    val prefix = course.map(c => "course_" + c.id.get + ":")
+      .getOrElse(user.map(u => "user_" + u.id.get + ":").getOrElse(""))
     val level = request.body("level")(0)
     val enabledCaptionTracks = request.body.get("captionTracks").map(_.mkString(",")).getOrElse("")
     val enabledAnnotationDocuments = request.body.get("annotationDocs").map(_.mkString(",")).getOrElse("")
@@ -499,18 +500,21 @@ object ContentController extends Controller {
       .setSetting(prefix + "includeTranscriptions", includeTranscriptions).save
   }
 
-  def setAudioSettings(content: Content, course: Option[Course] = None)(implicit request: Request[Map[String, Seq[String]]]) {
-    val prefix = course.map(c => "course_" + c.id.get + ":").getOrElse("")
+  def setAudioSettings(content: Content, course: Option[Course] = None, user: Option[User] = None)(implicit request: Request[Map[String, Seq[String]]]) {
+    val prefix = course.map(c => "course_" + c.id.get + ":")
+      .getOrElse(user.map(u => "user_" + u.id.get + ":").getOrElse(""))
   }
 
-  def setImageSettings(content: Content, course: Option[Course] = None)(implicit request: Request[Map[String, Seq[String]]]) {
-    val prefix = course.map(c => "course_" + c.id.get + ":").getOrElse("")
+  def setImageSettings(content: Content, course: Option[Course] = None, user: Option[User] = None)(implicit request: Request[Map[String, Seq[String]]]) {
+    val prefix = course.map(c => "course_" + c.id.get + ":")
+      .getOrElse(user.map(u => "user_" + u.id.get + ":").getOrElse(""))
     val enabledAnnotationDocuments = request.body.get("annotationDocs").map(_.mkString(",")).getOrElse("")
     content.setSetting(prefix + "enabledAnnotationDocuments", enabledAnnotationDocuments).save
   }
 
-  def setTextSettings(content: Content, course: Option[Course] = None)(implicit request: Request[Map[String, Seq[String]]]) {
-    val prefix = course.map(c => "course_" + c.id.get + ":").getOrElse("")
+  def setTextSettings(content: Content, course: Option[Course] = None, user: Option[User] = None)(implicit request: Request[Map[String, Seq[String]]]) {
+    val prefix = course.map(c => "course_" + c.id.get + ":")
+      .getOrElse(user.map(u => "user_" + u.id.get + ":").getOrElse(""))
     val enabledAnnotationDocuments = request.body.get("annotationDocs").map(_.mkString(",")).getOrElse("")
     content.setSetting(prefix + "enabledAnnotationDocuments", enabledAnnotationDocuments).save
   }
@@ -561,6 +565,25 @@ object ContentController extends Controller {
                 } else
                   Errors.forbidden
             }
+        }
+  }
+
+  def setPersonalSettings(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
+    implicit request =>
+      implicit user =>
+        getContent(id) {
+          content =>
+
+              // Make sure the user is able to edit the course
+            val contentType = Symbol(request.body("contentType")(0))
+            if (contentType == 'video)
+              setVideoSettings(content, None, Some(user))
+            if (contentType == 'audio)
+              setAudioSettings(content, None, Some(user))
+            if (contentType == 'image)
+              setImageSettings(content, None, Some(user))
+
+            Redirect(routes.ContentController.view(id)).flashing("success" -> "Settings updated.")
         }
   }
 
@@ -627,7 +650,7 @@ object ContentController extends Controller {
       implicit user =>
         getContent(id) {
           content =>
-            if (content isEditableBy user) {
+//            if (content isEditableBy user) {
               if (content.contentType == 'video || content.contentType == 'audio) {
 
                 // Get the mime type
@@ -656,7 +679,18 @@ object ContentController extends Controller {
                       content.setSetting("enabledCaptionTracks", captionTracks.mkString(",")).save
 
                       // Add the relation
-                      ResourceController.addRelation("1", subjectId, content.resourceId, "transcriptOf", Map()).map(r => {
+                      // Check to see if the user is allowed to add the captions directly, or it is personal content.
+                      val attributes: Map[String, String] =
+                        if (content isEditableBy user) Map()
+                        else {
+
+                          //Is this for a course or a user
+                          if (request.queryString.get("course").isDefined)
+                            Map("owner" -> "course", "ownerId" -> request.queryString("course")(0))
+                          else
+                            Map("owner" -> "user", "ownerId" -> user.id.get.toString)
+                        }
+                      ResourceController.addRelation("1", subjectId, content.resourceId, "transcriptOf", attributes).map(r => {
                         Redirect(routes.ContentController.view(content.id.get)).flashing("info" -> "Transcript added")
                       })
                     }
@@ -665,8 +699,8 @@ object ContentController extends Controller {
 
               } else
                 Errors.forbidden
-            } else
-              Errors.forbidden
+//            } else
+//              Errors.forbidden
         }
   }
 
@@ -675,7 +709,7 @@ object ContentController extends Controller {
       implicit user =>
         getContent(id) {
           content =>
-            if (content isEditableBy user) {
+//            if (content isEditableBy user) {
 
               val file = request.body.file("file").get
               val mime = "application/json"
@@ -694,15 +728,25 @@ object ContentController extends Controller {
                     content.setSetting("enabledAnnotationDocuments", annotationDocuments.mkString(",")).save
 
                     // Add the relation
-                    ResourceController.addRelation("1", subjectId, content.resourceId, "references", Map("type" -> "annotations")).map(r => {
+                    // Check to see if the user is allowed to add the annotations directly, or it is personal content.
+                    val attributes: Map[String, String] =
+                      if (content isEditableBy user) Map("type" -> "annotations")
+                      else {
+
+                        //Is this for a course or a user
+                        if (request.queryString.get("course").isDefined)
+                          Map("type" -> "annotations", "owner" -> "course", "ownerId" -> request.queryString("course")(0))
+                        else
+                          Map("type" -> "annotations", "owner" -> "user", "ownerId" -> user.id.get.toString)
+                      }
+                    ResourceController.addRelation("1", subjectId, content.resourceId, "references", attributes).map(r => {
                       Redirect(routes.ContentController.view(content.id.get)).flashing("info" -> "Annotations added")
                     })
                   }
                 }
               }
-
-            } else
-              Errors.forbidden
+//            } else
+//              Errors.forbidden
         }
   }
 
@@ -732,11 +776,11 @@ object ContentController extends Controller {
         getContent(id) {
           content =>
 
-            if (content isEditableBy user) {
+//            if (content isEditableBy user) {
               val resourceLibraryUrl = Play.configuration.getString("resourceLibrary.baseUrl").get
               Ok(views.html.content.annotationEditor(content, resourceLibraryUrl))
-            } else
-              Errors.forbidden
+//            } else
+//              Errors.forbidden
         }
   }
 
@@ -746,31 +790,62 @@ object ContentController extends Controller {
         getContent(id) {
           content =>
 
-            if (content isEditableBy user) {
+//            if (content isEditableBy user) {
               val title = request.body.get("title").map(_(0))
               val annotations = request.body("annotations")(0)
               val stream = new ByteArrayInputStream(annotations.getBytes("UTF-8"))
               val length = annotations.getBytes("UTF-8").size // Don't use string length. Breaks if there are 2-byte characters
               val mime = "application/json"
               val filename = request.body.get("filename").map(_(0)).getOrElse(FileUploader.uniqueFilename(annotations + ".json"))
+              val course = request.queryString.get("course").flatMap(s => Course.findById(s(0).toLong))
 
               Async {
                 // Upload the annotations
+                // TODO: Somehow make sure that the user isn't overwriting somebody else's annotations
                 FileUploader.uploadStream(stream, filename, length, mime).flatMap { url =>
 
                   // If there is a title defined then this is a new annotation document
                   if (title.isDefined) {
                     // Create subtitle (subject) resource
                     ResourceHelper.createResourceWithUri(title.get, "", "annotations", Nil, "text", url, mime).flatMap { resource =>
-
-                    // Have this annotation document  enabled
                       val subjectId = (resource \ "id").as[String]
-                      val annotationDocuments = subjectId :: content.enabledAnnotationDocuments
-                      content.setSetting("enabledAnnotationDocuments", annotationDocuments.mkString(",")).save
+
+                      // Have this annotation document enabled if the owner is adding it or is being added to a course
+                      val prefix =
+                        if (course.isDefined)
+                          "course_" + course.get.id.get + ":"
+                        else {
+                          if (content isEditableBy user)
+                            ""
+                          else
+                            "user_" + user.id.get + ":"
+                        }
+                      val settingName = prefix + "enabledAnnotationDocuments"
+                      val enabledDocuments = subjectId :: content.settings.get(settingName)
+                        .map(_.split(",").filterNot(_.isEmpty).toList).getOrElse(Nil)
+
+                      // Save the settings
+                      content.setSetting(settingName, enabledDocuments.mkString(",")).save
 
                       // Add the relation
-                      ResourceController.addRelation("1", subjectId, content.resourceId, "references", Map("type" -> "annotations")).map(r => {
-                        Redirect(routes.ContentController.view(content.id.get)).flashing("info" -> "Annotations added")
+                      // Check to see if the user is allowed to add the annotations directly, or it is personal content.
+                      val attributes: Map[String, String] =
+                        if (content isEditableBy user) Map("type" -> "annotations")
+                        else {
+
+                          //Is this for a course or a user
+                          if (course.isDefined)
+                            Map("type" -> "annotations", "owner" -> "course", "ownerId" -> course.get.id.get.toString)
+                          else
+                            Map("type" -> "annotations", "owner" -> "user", "ownerId" -> user.id.get.toString)
+                        }
+                      ResourceController.addRelation("1", subjectId, content.resourceId, "references", attributes).map(r => {
+                        val route =
+                          if (course.isDefined)
+                            routes.ContentController.viewInCourse(content.id.get, course.get.id.get)
+                          else
+                            routes.ContentController.view(content.id.get)
+                        Redirect(route).flashing("info" -> "Annotations added")
                       })
                     }
                   } else {
@@ -782,8 +857,8 @@ object ContentController extends Controller {
                   }
                 }
               }
-            } else
-              Errors.forbidden
+//            } else
+//              Errors.forbidden
         }
   }
 

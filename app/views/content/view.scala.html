@@ -69,6 +69,7 @@
     <!-- Content rendering -->
     <script type="text/javascript" src="@routes.Assets.at("javascripts/BoxDrawingCanvas.js")"></script>
 
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/contentRendering/AdditionalDocumentLoader.js")"></script>
     <script type="text/javascript" src="@routes.Assets.at("javascripts/contentRendering/ContentLayoutManager.js")"></script>
     <script type="text/javascript" src="@routes.Assets.at("javascripts/contentRendering/ContentRenderer.js")"></script>
     <script type="text/javascript" src="@routes.Assets.at("javascripts/contentRendering/TranscriptDisplay.js")"></script>
@@ -104,7 +105,8 @@
             @views.html.content.header.share(content)
             @views.html.content.header.addToCourse(content)
             @views.html.content.header.courseSettings(content, course, resourceLibraryUrl)
-            @views.html.content.header.addRelatedDocs(content, resourceLibraryUrl)
+            @views.html.content.header.personalSettings(content, resourceLibraryUrl)
+            @views.html.content.header.addRelatedDocs(content, course, resourceLibraryUrl)
             @views.html.content.header.edit(content, resourceLibraryUrl)
             @if(content.isEditableBy(user)) {
                 <a href="@routes.ContentController.stats(content.id.get)" class="btn"><i class="icon-bar-chart"></i> View Stats</a>
@@ -137,6 +139,10 @@
                 var contentHolder = $("#contentHolder")[0];
                 ContentRenderer.render({
                     content: content,
+                    userId: "@user.id.get",
+                    owner: [@content.isEditableBy(user)][0],
+                    teacher: [@course.map(c => user.canEdit(c)).getOrElse(false)][0],
+                    courseId: [@course.map(_.id.get).getOrElse(0)][0],
                     holder: contentHolder,
                     coursePrefix: coursePrefix,
                     annotate: true

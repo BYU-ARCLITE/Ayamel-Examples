@@ -1,7 +1,11 @@
-@(content: models.Content, resourceLibraryUrl: String)(implicit user: User)
+@(content: models.Content, course: Option[Course], resourceLibraryUrl: String)(implicit user: User)
 
-@if(content isEditableBy user) {
+@annotationUrl = @{
+    val courseQuery = course.map(c => "?course=" + c.id.get).getOrElse("")
+    routes.ContentController.editAnnotations(content.id.get).toString() + courseQuery
+}
 
+@if(true) {
     <div class="btn-group">
 
         <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
@@ -66,7 +70,7 @@
         <div class="modal-body">
 
             <h4>New Annotations</h4>
-            <a id="annotationLink" href="@routes.ContentController.editAnnotations(content.id.get)">Create a new Annotation Set</a>
+            <a id="annotationLink" href="@annotationUrl">Create a new Annotation Set</a>
 
             <h4>Edit Existing Annotations</h4>
             <table id="existingAnnotations" class="table table-bordered">
@@ -90,11 +94,20 @@
             ResourceLibrary.load(url, function(resource) {
                 var $tbody = $("#existingAnnotations").children("tbody");
                 var annotationUrl = $("#annotationLink").attr("href");
-                resource.getAnnotations(function (annotations) {
-                    annotations.forEach(function (annotation) {
-                        $tbody.append("<tr><td>" + annotation.title + "</td><td><a href='" + annotationUrl + "?doc=" +
-                            annotation.id + "' class='btn'>Edit</a></td>");
-                    });
+
+                AdditionalDocumentLoader.annotations.loadEditable({
+                    userId: "@user.id.get",
+                    owner: [@content.isEditableBy(user)][0],
+                    teacher: [@course.map(c => user.canEdit(c)).getOrElse(false)][0],
+                    courseId: [@course.map(_.id.get).getOrElse(0)][0],
+                    content: [@Html(content.toJson.toString())][0],
+                    resource: resource,
+                    callback: function (annotations) {
+                        annotations.forEach(function (annotation) {
+                            $tbody.append("<tr><td>" + annotation.title + "</td><td><a href='" + annotationUrl + "?doc=" +
+                                annotation.id + "' class='btn'>Edit</a></td>");
+                        });
+                    }
                 });
             });
         });
