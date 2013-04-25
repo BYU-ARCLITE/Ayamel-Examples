@@ -18,7 +18,7 @@ import dataAccess.ResourceController
 case class Content(id: Pk[Long], name: String, contentType: Symbol, thumbnail: String, resourceId: String,
                    dateAdded: String = TimeTools.now(), visibility: Int = Content.visibility.tightlyRestricted,
                    shareability: Int = Content.shareability.shareable, settings: Map[String, String] = Map(),
-                   authKey: String = HashTools.md5Hex(util.Random.nextString(16)))
+                   authKey: String = HashTools.md5Hex(util.Random.nextString(16)), labels: List[String] = Nil)
   extends SQLSavable with SQLDeletable {
 
   /**
@@ -29,12 +29,12 @@ case class Content(id: Pk[Long], name: String, contentType: Symbol, thumbnail: S
     if (id.isDefined) {
       update(Content.tableName, 'id -> id, 'name -> name, 'contentType -> contentType.name, 'thumbnail -> thumbnail,
         'resourceId -> resourceId, 'dateAdded -> dateAdded, 'visibility -> visibility, 'shareability -> shareability,
-        'settings -> SerializationTools.serializeMap(settings), 'authKey -> authKey)
+        'settings -> SerializationTools.serializeMap(settings), 'authKey -> authKey, 'labels -> labels.mkString(","))
       this
     } else {
       val id = insert(Content.tableName, 'name -> name, 'contentType -> contentType.name, 'thumbnail -> thumbnail,
         'resourceId -> resourceId, 'dateAdded -> dateAdded, 'visibility -> visibility, 'shareability -> shareability,
-        'settings -> SerializationTools.serializeMap(settings), 'authKey -> authKey)
+        'settings -> SerializationTools.serializeMap(settings), 'authKey -> authKey, 'labels -> labels.mkString(","))
       this.copy(id)
     }
   }
@@ -152,7 +152,8 @@ case class Content(id: Pk[Long], name: String, contentType: Symbol, thumbnail: S
     "shareability" -> shareability,
     "settings" -> settings,
     "authKey" -> authKey,
-    "views" -> views("").size
+    "views" -> views("").size,
+    "labels" -> labels
   )
 
   object cache {
@@ -225,11 +226,12 @@ object Content extends SQLSelectable[Content] {
       get[Int](tableName + ".visibility") ~
       get[Int](tableName + ".shareability") ~
       get[String](tableName + ".settings") ~
-      get[String](tableName + ".authKey") map {
-      case id ~ name ~ contentType ~ thumbnail ~ resourceId ~ dateAdded ~ visibility ~ shareability ~ settings ~ authKey =>
+      get[String](tableName + ".authKey") ~
+      get[String](tableName + ".labels") map {
+      case id ~ name ~ contentType ~ thumbnail ~ resourceId ~ dateAdded ~ visibility ~ shareability ~ settings ~ authKey ~ labels =>
         Content(id, name, Symbol(contentType), thumbnail, resourceId, dateAdded, visibility, shareability,
           if (settings.isEmpty) defaultSettings.preset(Symbol(contentType)) else SerializationTools.deserializeMap(settings),
-          authKey)
+          authKey, labels.split(",").toList.filterNot(_.isEmpty))
     }
   }
 

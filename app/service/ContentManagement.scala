@@ -8,7 +8,7 @@ import ExecutionContext.Implicits.global
 
 
 case class ContentDescriptor(title: String, description: String, keywords: String, categories: List[String],
-                             url: String, mime: String, thumbnail: Option[String] = None)
+                             url: String, mime: String, thumbnail: Option[String] = None, labels: List[String] = Nil)
 
 /**
  * This service helps with the creation and management of content objects and their corresponding resources.
@@ -64,7 +64,7 @@ object ContentManagement {
         ResourceHelper.addThumbnail(resourceId, info.thumbnail.get)
 
       // Create the content and set the user and the owner
-      val content = Content(NotAssigned, info.title, 'video, info.thumbnail.getOrElse(""), resourceId).save
+      val content = Content(NotAssigned, info.title, 'video, info.thumbnail.getOrElse(""), resourceId, labels = info.labels).save
       owner.addContent(content)
       content
     })
@@ -84,7 +84,7 @@ object ContentManagement {
       val resourceId = (resource \ "id").as[String]
 
       // Create the content and set the user and the owner
-      val content = Content(NotAssigned, info.title, 'audio, info.thumbnail.getOrElse(""), resourceId).save
+      val content = Content(NotAssigned, info.title, 'audio, info.thumbnail.getOrElse(""), resourceId, labels = info.labels).save
       owner.addContent(content)
       content
     })
@@ -104,7 +104,7 @@ object ContentManagement {
       val resourceId = (resource \ "id").as[String]
 
       // Create the content and set the user and the owner
-      val content = Content(NotAssigned, info.title, 'text, info.thumbnail.getOrElse(""), resourceId).save
+      val content = Content(NotAssigned, info.title, 'text, info.thumbnail.getOrElse(""), resourceId, labels = info.labels).save
       owner.addContent(content)
       content
     })
@@ -128,7 +128,7 @@ object ContentManagement {
         ResourceHelper.addThumbnail(resourceId, info.thumbnail.get)
 
       // Create the content and set the user and the owner
-      val content = Content(NotAssigned, info.title, 'image, info.thumbnail.getOrElse(""), resourceId).save
+      val content = Content(NotAssigned, info.title, 'image, info.thumbnail.getOrElse(""), resourceId, labels = info.labels).save
       owner.addContent(content)
       content
     })
