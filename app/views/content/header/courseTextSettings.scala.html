@@ -1,4 +1,4 @@
-@(content: models.Content, course: Course, resourceLibraryUrl: String)
+@(content: models.Content, course: Course, resourceLibraryUrl: String)(implicit user: User)
 
 <form id="courseSettingsForm" class="form-horizontal" method="post" action="@routes.ContentController.setCourseSettings(content.id.get, course.id.get)">
     <input type="hidden" name="contentType" value="text">
@@ -19,11 +19,6 @@
         var url = "@resourceLibraryUrl/@content.resourceId";
         var coursePrefix = "course_@{course.id.get}:";
 
-        var allowedAnnotationDocs = [];
-        if (content.settings.enabledAnnotationDocuments) {
-            allowedAnnotationDocs = content.settings.enabledAnnotationDocuments.split(",");
-        }
-
         var annotationDocs = [];
         if (content.settings[coursePrefix + "enabledAnnotationDocuments"]) {
             annotationDocs = content.settings[coursePrefix + "enabledAnnotationDocuments"].split(",");
@@ -31,16 +26,22 @@
 
         ResourceLibrary.load(url, function(resource) {
 
-            // Load the annotations
-            resource.getAnnotations(function (annotations) {
-                var $annotationDocs = $("#courseAnnotationDocs");
-                annotations.forEach(function(annotationDoc) {
-                    if (allowedAnnotationDocs.indexOf(annotationDoc.id) >= 0) {
-                        var html = '<option value="' + annotationDoc.id + '">' + annotationDoc.title + '</option>';
+            var $annotationDocs = $("#courseAnnotationDocs");
+            AdditionalDocumentLoader.annotations.loadEnablable({
+                userId: "@user.id.get",
+                owner: [@content.isEditableBy(user)][0],
+                teacher: [@user.canEdit(course)][0],
+                courseId: [@course.id.get][0],
+                content: [@Html(content.toJson.toString())][0],
+                resource: resource,
+                allowCourse: true,
+                callback: function (annotations) {
+                    annotations.forEach(function (annotation) {
+                        var html = '<option value="' + annotation.id + '">' + annotation.title + '</option>';
                         $annotationDocs.append(html);
-                    }
-                });
-                $annotationDocs.val(annotationDocs);
+                    });
+                    $annotationDocs.val(annotationDocs);
+                }
             });
         });
     });

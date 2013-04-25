@@ -20,63 +20,104 @@ var ContentRenderer = (function () {
     }
 
     function getTranscripts(args, callback) {
-        args.resource.getTranscripts(function (transcripts) {
-
-            // Filter the transcripts to only include those that are specified
-
-            var allowedCaptionTracks = [];
-            if (args.content.settings.enabledCaptionTracks) {
-                allowedCaptionTracks = args.content.settings.enabledCaptionTracks.split(",");
-            }
-
-            var captionTracks = [];
-            if (args.content.settings[args.coursePrefix + "enabledCaptionTracks"]) {
-                captionTracks = args.content.settings[args.coursePrefix + "enabledCaptionTracks"].split(",");
-            }
-            transcripts = transcripts.filter(function (transcript) {
-                return captionTracks.indexOf(transcript.id) >= 0 && allowedCaptionTracks.indexOf(transcript.id) >= 0;
-            });
-            callback(transcripts);
+        AdditionalDocumentLoader.captionTracks.loadVisible({
+            userId: args.userId,
+            owner: args.owner,
+            teacher: args.teacher,
+            courseId: args.courseId,
+            content: args.content,
+            resource: args.resource,
+            callback: callback
         });
+
+
+//        args.resource.getTranscripts(function (transcripts) {
+//
+//            // Filter the transcripts to only include those that are specified
+//
+//            var allowedCaptionTracks = [];
+//            if (args.content.settings.enabledCaptionTracks) {
+//                allowedCaptionTracks = args.content.settings.enabledCaptionTracks.split(",");
+//            }
+//
+//            var captionTracks = [];
+//            if (args.content.settings[args.coursePrefix + "enabledCaptionTracks"]) {
+//                captionTracks = args.content.settings[args.coursePrefix + "enabledCaptionTracks"].split(",");
+//            }
+//            transcripts = transcripts.filter(function (transcript) {
+//                return captionTracks.indexOf(transcript.id) >= 0 && allowedCaptionTracks.indexOf(transcript.id) >= 0;
+//            });
+//            callback(transcripts);
+//        });
     }
 
     function getAnnotations(args, callback) {
-        // First get the annotation resources from the relations
-        args.resource.getAnnotations(function (annotations) {
+        AdditionalDocumentLoader.annotations.loadVisible({
+            userId: args.userId,
+            owner: args.owner,
+            teacher: args.teacher,
+            courseId: args.courseId,
+            content: args.content,
+            resource: args.resource,
+            callback: function (annotations) {
 
-            // Filter the annotations to only include those that are specified
-            var allowedAnnotationDocuments = [];
-            if (args.content.settings.enabledAnnotationDocuments) {
-                allowedAnnotationDocuments = args.content.settings.enabledAnnotationDocuments.split(",");
-            }
-
-            var annotationDocuments = [];
-            if (args.content.settings[args.coursePrefix + "enabledAnnotationDocuments"]) {
-                annotationDocuments = args.content.settings[args.coursePrefix + "enabledAnnotationDocuments"].split(",");
-            }
-            annotations = annotations.filter(function (annotationDoc) {
-                return annotationDocuments.indexOf(annotationDoc.id) >= 0 && allowedAnnotationDocuments.indexOf(annotationDoc.id) >= 0;
-            });
-
-            // Load the annotation files
-            async.map(annotations, function (annotation, asyncCallback) {
-                $.ajax(annotation.content.files[0].downloadUri, {
-                    dataType: "json",
-                    success: function(data) {
-                        AnnotationLoader.load(data, function(manifest) {
-                            if (manifest) {
-                                manifest.resourceId = annotation.id;
-                            }
-                            asyncCallback(null, manifest);
-                        });
-                    }, error: function(data){
-                        asyncCallback(data);
-                    }
+                // Load the annotation files
+                async.map(annotations, function (annotation, asyncCallback) {
+                    $.ajax(annotation.content.files[0].downloadUri, {
+                        dataType: "json",
+                        success: function(data) {
+                            AnnotationLoader.load(data, function(manifest) {
+                                if (manifest) {
+                                    manifest.resourceId = annotation.id;
+                                }
+                                asyncCallback(null, manifest);
+                            });
+                        }, error: function(data){
+                            asyncCallback(data);
+                        }
+                    });
+                }, function (err, results) {
+                    callback(results);
                 });
-            }, function (err, results) {
-                callback(results);
-            });
+            }
         });
+
+//        // First get the annotation resources from the relations
+//        args.resource.getAnnotations(function (annotations) {
+//
+//            // Filter the annotations to only include those that are specified
+//            var allowedAnnotationDocuments = [];
+//            if (args.content.settings.enabledAnnotationDocuments) {
+//                allowedAnnotationDocuments = args.content.settings.enabledAnnotationDocuments.split(",");
+//            }
+//
+//            var annotationDocuments = [];
+//            if (args.content.settings[args.coursePrefix + "enabledAnnotationDocuments"]) {
+//                annotationDocuments = args.content.settings[args.coursePrefix + "enabledAnnotationDocuments"].split(",");
+//            }
+//            annotations = annotations.filter(function (annotationDoc) {
+//                return annotationDocuments.indexOf(annotationDoc.id) >= 0 && allowedAnnotationDocuments.indexOf(annotationDoc.id) >= 0;
+//            });
+//
+//            // Load the annotation files
+//            async.map(annotations, function (annotation, asyncCallback) {
+//                $.ajax(annotation.content.files[0].downloadUri, {
+//                    dataType: "json",
+//                    success: function(data) {
+//                        AnnotationLoader.load(data, function(manifest) {
+//                            if (manifest) {
+//                                manifest.resourceId = annotation.id;
+//                            }
+//                            asyncCallback(null, manifest);
+//                        });
+//                    }, error: function(data){
+//                        asyncCallback(data);
+//                    }
+//                });
+//            }, function (err, results) {
+//                callback(results);
+//            });
+//        });
     }
 
 

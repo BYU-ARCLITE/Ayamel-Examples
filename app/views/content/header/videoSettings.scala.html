@@ -1,4 +1,4 @@
-@(content: models.Content, resourceLibraryUrl: String)
+@(content: models.Content, resourceLibraryUrl: String)(implicit user: User)
 
 @isChecked(val1: Any, val2: Any) = {
     @if(val1 == val2) {
@@ -76,25 +76,43 @@
         }
 
         ResourceLibrary.load(url, function(resource) {
-            // Load the transcripts (caption tracks)
-            resource.getTranscripts(function (transcripts) {
-                var $captionTracks = $("#captionTracks");
-                transcripts.forEach(function(transcript) {
-                    var html = '<option value="' + transcript.id + '">' + transcript.title + ' (' + transcript.language + ')</option>';
-                    $captionTracks.append(html);
-                });
-                $captionTracks.val(captionTracks);
+
+            var $captionTracks = $("#captionTracks");
+            AdditionalDocumentLoader.captionTracks.loadEnablable({
+                userId: "@user.id.get",
+                owner: [@content.isEditableBy(user)][0],
+                teacher: false,
+                courseId: 0,
+                content: [@Html(content.toJson.toString())][0],
+                resource: resource,
+                allowGlobal: true,
+                callback: function (transcripts) {
+                    transcripts.forEach(function (transcript) {
+                        var html = '<option value="' + transcript.id + '">' + transcript.title + ' (' + transcript.language + ')</option>';
+                        $captionTracks.append(html);
+                    });
+                    $captionTracks.val(captionTracks);
+                }
             });
 
-            // Load the annotations
-            resource.getAnnotations(function (annotations) {
-                var $annotationDocs = $("#annotationDocs");
-                annotations.forEach(function(annotationDoc) {
-                    var html = '<option value="' + annotationDoc.id + '">' + annotationDoc.title + '</option>';
-                    $annotationDocs.append(html);
-                });
-                $annotationDocs.val(annotationDocs);
+            var $annotationDocs = $("#annotationDocs");
+            AdditionalDocumentLoader.annotations.loadEnablable({
+                userId: "@user.id.get",
+                owner: [@content.isEditableBy(user)][0],
+                teacher: false,
+                courseId: 0,
+                content: [@Html(content.toJson.toString())][0],
+                resource: resource,
+                allowGlobal: true,
+                callback: function (annotations) {
+                    annotations.forEach(function (annotation) {
+                        var html = '<option value="' + annotation.id + '">' + annotation.title + '</option>';
+                        $annotationDocs.append(html);
+                    });
+                    $annotationDocs.val(annotationDocs);
+                }
             });
+
         });
     });
 </script>

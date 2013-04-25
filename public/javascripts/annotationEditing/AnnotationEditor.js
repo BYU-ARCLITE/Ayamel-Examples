@@ -429,7 +429,7 @@ var AnnotationEditor = (function() {
     var AnnotationSaver = (function() {
 
         var template =
-            '<form method="post" action="/content/{{id}}/annotations">' +
+            '<form method="post" action="/content/{{id}}/annotations{{courseQuery}}">' +
                 '{{>title}}' +
                 '<div class="control-group">' +
                     '<div class="controls">' +
@@ -473,7 +473,10 @@ var AnnotationEditor = (function() {
             var _this = this;
 
             var title = args.filename.length === 0 ? titleTemplate : "";
-            this.$element = $(Mustache.to_html(template, {id: args.content.id}, {title: title}));
+            this.$element = $(Mustache.to_html(template, {
+                id: args.content.id,
+                courseQuery: args.courseId ? "?course=" + args.courseId : ""
+            }, {title: title}));
             this.$element.find("#saveAnnotations").click(function (event) {
                 var $form = _this.$element;
 
@@ -554,12 +557,14 @@ var AnnotationEditor = (function() {
 
         function loadTranscripts(args, callback) {
             if (args.content.contentType === "video" || args.content.contentType === "audio") {
-
                 var url = args.resourceLibraryUrl + "/" + args.content.resourceId;
                 ResourceLibrary.load(url, function (resource) {
                     ContentRenderer.getTranscripts({
+                        userId: args.userId,
+                        owner: args.owner,
+                        teacher: args.teacher,
+                        courseId: args.courseId,
                         content: args.content,
-                        coursePrefix: "",
                         resource: resource
                     }, callback);
                 });

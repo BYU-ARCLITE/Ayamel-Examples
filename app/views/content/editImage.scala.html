@@ -8,13 +8,29 @@
 
 @main("Ayamel - " + content.name, moreStyles) {
 
-    @*<script src="@routes.Assets.at("Ayamel.js/js/async.js")" type="text/javascript"></script>*@
     @*<script type="text/javascript" src="@routes.Assets.at("javascripts/old/SimpleAnnotator.js")"></script>*@
+
+    <script src="@routes.Assets.at("Ayamel.js/js/async.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.at("Ayamel.js/js/Resource.js")" type="text/javascript"></script>
 
     <script type="text/javascript" src="@routes.Assets.at("javascripts/BoxDrawingCanvas.js")"></script>
 
-    <script src="@routes.Assets.at("Ayamel.js/js/Resource.js")" type="text/javascript"></script>
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/ContentRenderer.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/contentRendering/AdditionalDocumentLoader.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/contentRendering/ContentLayoutManager.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/contentRendering/ContentRenderer.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/contentRendering/TranscriptDisplay.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/contentRendering/ImageRenderer.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/contentRendering/TextRenderer.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/contentRendering/VideoRenderer.js")"></script>
+
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/annotating/ImageAnnotation.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/annotating/TextAnnotation.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/annotating/AnnotationManifest.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/annotating/ImageAnnotator.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/annotating/TextAnnotator.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/annotating/AnnotationLoader.js")"></script>
+
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/contentRendering/ContentRenderer.js")"></script>
     <script type="text/javascript" src="@routes.Assets.at("javascripts/ImageEditor.js")"></script>
 
     <div class="padded">
