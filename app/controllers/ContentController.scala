@@ -85,11 +85,12 @@ object ContentController extends Controller {
           val description = data("description")(0)
           val keywords = data("keywords")(0)
           val categories = data.get("categories").map(_.toList).getOrElse(Nil)
+          val labels = data.get("labels").map(_.toList).getOrElse(Nil)
           val url = data("url")(0)
           val mime = ResourceHelper.getMimeFromUri(url)
 
           // Create the content
-          val info = ContentDescriptor(title, description, keywords, categories, url, mime)
+          val info = ContentDescriptor(title, description, keywords, categories, url, mime, labels = labels)
           Async {
             ContentManagement.createContent(info, user, contentType).map(content => {
               Redirect(routes.ContentController.view(content.id.get)).flashing("success" -> "Content added")
@@ -115,6 +116,7 @@ object ContentController extends Controller {
           val description = data("description")(0)
           val keywords = data("keywords")(0)
           val categories = data.get("categories").map(_.toList).getOrElse(Nil)
+          val labels = data.get("labels").map(_.toList).getOrElse(Nil)
 
           Async {
             // Upload the file
@@ -122,7 +124,7 @@ object ContentController extends Controller {
             FileUploader.normalizeAndUploadFile(file).flatMap { url =>
 
                 // Create the content
-                val info = ContentDescriptor(title, description, keywords, categories, url, file.contentType.get)
+                val info = ContentDescriptor(title, description, keywords, categories, url, file.contentType.get, labels = labels)
                 ContentManagement.createContent(info, user, contentType).map {
                   content =>
                     Redirect(routes.ContentController.view(content.id.get))flashing("success" -> "Content added")
@@ -424,9 +426,10 @@ object ContentController extends Controller {
               val description = request.body("description")(0)
               val keywords = request.body("keywords")(0)
               val categories = request.body.get("categories").map(_.toList).getOrElse(Nil)
+              val labels = request.body("labels").toList
 
-              // Update the name of the content
-              content.copy(name = title).save
+              // Update the name and labels of the content
+              content.copy(name = title, labels = labels).save
 
               // Create the JSON object
               val obj = Json.obj(

@@ -15,7 +15,7 @@ var ContentItemRenderer = (function() {
             '        <h3>{{title}}</h3>' +
             '        <div class="contentStats">{{views}} views</div>' +
             '        <div class="contentIcons">' +
-            '            {{#annotations}}<i class="icon-tags" title="This {{type}} has annotations."></i>{{/annotations}}' +
+            '            {{#annotations}}<i class="icon-bookmark" title="This {{type}} has annotations."></i>{{/annotations}}' +
             '            {{#captions}}&nbsp;<img src="/assets/images/videos/captions.png" alt="This {{type}} has captions." title="This {{type}} has captions."/>{{/captions}}' +
             '            {{#isVideo}}&nbsp;<span class="badge badge-magenta" title="This video is set to level {{level}}.">{{level}}</span>{{/isVideo}}' +
             '        </div>' +
@@ -28,7 +28,7 @@ var ContentItemRenderer = (function() {
             '    <div class="contentName">{{title}}</div>' +
             '    <div class="contentStats">{{views}} Views</div>' +
             '    <div class="contentIcons">' +
-            '        {{#annotations}}<i class="icon-tags" title="This {{type}} has annotations."></i>{{/annotations}}' +
+            '        {{#annotations}}<i class="icon-bookmark" title="This {{type}} has annotations."></i>{{/annotations}}' +
             '        {{#captions}}&nbsp;<img src="/assets/images/videos/captions.png" alt="This {{type}} has captions." title="This {{type}} has captions."/>{{/captions}}' +
             '        {{#isVideo}}&nbsp;<span class="badge badge-magenta" title="This video is set to level {{level}}.">{{level}}</span>{{/isVideo}}' +
             '    </div>' +
@@ -42,7 +42,7 @@ var ContentItemRenderer = (function() {
         iconContent:
             '<div class="inline-block pad-right-high pull-left">{{views}} views</div>' +
             '<div class="inline-block pad-left-high pull-right">' +
-            '    {{#annotations}}<i class="icon-tags" title="This {{type}} has annotations."></i>{{/annotations}}' +
+            '    {{#annotations}}<i class="icon-bookmark" title="This {{type}} has annotations."></i>{{/annotations}}' +
             '    {{#captions}}&nbsp;<img src="/assets/images/videos/captions.png" alt="This {{type}} has captions." title="This {{type}} has captions."/>{{/captions}}' +
             '    {{#isVideo}}&nbsp;<span class="badge badge-magenta" title="This video is set to level {{level}}.">{{level}}</span>{{/isVideo}}' +
             '</div>' +
@@ -155,6 +155,35 @@ var ContentItemRenderer = (function() {
                 format: format,
                 sizing: true,
                 sorting: args.sorting,
+                organization: args.organization,
+                labels: args.labels,
+                filters: args.filters,
+                courseId: args.courseId
+            });
+        });
+
+        return $element;
+    }
+
+    function createOrganizer(args) {
+        var template =
+            '<div class="btn-group" data-toggle="buttons-radio">' +
+            '    <button class="btn" data-organization="contentType"><i class="icon-play-circle"></i> Content Type</button>' +
+            '    <button class="btn" data-organization="labels"><i class="icon-tags"></i> Labels</button>' +
+            '</div>';
+
+        var $element = $(template).button();
+        $element.children("button[data-organization='" + args.organization + "']").addClass("active");
+        $element.children("button").click(function() {
+            var organization = $(this).attr("data-organization");
+            ContentItemRenderer.renderAll({
+                content: args.content,
+                $holder: args.$holder,
+                format: args.format,
+                sizing: true,
+                sorting: args.sorting,
+                organization: organization,
+                labels: args.labels,
                 filters: args.filters,
                 courseId: args.courseId
             });
@@ -189,20 +218,42 @@ var ContentItemRenderer = (function() {
                 args.$holder.append(createSizer(args));
             }
 
+            // Set up organizing
+            var filters = args.filters;
+            if (args.labels) {
+                args.organization = args.organization || "contentType";
+                args.$holder.append(createOrganizer(args));
+
+                if (args.organization === "labels") {
+                    filters = {};
+                    args.labels.forEach(function (label) {
+                        filters['<h3><i class="icon-tag"></i> ' + label + '</h3>'] = function (content) {
+                            return content.labels.indexOf(label) >= 0;
+                        };
+                    });
+                    filters['<h3>Unlabeled</h3>'] = function (content) {
+                        return content.labels.length === 0;
+                    };
+                }
+            } else {
+                args.organization = "contentType";
+            }
+
             // Set up sorting
             if (args.sorting) {
                 // TODO: Setup sorting
                 console.log("TODO: Setup sorting");
             }
 
+
             // Add the content to the holder
-            if (args.filters) {
+            if (filters) {
 
                 // Filter the content into categories
-                Object.keys(args.filters).forEach(function (filterName) {
+                Object.keys(filters).forEach(function (filterName) {
 
                     // Filter the content
-                    var filteredContent = args.content.filter(args.filters[filterName]);
+                    var filteredContent = args.content.filter(filters[filterName]);
 
                     // If there were results then show them
                     if (filteredContent.length) {
