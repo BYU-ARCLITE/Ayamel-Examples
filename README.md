@@ -78,7 +78,7 @@ right authentication credentials in the configuration file.
 
 For WordReference, enter the API key:
 
-    translation.wordReference.key="a5819"
+    translation.wordReference.key="word reference key goes here"
 
 For Google Translate, this uses the research version (which will cease by the end of the year, so modifications will be
 needed). So you need to specify the email account that has access the the API, the password of that account, and a
