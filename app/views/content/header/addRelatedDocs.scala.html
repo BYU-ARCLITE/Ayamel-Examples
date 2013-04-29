@@ -5,6 +5,11 @@
     routes.ContentController.editAnnotations(content.id.get).toString() + courseQuery
 }
 
+@captionTrackUrl = @{
+    val courseQuery = course.map(c => "?course=" + c.id.get).getOrElse("")
+    routes.ContentController.addCaptionTrack(content.id.get).toString() + courseQuery
+}
+
 @if(true) {
     <div class="btn-group">
 
@@ -32,7 +37,7 @@
                     You can upload a <code>.srt</code> or <code>.vtt</code> file to add time-based captions.
                 </p>
 
-                <form class="form-horizontal" id="captionTrackForm" method="post" enctype="multipart/form-data" action="@routes.ContentController.addCaptionTrack(content.id.get)">
+                <form class="form-horizontal" id="captionTrackForm" method="post" enctype="multipart/form-data" action="@captionTrackUrl">
                     <div class="control-group">
                         <label class="control-label" for="captionTrackTitle">Title</label>
                         <div class="controls">

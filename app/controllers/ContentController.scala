@@ -672,27 +672,33 @@ object ContentController extends Controller {
 
                     // Create subtitle (subject) resource
                     ResourceHelper.createResourceWithUri(title, "", "subtitles", Nil, "text", url, mime, language).flatMap { resource =>
-
-                      // Have this caption track enabled
                       val subjectId = (resource \ "id").as[String]
-                      val captionTracks = subjectId :: content.enabledCaptionTracks
-                      content.setSetting("enabledCaptionTracks", captionTracks.mkString(",")).save
 
-                      // Add the relation
-                      // Check to see if the user is allowed to add the captions directly, or it is personal content.
-                      val attributes: Map[String, String] =
-                        if (content isEditableBy user) Map()
-                        else {
-
-                          //Is this for a course or a user
-                          if (request.queryString.get("course").isDefined)
-                            Map("owner" -> "course", "ownerId" -> request.queryString("course")(0))
-                          else
-                            Map("owner" -> "user", "ownerId" -> user.id.get.toString)
-                        }
-                      ResourceController.addRelation("1", subjectId, content.resourceId, "transcriptOf", attributes).map(r => {
-                        Redirect(routes.ContentController.view(content.id.get)).flashing("info" -> "Transcript added")
-                      })
+                      AdditionalDocumentAdder.add(content, subjectId, 'captionTrack) {
+                        course =>
+                          val route =
+                            if (course.isDefined) routes.ContentController.viewInCourse(content.id.get, course.get.id.get)
+                            else routes.ContentController.view(content.id.get)
+                          Redirect(route).flashing("info" -> "Caption track added")
+                      }
+//                      val captionTracks = subjectId :: content.enabledCaptionTracks
+//                      content.setSetting("enabledCaptionTracks", captionTracks.mkString(",")).save
+//
+//                      // Add the relation
+//                      // Check to see if the user is allowed to add the captions directly, or it is personal content.
+//                      val attributes: Map[String, String] =
+//                        if (content isEditableBy user) Map()
+//                        else {
+//
+//                          //Is this for a course or a user
+//                          if (request.queryString.get("course").isDefined)
+//                            Map("owner" -> "course", "ownerId" -> request.queryString("course")(0))
+//                          else
+//                            Map("owner" -> "user", "ownerId" -> user.id.get.toString)
+//                        }
+//                      ResourceController.addRelation("1", subjectId, content.resourceId, "transcriptOf", attributes).map(r => {
+//                        Redirect(routes.ContentController.view(content.id.get)).flashing("info" -> "Transcript added")
+//                      })
                     }
                   }
                 }
@@ -721,27 +727,33 @@ object ContentController extends Controller {
 
                   // Create subtitle (subject) resource
                   ResourceHelper.createResourceWithUri(title, "", "annotations", Nil, "text", url, mime).flatMap { resource =>
-
-                    // Have this annotation document  enabled
                     val subjectId = (resource \ "id").as[String]
-                    val annotationDocuments = subjectId :: content.enabledAnnotationDocuments
-                    content.setSetting("enabledAnnotationDocuments", annotationDocuments.mkString(",")).save
+                    AdditionalDocumentAdder.add(content, subjectId, 'annotations) {
+                      course =>
+                        val route =
+                          if (course.isDefined) routes.ContentController.viewInCourse(content.id.get, course.get.id.get)
+                          else routes.ContentController.view(content.id.get)
+                        Redirect(route).flashing("info" -> "Annotations added")
+                    }
 
-                    // Add the relation
-                    // Check to see if the user is allowed to add the annotations directly, or it is personal content.
-                    val attributes: Map[String, String] =
-                      if (content isEditableBy user) Map("type" -> "annotations")
-                      else {
-
-                        //Is this for a course or a user
-                        if (request.queryString.get("course").isDefined)
-                          Map("type" -> "annotations", "owner" -> "course", "ownerId" -> request.queryString("course")(0))
-                        else
-                          Map("type" -> "annotations", "owner" -> "user", "ownerId" -> user.id.get.toString)
-                      }
-                    ResourceController.addRelation("1", subjectId, content.resourceId, "references", attributes).map(r => {
-                      Redirect(routes.ContentController.view(content.id.get)).flashing("info" -> "Annotations added")
-                    })
+//                    val annotationDocuments = subjectId :: content.enabledAnnotationDocuments
+//                    content.setSetting("enabledAnnotationDocuments", annotationDocuments.mkString(",")).save
+//
+//                    // Add the relation
+//                    // Check to see if the user is allowed to add the annotations directly, or it is personal content.
+//                    val attributes: Map[String, String] =
+//                      if (content isEditableBy user) Map("type" -> "annotations")
+//                      else {
+//
+//                        //Is this for a course or a user
+//                        if (request.queryString.get("course").isDefined)
+//                          Map("type" -> "annotations", "owner" -> "course", "ownerId" -> request.queryString("course")(0))
+//                        else
+//                          Map("type" -> "annotations", "owner" -> "user", "ownerId" -> user.id.get.toString)
+//                      }
+//                    ResourceController.addRelation("1", subjectId, content.resourceId, "references", attributes).map(r => {
+//                      Redirect(routes.ContentController.view(content.id.get)).flashing("info" -> "Annotations added")
+//                    })
                   }
                 }
               }
@@ -797,7 +809,6 @@ object ContentController extends Controller {
               val length = annotations.getBytes("UTF-8").size // Don't use string length. Breaks if there are 2-byte characters
               val mime = "application/json"
               val filename = request.body.get("filename").map(_(0)).getOrElse(FileUploader.uniqueFilename(annotations + ".json"))
-              val course = request.queryString.get("course").flatMap(s => Course.findById(s(0).toLong))
 
               Async {
                 // Upload the annotations
@@ -810,43 +821,51 @@ object ContentController extends Controller {
                     ResourceHelper.createResourceWithUri(title.get, "", "annotations", Nil, "text", url, mime).flatMap { resource =>
                       val subjectId = (resource \ "id").as[String]
 
-                      // Have this annotation document enabled if the owner is adding it or is being added to a course
-                      val prefix =
-                        if (course.isDefined)
-                          "course_" + course.get.id.get + ":"
-                        else {
-                          if (content isEditableBy user)
-                            ""
-                          else
-                            "user_" + user.id.get + ":"
-                        }
-                      val settingName = prefix + "enabledAnnotationDocuments"
-                      val enabledDocuments = subjectId :: content.settings.get(settingName)
-                        .map(_.split(",").filterNot(_.isEmpty).toList).getOrElse(Nil)
+                      AdditionalDocumentAdder.add(content, subjectId, 'annotations) {
+                        course =>
+                          val route =
+                            if (course.isDefined) routes.ContentController.viewInCourse(content.id.get, course.get.id.get)
+                            else routes.ContentController.view(content.id.get)
+                          Redirect(route).flashing("info" -> "Annotations added")
+                      }
 
-                      // Save the settings
-                      content.setSetting(settingName, enabledDocuments.mkString(",")).save
-
-                      // Add the relation
-                      // Check to see if the user is allowed to add the annotations directly, or it is personal content.
-                      val attributes: Map[String, String] =
-                        if (content isEditableBy user) Map("type" -> "annotations")
-                        else {
-
-                          //Is this for a course or a user
-                          if (course.isDefined)
-                            Map("type" -> "annotations", "owner" -> "course", "ownerId" -> course.get.id.get.toString)
-                          else
-                            Map("type" -> "annotations", "owner" -> "user", "ownerId" -> user.id.get.toString)
-                        }
-                      ResourceController.addRelation("1", subjectId, content.resourceId, "references", attributes).map(r => {
-                        val route =
-                          if (course.isDefined)
-                            routes.ContentController.viewInCourse(content.id.get, course.get.id.get)
-                          else
-                            routes.ContentController.view(content.id.get)
-                        Redirect(route).flashing("info" -> "Annotations added")
-                      })
+//                      // Have this annotation document enabled if the owner is adding it or is being added to a course
+//                      val prefix =
+//                        if (course.isDefined)
+//                          "course_" + course.get.id.get + ":"
+//                        else {
+//                          if (content isEditableBy user)
+//                            ""
+//                          else
+//                            "user_" + user.id.get + ":"
+//                        }
+//                      val settingName = prefix + "enabledAnnotationDocuments"
+//                      val enabledDocuments = subjectId :: content.settings.get(settingName)
+//                        .map(_.split(",").filterNot(_.isEmpty).toList).getOrElse(Nil)
+//
+//                      // Save the settings
+//                      content.setSetting(settingName, enabledDocuments.mkString(",")).save
+//
+//                      // Add the relation
+//                      // Check to see if the user is allowed to add the annotations directly, or it is personal content.
+//                      val attributes: Map[String, String] =
+//                        if (content isEditableBy user) Map("type" -> "annotations")
+//                        else {
+//
+//                          //Is this for a course or a user
+//                          if (course.isDefined)
+//                            Map("type" -> "annotations", "owner" -> "course", "ownerId" -> course.get.id.get.toString)
+//                          else
+//                            Map("type" -> "annotations", "owner" -> "user", "ownerId" -> user.id.get.toString)
+//                        }
+//                      ResourceController.addRelation("1", subjectId, content.resourceId, "references", attributes).map(r => {
+//                        val route =
+//                          if (course.isDefined)
+//                            routes.ContentController.viewInCourse(content.id.get, course.get.id.get)
+//                          else
+//                            routes.ContentController.view(content.id.get)
+//                        Redirect(route).flashing("info" -> "Annotations added")
+//                      })
                     }
                   } else {
 
