@@ -149,6 +149,34 @@
                 });
             });
         </script>
+        <div ng-controller="MetadataCtrl">
+            <span ng-click="toggle()" class="label label-info">{{arrow}}Metadata</span>
+            <div ng-show="show">
+                <div>Title: {{title}}</div>
+                <div>Description: {{description}}</div>
+                <div>Keywords: {{keywords}}</div>
+                <div>Categories: {{categories}}</div>
+                <!-- div>Labels: {{labels}}</div -->
+            </div>
 
+        </div>
+        <script>
+            function MetadataCtrl($scope){
+                $scope.show = false;
+                $scope.arrow = '►';
+                $scope.toggle = function(){
+                    $scope.show = $scope.show? false:true;
+                    $scope.arrow = $scope.show?'▼':'►'
+                }
+                var url = "@resourceLibraryUrl"+"/"+[@Html(content.toJson.toString())][0].resourceId;
+                ResourceLibrary.load(url, function(resource){
+                    $scope.title = resource.title;
+                    $scope.description = resource.description;
+                    $scope.keywords = resource.keywords;
+                    $scope.categories = resource.categories.join(', ');
+                    //$scope.labels = resource.labels;
+                });
+            }
+        </script>
     </div>
 }
