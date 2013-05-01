@@ -5,6 +5,7 @@ import play.api.mvc.{AnyContent, Request}
 import models.{Course, User}
 import anorm.NotAssigned
 import play.core.parsers.FormUrlEncodedParser
+import java.io.{File, FileWriter}
 
 /**
  * This provides methods of authenticating from an LMS. These methods are:
