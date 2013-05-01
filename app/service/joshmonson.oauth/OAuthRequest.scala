@@ -86,7 +86,13 @@ case class OAuthRequest(
     // 9.1 Signature base string
     // 9.1.1 Normalize Request Parameters
     var parameters = buildParameters
-    val providedSignature = parameters.find(d => d._1 == OAuthValues.parameterNames.signature).map(_._2)
+    val providedSignature = parameters.find(d => d._1 == OAuthValues.parameterNames.signature).map(s => {
+      val signature= s._2
+      if (!signature.contains("%"))
+        OAuthUtil.encode(signature)
+      else
+        signature
+    })
 
     // Remove the signature param
     parameters = parameters.filterKeys(_ != OAuthValues.parameterNames.signature)
