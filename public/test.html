@@ -3,12 +3,174 @@
 <head>
     <title></title>
     <script type="text/javascript" src="javascripts/jquery-1.9.0.min.js"></script>
+
+    <link rel="stylesheet" href="stylesheets/bootstrap.min.css"/>
+    <link rel="stylesheet" href="stylesheets/font-awesome.css"/>
+    <link rel="stylesheet" href="Ayamel.js/js/player2/css/player2.css"/>
+
 </head>
 <body>
-<form action="/test" method="post" enctype="multipart/form-data">
-    <input type="file" name="file">
-    <input type="submit">
-</form>
+
+<script type="text/javascript" src="Ayamel.js/js/player2/js/Ayamel.js"></script>
+<script type="text/javascript" src="Ayamel.js/js/player2/js/AyamelPlayer.js"></script>
+<script type="text/javascript" src="Ayamel.js/js/player2/js/CaptionTrackLoader.js"></script>
+<script type="text/javascript" src="Ayamel.js/js/player2/js/ControlBar.js"></script>
+<script type="text/javascript" src="Ayamel.js/js/player2/js/FullScreenHandler.js"></script>
+<script type="text/javascript" src="Ayamel.js/js/player2/js/KeyBinder.js"></script>
+<script type="text/javascript" src="Ayamel.js/js/player2/js/MediaPlayer.js"></script>
+<script type="text/javascript" src="Ayamel.js/js/player2/js/ProgressBar.js"></script>
+<script type="text/javascript" src="Ayamel.js/js/player2/js/controls/CaptionsMenu.js"></script>
+<script type="text/javascript" src="Ayamel.js/js/player2/js/controls/FullScreenButton.js"></script>
+<script type="text/javascript" src="Ayamel.js/js/player2/js/controls/PlayButton.js"></script>
+<script type="text/javascript" src="Ayamel.js/js/player2/js/controls/TimeCode.js"></script>
+<script type="text/javascript" src="Ayamel.js/js/player2/js/controls/VolumeSlider.js"></script>
+<script type="text/javascript" src="Ayamel.js/js/player2/js/plugins/html5Video.js"></script>
+<script type="text/javascript" src="Ayamel.js/js/player2/js/plugins/html5Audio.js"></script>
+
+<script type="text/javascript" src="TimedText/TimedText.js"></script>
+<script type="text/javascript" src="TimedText/TextTrack.js"></script>
+<script type="text/javascript" src="TimedText/TextTrackCue.js"></script>
+<script type="text/javascript" src="TimedText/WebVTT.js"></script>
+<script type="text/javascript" src="TimedText/SRT.js"></script>
+<script type="text/javascript" src="TimedText/TTML.js"></script>
+
+<script type="text/javascript" src="Caption-Renderer/caption-renderer.js"></script>
+
+<div class="container">
+    <div id="player1"></div>
+    <hr>
+    <div id="player2"></div>
+</div>
+
+<script type="text/javascript">
+    $(function() {
+
+        var resource1 = {
+            "id": "dc540ea8-f806-6b73-23d1-5fc7c87af168",
+            "categories": [
+                "Education"
+            ],
+            "dateModified": "2013-04-13T18:08:06.814Z",
+            "description": "",
+            "keywords": "",
+            "language": "en",
+            "status": "awaiting content",
+            "title": "Dreyfus",
+            "type": "video",
+            "content": {
+                "files": [
+                    {
+                        "downloadUri": "http://arclite.byu.edu/hvmirror/french/Dreyfus.mp4",
+                        "mime": "video/mp4",
+                        "representation": "original",
+                        "quality": "1"
+                    },
+                    {
+                        "downloadUri": "https://s3.amazonaws.com/ayamel/ed32924b55683ab0d502d41df10b579f.jpg",
+                        "mime": "image/jpeg",
+                        "representation": "summary",
+                        "quality": "1"
+                    }
+                ]
+            },
+            "_id": "dc540ea8-f806-6b73-23d1-5fc7c87af168",
+            "_rev": "3-2ffb719e91bb7fd998dd4a6df01c40b3"
+        };
+
+        var captionTracks = [
+            {
+                "id": "02c3a9e9-bcc3-14b9-4be5-46448ca4a74a",
+                "categories": [],
+                "dateModified": "2013-04-13T18:08:59.588Z",
+                "description": "",
+                "keywords": "subtitles",
+                "language": "fr",
+                "status": "awaiting content",
+                "title": "Transcription",
+                "type": "text",
+                "content": {
+                    "files": [
+                        {
+                            "downloadUri": "https://s3.amazonaws.com/ayamel/de3b50d0865fbaa0c7ceebd044bd9ba5.vtt",
+                            "mime": "text/vtt",
+                            "representation": "original",
+                            "quality": "1"
+                        }
+                    ]
+                },
+                "_id": "02c3a9e9-bcc3-14b9-4be5-46448ca4a74a",
+                "_rev": "2-ad3ffeb43de9291e667dbdd09d286cec"
+            },
+            {
+                "id": "02c3a9e9-bcc3-14b9-4be5-46448ca4a74a",
+                "categories": [],
+                "dateModified": "2013-04-13T18:08:59.588Z",
+                "description": "",
+                "keywords": "subtitles",
+                "language": "fr",
+                "status": "awaiting content",
+                "title": "Transcription",
+                "type": "text",
+                "content": {
+                    "files": [
+                        {
+                            "downloadUri": "https://s3.amazonaws.com/ayamel/de3b50d0865fbaa0c7ceebd044bd9ba5.vtt",
+                            "mime": "text/vtt",
+                            "representation": "original",
+                            "quality": "1"
+                        }
+                    ]
+                },
+                "_id": "02c3a9e9-bcc3-14b9-4be5-46448ca4a74a",
+                "_rev": "2-ad3ffeb43de9291e667dbdd09d286cec"
+            }
+        ];
+
+        window.player1 = new Ayamel.classes.AyamelPlayer({
+            $holder: $("#player1"),
+            resource: resource1,
+            aspectRatio: Ayamel.aspectRatios.hdVideo,
+            captionTracks: captionTracks
+        });
+//
+//        player1.addEventListener("play", function() {
+//            console.log("Play!");
+//        });
+
+        var resource2 = {
+            "id": "82965b29-f7d2-842b-de69-5e93c293c73b",
+            "categories": [],
+            "dateModified": "2013-05-01T18:32:18.697Z",
+            "description": "",
+            "keywords": "",
+            "language": "en",
+            "status": "awaiting content",
+            "title": "Twisted",
+            "type": "audio",
+            "content": {
+                "files": [
+                    {
+                        "downloadUri": "https://s3.amazonaws.com/ayamel/dca0ee9113dce609e3f7f8f443e668e0.mp3",
+                        "mime": "audio/mp3",
+                        "representation": "original",
+                        "quality": "1"
+                    }
+                ]
+            },
+            "_id": "82965b29-f7d2-842b-de69-5e93c293c73b",
+            "_rev": "2-c5fe03a2f4b14875796e193e2b98a45b"
+        };
+
+        window.player2 = new Ayamel.classes.AyamelPlayer({
+            $holder: $("#player2"),
+            resource: resource2,
+            captionTracks: captionTracks,
+            components: [["play", "volume", "captions"], ["timeCode"]]
+        });
+
+    });
+</script>
+
 
 </body>
 </html>

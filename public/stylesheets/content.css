@@ -281,8 +281,8 @@
 
 /* Content rendering */
 
-#contentHolder.video {
-    margin-bottom: 60px;
+#contentHolder {
+    margin-bottom: 10px;
 }
 
 

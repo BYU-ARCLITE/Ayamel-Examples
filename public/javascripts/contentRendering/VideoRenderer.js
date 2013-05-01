@@ -177,23 +177,49 @@ var VideoRenderer = (function() {
     }
 
     function setupVideoPlayer(args, callback) {
-        Ayamel.AddVideoPlayer(h5PlayerInstall, 1, function() {
+//        Ayamel.AddVideoPlayer(h5PlayerInstall, 1, function() {
 
-            var components = ["play", "volume", "fullScreen"];
+            var components = [["play", "volume"], ["fullScreen", "timeCode"]];
             var captions;
 
             if (getLevel(args) >= 2) {
-                components.push("captions");
+                components[0].push("captions");
                 captions = args.transcripts;
             }
 
             // Create the player
-            var videoPlayer = new Ayamel.VideoPlayer({
-                element: args.layout.$player[0],
-                aspectRatio: 45,
+//            var videoPlayer = new Ayamel.VideoPlayer({
+//                element: args.layout.$player[0],
+//                aspectRatio: 45,
+//                resource: args.resource,
+//                components: components,
+//                captions: captions,
+//                renderCue: function (cue) {
+//                    var node = document.createElement('div');
+//                    node.appendChild(cue.getCueAsHTML(cue.track.kind==='subtitles'));
+//
+//                    // Attach the translator
+//                    if (args.translator) {
+//                        args.translator.attach(node, cue.track.language, "en", {
+//                            captionTrackId: determineTranscriptFromCue(args.transcripts, cue),
+//                            cueIndex: "" + cue.track.cues.indexOf(cue)
+//                        });
+//                    }
+//
+//                    // Add annotations
+//                    if (args.annotator) {
+//                        args.annotator.annotate($(node));
+//                    }
+//
+//                    return {node:node};
+//                }
+//            });
+
+            var videoPlayer = new Ayamel.classes.AyamelPlayer({
+                $holder: args.layout.$player,
                 resource: args.resource,
+                captionTracks: captions,
                 components: components,
-                captions: captions,
                 renderCue: function (cue) {
                     var node = document.createElement('div');
                     node.appendChild(cue.getCueAsHTML(cue.track.kind==='subtitles'));
@@ -230,7 +256,7 @@ var VideoRenderer = (function() {
             });
 
             callback(videoPlayer);
-        });
+//        });
     }
 
     function setupTranscripts(args) {
@@ -299,7 +325,7 @@ var VideoRenderer = (function() {
                             args.callback();
                         }
                     });
-                })
+                });
             });
         }
     };

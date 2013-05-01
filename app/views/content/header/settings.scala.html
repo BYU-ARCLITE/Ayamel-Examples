@@ -13,7 +13,7 @@
                 @views.html.content.header.videoSettings(content, resourceLibraryUrl)
             }
             @if(content.contentType == 'audio) {
-                <em>There are no settings defined for this content type.</em>
+                @views.html.content.header.audioSettings(content, resourceLibraryUrl)
             }
             @if(content.contentType == 'image) {
                 @views.html.content.header.imageSettings(content, resourceLibraryUrl)
