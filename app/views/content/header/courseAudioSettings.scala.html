@@ -1,0 +1,130 @@
+@(content: models.Content, course: Course, resourceLibraryUrl: String)(implicit user: User)
+
+@isChecked(val1: Any, val2: Any) = {
+    @if(val1 == val2) {
+        checked
+    }
+}
+
+@coursePrefix = @{"course_" + course.id.get + ":"}
+
+@level = @{
+    val l = content.settings.get(coursePrefix + "level").getOrElse("1")
+    if (l.isEmpty)
+        "1"
+    else
+        l
+}
+
+<form id="courseSettingsForm" class="form-horizontal" method="post" action="@routes.ContentController.setCourseSettings(content.id.get, course.id.get)">
+    <input type="hidden" name="contentType" value="audio">
+    <div class="control-group">
+        <label class="control-label" for="playbackLevel">Playback level</label>
+        <div class="controls">
+
+            <label class="radio">
+                <input type="radio" name="level" value="1" @isChecked(level, "1")>
+                    1 - Audio playback
+            </label>
+
+            @if(content.level.toInt >= 2) {
+                <label class="radio">
+                    <input type="radio" name="level" value="2" @isChecked(level, "2")>
+                        2 - Audio playback and subtitles
+                </label>
+            }
+            @if(content.level.toInt >= 3) {
+                <label class="radio">
+                    <input type="radio" name="level" value="3" @isChecked(level, "3")>
+                        3 - Audio, subtitles, and interactions
+                </label>
+            }
+            @if(content.level.toInt >= 4) {
+                <label class="radio">
+                    <input type="radio" name="level" value="4" @isChecked(level, "4")>
+                        4 - Audio, subtitles, interactions, and annotations
+                </label>
+            }
+            @if(content.level.toInt >= 5) {
+                <label class="radio">
+                    <input type="radio" name="level" value="5" @isChecked(level, "5")>
+                        5 - Audio, subtitles, interactions, annotations, and auto-generated activities
+                </label>
+            }
+        </div>
+
+        <div class="control-group">
+            <label class="control-label" for="courseCaptionTracks">Enabled Caption Tracks</label>
+            <div class="controls">
+                <select multiple="multiple" name="captionTracks" id="courseCaptionTracks">
+                </select>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label" for="courseAnnotationDocs">Enabled Annotations</label>
+            <div class="controls">
+                <select multiple="multiple" name="annotationDocs" id="courseAnnotationDocs">
+                </select>
+            </div>
+        </div>
+    </div>
+    <input type="submit" style="position: absolute; left: -9999px; width: 1px; height: 1px;"/>
+</form>
+
+<script type="text/javascript">
+    $(function() {
+        var content = @Html(content.toJson.toString());
+        var url = "@resourceLibraryUrl/@content.resourceId";
+        var coursePrefix = "course_@{course.id.get}:";
+
+        var captionTracks = [];
+        if (content.settings[coursePrefix + "enabledCaptionTracks"]) {
+            captionTracks = content.settings[coursePrefix + "enabledCaptionTracks"].split(",");
+        }
+
+        var annotationDocs = [];
+        if (content.settings[coursePrefix + "enabledAnnotationDocuments"]) {
+            annotationDocs = content.settings[coursePrefix + "enabledAnnotationDocuments"].split(",");
+        }
+
+        ResourceLibrary.load(url, function(resource) {
+
+            var $captionTracks = $("#courseCaptionTracks");
+            AdditionalDocumentLoader.captionTracks.loadEnablable({
+                userId: "@user.id.get",
+                owner: [@content.isEditableBy(user)][0],
+                teacher: [@user.canEdit(course)][0],
+                courseId: [@course.id.get][0],
+                content: [@Html(content.toJson.toString())][0],
+                resource: resource,
+                allowCourse: true,
+                callback: function (transcripts) {
+                    transcripts.forEach(function (transcript) {
+                        var html = '<option value="' + transcript.id + '">' + transcript.title + ' (' + transcript.language + ')</option>';
+                        $captionTracks.append(html);
+                    });
+                    $captionTracks.val(captionTracks);
+                }
+            });
+
+            var $annotationDocs = $("#courseAnnotationDocs");
+            AdditionalDocumentLoader.annotations.loadEnablable({
+                userId: "@user.id.get",
+                owner: [@content.isEditableBy(user)][0],
+                teacher: [@user.canEdit(course)][0],
+                courseId: [@course.id.get][0],
+                content: [@Html(content.toJson.toString())][0],
+                resource: resource,
+                allowCourse: true,
+                callback: function (annotations) {
+                    annotations.forEach(function (annotation) {
+                        var html = '<option value="' + annotation.id + '">' + annotation.title + '</option>';
+                        $annotationDocs.append(html);
+                    });
+                    $annotationDocs.val(annotationDocs);
+                }
+            });
+        });
+    });
+</script>

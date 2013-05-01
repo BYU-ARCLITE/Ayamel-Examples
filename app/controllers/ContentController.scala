@@ -486,7 +486,7 @@ object ContentController extends Controller {
         }
   }
 
-  def setVideoSettings(content: Content, course: Option[Course] = None, user: Option[User] = None)(implicit request: Request[Map[String, Seq[String]]]) {
+  def setAudioVideoSettings(content: Content, course: Option[Course] = None, user: Option[User] = None)(implicit request: Request[Map[String, Seq[String]]]) {
     val prefix = course.map(c => "course_" + c.id.get + ":")
       .getOrElse(user.map(u => "user_" + u.id.get + ":").getOrElse(""))
     val level = request.body("level")(0)
@@ -498,11 +498,6 @@ object ContentController extends Controller {
       .setSetting(prefix + "enabledCaptionTracks", enabledCaptionTracks)
       .setSetting(prefix + "enabledAnnotationDocuments", enabledAnnotationDocuments)
       .setSetting(prefix + "includeTranscriptions", includeTranscriptions).save
-  }
-
-  def setAudioSettings(content: Content, course: Option[Course] = None, user: Option[User] = None)(implicit request: Request[Map[String, Seq[String]]]) {
-    val prefix = course.map(c => "course_" + c.id.get + ":")
-      .getOrElse(user.map(u => "user_" + u.id.get + ":").getOrElse(""))
   }
 
   def setImageSettings(content: Content, course: Option[Course] = None, user: Option[User] = None)(implicit request: Request[Map[String, Seq[String]]]) {
@@ -528,10 +523,8 @@ object ContentController extends Controller {
           // Make sure the user is able to edit
             if (content isEditableBy user) {
               val contentType = Symbol(request.body("contentType")(0))
-              if (contentType == 'video)
-                setVideoSettings(content)
-              if (contentType == 'audio)
-                setAudioSettings(content)
+              if (contentType == 'video || contentType == 'audio)
+                setAudioVideoSettings(content)
               if (contentType == 'image)
                 setImageSettings(content)
               if (contentType == 'text)
@@ -554,10 +547,8 @@ object ContentController extends Controller {
               // Make sure the user is able to edit the course
                 if (user canEdit course) {
                   val contentType = Symbol(request.body("contentType")(0))
-                  if (contentType == 'video)
-                    setVideoSettings(content, Some(course))
-                  if (contentType == 'audio)
-                    setAudioSettings(content, Some(course))
+                  if (contentType == 'video || contentType == 'audio)
+                    setAudioVideoSettings(content, Some(course))
                   if (contentType == 'image)
                     setImageSettings(content, Some(course))
 
@@ -576,10 +567,8 @@ object ContentController extends Controller {
 
               // Make sure the user is able to edit the course
             val contentType = Symbol(request.body("contentType")(0))
-            if (contentType == 'video)
-              setVideoSettings(content, None, Some(user))
-            if (contentType == 'audio)
-              setAudioSettings(content, None, Some(user))
+            if (contentType == 'video || contentType == 'audio)
+              setAudioVideoSettings(content, None, Some(user))
             if (contentType == 'image)
               setImageSettings(content, None, Some(user))
 

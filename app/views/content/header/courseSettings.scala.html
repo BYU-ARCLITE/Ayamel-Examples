@@ -14,7 +14,7 @@
                 @views.html.content.header.courseVideoSettings(content, course.get, resourceLibraryUrl)
             }
             @if(content.contentType == 'audio) {
-                <em>There are no settings defined for this content type.</em>
+                @views.html.content.header.courseAudioSettings(content, course.get, resourceLibraryUrl)
             }
             @if(content.contentType == 'image) {
                 @views.html.content.header.courseImageSettings(content, course.get, resourceLibraryUrl)

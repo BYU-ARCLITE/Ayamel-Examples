@@ -145,52 +145,52 @@ var ContentRenderer = (function () {
         }
     }
 
-    function renderText(args) {
-        var file = findFile(args.resource, function (file) {
-            return file.representation === "original";
-        });
-        if (file === null) {
-            $(args.holder).html("<em>There was an error displaying this content</em>");
-        } else {
-
-            // Load the annotations
-            getAnnotations(args.content, args.resource, args.coursePrefix, function (annotations) {
-
-                var panes;
-                var tabs = [];
-                if (annotations && args.annotate) {
-                    tabs.push("Annotations");
-                    panes = ContentLayoutManager.twoPanel($(args.holder), tabs);
-                } else {
-                    panes = ContentLayoutManager.onePanel($(args.holder));
-                }
-
-                // Load the text
-                $.ajax(file.downloadUri, {
-                    success: function(data) {
-                        var $textHolder = $('<pre id="textHolder"></pre>');
-                        $textHolder.text(data);
-                        panes.$player.html($textHolder);
-
-                        if (annotations && args.annotate) {
-                            AnnotationRenderers.init(panes.Annotations.$content, null, function () {
-                                // Flip to the annotation tab
-                                panes.Annotations.$tab.tab("show");
-                            });
-                            SimpleAnnotator.annotate(annotations, $cue[0], AnnotationRenderers.video)
-                        }
-
-                        if (args.callback) {
-                            args.callback({
-                                text: data,
-                                $textHolder: $textHolder
-                            });
-                        }
-                    }
-                });
-            });
-        }
-    }
+//    function renderText(args) {
+//        var file = findFile(args.resource, function (file) {
+//            return file.representation === "original";
+//        });
+//        if (file === null) {
+//            $(args.holder).html("<em>There was an error displaying this content</em>");
+//        } else {
+//
+//            // Load the annotations
+//            getAnnotations(args.content, args.resource, args.coursePrefix, function (annotations) {
+//
+//                var panes;
+//                var tabs = [];
+//                if (annotations && args.annotate) {
+//                    tabs.push("Annotations");
+//                    panes = ContentLayoutManager.twoPanel($(args.holder), tabs);
+//                } else {
+//                    panes = ContentLayoutManager.onePanel($(args.holder));
+//                }
+//
+//                // Load the text
+//                $.ajax(file.downloadUri, {
+//                    success: function(data) {
+//                        var $textHolder = $('<pre id="textHolder"></pre>');
+//                        $textHolder.text(data);
+//                        panes.$player.html($textHolder);
+//
+//                        if (annotations && args.annotate) {
+//                            AnnotationRenderers.init(panes.Annotations.$content, null, function () {
+//                                // Flip to the annotation tab
+//                                panes.Annotations.$tab.tab("show");
+//                            });
+//                            SimpleAnnotator.annotate(annotations, $cue[0], AnnotationRenderers.video)
+//                        }
+//
+//                        if (args.callback) {
+//                            args.callback({
+//                                text: data,
+//                                $textHolder: $textHolder
+//                            });
+//                        }
+//                    }
+//                });
+//            });
+//        }
+//    }
 
     function renderPlaylist(args) {
 //        PlaylistRenderer.render(content.resourceId, holder, callback);
@@ -207,7 +207,8 @@ var ContentRenderer = (function () {
                 args.resource = resource;
                 switch (resource.type) {
                     case "audio":
-                        renderAudio(args);
+//                        args.content.settings.level = 4;
+                        VideoRenderer.render(args);//AudioRenderer.render(args);
                         break;
                     case "image":
                         ImageRenderer.render(args);
