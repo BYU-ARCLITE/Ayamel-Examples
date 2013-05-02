@@ -37,4 +37,17 @@ object TimeTools {
   }
 
   def dateToTimestamp(date: String): Long = new DateTime(date).getMillis
+
+  def colonTimecodeToSeconds(timecode: String): String = {
+    val parts = timecode.split(":")
+    if (parts.size == 3) {
+      // Hour:Min:Sec
+      (parts(0).toInt * 3600 + parts(1).toInt * 60 + parts(2).toInt).toString
+    } else if (parts.size == 2) {
+      // Min:Sec
+      (parts(0).toInt * 60 + parts(1).toInt).toString
+    } else {
+      timecode
+    }
+  }
 }
