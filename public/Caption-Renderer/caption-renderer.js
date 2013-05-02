@@ -679,6 +679,13 @@ var CaptionRenderer = (function() {
                 timeHash = this.currentNodes.map(function(nObj){ return cueTime(nObj.cue,currentTime); }).join();
                 if(this.timeHash !== timeHash){
                     container.style.visibility = "hidden";
+                    this.availableCueArea = {
+                        "top": 0, "left": 0,
+                        "bottom": videoMetrics.height,
+                        "right": videoMetrics.width,
+                        "height": videoMetrics.height,
+                        "width": videoMetrics.width
+                    };
                     this.currentNodes.forEach(function(nObj){
                         var node = nObj.node;
                         markTimes(node,currentTime);

@@ -235,7 +235,7 @@ object ContentController extends Controller {
               if (user.isDefined) {
                 // Get the custom parameters
                 val query = FormUrlEncodedParser.parse(request.body, request.charset.getOrElse("utf-8"))
-                  .filterKeys(_.startsWith("custom")).map(d => (d._1.substring(7), d._2))
+                  .filterKeys(_.startsWith("custom")).map(d => (d._1.substring(7), d._2.map(t => TimeTools.colonTimecodeToSeconds(t))))
                 Redirect(routes.ContentController.viewInCourse(id, courseId).toString(), query)
                   .withSession("userId" -> user.get.id.get.toString)
               } else

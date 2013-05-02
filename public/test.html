@@ -1,174 +1,102 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en-US">
 <head>
+    <meta charset="UTF-8">
     <title></title>
+
     <script type="text/javascript" src="javascripts/jquery-1.9.0.min.js"></script>
+    <script type="text/javascript" src="javascripts/angular.min.js"></script>
 
     <link rel="stylesheet" href="stylesheets/bootstrap.min.css"/>
     <link rel="stylesheet" href="stylesheets/font-awesome.css"/>
     <link rel="stylesheet" href="Ayamel.js/js/player2/css/player2.css"/>
 
+    <script type="text/javascript" src="javascripts/exercises/ExerciseHandler.js"></script>
+    <script type="text/javascript" src="javascripts/exercises/questions/MultipleChoice.js"></script>
+
+    <style type="text/css">
+        .prompt {
+            background: #f5f5f5;
+            padding: 5px;
+            margin: 20px 0 5px 0;
+        }
+    </style>
 </head>
-<body>
+<body ng-app>
 
-<script type="text/javascript" src="Ayamel.js/js/player2/js/Ayamel.js"></script>
-<script type="text/javascript" src="Ayamel.js/js/player2/js/AyamelPlayer.js"></script>
-<script type="text/javascript" src="Ayamel.js/js/player2/js/CaptionTrackLoader.js"></script>
-<script type="text/javascript" src="Ayamel.js/js/player2/js/ControlBar.js"></script>
-<script type="text/javascript" src="Ayamel.js/js/player2/js/FullScreenHandler.js"></script>
-<script type="text/javascript" src="Ayamel.js/js/player2/js/KeyBinder.js"></script>
-<script type="text/javascript" src="Ayamel.js/js/player2/js/MediaPlayer.js"></script>
-<script type="text/javascript" src="Ayamel.js/js/player2/js/ProgressBar.js"></script>
-<script type="text/javascript" src="Ayamel.js/js/player2/js/controls/CaptionsMenu.js"></script>
-<script type="text/javascript" src="Ayamel.js/js/player2/js/controls/FullScreenButton.js"></script>
-<script type="text/javascript" src="Ayamel.js/js/player2/js/controls/PlayButton.js"></script>
-<script type="text/javascript" src="Ayamel.js/js/player2/js/controls/TimeCode.js"></script>
-<script type="text/javascript" src="Ayamel.js/js/player2/js/controls/VolumeSlider.js"></script>
-<script type="text/javascript" src="Ayamel.js/js/player2/js/plugins/html5Video.js"></script>
-<script type="text/javascript" src="Ayamel.js/js/player2/js/plugins/html5Audio.js"></script>
+<div ng-controller="QuestionsController" class="container">
 
-<script type="text/javascript" src="TimedText/TimedText.js"></script>
-<script type="text/javascript" src="TimedText/TextTrack.js"></script>
-<script type="text/javascript" src="TimedText/TextTrackCue.js"></script>
-<script type="text/javascript" src="TimedText/WebVTT.js"></script>
-<script type="text/javascript" src="TimedText/SRT.js"></script>
-<script type="text/javascript" src="TimedText/TTML.js"></script>
+    <!--Exercise creation box-->
+    <div>
+        <h2>Create a new exercise</h2>
+        <div style="display: inline-block">
+            <div class="well">
+                <div>
+                    <label for="questionPrompt">Prompt</label>
+                    <input id="questionPrompt" type="text" ng-model="questionPrompt" placeholder="Question Prompt"/>
+                </div>
+                <div>
+                    <label for="questionType">Question Type</label>
+                    <select ng-model="questionType" id="questionType">
+                        <option value="checkbox">MC: Check box</option>
+                        <option value="radio">MC: Radio button</option>
+                        <option value="text">Free: Text input</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="optionText">Choices</label>
+                    <ul ng-repeat="choice in choices">
+                        <li>{{choice.text}} <a href="#" ng-click="choice.remove()"><i class="icon-trash"></i></a></li>
+                    </ul>
+                    <div class="form-inline">
+                        <input type="text" id="optionText" placeholder="Option text" ng-model="optionText"/>
+                        <button ng-click="addChoice()" class="btn">Add Option</button>
+                    </div>
+                </div>
+                <hr>
+                <button ng-click="createQuestion()" class="btn btn-primary">Create Question</button>
+            </div>
+        </div>
+    </div>
 
-<script type="text/javascript" src="Caption-Renderer/caption-renderer.js"></script>
+    <!--List of exercises-->
+    <h2>Your Exercises</h2>
+    <div>
+        <div ng-repeat="question in questions">
+            <div class="prompt">{{question.prompt}}</div>
+            <div ng-repeat="choice in question.choices">
+                {{choice}}
+            </div>
+        </div>
+    </div>
 
-<div class="container">
-    <div id="player1"></div>
-    <hr>
-    <div id="player2"></div>
 </div>
 
 <script type="text/javascript">
-    $(function() {
-
-        var resource1 = {
-            "id": "dc540ea8-f806-6b73-23d1-5fc7c87af168",
-            "categories": [
-                "Education"
-            ],
-            "dateModified": "2013-04-13T18:08:06.814Z",
-            "description": "",
-            "keywords": "",
-            "language": "en",
-            "status": "awaiting content",
-            "title": "Dreyfus",
-            "type": "video",
-            "content": {
-                "files": [
-                    {
-                        "downloadUri": "http://arclite.byu.edu/hvmirror/french/Dreyfus.mp4",
-                        "mime": "video/mp4",
-                        "representation": "original",
-                        "quality": "1"
-                    },
-                    {
-                        "downloadUri": "https://s3.amazonaws.com/ayamel/ed32924b55683ab0d502d41df10b579f.jpg",
-                        "mime": "image/jpeg",
-                        "representation": "summary",
-                        "quality": "1"
+    function QuestionsController($scope) {
+        $scope.choices = [];
+        $scope.questionType = "checkbox";
+        $scope.addChoice = function() {
+            if ($scope.optionText) {
+                $scope.choices.push({
+                    text: $scope.optionText,
+                    remove: function() {
+                        $scope.choices.splice($scope.choices.indexOf(this), 1);
                     }
-                ]
-            },
-            "_id": "dc540ea8-f806-6b73-23d1-5fc7c87af168",
-            "_rev": "3-2ffb719e91bb7fd998dd4a6df01c40b3"
-        };
-
-        var captionTracks = [
-            {
-                "id": "02c3a9e9-bcc3-14b9-4be5-46448ca4a74a",
-                "categories": [],
-                "dateModified": "2013-04-13T18:08:59.588Z",
-                "description": "",
-                "keywords": "subtitles",
-                "language": "fr",
-                "status": "awaiting content",
-                "title": "Transcription",
-                "type": "text",
-                "content": {
-                    "files": [
-                        {
-                            "downloadUri": "https://s3.amazonaws.com/ayamel/de3b50d0865fbaa0c7ceebd044bd9ba5.vtt",
-                            "mime": "text/vtt",
-                            "representation": "original",
-                            "quality": "1"
-                        }
-                    ]
-                },
-                "_id": "02c3a9e9-bcc3-14b9-4be5-46448ca4a74a",
-                "_rev": "2-ad3ffeb43de9291e667dbdd09d286cec"
-            },
-            {
-                "id": "02c3a9e9-bcc3-14b9-4be5-46448ca4a74a",
-                "categories": [],
-                "dateModified": "2013-04-13T18:08:59.588Z",
-                "description": "",
-                "keywords": "subtitles",
-                "language": "fr",
-                "status": "awaiting content",
-                "title": "Transcription",
-                "type": "text",
-                "content": {
-                    "files": [
-                        {
-                            "downloadUri": "https://s3.amazonaws.com/ayamel/de3b50d0865fbaa0c7ceebd044bd9ba5.vtt",
-                            "mime": "text/vtt",
-                            "representation": "original",
-                            "quality": "1"
-                        }
-                    ]
-                },
-                "_id": "02c3a9e9-bcc3-14b9-4be5-46448ca4a74a",
-                "_rev": "2-ad3ffeb43de9291e667dbdd09d286cec"
+                });
+                $scope.optionText = "";
             }
-        ];
-
-        window.player1 = new Ayamel.classes.AyamelPlayer({
-            $holder: $("#player1"),
-            resource: resource1,
-            aspectRatio: Ayamel.aspectRatios.hdVideo,
-            captionTracks: captionTracks
-        });
-//
-//        player1.addEventListener("play", function() {
-//            console.log("Play!");
-//        });
-
-        var resource2 = {
-            "id": "82965b29-f7d2-842b-de69-5e93c293c73b",
-            "categories": [],
-            "dateModified": "2013-05-01T18:32:18.697Z",
-            "description": "",
-            "keywords": "",
-            "language": "en",
-            "status": "awaiting content",
-            "title": "Twisted",
-            "type": "audio",
-            "content": {
-                "files": [
-                    {
-                        "downloadUri": "https://s3.amazonaws.com/ayamel/dca0ee9113dce609e3f7f8f443e668e0.mp3",
-                        "mime": "audio/mp3",
-                        "representation": "original",
-                        "quality": "1"
-                    }
-                ]
-            },
-            "_id": "82965b29-f7d2-842b-de69-5e93c293c73b",
-            "_rev": "2-c5fe03a2f4b14875796e193e2b98a45b"
         };
+        $scope.questions = [];
 
-        window.player2 = new Ayamel.classes.AyamelPlayer({
-            $holder: $("#player2"),
-            resource: resource2,
-            captionTracks: captionTracks,
-            components: [["play", "volume", "captions"], ["timeCode"]]
-        });
-
-    });
+        $scope.createQuestion = function() {
+            $scope.questions.push(ExerciseHandler.createQuestion({
+                prompt: $scope.questionPrompt,
+                choices: $scope.choices.slice(0).map(function(c){return c.text;}),
+                type: $scope.questionType
+            }));
+        };
+    }
 </script>
 
 
