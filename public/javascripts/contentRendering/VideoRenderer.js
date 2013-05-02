@@ -220,6 +220,8 @@ var VideoRenderer = (function() {
                 resource: args.resource,
                 captionTracks: captions,
                 components: components,
+                startTime: args.startTime,
+                endTime: args.endTime,
                 renderCue: function (cue) {
                     var node = document.createElement('div');
                     node.appendChild(cue.getCueAsHTML(cue.track.kind==='subtitles'));
@@ -322,7 +324,7 @@ var VideoRenderer = (function() {
                         setupTranscripts(args);
 
                         if (args.callback) {
-                            args.callback();
+                            args.callback(args);
                         }
                     });
                 });

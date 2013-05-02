@@ -17,6 +17,7 @@ import service.ContentDescriptor
 import dataAccess.{PlayGraph, ResourceController}
 import java.io.ByteArrayInputStream
 import javax.imageio.ImageIO
+import play.core.parsers.FormUrlEncodedParser
 
 /**
  * The controller for dealing with content.
@@ -217,6 +218,30 @@ object ContentController extends Controller {
             } else
               Errors.forbidden
         }
+  }
+
+
+
+  /**
+   * Content view page from an LMS
+   */
+  def viewLms(id: Long, courseId: Long) = Action(parse.tolerantText) {
+    implicit request =>
+      getContent(id) {
+        content =>
+          Courses.getCourse(courseId) {
+            course =>
+              val user = LMSAuth.ltiAuth(course)
+              if (user.isDefined) {
+                // Get the custom parameters
+                val query = FormUrlEncodedParser.parse(request.body, request.charset.getOrElse("utf-8"))
+                  .filterKeys(_.startsWith("custom")).map(d => (d._1.substring(7), d._2))
+                Redirect(routes.ContentController.viewInCourse(id, courseId).toString(), query)
+                  .withSession("userId" -> user.get.id.get.toString)
+              } else
+                Errors.forbidden
+          }
+      }
   }
 
   /**

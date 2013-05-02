@@ -103,6 +103,7 @@
         <div class="well">
 
             @views.html.content.header.share(content)
+            @views.html.content.header.lmsInfo(content, course)
             @views.html.content.header.addToCourse(content)
             @views.html.content.header.courseSettings(content, course, resourceLibraryUrl)
             @views.html.content.header.personalSettings(content, resourceLibraryUrl)
@@ -140,12 +141,14 @@
                 ContentRenderer.render({
                     content: content,
                     userId: "@user.id.get",
-                    owner: [@content.isEditableBy(user)][0],
-                    teacher: [@course.map(c => user.canEdit(c)).getOrElse(false)][0],
-                    courseId: [@course.map(_.id.get).getOrElse(0)][0],
+                    owner: @content.isEditableBy(user),
+                    teacher: @course.map(c => user.canEdit(c)).getOrElse(false),
+                    courseId: @course.map(_.id.get).getOrElse(0),
                     holder: contentHolder,
                     coursePrefix: coursePrefix,
-                    annotate: true
+                    annotate: true,
+                    startTime: @request.queryString.get("starttime").getOrElse("0"),
+                    endTime: @request.queryString.get("endtime").getOrElse("-1")
                 });
             });
         </script>
