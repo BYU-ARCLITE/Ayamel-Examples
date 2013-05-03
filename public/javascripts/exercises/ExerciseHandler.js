@@ -8,22 +8,13 @@
 var ExerciseHandler = (function() {
     "use strict";
 
-    function ExerciseManifest(args) {
-        var _this = this;
-
-        this.$element = $("<div></div>");
-        args.$holder.append(this.$element);
-
-        if (args.questions) {
-            args.questions.forEach(function (question) {
-                question.render(_this.$element);
-            });
-        }
+    var registeredQuestions = {};
+    function QuestionRegistry(question) {
+        this.question = question;
+        this.responses = {};
     }
 
     return {
-        ExerciseManifest: ExerciseManifest,
-
         createQuestion: function(args) {
 
             var multipleChoiceTypes = [
@@ -35,17 +26,53 @@ var ExerciseHandler = (function() {
 
             if (multipleChoiceTypes.indexOf(args.type) >= 0) {
                 // Create a multiple choice question
-                var question = new this.questions.MultipleChoice({
+                return new this.questionsClasses.MultipleChoice({
                     choices: args.choices,
                     type: args.type,
-                    prompt: args.prompt
+                    prompt: args.prompt,
+                    answers: args.answers
                 });
-                return question;
+            }
+
+            if (freeResponseTypes.indexOf(args.type) >= 0) {
+                // Create a multiple choice question
+                return new this.questionsClasses.FreeResponse({
+                    type: args.type,
+                    prompt: args.prompt,
+                    answers: args.answers
+                });
             }
 
             return null;
         },
 
-        questions: {}
+        getSummary: function() {
+            var summary = {};
+            Object.keys(registeredQuestions).forEach(function (questionId) {
+                summary[questionId] = registeredQuestions[questionId].responses;
+            });
+            return summary;
+        },
+
+        grade: function(answerKey) {
+            var score = 1;
+            answerKey = answerKey || {};
+            Object.keys(registeredQuestions).forEach(function (questionId) {
+                var response = registeredQuestions[questionId].responses;
+                var answers = answerKey[questionId] || registeredQuestions[questionId].question.answers || [];
+                score *= registeredQuestions[questionId].question.grade(response, answers);
+            });
+            return score;
+        },
+
+        registerQuestion: function(question) {
+            registeredQuestions[question.id] = new QuestionRegistry(question);
+        },
+
+        saveResponse: function(questionId, response) {
+            registeredQuestions[questionId].responses = response;
+        },
+
+        questionsClasses: {}
     };
 }());

@@ -12,6 +12,9 @@ import dataAccess.ResourceController
  */
 object ResourceHelper {
 
+  def isYouTube(uri: String): Boolean = uri.startsWith("youtube://") ||
+    uri.startsWith("http://www.youtube.com/watch?v=") || uri.startsWith("http://youtu.be/")
+
   /**
    * Attempts to retrieve the mime type from the uri. Doesn't deal with the resource library, but this is used by other
    * functions in this object.
@@ -19,16 +22,21 @@ object ResourceHelper {
    * @return The mime type
    */
   def getMimeFromUri(uri: String): String = {
-    val extension = uri.substring(uri.lastIndexOf("."))
-    val mime1 = MimeTypes.forExtension(extension)
-    val mime2 = MimeTypes.forFileName(uri)
-    if (mime1.isDefined)
-      mime1.get
-    else
-    if (mime2.isDefined)
-      mime2.get
-    else
-      "application/octet-stream"
+    // Check for YouTube
+    if (isYouTube(uri)) {
+      "video/youtube"
+    } else {
+      val extension = uri.substring(uri.lastIndexOf("."))
+      val mime1 = MimeTypes.forExtension(extension)
+      val mime2 = MimeTypes.forFileName(uri)
+      if (mime1.isDefined)
+        mime1.get
+      else
+      if (mime2.isDefined)
+        mime2.get
+      else
+        "application/octet-stream"
+    }
   }
 
   /**
@@ -48,8 +56,11 @@ object ResourceHelper {
       val contentUploadUrl = (json \ "content_upload_url").as[String]
 
       // Add information about the file
+      val uriName =
+        if (isYouTube(uri)) "streamUri"
+        else "downloadUri"
       val fileInfo = Json.obj(
-        "downloadUri" -> uri,
+        uriName -> uri,
         "mime" -> mime,
         "representation" -> "original",
         "quality" -> "1"

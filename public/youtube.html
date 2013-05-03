@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+
+    <script type="text/javascript" src="javascripts/jquery-1.9.0.min.js"></script>
+    <script type="text/javascript" src="Caption-Renderer/caption-renderer.js"></script>
+    <script type="text/javascript" src="Ayamel.js/js/swfobject.js"></script>
+
+    <script type="text/javascript" src="Ayamel.js/js/player2/js/Ayamel.js"></script>
+    <script type="text/javascript" src="Ayamel.js/js/player2/js/AyamelPlayer.js"></script>
+    <script type="text/javascript" src="Ayamel.js/js/player2/js/CaptionTrackLoader.js"></script>
+    <script type="text/javascript" src="Ayamel.js/js/player2/js/ControlBar.js"></script>
+    <script type="text/javascript" src="Ayamel.js/js/player2/js/FullScreenHandler.js"></script>
+    <script type="text/javascript" src="Ayamel.js/js/player2/js/KeyBinder.js"></script>
+    <script type="text/javascript" src="Ayamel.js/js/player2/js/MediaPlayer.js"></script>
+    <script type="text/javascript" src="Ayamel.js/js/player2/js/ProgressBar.js"></script>
+
+    <script type="text/javascript" src="Ayamel.js/js/player2/js/controls/CaptionsMenu.js"></script>
+    <script type="text/javascript" src="Ayamel.js/js/player2/js/controls/FullScreenButton.js"></script>
+    <script type="text/javascript" src="Ayamel.js/js/player2/js/controls/PlayButton.js"></script>
+    <script type="text/javascript" src="Ayamel.js/js/player2/js/controls/TimeCode.js"></script>
+    <script type="text/javascript" src="Ayamel.js/js/player2/js/controls/VolumeSlider.js"></script>
+
+    <script type="text/javascript" src="Ayamel.js/js/player2/js/plugins/youtube.js"></script>
+
+    <link rel="stylesheet" href="Ayamel.js/js/player2/css/player2.css"/>
+    <link rel="stylesheet" href="stylesheets/bootstrap.min.css"/>
+    <link rel="stylesheet" href="stylesheets/font-awesome.css"/>
+</head>
+<body>
+
+<div class="container">
+    <div id="container"></div>
+</div>
+
+<script type="text/javascript">
+
+    $(function() {
+
+        var resource = {
+            "id": "dc540ea8-f806-6b73-23d1-5fc7c87af168",
+            "categories": [
+                "Education"
+            ],
+            "dateModified": "2013-04-13T18:08:06.814Z",
+            "description": "",
+            "keywords": "",
+            "language": "en",
+            "status": "awaiting content",
+            "title": "Come and Get It",
+            "type": "video",
+            "content": {
+                "files": [
+                    {
+                        "streamUri": "http://www.youtube.com/watch?v=3FoL2WHH4wA",
+                        "mime": "video/youtube",
+                        "representation": "original",
+                        "quality": "1"
+                    }
+                ]
+            },
+            "_id": "dc540ea8-f806-6b73-23d1-5fc7c87af168",
+            "_rev": "4-5e9042ac47758a4c6fae5259247e1efd"
+        };
+
+        window.player = new Ayamel.classes.AyamelPlayer({
+            resource: resource,
+            $holder: $("#container")
+        });
+    });
+</script>
+
+
+</body>
+</html>
