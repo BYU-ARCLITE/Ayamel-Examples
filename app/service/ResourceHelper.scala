@@ -15,6 +15,8 @@ object ResourceHelper {
   def isYouTube(uri: String): Boolean = uri.startsWith("youtube://") ||
     uri.startsWith("http://www.youtube.com/watch?v=") || uri.startsWith("http://youtu.be/")
 
+  def isBrightcove(uri: String): Boolean = uri.startsWith("brightcove://")
+
   /**
    * Attempts to retrieve the mime type from the uri. Doesn't deal with the resource library, but this is used by other
    * functions in this object.
@@ -25,6 +27,8 @@ object ResourceHelper {
     // Check for YouTube
     if (isYouTube(uri)) {
       "video/youtube"
+    } else if (isBrightcove(uri)) {
+      "video/brightcove"
     } else {
       val extension = uri.substring(uri.lastIndexOf("."))
       val mime1 = MimeTypes.forExtension(extension)
@@ -57,7 +61,7 @@ object ResourceHelper {
 
       // Add information about the file
       val uriName =
-        if (isYouTube(uri)) "streamUri"
+        if (isYouTube(uri) || isBrightcove(uri)) "streamUri"
         else "downloadUri"
       val fileInfo = Json.obj(
         uriName -> uri,

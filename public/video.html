@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <title></title>
 
+    <script language="JavaScript" type="text/javascript" src="http://admin.brightcove.com/js/BrightcoveExperiences.js"></script>
+
     <script type="text/javascript" src="javascripts/jquery-1.9.0.min.js"></script>
     <script type="text/javascript" src="Caption-Renderer/caption-renderer.js"></script>
     <script type="text/javascript" src="Ayamel.js/js/swfobject.js"></script>
@@ -23,7 +25,7 @@
     <script type="text/javascript" src="Ayamel.js/js/player2/js/controls/TimeCode.js"></script>
     <script type="text/javascript" src="Ayamel.js/js/player2/js/controls/VolumeSlider.js"></script>
 
-    <script type="text/javascript" src="Ayamel.js/js/player2/js/plugins/flashVideo.js"></script>
+    <script type="text/javascript" src="Ayamel.js/js/player2/js/plugins/brightcove.js"></script>
 
     <script type="text/javascript" src="Caption-Renderer/caption-renderer.js"></script>
     <script type="text/javascript" src="TimedText/TimedText.js"></script>
@@ -60,8 +62,8 @@
             "content": {
                 "files": [
                     {
-                        "downloadUri": "http://arclite.byu.edu/hvmirror/french/Dreyfus.mp4",
-                        "mime": "video/mp4",
+                        "streamUri": "brightcove://1644660342001",
+                        "mime": "video/brightcove",
                         "representation": "original",
                         "quality": "1"
                     }

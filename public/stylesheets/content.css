@@ -15,7 +15,7 @@
 .contentHolder.tableFormat {
     width: 100%;
     height: auto;
-    max-height: 800px;
+    max-height: 450px;
     overflow-y: auto;
     margin-bottom: 20px;
 }
