@@ -195,6 +195,7 @@ var VideoRenderer = (function () {
             Ayamel.mediaPlugins.html5Video,
             Ayamel.mediaPlugins.flashVideo,
             Ayamel.mediaPlugins.html5Audio,
+            Ayamel.mediaPlugins.brightcove,
             Ayamel.mediaPlugins.youtube
         ];
 
