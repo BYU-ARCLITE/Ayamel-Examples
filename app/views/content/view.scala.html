@@ -122,7 +122,54 @@
 
         </div>
 
-        <h1><i class="@contentIcons(content.contentType)"></i> @content.name</h1>
+        <h1>
+            <i class="@contentIcons(content.contentType)"></i> @content.name
+            <small><a href="#viewMetadataModal" data-toggle="modal">View Metadata</a></small>
+        </h1>
+
+        <div id="viewMetadataModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="viewMetadataModalLabel" aria-hidden="true">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h3 id="viewMetadataModalLabel">Metadata</h3>
+            </div>
+            <div class="modal-body" ng-controller="MetadataCtrl">
+                <table class="table table-bordered pad-top-med">
+                    <tr>
+                        <th>Title</th>
+                        <td>{{title}}</td>
+                    </tr>
+                    <tr>
+                        <th>Description</th>
+                        <td>{{description}}</td>
+                    </tr>
+                    <tr>
+                        <th>Keywords</th>
+                        <td>{{keywords}}</td>
+                    </tr>
+                    <tr>
+                        <th>Categories</th>
+                        <td>{{categories}}</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+            </div>
+        </div>
+        <script>
+            // The angular controller
+            function MetadataCtrl($scope){
+                var url = "@resourceLibraryUrl/@content.resourceId";
+                ResourceLibrary.load(url, function(resource){
+                    $scope.title = resource.title;
+                    $scope.description = resource.description;
+                    $scope.keywords = resource.keywords;
+                    $scope.categories = resource.categories.join(', ');
+                    //$scope.labels = resource.labels;
+                    $scope.$apply();
+                });
+            }
+        </script>
 
         <div id="contentHolder" class="@content.contentType.name"></div>
 
@@ -154,50 +201,6 @@
                     endTime: @request.queryString.get("endtime").getOrElse("-1")
                 });
             });
-        </script>
-        <div ng-controller="MetadataCtrl">
-            <div>
-                <span ng-click="toggle()" class="label label-blue">{{arrow}}Metadata</span>
-            </div>
-            <div class="inline-block" ng-show="show">
-                <table class="table table-bordered pad-top-med">
-                    <tr>
-                        <th>Title</th>
-                        <td>{{title}}</td>
-                    </tr>
-                    <tr>
-                        <th>Description</th>
-                        <td>{{description}}</td>
-                    </tr>
-                    <tr>
-                        <th>Keywords</th>
-                        <td>{{keywords}}</td>
-                    </tr>
-                    <tr>
-                        <th>Categories</th>
-                        <td>{{categories}}</td>
-                    </tr>
-                </table>
-            </div>
-
-        </div>
-        <script>
-            function MetadataCtrl($scope){
-                $scope.show = false;
-                $scope.arrow = '►';
-                $scope.toggle = function(){
-                    $scope.show = $scope.show? false:true;
-                    $scope.arrow = $scope.show?'▼':'►'
-                };
-                var url = "@resourceLibraryUrl"+"/"+[@Html(content.toJson.toString())][0].resourceId;
-                ResourceLibrary.load(url, function(resource){
-                    $scope.title = resource.title;
-                    $scope.description = resource.description;
-                    $scope.keywords = resource.keywords;
-                    $scope.categories = resource.categories.join(', ');
-                    //$scope.labels = resource.labels;
-                });
-            }
         </script>
     </div>
 }
