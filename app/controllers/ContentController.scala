@@ -451,7 +451,7 @@ object ContentController extends Controller {
               val description = request.body("description")(0)
               val keywords = request.body("keywords")(0)
               val categories = request.body.get("categories").map(_.toList).getOrElse(Nil)
-              val labels = request.body("labels").toList
+              val labels = request.body.get("labels").map(_.toList).getOrElse(Nil)
 
               // Update the name and labels of the content
               content.copy(name = title, labels = labels).save
