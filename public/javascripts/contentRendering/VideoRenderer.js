@@ -5,7 +5,7 @@
  * Time: 12:24 PM
  * To change this template use File | Settings | File Templates.
  */
-var VideoRenderer = (function() {
+var VideoRenderer = (function () {
 
     var translationHighlight;
     var captionTrackId;
@@ -179,85 +179,68 @@ var VideoRenderer = (function() {
     function setupVideoPlayer(args, callback) {
 //        Ayamel.AddVideoPlayer(h5PlayerInstall, 1, function() {
 
-            var components = [["play", "volume"], ["fullScreen", "timeCode"]];
-            var captions;
+        var components = [
+            ["play", "volume"],
+            ["fullScreen", "timeCode"]
+        ];
+        var captions;
 
-            if (getLevel(args) >= 2) {
-                components[0].push("captions");
-                captions = args.transcripts;
+        if (getLevel(args) >= 2) {
+            components[0].push("captions");
+            captions = args.transcripts;
+        }
+
+        // Set the priority of video players
+        Ayamel.prioritizedPlugins = [
+            Ayamel.mediaPlugins.flashVideo,
+            Ayamel.mediaPlugins.html5Video,
+            Ayamel.mediaPlugins.html5Audio,
+            Ayamel.mediaPlugins.youtube
+        ];
+
+        var videoPlayer = new Ayamel.classes.AyamelPlayer({
+            $holder: args.layout.$player,
+            resource: args.resource,
+            captionTracks: captions,
+            components: components,
+            startTime: args.startTime,
+            endTime: args.endTime,
+            renderCue: function (cue) {
+                var node = document.createElement('div');
+                node.appendChild(cue.getCueAsHTML(cue.track.kind === 'subtitles'));
+
+                // Attach the translator
+                if (args.translator) {
+                    args.translator.attach(node, cue.track.language, "en", {
+                        captionTrackId: determineTranscriptFromCue(args.transcripts, cue),
+                        cueIndex: "" + cue.track.cues.indexOf(cue)
+                    });
+                }
+
+                // Add annotations
+                if (args.annotator) {
+                    args.annotator.annotate($(node));
+                }
+
+                return {node: node};
             }
+        });
 
-            // Create the player
-//            var videoPlayer = new Ayamel.VideoPlayer({
-//                element: args.layout.$player[0],
-//                aspectRatio: 45,
-//                resource: args.resource,
-//                components: components,
-//                captions: captions,
-//                renderCue: function (cue) {
-//                    var node = document.createElement('div');
-//                    node.appendChild(cue.getCueAsHTML(cue.track.kind==='subtitles'));
-//
-//                    // Attach the translator
-//                    if (args.translator) {
-//                        args.translator.attach(node, cue.track.language, "en", {
-//                            captionTrackId: determineTranscriptFromCue(args.transcripts, cue),
-//                            cueIndex: "" + cue.track.cues.indexOf(cue)
-//                        });
-//                    }
-//
-//                    // Add annotations
-//                    if (args.annotator) {
-//                        args.annotator.annotate($(node));
-//                    }
-//
-//                    return {node:node};
-//                }
-//            });
-
-            var videoPlayer = new Ayamel.classes.AyamelPlayer({
-                $holder: args.layout.$player,
-                resource: args.resource,
-                captionTracks: captions,
-                components: components,
-                startTime: args.startTime,
-                endTime: args.endTime,
-                renderCue: function (cue) {
-                    var node = document.createElement('div');
-                    node.appendChild(cue.getCueAsHTML(cue.track.kind==='subtitles'));
-
-                    // Attach the translator
-                    if (args.translator) {
-                        args.translator.attach(node, cue.track.language, "en", {
-                            captionTrackId: determineTranscriptFromCue(args.transcripts, cue),
-                            cueIndex: "" + cue.track.cues.indexOf(cue)
-                        });
-                    }
-
-                    // Add annotations
-                    if (args.annotator) {
-                        args.annotator.annotate($(node));
-                    }
-
-                    return {node:node};
-                }
-            });
-
-            var playCount = 0;
-            videoPlayer.addEventListener("play", function (event) {
-                // Two events are thrown, so only save on the second
-                playCount = (playCount + 1) % 2;
-                if (playCount) {
-                    var time = "" + videoPlayer.currentTime;
-                    ActivityStreams.predefined.playClick(time);
-                }
-            });
-            videoPlayer.addEventListener("pause", function (event) {
+        var playCount = 0;
+        videoPlayer.addEventListener("play", function (event) {
+            // Two events are thrown, so only save on the second
+            playCount = (playCount + 1) % 2;
+            if (playCount) {
                 var time = "" + videoPlayer.currentTime;
-                ActivityStreams.predefined.pauseClick(time);
-            });
+                ActivityStreams.predefined.playClick(time);
+            }
+        });
+        videoPlayer.addEventListener("pause", function (event) {
+            var time = "" + videoPlayer.currentTime;
+            ActivityStreams.predefined.pauseClick(time);
+        });
 
-            callback(videoPlayer);
+        callback(videoPlayer);
 //        });
     }
 
