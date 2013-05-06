@@ -192,8 +192,8 @@ var VideoRenderer = (function () {
 
         // Set the priority of video players
         Ayamel.prioritizedPlugins = [
-            Ayamel.mediaPlugins.flashVideo,
             Ayamel.mediaPlugins.html5Video,
+            Ayamel.mediaPlugins.flashVideo,
             Ayamel.mediaPlugins.html5Audio,
             Ayamel.mediaPlugins.youtube
         ];
