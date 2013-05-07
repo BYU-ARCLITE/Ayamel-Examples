@@ -143,6 +143,15 @@ var TranscriptDisplay = (function() {
 
     TranscriptDisplay.prototype.bindToMediaPlayer = function(mediaPlayer) {
         var _this = this;
+        this.sync = true;
+
+        // Create a sync button
+        var $syncButton = $('<button class="btn"><i class="icon-refresh"></i> Sync with media</button>')
+            .click(function() {
+                _this.sync = !_this.sync;
+                $(this).button("toggle");
+            }).button("toggle");
+        this.$element.prepend($syncButton);
 
         // Possibly link this with a media player
         mediaPlayer.addEventListener("timeupdate", function(event) {
@@ -154,6 +163,20 @@ var TranscriptDisplay = (function() {
                     if (!cueState.active) {
                         cueState.$cue.addClass("active");
                         cueState.active = true;
+
+                        // Possibly slide to see the cue
+                        if (_this.sync) {
+                            var $parent = cueState.$cue.parent(".transcriptContent.active");
+                            if ($parent) {
+
+                                // Get the "top" of the cue
+                                $parent[0].scrollTop = 0;
+                                var top = cueState.$cue.offset().top - $parent.offset().top;
+
+                                // Update the scroll top to the top of the cue, giving some padding
+                                $parent[0].scrollTop =  top - 20;
+                            }
+                        }
                     }
                 } else {
                     if (cueState.active) {

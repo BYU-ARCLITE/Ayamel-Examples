@@ -43,7 +43,7 @@
                     }
 
                     // Return the translations
-                    var link = '<a href="http://www.wordreference.com/' + srcLang + destLang + '/' + text + '">at WordReference.com</a>';
+                    var link = '<a href="http://www.wordreference.com/' + srcLang + destLang + '/' + text + '" target="wordreference">at WordReference.com</a>';
                     callback(entries, link);
                 } catch(e) {
                     error();

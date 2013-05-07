@@ -405,3 +405,11 @@
     background: url("../images/videos/captions_white.png") center no-repeat;
     background-size: contain;
 }
+
+#transcriptDisplay ul {
+    margin: 10px 0 0 0;
+}
+
+#transcriptDisplay .transcriptContent {
+    margin-top: 10px;
+}

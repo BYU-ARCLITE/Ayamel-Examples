@@ -166,7 +166,7 @@
                                     @views.html.content.header.addToCourse(content)
                                 }
                                 @if(!content.isEditableBy(user)) {
-                                    <li><a href="#personalSettingsModal" role="button"><i class="icon-cogs"></i> Edit personal settings</a></li>
+                                    <li><a href="#personalSettingsModal" data-toggle="modal"><i class="icon-cogs"></i> Edit personal settings</a></li>
                                     @views.html.content.header.personalSettings(content, resourceLibraryUrl)
                                 }
                             }
@@ -269,8 +269,8 @@
                     holder: contentHolder,
                     coursePrefix: coursePrefix,
                     annotate: true,
-                    startTime: @request.queryString.get("starttime").getOrElse("0"),
-                    endTime: @request.queryString.get("endtime").getOrElse("-1")
+                    startTime: "@request.queryString.get("starttime").getOrElse("0")",
+                    endTime: "@request.queryString.get("endtime").getOrElse("-1")"
                 });
             });
         </script>

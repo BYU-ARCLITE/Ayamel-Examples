@@ -227,13 +227,14 @@ var VideoRenderer = (function () {
             }
         });
 
-        var playCount = 0;
+        var registerPlay = true;
         videoPlayer.addEventListener("play", function (event) {
-            // Two events are thrown, so only save on the second
-            playCount = (playCount + 1) % 2;
-            if (playCount) {
+            // Sometimes two events appear, so only save one within a half second
+            if (registerPlay) {
                 var time = "" + videoPlayer.currentTime;
                 ActivityStreams.predefined.playClick(time);
+                registerPlay = false;
+                setTimeout(function(){ registerPlay = true;}, 500);
             }
         });
         videoPlayer.addEventListener("pause", function (event) {
