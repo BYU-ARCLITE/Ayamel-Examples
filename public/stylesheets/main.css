@@ -400,3 +400,16 @@ h1, h2, h3, h4, h5, h6 {
 .color-magenta {
     color: #DE2174;
 }
+
+.color-light-blue,
+.btn.color-light-blue, .btn.color-light-blue:hover {
+    color: #68BEE3;
+}
+.color-light-yellow,
+.btn.color-light-yellow, .btn.color-light-yellow:hover {
+    color: #FCF08D;
+}
+.color-light-magenta,
+.btn.color-light-magenta, .btn.color-light-magenta:hover {
+    color: #FCB3D3;
+}

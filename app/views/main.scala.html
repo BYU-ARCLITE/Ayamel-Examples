@@ -45,13 +45,18 @@
                     @if(!user.getEnrollment.isEmpty) {
                         <div class="link">
                             <a class="headerDropdownLink" data-target="#coursesDropdown" href="#">
-                                <i class="icon-book"></i> My Courses
+                                <i class="icon-group"></i> My Courses
                             </a>
                             <div class="headerDropdown" id="coursesDropdown">
                                 <div class="dropdownPoint"></div>
                                 @for(course <- user.getEnrollment) {
                                     <div class="dropdownItem">
-                                        <a href="@routes.Courses.view(course.id.get)"><i class="icon-lightbulb"></i> @course.name</a>
+                                        <a href="@routes.Courses.view(course.id.get)"><i class="icon-book"></i> @course.name</a>
+                                    </div>
+                                }
+                                @if(user.canCreateCourse) {
+                                    <div class="dropdownItem">
+                                        <a href="@routes.Courses.createPage()"><i class="icon-plus"></i> Create a new course</a>
                                     </div>
                                 }
                             </div>
