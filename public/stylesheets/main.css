@@ -113,7 +113,7 @@ h1, h2, h3, h4, h5, h6 {
     position: relative;
 }
 
-#profileDropdown {
+.headerDropdown {
     position: absolute;
     background: #333;
     z-index: 5;
@@ -126,7 +126,7 @@ h1, h2, h3, h4, h5, h6 {
     box-shadow: 1px 2px 15px rgba(0,0,0,0.5);
 }
 
-#profileDropdown > div.dropdownPoint {
+.headerDropdown > div.dropdownPoint {
     position: absolute;
     top: -20px;
     left: 50%;
@@ -139,11 +139,11 @@ h1, h2, h3, h4, h5, h6 {
     padding: 0;
 }
 
-#profileDropdown > div {
+.headerDropdown > div {
     padding: 5px
 }
 
-#profileDropdown > div > a {
+.headerDropdown > div > a {
     display: block;
 }
 

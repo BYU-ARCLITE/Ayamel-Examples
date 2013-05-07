@@ -42,6 +42,22 @@
                         </a>
                     </div>
 
+                    @if(!user.getEnrollment.isEmpty) {
+                        <div class="link">
+                            <a class="headerDropdownLink" data-target="#coursesDropdown" href="#">
+                                <i class="icon-book"></i> My Courses
+                            </a>
+                            <div class="headerDropdown" id="coursesDropdown">
+                                <div class="dropdownPoint"></div>
+                                @for(course <- user.getEnrollment) {
+                                    <div class="dropdownItem">
+                                        <a href="@routes.Courses.view(course.id.get)"><i class="icon-lightbulb"></i> @course.name</a>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+
                     @if(user.role != User.roles.guest) {
                         <div class="link">
                             <a href="@routes.ContentController.mine()">
@@ -50,13 +66,13 @@
                         </div>
 
                         <div class="link">
-                            <a href="#" id="profileLink">
+                            <a href="#" class="headerDropdownLink" data-target="#profileDropdown">
                                 <i class="icon-user"></i> Profile
                                 @if(!notifications.isEmpty) {
                                     <span class="badge badge-yellow pad-left-low">@notifications.size</span>
                                 }
                             </a>
-                            <div id="profileDropdown">
+                            <div id="profileDropdown" class="headerDropdown">
                                 <div class="dropdownPoint"></div>
                                 <div class="dropdownItem">
                                     <a href="@routes.Users.accountSettings()"><i class="icon-cog"></i> Account Settings</a>
@@ -82,6 +98,10 @@
                         <div class="link">
                             <i class="icon-search"></i>
                             <input type="text" class="searchBox" id="searchBox" />
+                        </div>
+                    } else {
+                        <div class="link">
+                            <a href="@controllers.authentication.routes.Authentication.logout()"><i class="icon-off"></i> Log out</a>
                         </div>
                     }
                 </div>
@@ -156,19 +176,22 @@
         <script type="text/javascript">
             $(function() {
 
-                var $profileDropdown = $("#profileDropdown").hide();
+                // Set up the dropdowns
+                var $headerDropdowns = $(".headerDropdown").hide();
 
-                $("#profileLink").click(function() {
-                    $profileDropdown.toggle();
-                    event.stopPropagation();
+                $(".headerDropdownLink").click(function(event) {
+                    $($(this).attr("data-target")).toggle();
+//                    event.stopPropagation();
                     return false;
                 });
                 $("body").click(function() {
-                    $profileDropdown.hide();
+                    $headerDropdowns.hide();
                 });
-                $profileDropdown.click(function(event) {
+                $headerDropdowns.click(function(event) {
                     event.stopPropagation();
                 });
+
+                // Set up the search box
                 $("#searchBox").keypress(function(event) {
                     var keycode = null;
                     if(window.event)
