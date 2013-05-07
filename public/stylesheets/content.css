@@ -382,3 +382,23 @@
     overflow-y: auto;
     max-height: 300px;
 }
+
+.captionsIcon {
+    width: 16px;
+    height: 16px;
+    background: url("../images/videos/captions.png") center no-repeat;
+    display: inline-block;
+    vertical-align: middle;
+    background-size: contain;
+    margin-right: 2px;
+}
+
+.captionsIcon.icon-white,
+.nav-pills > .active > a > .captionsIcon,
+.navbar-inverse .nav > .active > a > .captionsIcon,
+.dropdown-menu > li > a:hover > .captionsIcon,
+.dropdown-menu > .active > a > .captionsIcon,
+.dropdown-submenu:hover > a > .captionsIcon {
+    background: url("../images/videos/captions_white.png") center no-repeat;
+    background-size: contain;
+}

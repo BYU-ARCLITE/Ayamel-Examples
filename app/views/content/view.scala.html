@@ -18,6 +18,15 @@
     )
 }
 
+@userLevelText = @{
+    if (course.isDefined && user.canEdit(course.get))
+        "course"
+    else if (content.isEditableBy(user))
+        ""
+    else
+        "personal"
+}
+
 @main("Ayamel - " + content.name, moreStyles) {
 
     <script type="text/javascript">
@@ -106,28 +115,88 @@
             </div>
         }
 
-        <div class="well">
+        <div class="navbar">
+            <div class="navbar-inner">
+                <div class="container">
+                    <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </a>
 
-            @views.html.content.header.share(content)
-            @views.html.content.header.lmsInfo(content, course)
-            @views.html.content.header.addToCourse(content)
-            @views.html.content.header.courseSettings(content, course, resourceLibraryUrl)
-            @views.html.content.header.personalSettings(content, resourceLibraryUrl)
-            @views.html.content.header.addRelatedDocs(content, course, resourceLibraryUrl)
-            @views.html.content.header.edit(content, resourceLibraryUrl)
-            @if(content.isEditableBy(user)) {
-                <a href="@routes.ContentController.stats(content.id.get)" class="btn"><i class="icon-bar-chart"></i> View Stats</a>
-            }
-            @if(course.isDefined && user.canEdit(course.get)) {
-                <a href="@routes.ContentController.statsInCourse(content.id.get, course.get.id.get)" class="btn"><i class="icon-bar-chart"></i> View Course Stats</a>
-            }
-            @views.html.content.header.delete(content)
+                    <div class="nav-collapse collapse">
+                        <ul class="nav">
+                            @if(content.isShareableBy(user)) {
+                                <li><a href="#shareModal" data-toggle="modal"><i class="icon-share-alt"></i> Share</a></li>
+                                @views.html.content.header.share(content)
+                            }
+                            <li><a href="#viewMetadataModal" data-toggle="modal"><i class="icon-info-sign"></i> About</a></li>
+                        </ul>
+                        <ul class="nav pull-right">
 
+                            <li class="dropdown">
+                                <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                                    <i class="icon-plus"></i> Add <b class="caret"></b>
+                                </a>
+                                <ul class="dropdown-menu">
+                                    @if(content.contentType == 'video || content.contentType == 'audio) {
+                                        <li><a href="#captionTrackModal" data-toggle="modal"><span class="captionsIcon"></span> Add @userLevelText captions</a></li>
+                                    }
+                                    <li><a href="#annotationsModal" data-toggle="modal"><i class="icon-comments"></i> Add @userLevelText annotations</a></li>
+                                </ul>
+                                @views.html.content.header.addRelatedDocs(content, course, resourceLibraryUrl)
+                            </li>
+
+                            @if(course.isDefined && user.canEdit(course.get)) {
+                                <li class="dropdown">
+                                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                                        <i class="icon-book"></i> Course <b class="caret"></b>
+                                    </a>
+                                    <ul class="dropdown-menu">
+                                        <li><a href="#lmsModal" data-toggle="modal"><i class="icon-briefcase"></i> Add to LMS</a></li>
+                                        <li><a href="#courseSettingsModal" data-toggle="modal"><i class="icon-cogs"></i> Edit course settings</a></li>
+                                        <li><a href="@routes.ContentController.statsInCourse(content.id.get, course.get.id.get)"><i class="icon-bar-chart"></i> View course stats</a></li>
+                                        <li><a href="#"><i class="icon-remove"></i> Remove from course</a></li>
+                                    </ul>
+                                    @views.html.content.header.courseSettings(content, course, resourceLibraryUrl)
+                                </li>
+                            } else {
+                                @if(user.canCreateCourse) {
+                                    <li><a href="#addToCourseModal" data-toggle="modal"><i class="icon-book"></i> Add to Course</a></li>
+                                    @views.html.content.header.addToCourse(content)
+                                }
+                                @if(!content.isEditableBy(user)) {
+                                    <li><a href="#personalSettingsModal" role="button"><i class="icon-cogs"></i> Edit personal settings</a></li>
+                                    @views.html.content.header.personalSettings(content, resourceLibraryUrl)
+                                }
+                            }
+
+                            @if(content.isEditableBy(user)) {
+                                <li class="dropdown">
+                                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                                        <i class="icon-pencil"></i> Edit <b class="caret"></b>
+                                    </a>
+                                    <ul class="dropdown-menu">
+                                        <li><a href="#settingsModal" data-toggle="modal"><i class="icon-cogs"></i> Edit settings</a></li>
+                                        <li><a href="#metadataModal" data-toggle="modal"><i class="icon-info-sign"></i> Edit metadata</a></li>
+                                        <li><a href="#thumbnailModal" data-toggle="modal"><i class="icon-camera"></i> Set thumbnail</a></li>
+                                        <li><a href="#shareabilityModal" data-toggle="modal"><i class="icon-share"></i> Set shareability</a></li>
+                                        <li><a href="#visibilityModal" data-toggle="modal"><i class="icon-eye-open"></i> Set visibility</a></li>
+                                        <li class="divider"></li>
+                                        <li><a href="@routes.ContentController.stats(content.id.get)"><i class="icon-bar-chart"></i> View stats</a></li>
+                                        <li><a href="#deleteModal" data-toggle="modal"><i class="icon-trash"></i> Delete</a></li>
+                                    </ul>
+                                    @views.html.content.header.settings(content, resourceLibraryUrl)
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <h1>
             <i class="@contentIcons(content.contentType)"></i> @content.name
-            <small><a href="#viewMetadataModal" data-toggle="modal">View Metadata</a></small>
         </h1>
 
         <div id="viewMetadataModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="viewMetadataModalLabel" aria-hidden="true">

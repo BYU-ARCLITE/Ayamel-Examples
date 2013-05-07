@@ -2,6 +2,8 @@
 
 @import views.html.resources._
 
+@notifications = @{user.getNotifications.filterNot(_.messageRead)}
+
 <!DOCTYPE html>
 <html ng-app>
     <head>
@@ -50,6 +52,9 @@
                         <div class="link">
                             <a href="#" id="profileLink">
                                 <i class="icon-user"></i> Profile
+                                @if(!notifications.isEmpty) {
+                                    <span class="badge badge-yellow pad-left-low">@notifications.size</span>
+                                }
                             </a>
                             <div id="profileDropdown">
                                 <div class="dropdownPoint"></div>
@@ -58,10 +63,8 @@
                                 </div>
                                 <div class="dropdownItem">
                                     <a href="@routes.Users.notifications()"><i class="icon-inbox"></i> Notifications
-                                        @defining(user.getNotifications.filterNot(_.messageRead)) { notifications =>
-                                            @if(!notifications.isEmpty) {
-                                                <span class="badge badge-yellow pad-left-low">@notifications.size</span>
-                                            }
+                                        @if(!notifications.isEmpty) {
+                                            <span class="badge badge-yellow pad-left-low">@notifications.size</span>
                                         }
                                     </a>
                                 </div>
@@ -127,25 +130,25 @@
             @if(request.flash.get("alert").isDefined) {
                 <div class="alert">
                     <a class="close" data-dismiss="alert">×</a>
-                    <strong>Just a sec...</strong> @request.flash("alert")
+                    <strong>Just a sec...</strong> @Html(request.flash("alert"))
                 </div>
             }
             @if(request.flash.get("error").isDefined) {
                 <div class="alert alert-error">
                     <a class="close" data-dismiss="alert">×</a>
-                    <strong>Oh snap!</strong> @request.flash("error")
+                    <strong>Oh snap!</strong> @Html(request.flash("error"))
                 </div>
             }
             @if(request.flash.get("success").isDefined) {
                 <div class="alert alert-success">
                     <a class="close" data-dismiss="alert">×</a>
-                    <strong>Alright!</strong> @request.flash("success")
+                    <strong>Alright!</strong> @Html(request.flash("success"))
                 </div>
             }
             @if(request.flash.get("info").isDefined) {
                 <div class="alert alert-info">
                     <a class="close" data-dismiss="alert">×</a>
-                    <strong>Heads up.</strong> @request.flash("info")
+                    <strong>Heads up.</strong> @Html(request.flash("info"))
                 </div>
             }
         </div>

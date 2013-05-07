@@ -159,6 +159,7 @@ h1, h2, h3, h4, h5, h6 {
 .headerBar .searchBox {
     padding: 4px 10px;
     height: 15px;
+    width: 75px;
     margin: 0 0 0 5px;
     background: rgba(0,0,0,0.1);
 
@@ -175,9 +176,16 @@ h1, h2, h3, h4, h5, h6 {
     border-top: rgba(0,0,0,0.6) 1px solid;
     border-bottom: rgba(255,255,255,0.5) 1px solid;
     color: white;
+
+    -webkit-transition: width ease 0.6s;
+    -moz-transition: width ease 0.6s;
+    -ms-transition: width ease 0.6s;
+    -o-transition: width ease 0.6s;
+    transition: width ease 0.6s;
 }
 
 .headerBar .searchBox:focus {
+    width: 200px;
     border-left: none;
     border-right: none;
     border-top: rgba(0,0,0,0.6) 1px solid;

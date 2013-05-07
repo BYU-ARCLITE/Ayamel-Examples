@@ -1,8 +1,6 @@
 @(content: models.Content)(implicit request: RequestHeader, user: User)
 
-@if(content isShareableBy user) {
-    <a href="#shareModal" role="button" data-toggle="modal" class="btn btn-yellow"><i class="icon-share-alt"></i> Share</a>
-
+@if(true) {
     <div id="shareModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="shareModalLabel" aria-hidden="true">
         <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>

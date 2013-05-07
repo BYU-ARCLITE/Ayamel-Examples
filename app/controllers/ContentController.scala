@@ -789,7 +789,9 @@ object ContentController extends Controller {
                 // Make sure the user is allowed to edit the course
                 if (user canEdit course) {
                   course.addContent(content)
-                  Redirect(routes.ContentController.view(id)).flashing("info" -> "Content added to course")
+                  val courseLink = "<a href=\"" + routes.Courses.view(course.id.get).toString() + "\">" + course.name + "</a>"
+                  Redirect(routes.ContentController.viewInCourse(content.id.get, course.id.get))
+                    .flashing("success" -> ("Content added to course " + courseLink))
                 } else
                   Errors.forbidden
             }
