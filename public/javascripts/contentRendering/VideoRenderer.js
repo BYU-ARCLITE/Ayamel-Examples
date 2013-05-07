@@ -53,7 +53,7 @@ var VideoRenderer = (function () {
                 break;
             case 3:
                 if (showTranscript(args)) {
-                    panes = ContentLayoutManager.twoPanel($(args.holder), ["Definitions", "Transcript"]);
+                    panes = ContentLayoutManager.twoPanel($(args.holder), ["Transcript", "Definitions"]);
                     layout = {
                         $player: panes.$player,
                         $definitions: panes.Definitions.$content,
@@ -70,7 +70,7 @@ var VideoRenderer = (function () {
                 break;
             case 4:
                 if (showTranscript(args)) {
-                    panes = ContentLayoutManager.twoPanel($(args.holder), ["Definitions", "Transcript", "Annotations"]);
+                    panes = ContentLayoutManager.twoPanel($(args.holder), ["Transcript", "Definitions", "Annotations"]);
                     layout = {
                         $player: panes.$player,
                         $definitions: panes.Definitions.$content,

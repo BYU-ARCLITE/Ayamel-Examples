@@ -1,8 +1,6 @@
 @(content: models.Content, resourceLibraryUrl: String)(implicit user: User)
 
-@if(!content.isEditableBy(user)) {
-    <a href="#personalSettingsModal" role="button" class="btn" data-toggle="modal"><i class="icon-edit"></i> Edit Personal Settings</a>
-
+@if(true) {
     <div id="personalSettingsModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="personalSettingsModalLabel" aria-hidden="true">
         <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>

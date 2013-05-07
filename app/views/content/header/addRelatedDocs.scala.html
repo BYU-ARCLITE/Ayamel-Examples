@@ -11,20 +11,6 @@
 }
 
 @if(true) {
-    <div class="btn-group">
-
-        <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
-            <i class="icon-plus"></i> Add to @{content.contentType.name}...
-            <span class="caret"></span>
-        </a>
-        <ul class="dropdown-menu">
-            @if(content.contentType == 'video || content.contentType == 'audio) {
-                <li><a tabindex="-1" href="#captionTrackModal" data-toggle="modal"><i class="icon-list-ul"></i> Captions</a></li>
-            }
-            <li><a tabindex="-1" href="#annotationsModal" data-toggle="modal"><i class="icon-list-alt"></i> Annotations</a></li>
-        </ul>
-    </div>
-
     @if(content.contentType == 'video || content.contentType == 'audio) {
         <div id="captionTrackModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="captionTrackModalLabel" aria-hidden="true">
             <div class="modal-header">
