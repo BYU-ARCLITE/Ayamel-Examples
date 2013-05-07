@@ -34,7 +34,7 @@
 .contentItem.blockFormat {
     background: white;
     display: inline-block;
-    width: 350px;
+    width: 320px;
     height: 100px;
     position: relative;
     border-radius: 5px;
@@ -48,7 +48,10 @@
 }
 
 .contentItem.blockFormat h3 {
-    word-wrap: break-word;
+    white-space: nowrap;
+    overflow: hidden;
+    width: 100%;
+    text-overflow: ellipsis;
     margin: 0;
 }
 
@@ -121,7 +124,7 @@
     position: absolute;
     top: 0;
     left: 106px;
-    width: 244px;
+    width: 214px;
     height: 100px;
 }
 

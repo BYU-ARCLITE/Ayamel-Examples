@@ -103,15 +103,10 @@
     height: 50px;
 }
 
-/*.fresh {
-    display: inline-block;
-    width: 50px;
-    height: 50px;
-    background: url("../images/home/fresh.jpg") center;
-    background-size: cover;
-
-    border: 5px solid #fff;
-    outline: 1px solid #ccc;
-    box-shadow: 1px 2px 5px rgba(0,0,0,0.2);
-    vertical-align: bottom;
-}*/
+.homeNav {
+    padding: 10px;
+    background: #444;
+    box-shadow: inset 0 2px 10px rgba(0,0,0,0.8);
+    border-top: 1px solid #333;
+    border-bottom: 1px solid #ccc;
+}

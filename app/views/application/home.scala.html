@@ -34,113 +34,136 @@
         @*<h1>Spotlight</h1>*@
     </div>
 
-    <div class="padded">
-
-        <h2>My Ayamel</h2>
-
-        <div class="row-fluid">
-            <div class="span4">
-                <div class="homeContent">
-                    <div class="homeContentContainer">
-                        <h3>Latest Content</h3>
-                        <div id="latestContent"></div>
-                        <script type="text/javascript">
-                            $(function() {
-                                ContentItemRenderer.renderAll({
-                                    content: [@Html(user.getContentFeed(6).map(_.toJson).mkString(","))],
-                                    $holder: $("#latestContent"),
-                                    format: "icon"
-                                });
-                            });
-                        </script>
-                    </div>
-                </div>
-            </div>
-            <div class="span4">
-                <div class="homeContent">
-                    <div class="homeContentContainer">
-                        <h3>Announcements</h3>
-                        @for((announcement, course) <- user.getAnnouncementFeed(3)) {
-                            @courses.announcement(announcement, Some(course))
-                        }
-                    </div>
-                </div>
-            </div>
-            <div class="span4">
-                <div class="homeContent">
-                    <div class="homeContentContainer">
-                        <h3>My Courses</h3>
-                        <ul>
-                            @for(course <- user.getEnrollment) {
-                                <li><a href="@routes.Courses.view(course.id.get)">@course.name</a></li>
-                            }
-                        </ul>
-
-                        @if(user.canCreateCourse) {
-                            <a href="@routes.Courses.create()" class="btn btn-magenta"><i class="icon-group"></i> Create a new course</a>
-                        }
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <h2>New Stuff</h2>
-
+    <div class="homeNav">
         <div class="row-fluid">
             <div class="span3">
-                <div class="homeContent accent">
-                    <div class="homeContentContainer">
-                        <div class="pad-bottom-med">
-                            @*<div class="fresh"></div>*@
-                            <img src="@routes.Assets.at("images/home/fresh.jpg")" class="img-polaroid homeThumbnail">
-                            <h3 class="inline-block">Fresh Content</h3>
+                <button class="btn btn-inverse btn-large btn-block homeNavButton color-light-blue clicked" data-target="#myAyamel"><i class="icon-home"></i> My Ayamel</button>
+            </div>
+            <div class="span3">
+                <button class="btn btn-inverse btn-large btn-block homeNavButton color-light-magenta" data-target="#publicContent"><i class="icon-globe"></i> Public Content</button>
+            </div>
+            <div class="span3">
+                <button class="btn btn-inverse btn-large btn-block homeNavButton color-light-yellow" data-target="#helpLab"><i class="icon-beaker"></i> Help Lab</button>
+            </div>
+            <div class="span3">
+                <button class="btn btn-inverse btn-large btn-block homeNavButton" data-target="#siteNews"><i class="icon-bullhorn"></i> Site News</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="padded">
+
+        <div id="myAyamel" class="homeNavContent">
+            <h1>My Ayamel</h1>
+
+            <div class="row-fluid">
+                <div class="span4">
+                    <div class="homeContent">
+                        <div class="homeContentContainer">
+                            <h3>Course Content Feed</h3>
+                            <div id="latestContent"></div>
+                            <script type="text/javascript">
+                                $(function() {
+                                    ContentItemRenderer.renderAll({
+                                        content: [@Html(user.getContentFeed(6).map(_.toJson).mkString(","))],
+                                        $holder: $("#latestContent"),
+                                        format: "icon"
+                                    });
+                                });
+                            </script>
                         </div>
-                        <p>The latest public content is here for your enjoyment!</p>
-                        <a href="@routes.ContentController.public()" class="btn btn-blue">View All</a>
+                    </div>
+                </div>
+                <div class="span4">
+                    <div class="homeContent">
+                        <div class="homeContentContainer">
+                            <h3>Announcements</h3>
+                            @if(user.getAnnouncementFeed(3).isEmpty) {
+                                <em>There are no announcements at this time.</em>
+                            } else {
+                                @for((announcement, course) <- user.getAnnouncementFeed(3)) {
+                                    @courses.announcement(announcement, Some(course))
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="span4">
+                    <div class="homeContent">
+                        <div class="homeContentContainer">
+                            <h3>My Courses</h3>
+                            <ul>
+                                @for(course <- user.getEnrollment) {
+                                    <li><a href="@routes.Courses.view(course.id.get)">@course.name</a></li>
+                                }
+                            </ul>
+
+                            @if(user.canCreateCourse) {
+                                <a href="@routes.Courses.create()" class="btn btn-magenta"><i class="icon-group"></i> Create a new course</a>
+                            }
+                        </div>
                     </div>
                 </div>
             </div>
-            @*
-            @for(content <- Content.listPublic.take(3)) {
-                <div class="span3">
-                    <div class="homeContent">
-                        <div class="homeContentContainer">
-                            <div class="pad-bottom-med">
-                                @views.html.content.helpers.contentItem(content, List("homeThumbnail"))
-                                <a href="@routes.ContentController.view(content.id.get)" class="btn btn-blue pad-left-high">View</a>
-                            </div>
-                            <h3 class="inline-block">@content.name</h3>
-                            <p>
-                                Added on @service.TimeTools.prettyTime(content.dateAdded)
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            }
-            *@
         </div>
 
-        <div class="row-fluid">
+        <div id="publicContent" class="homeNavContent">
+            <div>
+                <div class="pull-left"><h1>Latest Public Content</h1></div>
+                <div class="pull-right">
+                    <a href="@routes.ContentController.public()" class="btn btn-blue pad-top-med">View All Public Content</a>
+                </div>
+            </div>
+            <div class="clearfix"></div>
 
+            <p>
+                We've picked the newest and freshest content added to Ayamel. Enjoy!
+            </p>
 
-            @if(user.role == User.roles.student) {
-                <div class="span6">
-                    <h3>Are you a teacher?</h3>
+            <div id="publicContentHolder"></div>
+            <script type="text/javascript">
+                $(function() {
+                    ContentItemRenderer.renderAll({
+                        content: [@Html(Content.listPublic.take(12).map(_.toJson).mkString(","))],
+                        $holder: $("#publicContentHolder")
+                    });
+                });
+            </script>
+        </div>
+
+        <div class="homeNavContent" id="helpLab">
+            <h1>Help and Tutorial Lab</h1>
+
+            <p>
+                Understanding how Ayamel works can be difficult. We know. For that reason we are working hard on
+                creating a series of tutorials in order to help you do what you need to do. However, it isn't ready yet.
+                It is coming soon, so keep your eyes peeled.
+            </p>
+        </div>
+
+        <div class="homeNavContent" id="siteNews">
+            <h1>Site News</h1>
+
+            <div class="inline-block">
+                <div class="well">
+                    <h3>UI updates and additional video support.</h3>
+                    <p><em>5/7/2013</em></p>
                     <p>
-                        If you would like to teach a course you must be approved as a teacher by an administrator. To submit
-                        a teacher request, please fill out the <a href="@routes.Users.teacherRequestPage()">teacher request form.</a>
+                        If you have videos that you want to add that are already hosted on YouTube or Brightcove we can
+                        handle that. When adding content, choose to have it link to a URL. For YouTube videos just enter
+                        the share URL. It looks like this: <code>http://youtu.be/VIDEO_ID</code>. For Brightcove, you'll
+                        need the video ID. Enter the URL formatted like this: <code>brightcove://VIDEO_ID</code>.
+                    </p>
+                    <p>
+                        Also, we've updated the UI on the home page and on the content view page which should help the site
+                        feel less cluttered and make it easier to use.
                     </p>
                 </div>
-            }
-            <div class="span6">
-                <h3>How does Ayamel work?</h3>
-                <p>
-                    A very good question...
-                </p>
             </div>
         </div>
 
     </div>
+
     <script src="@routes.Assets.at("javascripts/swipe.js")" type="text/javascript"></script>
     <script type="text/javascript">
         $(function() {
@@ -158,6 +181,23 @@
             $(".contentEntry").tooltip({
                 placement: "bottom"
             });
+
+            // Set up the button nav
+            $(".homeNavContent").hide();
+            $(".homeNavButton").click(function() {
+                if ($(this).hasClass("clicked")) return;
+
+                // Turn off the old one
+                var $old = $(".homeNavButton.active");
+                $($old.attr("data-target")).hide();
+                $old.removeClass('clicked').button('toggle');
+
+                // Turn on this one
+                $(this).show().addClass('clicked').button('toggle');
+                $($(this).attr("data-target")).show();
+            });
+            $(".homeNavButton.clicked").button('toggle');
+            $("#myAyamel").show();
         });
     </script>
 
