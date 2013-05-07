@@ -34,7 +34,7 @@
                 courseId: 0,
                 content: [@Html(content.toJson.toString())][0],
                 resource: resource,
-                allowCourse: true,
+                allowPersonal: true,
                 callback: function (annotations) {
                     annotations.forEach(function (annotation) {
                         var html = '<option value="' + annotation.id + '">' + annotation.title + '</option>';
