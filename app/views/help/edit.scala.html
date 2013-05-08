@@ -1,0 +1,26 @@
+@(helpPage: HelpPage)(implicit request: RequestHeader, user: User)
+
+@main("Ayamel - Edit help page", Seq("screen" -> "wysihtml5/bootstrap-wysihtml5.css")){
+    <div class="padded">
+        <h1>@helpPage.title</h1>
+
+        <script type="text/javascript" src="@routes.Assets.at("wysihtml5/wysihtml5-0.3.0.js")"></script>
+        <script type="text/javascript" src="@routes.Assets.at("wysihtml5/bootstrap-wysihtml5.js")"></script>
+
+        <form action="@routes.HelpPages.save(helpPage.id.get)" method="post">
+            <div>
+                <textarea id="textEditor" name="contents" placeholder="Enter text ..." style="width: 810px; height: 400px">@helpPage.contents</textarea>
+            </div>
+
+            <input type="submit" class="btn btn-blue" value="Save Page"/>
+        </form>
+
+        <script type="text/javascript">
+            $(function() {
+                $("#textEditor").wysihtml5();
+            });
+        </script>
+
+
+    </div>
+}

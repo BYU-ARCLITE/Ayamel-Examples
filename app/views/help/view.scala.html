@@ -1,0 +1,22 @@
+@(helpPage: HelpPage)(implicit request: RequestHeader, user: User)
+
+@main("Ayamel - " + helpPage.title){
+    <div class="padded">
+        <div>
+            <div class="pull-left">
+                <h1>@helpPage.title</h1>
+            </div>
+
+            <div class="pull-right">
+                @if(user.role == User.roles.admin) {
+                    <a class="btn btn-yellow pad-top-med" href="@routes.HelpPages.edit(helpPage.id.get)"><i class="icon-edit"></i> Edit</a>
+                }
+            </div>
+        </div>
+        <div class="clearfix"></div>
+
+        <div>
+            @Html(helpPage.contents)
+        </div>
+    </div>
+}

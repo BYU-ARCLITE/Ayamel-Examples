@@ -167,7 +167,7 @@ var TranscriptDisplay = (function() {
                         // Possibly slide to see the cue
                         if (_this.sync) {
                             var $parent = cueState.$cue.parent(".transcriptContent.active");
-                            if ($parent) {
+                            if ($parent[0]) {
 
                                 // Get the "top" of the cue
                                 $parent[0].scrollTop = 0;

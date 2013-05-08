@@ -101,6 +101,11 @@ POST    /admin/homePageContent              controllers.Users.createHomePageCont
 GET     /admin/homePageContent/:id/active   controllers.Users.toggleHomePageContent(id: Long)
 GET     /admin/homePageContent/:id/delete   controllers.Users.deleteHomePageContent(id: Long)
 
+# Help pages
+GET     /help/:id                           controllers.HelpPages.view(id: Long)
+GET     /help/:id/edit                      controllers.HelpPages.edit(id: Long)
+POST    /help/:id/edit                      controllers.HelpPages.save(id: Long)
+
 # Ajax utilities
 POST    /ajax/util/serialize                                controllers.ajax.Util.serializeMap
 POST    /ajax/util/deserialize                              controllers.ajax.Util.deserializeMap
