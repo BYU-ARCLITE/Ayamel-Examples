@@ -156,15 +156,25 @@ case class Content(id: Pk[Long], name: String, contentType: Symbol, thumbnail: S
     "labels" -> labels
   )
 
+  val cacheTarget = this
   object cache {
     var activity: Option[List[Activity]] = None
+    var owner: Option[User] = None
 
     def getActivity: List[Activity] = {
       if (activity.isEmpty)
         activity = Some(Activity.listByPage("content", "view", id.get))
       activity.get
     }
+
+    def getOwner: User = {
+      if (owner.isEmpty)
+        owner = User.findById(ContentOwnership.findByContent(cacheTarget).userId)
+      owner.get
+    }
   }
+
+  def getOwner = cache.getOwner
 
   def getActivity(coursePrefix: String) = cache.getActivity.filter(_.activityContext.pageContext.action.startsWith(coursePrefix))
 

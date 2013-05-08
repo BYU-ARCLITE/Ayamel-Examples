@@ -1,6 +1,6 @@
 @(content: models.Content, course: Course, resourceLibraryUrl: String)(implicit user: User)
 
-<form id="courseSettingsForm" class="form-horizontal" method="post" action="@routes.ContentController.setCourseSettings(content.id.get, course.id.get)">
+<form id="courseSettingsForm" class="form-horizontal" method="post" action="@routes.ContentEditing.setCourseSettings(content.id.get, course.id.get)">
     <input type="hidden" name="contentType" value="image">
 
     <div class="control-group">

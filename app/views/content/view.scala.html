@@ -156,7 +156,7 @@
                                     <ul class="dropdown-menu">
                                         <li><a href="#lmsModal" data-toggle="modal"><i class="icon-briefcase"></i> Add to LMS</a></li>
                                         <li><a href="#courseSettingsModal" data-toggle="modal"><i class="icon-cogs"></i> Edit course settings</a></li>
-                                        <li><a href="@routes.ContentController.statsInCourse(content.id.get, course.get.id.get)"><i class="icon-bar-chart"></i> View course stats</a></li>
+                                        <li><a href="@routes.CourseContent.statsInCourse(content.id.get, course.get.id.get)"><i class="icon-bar-chart"></i> View course stats</a></li>
                                         <li><a href="#"><i class="icon-remove"></i> Remove from course</a></li>
                                     </ul>
                                     @views.html.content.header.courseSettings(content, course, resourceLibraryUrl)

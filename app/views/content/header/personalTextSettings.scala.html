@@ -1,48 +1,50 @@
 @(content: models.Content, resourceLibraryUrl: String)(implicit user: User)
 
-<form id="personalSettingsForm" class="form-horizontal" method="post" action="@routes.ContentController.setPersonalSettings(content.id.get)">
-    <input type="hidden" name="contentType" value="text">
+@if(true) {
+    <form id="personalSettingsForm" class="form-horizontal" method="post" action="@routes.ContentEditing.setPersonalSettings(content.id.get)">
+        <input type="hidden" name="contentType" value="text">
 
-    <div class="control-group">
-        <label class="control-label" for="personalAnnotationDocs">Enabled Annotations</label>
-        <div class="controls">
-            <select multiple="multiple" name="annotationDocs" id="personalAnnotationDocs">
-            </select>
+        <div class="control-group">
+            <label class="control-label" for="personalAnnotationDocs">Enabled Annotations</label>
+            <div class="controls">
+                <select multiple="multiple" name="annotationDocs" id="personalAnnotationDocs">
+                </select>
+            </div>
         </div>
-    </div>
-    <input type="submit" style="position: absolute; left: -9999px; width: 1px; height: 1px;"/>
-</form>
+        <input type="submit" style="position: absolute; left: -9999px; width: 1px; height: 1px;"/>
+    </form>
 
-<script type="text/javascript">
-    $(function() {
-        var content = @Html(content.toJson.toString());
-        var url = "@resourceLibraryUrl/@content.resourceId";
-        var userPrefix = "user_@{user.id.get}:";
+    <script type="text/javascript">
+        $(function() {
+            var content = @Html(content.toJson.toString());
+            var url = "@resourceLibraryUrl/@content.resourceId";
+            var userPrefix = "user_@{user.id.get}:";
 
-        var annotationDocs = [];
-        if (content.settings[userPrefix + "enabledAnnotationDocuments"]) {
-            annotationDocs = content.settings[userPrefix + "enabledAnnotationDocuments"].split(",");
-        }
+            var annotationDocs = [];
+            if (content.settings[userPrefix + "enabledAnnotationDocuments"]) {
+                annotationDocs = content.settings[userPrefix + "enabledAnnotationDocuments"].split(",");
+            }
 
-        ResourceLibrary.load(url, function(resource) {
+            ResourceLibrary.load(url, function(resource) {
 
-            var $annotationDocs = $("#personalAnnotationDocs");
-            AdditionalDocumentLoader.annotations.loadEnablable({
-                userId: "@user.id.get",
-                owner: [@content.isEditableBy(user)][0],
-                teacher: false,
-                courseId: 0,
-                content: [@Html(content.toJson.toString())][0],
-                resource: resource,
-                allowPersonal: true,
-                callback: function (annotations) {
-                    annotations.forEach(function (annotation) {
-                        var html = '<option value="' + annotation.id + '">' + annotation.title + '</option>';
-                        $annotationDocs.append(html);
-                    });
-                    $annotationDocs.val(annotationDocs);
-                }
+                var $annotationDocs = $("#personalAnnotationDocs");
+                AdditionalDocumentLoader.annotations.loadEnablable({
+                    userId: "@user.id.get",
+                    owner: [@content.isEditableBy(user)][0],
+                    teacher: false,
+                    courseId: 0,
+                    content: [@Html(content.toJson.toString())][0],
+                    resource: resource,
+                    allowPersonal: true,
+                    callback: function (annotations) {
+                        annotations.forEach(function (annotation) {
+                            var html = '<option value="' + annotation.id + '">' + annotation.title + '</option>';
+                            $annotationDocs.append(html);
+                        });
+                        $annotationDocs.val(annotationDocs);
+                    }
+                });
             });
         });
-    });
-</script>
+    </script>
+}

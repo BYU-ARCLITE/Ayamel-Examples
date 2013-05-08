@@ -8,7 +8,7 @@ import java.io.File
 import service.{TimeTools, ResourceHelper, ImageTools}
 import scala.concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
-import play.api.libs.json.Json
+import play.api.libs.json.{JsObject, Json}
 
 object Application extends Controller {
 
@@ -31,7 +31,29 @@ object Application extends Controller {
     request =>
 //      val s = TimeTools.colonTimecodeToSeconds("23:03")
 //      Ok(s.toString)
-      Ok
+
+      val json1 = Json.obj(
+        "val1" -> 4,
+        "val2" -> true,
+        "val3" -> "Yes"
+      )
+
+      val json2 = Json.obj(
+        "val1" -> 89,
+        "attributes" -> Json.obj(
+          "attr1" -> "something"
+        )
+      )
+
+      val json3 = Json.obj(
+        "attr1" -> "something else"
+      )
+
+      val attrs = Json.obj(
+        "attributes" -> ((json2 \ "attributes").asOpt[JsObject].getOrElse(Json.obj()) ++ json3)
+      )
+
+      Ok(json2 ++ attrs)
   }
 
   def search = Authentication.authenticatedAction() {

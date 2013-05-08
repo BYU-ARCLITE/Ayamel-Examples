@@ -80,7 +80,7 @@
             <h3 id="metadataModalLabel">Edit Metadata</h3>
         </div>
         <div class="modal-body">
-            <form id="metadataForm" class="form-horizontal" method="post" action="@routes.ContentController.setMetadata(content.id.get)">
+            <form id="metadataForm" class="form-horizontal" method="post" action="@routes.ContentEditing.setMetadata(content.id.get)">
                 <div class="control-group">
                     <label class="control-label" for="title">Title</label>
                     <div class="controls">
@@ -181,7 +181,7 @@
                     </div>
                 </div>
                 <div class="span8">
-                    <form id="thumbnailForm" method="post" action="@routes.ContentController.changeThumbnail(content.id.get)" enctype="multipart/form-data">
+                    <form id="thumbnailForm" method="post" action="@routes.ContentEditing.changeThumbnail(content.id.get)" enctype="multipart/form-data">
 
                         <p>You can update the thumbnail for this content by either uploading a new image or specifying a URL.</p>
 
@@ -230,7 +230,7 @@
         </div>
         <div class="modal-body">
             <p>Set the shareability of @content.name. </p>
-            <form id="shareabilityForm" method="post" action="@routes.ContentController.setShareability(content.id.get)">
+            <form id="shareabilityForm" method="post" action="@routes.ContentEditing.setShareability(content.id.get)">
                 <label class="radio">
                     <input type="radio" name="shareability" value="@Content.shareability.notShareable" @isChecked(content.shareability, Content.shareability.notShareable)>
                     Not sharable
@@ -281,7 +281,7 @@
                 Set the visibility of @content.name. Please be aware that even private content can be seen if
                 shared.
             </p>
-            <form id="visibilityForm" method="post" action="@routes.ContentController.setVisibility(content.id.get)">
+            <form id="visibilityForm" method="post" action="@routes.ContentEditing.setVisibility(content.id.get)">
                 <label class="radio">
                     <input type="radio" name="visibility" value="@Content.visibility._private" @isChecked(content.visibility, Content.visibility._private)>
                     Private (Only I can see this).

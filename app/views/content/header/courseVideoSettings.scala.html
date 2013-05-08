@@ -16,7 +16,7 @@
         l
 }
 
-<form id="courseSettingsForm" class="form-horizontal" method="post" action="@routes.ContentController.setCourseSettings(content.id.get, course.id.get)">
+<form id="courseSettingsForm" class="form-horizontal" method="post" action="@routes.ContentEditing.setCourseSettings(content.id.get, course.id.get)">
     <input type="hidden" name="contentType" value="video">
     <div class="control-group">
         <label class="control-label" for="playbackLevel">Playback level</label>

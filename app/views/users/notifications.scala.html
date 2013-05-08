@@ -34,7 +34,7 @@
                         <a href="@routes.Users.markNotification(notification.id.get)">
                     }
                     <div class="notification @read(notification)" data-id="@notification.id.get">
-                        <div class="message">@notification.message</div>
+                        <div class="message">@Html(notification.message)</div>
                         <div class="date">@service.TimeTools.prettyTime(notification.dateSent)</div>
                     </div>
                     @if(!notification.messageRead) {

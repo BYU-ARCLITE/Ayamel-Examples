@@ -16,7 +16,7 @@
         l
 }
 
-<form id="personalSettingsForm" class="form-horizontal" method="post" action="@routes.ContentController.setPersonalSettings(content.id.get)">
+<form id="personalSettingsForm" class="form-horizontal" method="post" action="@routes.ContentEditing.setPersonalSettings(content.id.get)">
     <input type="hidden" name="contentType" value="video">
     <div class="control-group">
         <input type="hidden" value="1" name="level"/>
