@@ -179,31 +179,26 @@ var VideoRenderer = (function () {
     function setupVideoPlayer(args, callback) {
 //        Ayamel.AddVideoPlayer(h5PlayerInstall, 1, function() {
 
-        var components = [
-            ["play", "volume"],
-            ["fullScreen", "timeCode"]
-        ];
+        var components = {
+            left: ["play", "volume"],
+            right: ["fullScreen", "timeCode"]
+        };
         var captions;
 
         if (getLevel(args) >= 2) {
-            components[0].push("captions");
+            components.left.push("captions");
             captions = args.transcripts;
         }
 
-        // Set the priority of video players
-        Ayamel.prioritizedPlugins = [
-            Ayamel.mediaPlugins.html5Video,
-            Ayamel.mediaPlugins.flashVideo,
-            Ayamel.mediaPlugins.html5Audio,
-            Ayamel.mediaPlugins.brightcove,
-            Ayamel.mediaPlugins.youtube
-        ];
+        // Set the priority of players
+        Ayamel.prioritizedPlugins.video = ["html5", "flash", "brightcove", "youtube"];
+        Ayamel.prioritizedPlugins.audio = ["html5"];
 
         var videoPlayer = new Ayamel.classes.AyamelPlayer({
             $holder: args.layout.$player,
             resource: args.resource,
             captionTracks: captions,
-            components: components,
+//            components: components,
             startTime: args.startTime,
             endTime: args.endTime,
             renderCue: function (cue) {
