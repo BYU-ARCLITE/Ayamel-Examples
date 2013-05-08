@@ -96,6 +96,56 @@ object Fixtures {
 
   }
 
+  val helpPages = List(
+    "Updating account information",
+    "Changing your password",
+    "Merging accounts",
+    "Notifications",
+    "Searching",
+    "Course directory",
+    "Joining courses",
+    "Making announcements",
+    "Adding content you own to a course",
+    "Content types",
+    "Browsing content",
+    "Viewing content",
+    "Viewing captions and transcripts",
+    "Translating",
+    "Viewing annotations",
+    "Sharing content",
+    "Viewing content information",
+    "Public content listing",
+    "Uploading",
+    "Adding hosted content",
+    "Adding a YouTube video",
+    "Adding a Brightcove video",
+    "Create from existing resource",
+    "Content settings",
+    "Updating metadata",
+    "Setting a thumbnail",
+    "Setting the shareability",
+    "Setting the visibility",
+    "Deleting content",
+    "Ownership and availability",
+    "Uploading captions",
+    "Creating new annotations",
+    "Editing existing annotations",
+    "Publishing personal captions and annotations",
+    "Viewing content statistics",
+    "Downloading event log as an Excel file",
+    "Clearing the event log",
+    "Becoming a teacher",
+    "Creating a course",
+    "Adding content you don't own to a course",
+    "Adding a course to a LMS",
+    "Adding course content to a LMS",
+    "Setting course captions and annotations",
+    "Course statistics",
+    "How playlists work",
+    "Creating a playlist",
+    "Viewing a playlist"
+  )
+
   def create() {
 
     // Create the objects
@@ -145,5 +195,11 @@ object Fixtures {
     HomePageContent(NotAssigned, "Pardon our dust",
       "We're working hard to provide language learning magic, so there may be some things don't work well, or at all. Please be patient. You will be rewarded as awesomeness occurs.",
       "", "", "/assets/images/home/construction.jpg", active = true).save
+  }
+
+  def createHelpPages() {
+    Logger.info("Creating help pages")
+
+    helpPages.foreach(title => HelpPage(NotAssigned, title, "").save)
   }
 }

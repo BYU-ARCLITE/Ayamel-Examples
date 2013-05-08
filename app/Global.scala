@@ -1,4 +1,4 @@
-import models.{HomePageContent, User}
+import models.{HelpPage, HomePageContent, User}
 import play.api.{Logger, GlobalSettings}
 
 object Global extends GlobalSettings {
@@ -13,6 +13,10 @@ object Global extends GlobalSettings {
 
     if (HomePageContent.list.isEmpty) {
       Fixtures.createHomePageContent()
+    }
+
+    if (HelpPage.list.isEmpty) {
+      Fixtures.createHelpPages()
     }
 
   }

@@ -1,13 +1,21 @@
 @(content: models.Content, course: Option[Course], resourceLibraryUrl: String)(implicit user: User)
 
 @annotationUrl = @{
-    val courseQuery = course.map(c => "?course=" + c.id.get).getOrElse("")
-    routes.ContentController.editAnnotations(content.id.get).toString() + courseQuery
+    if (course.isDefined && user.canEdit(course.get)) {
+        val courseQuery = "?course=" + course.get.id.get
+        routes.ContentController.editAnnotations(content.id.get).toString() + courseQuery
+    } else {
+        routes.ContentController.editAnnotations(content.id.get).toString()
+    }
 }
 
 @captionTrackUrl = @{
-    val courseQuery = course.map(c => "?course=" + c.id.get).getOrElse("")
-    routes.ContentController.addCaptionTrack(content.id.get).toString() + courseQuery
+    if (course.isDefined && user.canEdit(course.get)) {
+        val courseQuery = "?course=" + course.get.id.get
+        routes.ContentController.addCaptionTrack(content.id.get).toString() + courseQuery
+    } else {
+        routes.ContentController.addCaptionTrack(content.id.get).toString()
+    }
 }
 
 @if(true) {
@@ -82,6 +90,14 @@
             });
 
             var url = "@resourceLibraryUrl/@content.resourceId";
+            var template =
+                '<tr>' +
+                    '<td>{{title}}</td>' +
+                    '<td>' +
+                        '<a href="{{editUrl}}" class="btn">Edit</a>&nbsp;' +
+                        '<a href="{{publishUrl}}" class="btn disabled">Publish</a>' +
+                    '</td>' +
+                '</tr>';
             ResourceLibrary.load(url, function(resource) {
                 var $tbody = $("#existingAnnotations").children("tbody");
                 var annotationUrl = $("#annotationLink").attr("href");
@@ -95,8 +111,15 @@
                     resource: resource,
                     callback: function (annotations) {
                         annotations.forEach(function (annotation) {
-                            $tbody.append("<tr><td>" + annotation.title + "</td><td><a href='" + annotationUrl + "?doc=" +
-                                annotation.id + "' class='btn'>Edit</a></td>");
+                            var editUrl = annotationUrl.indexOf("?") >= 0 ?
+                                annotationUrl + "&doc=" + annotation.id : annotationUrl + "?doc=" + annotation.id;
+                            var publishUrl = "#";
+                            var html = Mustache.to_html(template, {
+                                title: annotation.title,
+                                editUrl: editUrl,
+                                publishUrl: publishUrl
+                            });
+                            $tbody.append(html);
                         });
                     }
                 });
