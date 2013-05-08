@@ -6,7 +6,7 @@
     }
 }
 
-<form id="settingsForm" class="form-horizontal" method="post" action="@routes.ContentController.setSettings(content.id.get)">
+<form id="settingsForm" class="form-horizontal" method="post" action="@routes.ContentEditing.setSettings(content.id.get)">
     <input type="hidden" name="contentType" value="video">
     <div class="control-group">
         <label class="control-label" for="playbackLevel">Playback level</label>

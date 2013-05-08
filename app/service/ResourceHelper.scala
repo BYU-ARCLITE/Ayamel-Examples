@@ -140,4 +140,16 @@ object ResourceHelper {
       }
     }
   }
+
+  def setAttributes(id: String, attributes: Map[String, String]): Future[JsValue] = {
+    ResourceController.getResource(id).flatMap { json =>
+      val resource = json \ "resource"
+      val newAttributes = Json.toJson(attributes).as[JsObject]
+      val attrs = Json.obj(
+        "attributes" -> ((resource \ "attributes").asOpt[JsObject].getOrElse(Json.obj()) ++ newAttributes)
+      )
+      val updatedResource = resource.as[JsObject] ++ attrs
+      ResourceController.updateResource(id, updatedResource)
+    }
+  }
 }

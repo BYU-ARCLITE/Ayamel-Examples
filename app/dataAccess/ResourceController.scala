@@ -103,7 +103,7 @@ object ResourceController {
    */
   def getRelations(id: String): Future[JsValue] = WS.url(baseUrl + "/" + id + "/relations").get().map(_.json)
 
-  def addRelation(id: String, subjectId: String, objectId: String, relationType: String,
+  def addRelation(subjectId: String, objectId: String, relationType: String,
                   attributes: Map[String, String]): Future[JsValue] = {
 
     val json = Json.obj(
@@ -112,7 +112,7 @@ object ResourceController {
       "type" -> relationType,
       "attributes" -> Json.toJson(attributes)
     )
-    WS.url(baseUrl + "/" + id + "/relations").post(json).map(_.json)
+    WS.url(baseUrl + "/" + subjectId + "/relations").post(json).map(_.json)
   }
 
   def deleteRelation(id: String, relationId: String): Future[JsValue] =

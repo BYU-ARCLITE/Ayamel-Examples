@@ -10,7 +10,7 @@
 
 @clearCall = {
     @if(course.isDefined) {
-        @routes.ContentController.clearStatsInCourse(content.id.get, course.get.id.get)
+        @routes.CourseContent.clearStatsInCourse(content.id.get, course.get.id.get)
     } else {
         @routes.ContentController.clearStats(content.id.get)
     }
@@ -18,7 +18,7 @@
 
 @downloadCall = {
     @if(course.isDefined) {
-        @routes.ContentController.downloadStatsInCourse(content.id.get, course.get.id.get)
+        @routes.CourseContent.downloadStatsInCourse(content.id.get, course.get.id.get)
     } else {
         @routes.ContentController.downloadStats(content.id.get)
     }
@@ -31,7 +31,7 @@
     <div class="padded">
 
         @if(course.isDefined) {
-            <a href="@routes.ContentController.viewInCourse(content.id.get, course.get.id.get)"><i class="icon-arrow-left"></i> Back to content</a>
+            <a href="@routes.CourseContent.viewInCourse(content.id.get, course.get.id.get)"><i class="icon-arrow-left"></i> Back to content</a>
         } else {
             <a href="@routes.ContentController.view(content.id.get)"><i class="icon-arrow-left"></i> Back to content</a>
         }

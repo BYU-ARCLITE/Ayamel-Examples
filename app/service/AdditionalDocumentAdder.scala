@@ -33,13 +33,17 @@ object AdditionalDocumentAdder {
     val enabledDocuments = content.settings.get(settingName).map(_.split(",").filterNot(_.isEmpty).toList).getOrElse(Nil)
     content.setSetting(settingName, (resourceId :: enabledDocuments).mkString(",")).save
 
-    // Create the relation
-    val attributes = getAttributes(content, course, docType)
-    val relationType = getRelationType(docType)
-    ResourceController.addRelation("1", resourceId, content.resourceId, relationType, attributes).map(r => {
+    // Set the attributes on the resource
+    ResourceHelper.setAttributes(resourceId, getResourceAttributes(course, content)).flatMap(resource => {
 
-      // Do something with the result
-      action(course)
+      // Create the relation
+      val attributes = getRelationAttributes(docType)
+      val relationType = getRelationType(docType)
+      ResourceController.addRelation(resourceId, content.resourceId, relationType, attributes).map(r => {
+
+        // Do something with the result
+        action(course)
+      })
     })
   }
 
@@ -52,19 +56,20 @@ object AdditionalDocumentAdder {
       "unknown"
   }
 
-  private def getAttributes(content: Content, course: Option[Course], docType: Symbol)(implicit user: User): Map[String, String] = {
-    val map: Map[String, String] = {
-      if (course.isDefined && user.canEdit(course.get))
-        Map("owner" -> "course", "ownerId" -> course.get.id.get.toString)
-      else if (content.isEditableBy(user))
-        Map()
-      else
-        Map("owner" -> "user", "ownerId" -> user.id.get.toString)
-    }
-    if (docType == 'annotations)
-      map.updated("type", "annotations")
+  private def getResourceAttributes(course: Option[Course], content: Content)(implicit user: User): Map[String, String] = {
+    if (course.isDefined)
+      Map("ayamel_ownerType" -> "course", "ayamel_ownerId" -> course.get.id.get.toString)
+    else if (content isEditableBy user)
+      Map()
     else
-      map
+      Map("ayamel_ownerType" -> "user", "ayamel_ownerId" -> user.id.get.toString)
+  }
+
+  private def getRelationAttributes(docType: Symbol): Map[String, String] = {
+    if (docType == 'annotations)
+      Map("type" -> "annotations")
+    else
+      Map()
   }
 
   private def getSettingName(docType: Symbol, prefix: String): String = {

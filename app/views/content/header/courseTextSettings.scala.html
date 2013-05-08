@@ -1,48 +1,50 @@
 @(content: models.Content, course: Course, resourceLibraryUrl: String)(implicit user: User)
 
-<form id="courseSettingsForm" class="form-horizontal" method="post" action="@routes.ContentController.setCourseSettings(content.id.get, course.id.get)">
-    <input type="hidden" name="contentType" value="text">
+@if(true) {
+    <form id="courseSettingsForm" class="form-horizontal" method="post" action="@routes.ContentEditing.setCourseSettings(content.id.get, course.id.get)">
+        <input type="hidden" name="contentType" value="text">
 
-    <div class="control-group">
-        <label class="control-label" for="courseAnnotationDocs">Enabled Annotations</label>
-        <div class="controls">
-            <select multiple="multiple" name="annotationDocs" id="courseAnnotationDocs">
-            </select>
+        <div class="control-group">
+            <label class="control-label" for="courseAnnotationDocs">Enabled Annotations</label>
+            <div class="controls">
+                <select multiple="multiple" name="annotationDocs" id="courseAnnotationDocs">
+                </select>
+            </div>
         </div>
-    </div>
-    <input type="submit" style="position: absolute; left: -9999px; width: 1px; height: 1px;"/>
-</form>
+        <input type="submit" style="position: absolute; left: -9999px; width: 1px; height: 1px;"/>
+    </form>
 
-<script type="text/javascript">
-    $(function() {
-        var content = @Html(content.toJson.toString());
-        var url = "@resourceLibraryUrl/@content.resourceId";
-        var coursePrefix = "course_@{course.id.get}:";
+    <script type="text/javascript">
+        $(function() {
+            var content = @Html(content.toJson.toString());
+            var url = "@resourceLibraryUrl/@content.resourceId";
+            var coursePrefix = "course_@{course.id.get}:";
 
-        var annotationDocs = [];
-        if (content.settings[coursePrefix + "enabledAnnotationDocuments"]) {
-            annotationDocs = content.settings[coursePrefix + "enabledAnnotationDocuments"].split(",");
-        }
+            var annotationDocs = [];
+            if (content.settings[coursePrefix + "enabledAnnotationDocuments"]) {
+                annotationDocs = content.settings[coursePrefix + "enabledAnnotationDocuments"].split(",");
+            }
 
-        ResourceLibrary.load(url, function(resource) {
+            ResourceLibrary.load(url, function(resource) {
 
-            var $annotationDocs = $("#courseAnnotationDocs");
-            AdditionalDocumentLoader.annotations.loadEnablable({
-                userId: "@user.id.get",
-                owner: [@content.isEditableBy(user)][0],
-                teacher: [@user.canEdit(course)][0],
-                courseId: [@course.id.get][0],
-                content: [@Html(content.toJson.toString())][0],
-                resource: resource,
-                allowCourse: true,
-                callback: function (annotations) {
-                    annotations.forEach(function (annotation) {
-                        var html = '<option value="' + annotation.id + '">' + annotation.title + '</option>';
-                        $annotationDocs.append(html);
-                    });
-                    $annotationDocs.val(annotationDocs);
-                }
+                var $annotationDocs = $("#courseAnnotationDocs");
+                AdditionalDocumentLoader.annotations.loadEnablable({
+                    userId: "@user.id.get",
+                    owner: [@content.isEditableBy(user)][0],
+                    teacher: [@user.canEdit(course)][0],
+                    courseId: [@course.id.get][0],
+                    content: [@Html(content.toJson.toString())][0],
+                    resource: resource,
+                    allowCourse: true,
+                    callback: function (annotations) {
+                        annotations.forEach(function (annotation) {
+                            var html = '<option value="' + annotation.id + '">' + annotation.title + '</option>';
+                            $annotationDocs.append(html);
+                        });
+                        $annotationDocs.val(annotationDocs);
+                    }
+                });
             });
         });
-    });
-</script>
+    </script>
+}
