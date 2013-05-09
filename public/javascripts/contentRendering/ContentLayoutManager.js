@@ -24,6 +24,11 @@ var ContentLayoutManager = (function() {
             '<div class="span4">{{>tabs}}</div>' +
         '</div>';
 
+    var twoPanelLayoutIPad =
+        '<div class="primary"></div>' +
+        '<div class="secondary">' +
+            '<div class="secondaryContent">{{>tabs}}</div>' +
+        '</div>';
 
     function generateTabs(tabNames) {
         if (tabNames.length === 1) {
@@ -45,6 +50,121 @@ var ContentLayoutManager = (function() {
         }
     }
 
+    function generateTwoPanel($container, tabNames) {
+        var tabs = generateTabs(tabNames);
+        var html = Mustache.to_html(twoPanelLayout, {}, {tabs: tabs});
+        var $layout = $(html);
+        $container.html($layout);
+
+        // Return the player and tab panes
+        var panes = {
+            $player: $layout.find("#player")
+        };
+
+        // Include the tab panes
+        if (tabNames.length === 1) {
+
+            // No tabs, so include the container
+            panes["$" + tabNames[0]] = $layout.find("#" + tabNames[0]);
+        } else {
+            // Include links to the actual tab and the corresponding content container
+            tabNames.forEach(function (name) {
+                panes[name] = {
+                    $tab: $layout.find("#videoTabs a[href='#" + name + "']"),
+                    $content: $layout.find("#" + name)
+                };
+            });
+
+            // Enable the tabs
+            $layout.find("#videoTabs a").click(function (e) {
+                e.preventDefault();
+                $(this).tab('show');
+            });
+            panes[tabNames[0]].$tab.tab("show");
+        }
+        return panes;
+    }
+
+    function generateTwoPanelIPad($container, tabNames) {
+        var tabs = generateTabs(tabNames);
+        var html = Mustache.to_html(twoPanelLayoutIPad, {}, {tabs: tabs});
+        var $layout = $(html);
+        $container.html($layout);
+
+        var $primary = $($layout[0]);
+        var $secondary = $($layout[1]);
+
+        var panes = {
+            $player: $primary
+        };
+
+        // Include the tab panes
+        if (tabNames.length === 1) {
+
+            // No tabs, so include the container
+            panes["$" + tabNames[0]] = $layout.find("#" + tabNames[0]);
+        } else {
+            // Include links to the actual tab and the corresponding content container
+            tabNames.forEach(function (name) {
+                panes[name] = {
+                    $tab: $layout.find("#videoTabs a[href='#" + name + "']"),
+                    $content: $layout.find("#" + name)
+                };
+            });
+
+            // Enable the tabs
+            $layout.find("#videoTabs a").click(function (e) {
+                e.preventDefault();
+                $(this).tab('show');
+            });
+            panes[tabNames[0]].$tab.tab("show");
+        }
+
+        function arrangeWindow() {
+
+            // Have the contents container fill the rest of the screen
+            var width = window.innerWidth;
+            var height = window.innerHeight - $(".headerBar").height();
+            $container.width(width).height(height);
+
+            // Detect which orientation the iPad is
+            if (width > height) {
+                // Landscape
+                $("body").addClass("landscapeOrientation").removeClass("portraitOrientation");
+
+                // Set up the primary container
+                $primary.width(height).height(height);
+
+                // Set up the secondary container
+                $secondary.width(width - height).height(height).css("left", height).css("top", 0);
+            } else {
+                // Portrait
+                $("body").addClass("portraitOrientation").removeClass("landscapeOrientation");
+
+                // Set up the primary container
+                $primary.width(width).css("height", "auto");
+                var primaryHeight = $primary.height();
+                if (primaryHeight === 0)
+                    $primary.height(primaryHeight = 534);
+
+                // Set up the secondary container
+                $secondary.width(width).height(height - primaryHeight).css("left", 0).css("top", primaryHeight);
+            }
+        }
+
+        $(window).resize(function () {
+            arrangeWindow();
+        });
+        arrangeWindow();
+
+
+
+        if (tabNames.length === 1) {
+//            panes["$" + tabNames[0]] =
+        }
+        return panes;
+    }
+
     return {
         onePanel: function ($container) {
             var $player = $('<div id="player"></div>');
@@ -55,38 +175,11 @@ var ContentLayoutManager = (function() {
         },
 
         twoPanel: function ($container, tabNames) {
-            var tabs = generateTabs(tabNames);
-            var html = Mustache.to_html(twoPanelLayout, {}, {tabs: tabs});
-            var $layout = $(html);
-            $container.html($layout);
-
-            // Return the player and tab panes
-            var panes = {
-                $player: $layout.find("#player")
-            };
-
-            // Include the tab panes
-            if (tabNames.length === 1) {
-
-                // No tabs, so include the container
-                panes["$" + tabNames[0]] = $layout.find("#" + tabNames[0]);
+            if (Ayamel.utils.mobile.isIPad) {
+                return generateTwoPanelIPad($container, tabNames);
             } else {
-                // Include links to the actual tab and the corresponding content container
-                tabNames.forEach(function (name) {
-                    panes[name] = {
-                        $tab: $layout.find("#videoTabs a[href='#" + name + "']"),
-                        $content: $layout.find("#" + name)
-                    };
-                });
-
-                // Enable the tabs
-                $layout.find("#videoTabs a").click(function (e) {
-                    e.preventDefault();
-                    $(this).tab('show');
-                });
-                panes[tabNames[0]].$tab.tab("show");
+                return generateTwoPanel($container, tabNames);
             }
-            return panes;
         }
 
     };

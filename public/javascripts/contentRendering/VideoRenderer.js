@@ -219,7 +219,8 @@ var VideoRenderer = (function () {
                 }
 
                 return {node: node};
-            }
+            },
+            aspectRatio: Ayamel.aspectRatios.hdVideo
         });
 
         var registerPlay = true;

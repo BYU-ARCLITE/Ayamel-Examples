@@ -208,7 +208,11 @@ object ContentController extends Controller {
           // Check that the user can view the content
             if (content isVisibleBy user) {
               val resourceLibraryUrl = Play.configuration.getString("resourceLibrary.baseUrl").get
-              Ok(views.html.content.view(content, resourceLibraryUrl))
+
+              if (request.headers.get("User-Agent").getOrElse("").toLowerCase.contains("ipad"))
+                Ok(views.html.content.viewIpad(content, resourceLibraryUrl))
+              else
+                Ok(views.html.content.view(content, resourceLibraryUrl))
             } else
               Errors.forbidden
         }

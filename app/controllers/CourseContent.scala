@@ -119,7 +119,10 @@ object CourseContent extends Controller {
               // Check that the user can view the content
                 if (content isVisibleBy user) {
                   val resourceLibraryUrl = Play.configuration.getString("resourceLibrary.baseUrl").get
-                  Ok(views.html.content.view(content, resourceLibraryUrl, Some(course)))
+                  if (request.headers.get("User-Agent").getOrElse("").toLowerCase.contains("ipad"))
+                    Ok(views.html.content.viewIpad(content, resourceLibraryUrl, Some(course)))
+                  else
+                    Ok(views.html.content.view(content, resourceLibraryUrl, Some(course)))
                 } else
                   Errors.forbidden
             }
