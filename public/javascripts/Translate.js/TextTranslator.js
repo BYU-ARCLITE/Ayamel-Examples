@@ -33,10 +33,8 @@ var TextTranslator = (function () {
      */
     TextTranslator.prototype.attach = function attach(DOMNode, srcLang, destLang, eventData) {
         var _this = this;
-        $(DOMNode).mouseup(function () {
-            // Get the text selection
-            var text = window.getSelection().toString().trim();
 
+        function translate(text) {
             // Translate it if it's not empty
             if (text !== '') {
                 _this.translate(text, srcLang, destLang);
@@ -49,7 +47,31 @@ var TextTranslator = (function () {
                 event.data = eventData;
                 _this.e.dispatchEvent(event);
             }
-        });
+        }
+
+        if (Ayamel.utils.mobile.isIPad) {
+            var doubleTapTime = 500; // A half second max between taps;
+            var taps = 0;
+
+            DOMNode.addEventListener("touchstart", function() {
+                taps++;
+
+                if (taps === 1) {
+                    window.setTimeout(function() {taps = 0;}, doubleTapTime);
+                }
+            });
+            DOMNode.addEventListener("touchend", function() {
+                if (taps === 2) {
+                    // For now translate the whole line
+                    translate($(DOMNode).text().trim());
+                }
+            });
+        } else {
+            $(DOMNode).mouseup(function () {
+                // Get the text selection
+                translate(window.getSelection().toString().trim());
+            });
+        }
     };
 
     TextTranslator.prototype.translate = function translate(text, srcLang, destLang, element) {

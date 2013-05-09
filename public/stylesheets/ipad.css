@@ -1,0 +1,33 @@
+body.ipad {
+    overflow: hidden;
+    background: #1a1a1a;
+}
+
+.ipad #contentHolder {
+    position: relative;
+}
+
+.ipad .primary {
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+.ipad .secondary {
+    background: white;
+    position: absolute;
+    left: 0;
+    top: 0;
+    overflow-y: hidden;
+
+    line-height: 24pt;
+    font-size: 18pt;
+}
+
+.ipad .secondaryContent {
+    padding: 8px;
+}
+
+.ipad.portraitOrientation .transcriptContent, .ipad #Definitions, .ipad #Annotations {
+    max-height: 160px;
+}
