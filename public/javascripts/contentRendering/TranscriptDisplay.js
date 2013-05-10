@@ -127,6 +127,12 @@ var TranscriptDisplay = (function() {
         });
     }
 
+    function resize(display) {
+        var height = display.$holder.height();
+        var headerHeight = display.$element.children("button").height() + display.$element.children("ul").height() + 40;
+        display.$element.find(".transcriptContent").height(height - headerHeight);
+    }
+
     function TranscriptDisplay(args) {
         this.transcripts = args.transcripts;
         this.$holder = args.$holder;
@@ -135,6 +141,11 @@ var TranscriptDisplay = (function() {
 
         // Generate the transcripts
         addTranscripts(this, args.filter);
+
+        // Make sure this fits the space allotted
+        this.$element.height();
+        $(window).resize(resize);
+        resize(this);
     }
 
     TranscriptDisplay.prototype.addEventListener = function(event, callback) {
@@ -152,6 +163,7 @@ var TranscriptDisplay = (function() {
                 $(this).button("toggle");
             }).button("toggle");
         this.$element.prepend($syncButton);
+        resize(this);
 
         // Possibly link this with a media player
         mediaPlayer.addEventListener("timeupdate", function(event) {
