@@ -152,11 +152,21 @@ var ContentLayoutManager = (function() {
 
                 // Set up the primary container
 //                var primaryWidthPercentage = 0.65;
-                $primary.width(height).height(height);
+                // Make sure the video container will fit
+                var videoWidth = height;
+                var videoHeight = (videoWidth / Ayamel.aspectRatios.hdVideo) + 100;
+                if (videoHeight > height) {
+
+                    // Video player won't fit. Resize
+                    videoWidth = height * Ayamel.aspectRatios.hdVideo;
+                    $primary.width(videoWidth).height(height);
+                } else {
+                    $primary.width(height).height(height);
+                }
 
                 // Set up the secondary container
                 secondaryHeight = height;
-                $secondary.width(width - height).height(secondaryHeight).css("left", height).css("top", 0);
+                $secondary.width(width - videoWidth).height(secondaryHeight).css("left", videoWidth).css("top", 0);
             } else {
                 // Portrait
                 $("body").addClass("portraitOrientation").removeClass("landscapeOrientation");
