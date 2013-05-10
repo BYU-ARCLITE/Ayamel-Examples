@@ -9,6 +9,7 @@ import java.io.ByteArrayInputStream
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
+import models.Course
 
 /**
  * Created with IntelliJ IDEA.
@@ -147,7 +148,11 @@ object DocumentManager extends Controller {
 
                     // We are just updating
                     Future {
-                      Redirect(routes.ContentController.view(content.id.get)).flashing("info" -> "Annotations updated")
+                      val course = request.body.get("course").flatMap(id => Course.findById(id(0).toLong))
+                      Redirect(
+                        if (course.isDefined) routes.CourseContent.viewInCourse(content.id.get, course.get.id.get)
+                        else routes.ContentController.view(content.id.get)
+                        ).flashing("info" -> "Annotations updated")
                     }
                   }
               }
