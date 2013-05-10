@@ -151,13 +151,12 @@ var ContentLayoutManager = (function() {
                 $("body").addClass("landscapeOrientation").removeClass("portraitOrientation");
 
                 // Set up the primary container
-                var primaryWidthPercentage = 0.65;
-                $primary.width(width * primaryWidthPercentage).height(height);
+//                var primaryWidthPercentage = 0.65;
+                $primary.width(height).height(height);
 
                 // Set up the secondary container
                 secondaryHeight = height;
-                var left = width * (1 - primaryWidthPercentage);
-                $secondary.width(left).height(secondaryHeight).css("left", width - left).css("top", 0);
+                $secondary.width(width - height).height(secondaryHeight).css("left", height).css("top", 0);
             } else {
                 // Portrait
                 $("body").addClass("portraitOrientation").removeClass("landscapeOrientation");
