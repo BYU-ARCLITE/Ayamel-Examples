@@ -49,7 +49,7 @@ var TextTranslator = (function () {
             }
         }
 
-        if (Ayamel.utils.mobile.isIPad) {
+        if (Ayamel.utils.mobile.isMobile) {
             var doubleTapTime = 500; // A half second max between taps;
             var taps = 0;
 
