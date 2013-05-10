@@ -1,7 +1,7 @@
 package controllers
 
 import play.api.mvc.{Action, Controller}
-import service.{ExcelWriter, LMSAuth}
+import service.{MobileDetection, ExcelWriter, LMSAuth}
 import play.core.parsers.FormUrlEncodedParser
 import controllers.authentication.Authentication
 import play.api.Play
@@ -119,8 +119,8 @@ object CourseContent extends Controller {
               // Check that the user can view the content
                 if (content isVisibleBy user) {
                   val resourceLibraryUrl = Play.configuration.getString("resourceLibrary.baseUrl").get
-                  if (request.headers.get("User-Agent").getOrElse("").toLowerCase.contains("ipad"))
-                    Ok(views.html.content.viewIpad(content, resourceLibraryUrl, Some(course)))
+                  if (MobileDetection.isMobile())
+                    Ok(views.html.content.viewMobile(content, resourceLibraryUrl, Some(course)))
                   else
                     Ok(views.html.content.view(content, resourceLibraryUrl, Some(course)))
                 } else
