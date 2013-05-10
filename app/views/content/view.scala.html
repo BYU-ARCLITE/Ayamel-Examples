@@ -11,13 +11,6 @@
     )
 }
 
-@moreStyles =  @{
-    List(
-      ("screen", "stylesheets/content.css"),
-      ("screen", "stylesheets/annotations.css")
-    )
-}
-
 @userLevelText = @{
     if (course.isDefined && user.canEdit(course.get))
         "course"
@@ -27,7 +20,7 @@
         "personal"
 }
 
-@main("Ayamel - " + content.name, moreStyles) {
+@main("Ayamel - " + content.name) {
 
     <script type="text/javascript">
         var coursePrefix = "@course.map(c => "course_" + c.id.get + ":").getOrElse("")";
@@ -40,65 +33,7 @@
         });
     </script>
 
-    <link rel="stylesheet" href="@routes.Assets.at("Ayamel.js/js/player2/css/player2.css")"/>
-
-    <script language="JavaScript" type="text/javascript" src="http://admin.brightcove.com/js/BrightcoveExperiences.js"></script>
-
-    <script type="text/javascript" src="@routes.Assets.at("Ayamel.js/js/async.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("Ayamel.js/js/Resource.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("Ayamel.js/js/swfobject.js")"></script>
-
-    <!-- Caption rendering and timed text -->
-    <script type="text/javascript" src="@routes.Assets.at("Caption-Renderer/caption-renderer.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("TimedText/TimedText.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("TimedText/TextTrack.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("TimedText/TextTrackCue.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("TimedText/WebVTT.js")"></script>
-
-    <script type="text/javascript" src="@routes.Assets.at("Ayamel.js/js/player2/js/Ayamel.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("Ayamel.js/js/player2/js/AnimationHandler.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("Ayamel.js/js/player2/js/AyamelPlayer.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("Ayamel.js/js/player2/js/CaptionTrackLoader.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("Ayamel.js/js/player2/js/ControlBar.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("Ayamel.js/js/player2/js/FullScreenHandler.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("Ayamel.js/js/player2/js/KeyBinder.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("Ayamel.js/js/player2/js/MediaPlayer.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("Ayamel.js/js/player2/js/ProgressBar.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("Ayamel.js/js/player2/js/controls/CaptionsMenu.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("Ayamel.js/js/player2/js/controls/FullScreenButton.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("Ayamel.js/js/player2/js/controls/PlayButton.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("Ayamel.js/js/player2/js/controls/TimeCode.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("Ayamel.js/js/player2/js/controls/VolumeSlider.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("Ayamel.js/js/player2/js/plugins/brightcove.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("Ayamel.js/js/player2/js/plugins/flashVideo.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("Ayamel.js/js/player2/js/plugins/html5Video.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("Ayamel.js/js/player2/js/plugins/html5Audio.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("Ayamel.js/js/player2/js/plugins/youtube.js")"></script>
-
-    <!-- Translation Engines -->
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/Translate.js/TranslationEngine.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/Translate.js/TextTranslator.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/Translate.js/ArcliteTranslationEngine.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/Translate.js/GoogleTranslationEngine.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/Translate.js/WordReferenceTranslationEngine.js")"></script>
-
-    <!-- Content rendering -->
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/BoxDrawingCanvas.js")"></script>
-
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/contentRendering/AdditionalDocumentLoader.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/contentRendering/ContentLayoutManager.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/contentRendering/ContentRenderer.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/contentRendering/TranscriptDisplay.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/contentRendering/ImageRenderer.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/contentRendering/TextRenderer.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/contentRendering/VideoRenderer.js")"></script>
-
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/annotating/ImageAnnotation.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/annotating/TextAnnotation.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/annotating/AnnotationManifest.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/annotating/ImageAnnotator.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/annotating/TextAnnotator.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/annotating/AnnotationLoader.js")"></script>
+    @views.html.content.dependencies()
 
     <!-- OAuth and Cryptography -->
     <script type="text/javascript" src="@routes.Assets.at("javascripts/sha1.js")"></script>

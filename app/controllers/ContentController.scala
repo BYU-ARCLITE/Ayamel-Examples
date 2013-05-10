@@ -209,8 +209,8 @@ object ContentController extends Controller {
             if (content isVisibleBy user) {
               val resourceLibraryUrl = Play.configuration.getString("resourceLibrary.baseUrl").get
 
-              if (request.headers.get("User-Agent").getOrElse("").toLowerCase.contains("ipad"))
-                Ok(views.html.content.viewIpad(content, resourceLibraryUrl))
+              if (MobileDetection.isMobile())
+                Ok(views.html.content.viewMobile(content, resourceLibraryUrl))
               else
                 Ok(views.html.content.view(content, resourceLibraryUrl))
             } else

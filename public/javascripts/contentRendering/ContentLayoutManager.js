@@ -24,7 +24,7 @@ var ContentLayoutManager = (function() {
             '<div class="span4">{{>tabs}}</div>' +
         '</div>';
 
-    var twoPanelLayoutIPad =
+    var twoPanelLayoutMobile =
         '<div class="primary"></div>' +
         '<div class="secondary">' +
             '<div class="secondaryContent">{{>tabs}}</div>' +
@@ -85,9 +85,9 @@ var ContentLayoutManager = (function() {
         return panes;
     }
 
-    function generateTwoPanelIPad($container, tabNames) {
+    function generateTwoPanelMobile($container, tabNames) {
         var tabs = generateTabs(tabNames);
-        var html = Mustache.to_html(twoPanelLayoutIPad, {}, {tabs: tabs});
+        var html = Mustache.to_html(twoPanelLayoutMobile, {}, {tabs: tabs});
         var $layout = $(html);
         $container.html($layout);
 
@@ -127,7 +127,7 @@ var ContentLayoutManager = (function() {
             var height = window.innerHeight - $(".headerBar").height();
             $container.width(width).height(height);
 
-            // Detect which orientation the iPad is
+            // Detect which orientation the device is
             if (width > height) {
                 // Landscape
                 $("body").addClass("landscapeOrientation").removeClass("portraitOrientation");
@@ -175,8 +175,8 @@ var ContentLayoutManager = (function() {
         },
 
         twoPanel: function ($container, tabNames) {
-            if (Ayamel.utils.mobile.isIPad) {
-                return generateTwoPanelIPad($container, tabNames);
+            if (Ayamel.utils.mobile.isMobile) {
+                return generateTwoPanelMobile($container, tabNames);
             } else {
                 return generateTwoPanel($container, tabNames);
             }

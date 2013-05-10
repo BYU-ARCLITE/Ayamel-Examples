@@ -3,6 +3,8 @@ package controllers
 import play.api.mvc.Controller
 import controllers.authentication.Authentication
 import models.{HelpPage, User}
+import play.api.Play
+import Play.current
 
 /**
  * Created with IntelliJ IDEA.
@@ -17,9 +19,10 @@ object HelpPages extends Controller {
     implicit request =>
       implicit user =>
         val helpPage = HelpPage.findById(id)
-        if (helpPage.isDefined)
-          Ok(views.html.help.view(helpPage.get))
-        else
+        if (helpPage.isDefined) {
+          val resourceLibraryUrl = Play.configuration.getString("resourceLibrary.baseUrl").get
+          Ok(views.html.help.view(helpPage.get, resourceLibraryUrl))
+        } else
           Errors.notFound
   }
 
