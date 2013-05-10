@@ -12,6 +12,7 @@ var ContentLayoutManager = (function() {
 
     var tabHeaderHolder = '<ul class="nav nav-tabs" id="videoTabs">{{>tabHeaders}}</ul>';
     var tabHeader       = '<li><a href="#{{name}}">{{name}}</a></li>';
+    var tabHeaderMobile = '<li><a href="#{{name}}"><i class="icon-{{icon}}"></i></a></li>';
 
     var tabContentHolder = '<div class="tab-content">{{>tabContents}}</div>';
     var tabContent       = '<div class="tab-pane" id="{{name}}"></div>';
@@ -30,14 +31,28 @@ var ContentLayoutManager = (function() {
             '<div class="secondaryContent">{{>tabs}}</div>' +
         '</div>';
 
+    var tabIcons = {
+        Transcript: "th-list",
+        Definitions: "book",
+        Annotations: "comment"
+    };
+
     function generateTabs(tabNames) {
         if (tabNames.length === 1) {
             return Mustache.to_html(noTabs, {name: tabNames[0]});
         } else {
             // Generate the headers
-            var headers = tabNames.map(function (name) {
-                return Mustache.to_html(tabHeader, {name: name});
-            }).join("");
+            var headers;
+            if (Ayamel.utils.mobile.isMobile) {
+                headers = tabNames.map(function (name) {
+                    return Mustache.to_html(tabHeaderMobile, {name: name, icon: tabIcons[name]});
+                }).join("");
+            } else {
+                headers = tabNames.map(function (name) {
+                    return Mustache.to_html(tabHeader, {name: name});
+                }).join("");
+            }
+
             var header = Mustache.to_html(tabHeaderHolder, {}, {tabHeaders: headers});
 
             // Generate the content
@@ -93,6 +108,7 @@ var ContentLayoutManager = (function() {
 
         var $primary = $($layout[0]);
         var $secondary = $($layout[1]);
+        var $secondaryContent = $secondary.children(".secondaryContent");
 
         var panes = {
             $player: $primary
@@ -125,6 +141,8 @@ var ContentLayoutManager = (function() {
             // Have the contents container fill the rest of the screen
             var width = window.innerWidth;
             var height = window.innerHeight - $(".headerBar").height();
+            var secondaryHeight;
+
             $container.width(width).height(height);
 
             // Detect which orientation the device is
@@ -133,10 +151,13 @@ var ContentLayoutManager = (function() {
                 $("body").addClass("landscapeOrientation").removeClass("portraitOrientation");
 
                 // Set up the primary container
-                $primary.width(height).height(height);
+                var primaryWidthPercentage = 0.65;
+                $primary.width(width * primaryWidthPercentage).height(height);
 
                 // Set up the secondary container
-                $secondary.width(width - height).height(height).css("left", height).css("top", 0);
+                secondaryHeight = height;
+                var left = width * (1 - primaryWidthPercentage);
+                $secondary.width(left).height(secondaryHeight).css("left", width - left).css("top", 0);
             } else {
                 // Portrait
                 $("body").addClass("portraitOrientation").removeClass("landscapeOrientation");
@@ -144,12 +165,19 @@ var ContentLayoutManager = (function() {
                 // Set up the primary container
                 $primary.width(width).css("height", "auto");
                 var primaryHeight = $primary.height();
-                if (primaryHeight === 0)
-                    $primary.height(primaryHeight = 534);
+                if (primaryHeight === 0) {
+                    // Figure out how big the player will be
+                    var playerHeight = (width / Ayamel.aspectRatios.hdVideo) + 100;
+                    $primary.height(primaryHeight = playerHeight);
+                }
 
                 // Set up the secondary container
-                $secondary.width(width).height(height - primaryHeight).css("left", 0).css("top", primaryHeight);
+                secondaryHeight = height - primaryHeight;
+                $secondary.width(width).height(secondaryHeight).css("left", 0).css("top", primaryHeight);
             }
+
+            $secondaryContent.height(secondaryHeight - 16);
+            $secondaryContent.find('.tab-pane').height(secondaryHeight - 76);
         }
 
         $(window).resize(function () {

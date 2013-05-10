@@ -28,6 +28,14 @@ body.ipad {
     padding: 8px;
 }
 
-.ipad.portraitOrientation .transcriptContent, .ipad #Definitions, .ipad #Annotations {
-    max-height: 160px;
+.ipad .transcriptContent, .ipad #Definitions, .ipad #Annotations {
+    max-height: none;
+}
+
+.ipad #contentHolder {
+    margin-bottom: 0;
+}
+
+.ipad .captionator-cue {
+    font-size: 18pt;
 }
