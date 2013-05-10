@@ -128,9 +128,11 @@ var TranscriptDisplay = (function() {
     }
 
     function resize(display) {
-        var height = display.$holder.height();
-        var headerHeight = display.$element.children("button").height() + display.$element.children("ul").height() + 40;
-        display.$element.find(".transcriptContent").height(height - headerHeight);
+        if (Ayamel.utils.mobile.isMobile) {
+            var height = display.$holder.height();
+            var headerHeight = display.$element.children("button").height() + display.$element.children("ul").height() + 40;
+            display.$element.find(".transcriptContent").height(height - headerHeight);
+        }
     }
 
     function TranscriptDisplay(args) {
@@ -143,7 +145,7 @@ var TranscriptDisplay = (function() {
         addTranscripts(this, args.filter);
 
         // Make sure this fits the space allotted
-        this.$element.height();
+//        this.$element.height();
         $(window).resize(resize);
         resize(this);
     }
