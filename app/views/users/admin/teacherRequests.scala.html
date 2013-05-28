@@ -20,8 +20,8 @@
             </tr>
             @for(teacherRequest <- requests) {
                 <tr>
-                    <td>@teacherRequest.getUser.name.get</td>
-                    <td>@teacherRequest.getUser.email.get</td>
+                    <td>@teacherRequest.getUser.displayName</td>
+                    <td>@teacherRequest.getUser.email.getOrElse("None")</td>
                     <td>@teacherRequest.reason</td>
                     <td>
                         <a href="@routes.Users.approveTeacher(teacherRequest.id.get)" class="btn btn-blue">Approve</a>
