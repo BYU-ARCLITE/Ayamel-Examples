@@ -120,20 +120,41 @@
             var find = $("#find").val();
             var useful = $("#useful").val();
             var comments = $("#comments").val();
-            console.log("Navigate:" + navigate + ", Find: " + find + ", Useful: " + useful + ", Comments: " + comments);
+            var description = "Navigate:" + navigate + ", Find: " + find + ", Useful: " + useful + ", Comments: " + comments;
+
+            $.ajax("/feedback", {
+                type: "post",
+                data: {
+                    category: "rating",
+                    description: description
+                }
+            });
             done();
         });
 
         $("#suggestionButton").click(function() {
-            var feature = $("#feature").val();
-            console.log("Feature: " + feature);
+            $.ajax("/feedback", {
+                type: "post",
+                data: {
+                    category: "suggestion",
+                    description: "Feature: " + $("#feature").val()
+                }
+            });
             done();
         });
 
         $("#problemButton").click(function() {
             var problem = $("#problem").val();
             var reproduce = $("#reproduce").val();
-            console.log("Problem: " + problem + ", Reproduce: " + reproduce + ", User Agent: " + navigator.userAgent);
+            var description = "Problem: " + problem + ", Reproduce: " + reproduce + ", User Agent: " + navigator.userAgent;
+
+            $.ajax("/feedback", {
+                type: "post",
+                data: {
+                    category: "problem",
+                    description: description
+                }
+            });
             done();
         });
 

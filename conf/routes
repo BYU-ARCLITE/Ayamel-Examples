@@ -117,6 +117,7 @@ GET     /ajax/translate/wordReference/:src/:dest/:text      controllers.ajax.Tra
 POST    /ajax/activity                                      controllers.ajax.ActivitySaver.save
 
 # Feedback
+POST    /feedback                       controllers.Application.saveFeedback
 POST    /feedback/error                 controllers.Application.saveErrorFeedback
 
 # Map static resources from the /public folder to the /assets URL path
