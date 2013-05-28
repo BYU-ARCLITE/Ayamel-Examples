@@ -1,0 +1,63 @@
+#feedback {
+    position: fixed;
+    top: 300px;
+    left: 40px;
+    width: 120px;
+    height: 30px;
+    text-align: center;
+    padding-top: 10px;
+    cursor: pointer;
+    border: 3px solid white;
+    border-top: none;
+    font-weight: bold;
+    color: white;
+
+    background: rgb(66, 66, 66);
+    background-image: linear-gradient(bottom, rgb(71,71,71) 0%, rgb(92,92,92) 100%);
+    background-image: -o-linear-gradient(bottom, rgb(71,71,71) 0%, rgb(92,92,92) 100%);
+    background-image: -moz-linear-gradient(bottom, rgb(71,71,71) 0%, rgb(92,92,92) 100%);
+    background-image: -webkit-linear-gradient(bottom, rgb(71,71,71) 0%, rgb(92,92,92) 100%);
+    background-image: -ms-linear-gradient(bottom, rgb(71,71,71) 0%, rgb(92,92,92) 100%);
+
+    background-image: -webkit-gradient(
+        linear,
+        left bottom,
+        left top,
+        color-stop(0, rgb(71,71,71)),
+        color-stop(1, rgb(92,92,92))
+    );
+
+    -webkit-border-radius: 0 0 10px 10px;
+    -moz-border-radius: 0 0 10px 10px;
+    border-radius: 0 0 10px 10px;
+
+    -webkit-box-shadow: -2px 1px 15px rgba(0,0,0,0.4);
+    -moz-box-shadow: -2px 1px 15px rgba(0,0,0,0.4);
+    box-shadow: -2px 1px 15px rgba(0,0,0,0.4);
+
+    -webkit-transform: rotate(-90deg);
+    -moz-transform: rotate(-90deg);
+    -ms-transform: rotate(-90deg);
+    -o-transform: rotate(-90deg);
+    transform: rotate(-90deg);
+
+    -webkit-transform-origin: 0 100% 0;
+    -moz-transform-origin: 0 100% 0;
+    -ms-transform-origin: 0 100% 0;
+    -o-transform-origin: 0 100% 0;
+    transform-origin: 0 100% 0;
+}
+
+.feedbackCategory {
+    width: 100px;
+}
+
+.icon-star-empty.starTool {
+    color: #F5B642;
+    cursor: pointer;
+}
+
+.icon-star-empty.starTool:hover:before,
+.icon-star-empty.starTool.selected:before {
+    content:"\f005";
+}
