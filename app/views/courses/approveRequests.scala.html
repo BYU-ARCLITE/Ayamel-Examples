@@ -15,8 +15,8 @@
             </tr>
             @for(addRequest <- course.getRequests) {
                 <tr>
-                    <td>@addRequest.getUser.name.get</td>
-                    <td>@addRequest.getUser.email.get</td>
+                    <td>@addRequest.getUser.displayName</td>
+                    <td>@addRequest.getUser.email.getOrElse("None")</td>
                     <td>@addRequest.message</td>
                     <td>
                         <a href="@routes.Courses.approveRequest(course.id.get, addRequest.id.get)" class="btn btn-blue">Approve</a>
