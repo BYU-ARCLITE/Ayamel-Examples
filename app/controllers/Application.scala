@@ -2,7 +2,7 @@ package controllers
 
 import authentication.Authentication
 import play.api.mvc._
-import models.{Content, Course}
+import models.{Feedback, Content, Course}
 import service.EmailTools
 import play.api.libs.json.{JsObject, Json}
 import play.api.Play
@@ -85,6 +85,15 @@ object Application extends Controller {
       implicit user =>
 
         Ok(views.html.application.policy())
+  }
+
+  def saveFeedback = Authentication.authenticatedAction(parse.urlFormEncoded) {
+    request =>
+      user =>
+        val category = request.body("category")(0)
+        val description = request.body("description")(0)
+        Feedback(user.id.get, category, description).save
+        Ok
   }
 
   def saveErrorFeedback = Authentication.authenticatedAction(parse.urlFormEncoded) {
