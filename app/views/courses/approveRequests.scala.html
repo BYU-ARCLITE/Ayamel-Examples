@@ -23,6 +23,8 @@
                         <a href="@routes.Courses.denyRequest(course.id.get, addRequest.id.get)" class="btn btn-magenta">Deny</a>
                     </td>
                 </tr>
+
+                @addRequest.getUser.name.get
             }
         </table>
 

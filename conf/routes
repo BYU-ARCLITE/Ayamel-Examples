@@ -116,5 +116,8 @@ GET     /ajax/translate/google/:src/:dest/:text             controllers.ajax.Tra
 GET     /ajax/translate/wordReference/:src/:dest/:text      controllers.ajax.Translate.translateWordReference(src: String, dest: String, text: String)
 POST    /ajax/activity                                      controllers.ajax.ActivitySaver.save
 
+# Feedback
+POST    /feedback/error                 controllers.Application.saveErrorFeedback
+
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file                   controllers.Assets.at(path="/public", file)

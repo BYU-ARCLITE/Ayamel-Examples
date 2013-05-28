@@ -3,12 +3,10 @@ package controllers
 import authentication.Authentication
 import play.api.mvc._
 import models.{Content, Course}
-import javax.imageio.ImageIO
-import java.io.File
-import service.{TimeTools, ResourceHelper, ImageTools}
-import scala.concurrent.ExecutionContext
-import ExecutionContext.Implicits.global
+import service.EmailTools
 import play.api.libs.json.{JsObject, Json}
+import play.api.Play
+import play.api.Play.current
 
 object Application extends Controller {
 
@@ -29,8 +27,8 @@ object Application extends Controller {
 
   def test = Action {
     request =>
-//      val s = TimeTools.colonTimecodeToSeconds("23:03")
-//      Ok(s.toString)
+    //      val s = TimeTools.colonTimecodeToSeconds("23:03")
+    //      Ok(s.toString)
 
       val json1 = Json.obj(
         "val1" -> 4,
@@ -87,6 +85,32 @@ object Application extends Controller {
       implicit user =>
 
         Ok(views.html.application.policy())
+  }
+
+  def saveErrorFeedback = Authentication.authenticatedAction(parse.urlFormEncoded) {
+    request =>
+      user =>
+        val description = request.body("description")(0)
+        val errorCode = request.body("errorCode")(0)
+        val userId = user.id.get
+
+        val to = Play.configuration.getString("feedback.emails").get.split(",").map(s => (s.trim, s.trim)).toList
+        EmailTools.sendEmail(to, "Ayamel - Error report") {
+          s"""
+            |A user has provided feedback on an error.
+            |Error code: $errorCode
+            |Description: $description
+            |User ID: $userId
+          """.stripMargin
+        } {
+          s"""
+            |<p>A user has provided feedback on an error.</p>
+            |<p>Error code: <code>$errorCode</code></p>
+            |<p>Description: $description</p>
+            |<p>User ID: <code>$userId</code></p>
+          """.stripMargin
+        }
+        Ok
   }
 
 }
