@@ -16,7 +16,8 @@ object ApplicationBuild extends Build {
     "com.google.gdata" % "core" % "1.47.1",
     "com.amazonaws" % "aws-java-sdk" % "1.4.1",
     "xuggle" % "xuggle-xuggler" % "5.4",
-    "org.apache.poi" % "poi-ooxml" % "3.9"
+    "org.apache.poi" % "poi-ooxml" % "3.9",
+    "org.codemonkey.simplejavamail" % "simple-java-mail" % "2.1"
   )
 
 

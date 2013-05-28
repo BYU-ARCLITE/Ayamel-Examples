@@ -1,5 +1,7 @@
 import models.{HelpPage, HomePageContent, User}
+import play.api.mvc.RequestHeader
 import play.api.{Logger, GlobalSettings}
+import play.api.mvc.Results.InternalServerError
 
 object Global extends GlobalSettings {
 
@@ -19,6 +21,10 @@ object Global extends GlobalSettings {
       Fixtures.createHelpPages()
     }
 
+  }
+
+  override def onError(request: RequestHeader, ex: Throwable) = {
+    InternalServerError(views.html.application.error(request, ex))
   }
 
 }
