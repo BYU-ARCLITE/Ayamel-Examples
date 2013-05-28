@@ -1,0 +1,143 @@
+@()
+
+@starRating(name: String) = {
+    <span class="pull-right">
+        <i class="icon-star-empty icon-large starTool" data-target="#@name" data-level="1">
+            <i class="icon-star-empty icon-large starTool" data-target="#@name" data-level="2">
+                <i class="icon-star-empty icon-large starTool" data-target="#@name" data-level="3">
+                    <i class="icon-star-empty icon-large starTool" data-target="#@name" data-level="4">
+                        <i class="icon-star-empty icon-large starTool" data-target="#@name" data-level="5"></i>
+                    </i>
+                </i>
+            </i>
+        </i>
+        <input type="hidden" id="@name" name="@name" value="0"/>
+    </span>
+}
+
+<div id="feedback">
+    <i class="icon-bullhorn pad-right-med"></i> Feedback
+</div>
+
+<div id="feedbackModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="feedbackModalLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="feedbackModalLabel">We want your opinion</h3>
+    </div>
+    <div class="modal-body">
+        <div class="inline-block">
+            <div class="well">
+                <button class="btn btn-magenta feedbackCategory" data-target="#feedbackProblem">
+                    <i class="icon-fire-extinguisher icon-2x"></i><br>
+                    Problem
+                </button>
+                <button class="btn btn-yellow feedbackCategory" data-target="#feedbackSuggestion">
+                    <i class="icon-lightbulb icon-2x"></i><br>
+                    Suggestion
+                </button>
+                <button class="btn btn-blue feedbackCategory" data-target="#feedbackThoughts">
+                    <i class="icon-thumbs-up icon-2x"></i><br>
+                    Thoughts
+                </button>
+            </div>
+        </div>
+
+        <div id="feedbackProblem" class="feedbackContent">
+            <h4>Report a problem</h4>
+
+            <p>Please describe the problem:</p>
+            <div><textarea id="problem"></textarea></div>
+
+            <p>List the steps needed to reproduce the issue:</p>
+            <div><textarea id="reproduce"></textarea></div>
+
+            <button class="btn btn-magenta" id="problemButton">Send Feedback</button>
+        </div>
+
+        <div id="feedbackSuggestion" class="feedbackContent">
+            <h4>Suggest a new feature</h4>
+
+            <p>Please describe the feature you would like to add:</p>
+            <div><textarea id="feature"></textarea></div>
+
+            <button class="btn btn-yellow" id="suggestionButton">Send Feedback</button>
+        </div>
+
+        <div id="feedbackThoughts" class="feedbackContent">
+            <h4>Rate the site</h4>
+
+            <p>How easy is it to navigate the site? @starRating("navigate")</p>
+            <p>How easy it to find what you are looking for? @starRating("find")</p>
+            <p>How useful is Ayamel to your language learning? @starRating("useful")</p>
+            <p>Additional comments:</p>
+            <div><textarea id="comments"></textarea></div>
+            <button class="btn btn-blue" id="thoughtButton">Send Feedback</button>
+        </div>
+
+        <div id="feedbackThanks" class="feedbackContent">
+            Thank you for your feedback!
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(function() {
+        var $content = $(".feedbackContent").hide();
+        $("#feedback").click(function() {
+            $('#feedbackModal').modal('show');
+        });
+
+        $(".feedbackCategory").click(function() {
+            $content.hide();
+            $($(this).attr("data-target")).show();
+        });
+
+        $(".starTool").click(function(event) {
+            var target = $(this).attr("data-target");
+            var level = Number($(this).attr("data-level"));
+            event.stopPropagation();
+            $(target).val(level);
+            $(".starTool[data-target='" + target + "']").each(function() {
+                if (level >= $(this).attr("data-level")) {
+                    $(this).addClass("selected");
+                } else {
+                    $(this).removeClass("selected");
+                }
+            });
+        });
+
+        function done() {
+            $content.hide();
+            $("#feedbackThanks").show();
+            window.setTimeout(function() { $("#feedbackModal").modal('hide'); }, 1100);
+        }
+
+        $("#thoughtButton").click(function() {
+            var navigate = $("#navigate").val();
+            var find = $("#find").val();
+            var useful = $("#useful").val();
+            var comments = $("#comments").val();
+            console.log("Navigate:" + navigate + ", Find: " + find + ", Useful: " + useful + ", Comments: " + comments);
+            done();
+        });
+
+        $("#suggestionButton").click(function() {
+            var feature = $("#feature").val();
+            console.log("Feature: " + feature);
+            done();
+        });
+
+        $("#problemButton").click(function() {
+            var problem = $("#problem").val();
+            var reproduce = $("#reproduce").val();
+            console.log("Problem: " + problem + ", Reproduce: " + reproduce + ", User Agent: " + navigator.userAgent);
+            done();
+        });
+
+    });
+</script>
+
+<link rel="stylesheet" href="@routes.Assets.at("stylesheets/feedback.css")"/>
