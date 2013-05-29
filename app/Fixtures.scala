@@ -146,6 +146,15 @@ object Fixtures {
     "Viewing a playlist"
   )
 
+  val settings = List(
+    ("notifications.emails", ""),
+    ("notifications.notifyOn.error", "false"),
+    ("notifications.notifyOn.errorReport", "true"),
+    ("notifications.notifyOn.bugReport", "true"),
+    ("notifications.notifyOn.rating", "false"),
+    ("notifications.notifyOn.suggestion", "false")
+  )
+
   def create() {
 
     // Create the objects
@@ -201,5 +210,16 @@ object Fixtures {
     Logger.info("Creating help pages")
 
     helpPages.foreach(title => HelpPage(NotAssigned, title, "").save)
+  }
+
+  def setupSetting() {
+    Logger.info("Checking settings...")
+
+    settings.foreach(setting => {
+      if (Setting.findByName(setting._1).isEmpty) {
+        Logger.info("Adding setting: " + setting._1)
+        Setting(NotAssigned, setting._1, setting._2).save
+      }
+    })
   }
 }

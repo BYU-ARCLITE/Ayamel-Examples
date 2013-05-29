@@ -1,0 +1,76 @@
+@(settings: List[Setting])(implicit request: RequestHeader, user: User)
+
+@checked(name: String, value: String = "true") = {
+    @if(settings.find(_.name == name).get.value == value) {
+        checked="checked"
+    }
+}
+
+@setVal(name: String) = @{settings.find(_.name == name).get.value}
+
+@settingCheckBox(name: String, description: String) = {
+    <div class="control-group">
+        <label class="control-label" for="@{name}_checkbox">@description</label>
+        <div class="controls">
+            <input type="checkbox" id="@{name}_checkbox" @checked(name) >
+            <input type="hidden" name="@name" id="@{name}_hidden" value="@setVal(name)">
+        </div>
+    </div>
+}
+
+@settingTextField(name: String, description: String) = {
+    <div class="control-group">
+        <label class="control-label" for="@name">@description</label>
+        <div class="controls">
+            <input type="text" id="@name" name="@name" placeholder="Nothing" value="@setVal(name)">
+        </div>
+    </div>
+}
+
+@main("Ayamel - Settings") {
+
+    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/admin.css")"/>
+    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/home.css")"/>
+
+    <div class="adminBackground">
+    </div>
+
+    <div class="padded">
+
+        <div class="pad-bottom-med">
+            <a href="@routes.Users.admin()"><i class="icon-arrow-left"></i> Back to dashboard</a>
+        </div>
+
+        <h1>Site Settings</h1>
+
+        <h2>Admin Email Notifications</h2>
+
+        <form class="form-horizontal" method="post" action="@routes.Users.saveSiteSettings()">
+            @settingTextField("notifications.emails", "Emails (comma separated)")
+            @settingCheckBox("notifications.notifyOn.error", "Email on error")
+            @settingCheckBox("notifications.notifyOn.errorReport", "Email on error report")
+            @settingCheckBox("notifications.notifyOn.bugReport", "Email on bug report")
+            @settingCheckBox("notifications.notifyOn.rating", "Email on rating")
+            @settingCheckBox("notifications.notifyOn.suggestion", "Email on feature suggestion")
+
+
+            <div class="control-group">
+                <div class="controls">
+                    <button type="submit" class="btn">Save changes</button>
+                </div>
+            </div>
+        </form>
+
+
+
+    </div>
+
+    <script type="text/javascript">
+        $(function() {
+            $("input[type=checkbox]").click(function() {
+                $(this).next().val("" + $(this).is(":checked"));
+            });
+        });
+    </script>
+
+}

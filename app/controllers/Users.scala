@@ -9,6 +9,7 @@ import javax.imageio.ImageIO
 import scala.concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
 import anorm.NotAssigned
+import play.api.Logger
 
 /**
  * Created with IntelliJ IDEA.
@@ -352,6 +353,45 @@ object Users extends Controller {
           val homePageContent = HomePageContent.findById(id).get
           homePageContent.delete()
           Redirect(routes.Users.homePageContent()).flashing("info" -> "Home page content deleted")
+        }
+  }
+
+  def feedback = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+        Authentication.enforceRole(User.roles.admin) {
+
+          Ok(views.html.users.admin.feedback(Feedback.list))
+        }
+  }
+
+  def deleteFeedback(id: Long) = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+        Authentication.enforceRole(User.roles.admin) {
+
+          Feedback.findById(id).get.delete()
+          Redirect(routes.Users.feedback()).flashing("info" -> "Feedback deleted")
+        }
+  }
+
+  def siteSettings = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+        Authentication.enforceRole(User.roles.admin) {
+
+          Ok(views.html.users.admin.settings(Setting.list))
+        }
+  }
+
+  def saveSiteSettings = Authentication.authenticatedAction(parse.urlFormEncoded) {
+    implicit request =>
+      implicit user =>
+        Authentication.enforceRole(User.roles.admin) {
+
+          request.body.mapValues(_(0)).foreach(data => Setting.findByName(data._1).get.copy(value = data._2).save)
+          request.body.mapValues(_(0)).foreach(data => Logger.debug(data._1 + ": " + data._2))
+          Redirect(routes.Users.siteSettings()).flashing("info" -> "Settings updated")
         }
   }
 
