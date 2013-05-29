@@ -1,7 +1,8 @@
-import models.{HelpPage, HomePageContent, User}
+import models.{Setting, HelpPage, HomePageContent, User}
 import play.api.mvc.RequestHeader
 import play.api.{Logger, GlobalSettings}
 import play.api.mvc.Results.InternalServerError
+import service.EmailTools
 
 object Global extends GlobalSettings {
 
@@ -21,9 +22,11 @@ object Global extends GlobalSettings {
       Fixtures.createHelpPages()
     }
 
+    Fixtures.setupSetting()
   }
 
   override def onError(request: RequestHeader, ex: Throwable) = {
+    EmailTools.sendAdminNotificationEmail("notifications.notifyOn.error", ex.toString)
     InternalServerError(views.html.application.error(request, ex))
   }
 

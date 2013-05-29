@@ -102,6 +102,10 @@ GET     /admin/homePageContent              controllers.Users.homePageContent
 POST    /admin/homePageContent              controllers.Users.createHomePageContent
 GET     /admin/homePageContent/:id/active   controllers.Users.toggleHomePageContent(id: Long)
 GET     /admin/homePageContent/:id/delete   controllers.Users.deleteHomePageContent(id: Long)
+GET     /admin/feedback                     controllers.Users.feedback
+GET     /admin/feedback/:id/delete          controllers.Users.deleteFeedback(id: Long)
+GET     /admin/settings                     controllers.Users.siteSettings
+POST    /admin/settings                     controllers.Users.saveSiteSettings
 
 # Help pages
 GET     /help/:id                           controllers.HelpPages.view(id: Long)

@@ -2,7 +2,7 @@ package controllers
 
 import authentication.Authentication
 import play.api.mvc._
-import models.{Feedback, Content, Course}
+import models.{Setting, Feedback, Content, Course}
 import service.EmailTools
 import play.api.libs.json.{JsObject, Json}
 import play.api.Play
@@ -92,7 +92,15 @@ object Application extends Controller {
       user =>
         val category = request.body("category")(0)
         val description = request.body("description")(0)
-        Feedback(user.id.get, category, description).save
+        val feedback = Feedback.save(user, category, description)
+
+        // Send out emails
+        if (category == "problem")
+          EmailTools.sendAdminNotificationEmail("notifications.notifyOn.bugReport", feedback.getProblemInfo)
+        if (category == "suggestion")
+          EmailTools.sendAdminNotificationEmail("notifications.notifyOn.suggestion", feedback.getSuggestionInfo)
+        if (category == "rating")
+          EmailTools.sendAdminNotificationEmail("notifications.notifyOn.rating", feedback.getThoughtInfo)
         Ok
   }
 
@@ -102,23 +110,8 @@ object Application extends Controller {
         val description = request.body("description")(0)
         val errorCode = request.body("errorCode")(0)
         val userId = user.id.get
-
-        val to = Play.configuration.getString("feedback.emails").get.split(",").map(s => (s.trim, s.trim)).toList
-        EmailTools.sendEmail(to, "Ayamel - Error report") {
-          s"""
-            |A user has provided feedback on an error.
-            |Error code: $errorCode
-            |Description: $description
-            |User ID: $userId
-          """.stripMargin
-        } {
-          s"""
-            |<p>A user has provided feedback on an error.</p>
-            |<p>Error code: <code>$errorCode</code></p>
-            |<p>Description: $description</p>
-            |<p>User ID: <code>$userId</code></p>
-          """.stripMargin
-        }
+        Feedback.save(user, "error", "Error Code: " + errorCode + ", Description: " + description)
+        EmailTools.sendAdminNotificationEmail("notifications.notifyOn.errorReport", (errorCode, description, userId))
         Ok
   }
 

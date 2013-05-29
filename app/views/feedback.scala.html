@@ -120,7 +120,7 @@
             var find = $("#find").val();
             var useful = $("#useful").val();
             var comments = $("#comments").val();
-            var description = "Navigate:" + navigate + ", Find: " + find + ", Useful: " + useful + ", Comments: " + comments;
+            var description = "Navigate: " + navigate + ", Find: " + find + ", Useful: " + useful + ", Comments: " + comments;
 
             $.ajax("/feedback", {
                 type: "post",
