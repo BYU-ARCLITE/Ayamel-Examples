@@ -30,7 +30,7 @@ var TranscriptDisplay = (function() {
     ];
 
     function makeId(title) {
-        return title.replace(/\s/g, "");
+        return title.replace(/\s/g, "").replace(/\(|\)/g, "_");
     }
 
     function createElement(args) {
