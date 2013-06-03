@@ -6,7 +6,7 @@ import play.api.libs.json.{JsString, JsArray, Json}
 import dataAccess.ResourceController
 import models.{User, Course, Content}
 import play.api.Play
-import service.{ResourceHelper, FileUploader, ImageTools}
+import service.{VideoTools, ResourceHelper, FileUploader, ImageTools}
 import javax.imageio.ImageIO
 import play.api.Play.current
 import scala.concurrent.ExecutionContext
@@ -275,5 +275,35 @@ object ContentEditing extends Controller {
             }
         }
   }
-  
+
+  def createThumbnail(id: Long, time: Double) = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+        ContentController.getContent(id) {
+          content =>
+            Async {
+
+              // Get the video resource from the content
+              ResourceController.getResource(content.resourceId).flatMap {
+                json =>
+                  val resource = json \ "resource"
+
+                  // Get the video file
+                  val videoUrl = ((resource \ "content" \ "files").as[JsArray].value.find(file =>
+                    (file \ "mime").as[String].startsWith("video")
+                  ).get \ "downloadUri").as[String]
+
+                  // Generate the thumbnail for that video
+                  VideoTools.generateThumbnail(videoUrl, time).map {
+                    thumbnailUrl =>
+
+                    // Save it and be done
+                      content.copy(thumbnail = thumbnailUrl).save
+                      Redirect(routes.ContentController.view(id)).flashing("info" -> "Thumbnail updated")
+                  }
+              }
+            }
+        }
+  }
+
 }

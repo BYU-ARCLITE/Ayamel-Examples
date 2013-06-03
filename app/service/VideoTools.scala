@@ -2,12 +2,6 @@ package service
 
 import concurrent.{ExecutionContext, Future}
 import ExecutionContext.Implicits.global
-import javax.media._
-import java.net.URL
-import javax.media.control.{FrameGrabbingControl, FramePositioningControl}
-import javax.media.util.BufferToImage
-import javax.media.format.VideoFormat
-import java.awt.image.BufferedImage
 import play.api.Play
 import play.api.Play.current
 import java.io.File
@@ -26,9 +20,9 @@ object VideoTools {
   private val ffmpeg = Play.configuration.getString("media.video.ffmpeg").get
 
   def getTimeCodeFromSeconds(time: Double): String = {
-    val seconds = time % 60
-    val minutes = Math.floor(time / 60) % 60
-    val hours = Math.floor(time / 3600)
+    val seconds = Math.floor((time % 60) * 100) / 100
+    val minutes = (Math.floor(time / 60) % 60).toInt
+    val hours = (Math.floor(time / 3600)).toInt
     s"$hours:$minutes:$seconds"
   }
 

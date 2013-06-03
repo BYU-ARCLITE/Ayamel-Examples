@@ -238,6 +238,9 @@ var VideoRenderer = (function () {
             ActivityStreams.predefined.pauseClick(time);
         });
 
+        // Save the video player to the global context so we can access it from other places
+        window.ayamelPlayer = videoPlayer;
+
         callback(videoPlayer);
 //        });
     }

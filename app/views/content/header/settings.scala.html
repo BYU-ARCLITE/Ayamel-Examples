@@ -196,6 +196,19 @@
 
                         <input type="submit" style="position: absolute; left: -9999px; width: 1px; height: 1px;"/>
                     </form>
+
+                    @if(content.contentType == 'video) {
+                        <hr>
+                        <p>
+                            Alternately, you may use the current location of the video as the thumbnail. To do so, just
+                            press the following button.
+                        </p>
+                        <button id="makeThumbnail" class="btn btn-yellow"><i class="icon-film"></i> Make thumbnail</button>
+                        <p><em>
+                            Note: The further you are into the video the longer it will take to make the thumbnail, so
+                            please select a frame within the first five minutes.
+                        </em></p>
+                    }
                 </div>
             </div>
         </div>
@@ -209,6 +222,16 @@
         $(function() {
             $("#saveThumbnail").click(function() {
                 $("#thumbnailForm").submit();
+            });
+
+            $("#makeThumbnail").click(function() {
+                // Get the time
+                var limit = 300;
+                var time = Math.floor(ayamelPlayer.currentTime * 100) / 100;
+                if (time <= limit)
+                    window.location = "/content/@content.id.get/makeThumb/" + time;
+                else
+                    alert("Please select a time within the first five minutes.")
             });
         });
     </script>
