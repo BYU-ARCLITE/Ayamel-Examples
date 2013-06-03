@@ -68,8 +68,10 @@ amazon.bucket=""
 media.image.maxWidth=1500
 media.image.maxHeight=1500
 media.video.thumbnailTime=10
+media.video.ffmpeg="/usr/bin/ffmpeg"
 
 # Playgraph settings
+playgraph.host=""
 playgraph.author.key=""
 playgraph.author.secret=""
 playgraph.player.key=""
@@ -90,6 +92,3 @@ smtp.port=465
 smtp.name="Ayamel Admin"
 smtp.address=""
 smtp.password=""
-
-# Feedback settings
-feedback.emails="some.email.number.one@gmail.com, some.email.number.two@gmail.com"

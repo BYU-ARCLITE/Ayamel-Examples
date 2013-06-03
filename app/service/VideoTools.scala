@@ -1,13 +1,17 @@
 package service
 
-import com.xuggle.mediatool.{MediaListenerAdapter, ToolFactory}
-import java.awt.image.BufferedImage
-import com.xuggle.mediatool.event.IVideoPictureEvent
-import com.xuggle.xuggler.Global
 import concurrent.{ExecutionContext, Future}
 import ExecutionContext.Implicits.global
+import javax.media._
+import java.net.URL
+import javax.media.control.{FrameGrabbingControl, FramePositioningControl}
+import javax.media.util.BufferToImage
+import javax.media.format.VideoFormat
+import java.awt.image.BufferedImage
 import play.api.Play
 import play.api.Play.current
+import java.io.File
+import javax.imageio.ImageIO
 
 /**
  * Created with IntelliJ IDEA.
@@ -18,59 +22,48 @@ import play.api.Play.current
  */
 object VideoTools {
 
-  private val secondsBetweenFrames = Play.configuration.getInt("media.video.thumbnailTime").get
-  private val microSecondsBetweenFrames = Global.DEFAULT_PTS_PER_SECOND * secondsBetweenFrames
+  private val thumbnailTime = Play.configuration.getDouble("media.video.thumbnailTime").get
+  private val ffmpeg = Play.configuration.getString("media.video.ffmpeg").get
 
-  private var mVideoStreamIndex = -1
-  private var mLastPtsWrite = Global.NO_PTS
-
-
-  private class ImageSnapListener(filename: String) extends MediaListenerAdapter {
-    var imageGrabbed = false
-    var futureUrl: Future[String] = null
-
-    override def onVideoPicture(event: IVideoPictureEvent) {
-      if (!imageGrabbed && (event.getStreamIndex == mVideoStreamIndex || mVideoStreamIndex == -1)) {
-        // Set the video stream index
-        mVideoStreamIndex = event.getStreamIndex
-
-        // if uninitialized, back date mLastPtsWrite to get the very first frame
-        if (mLastPtsWrite == Global.NO_PTS)
-          mLastPtsWrite = event.getTimeStamp - microSecondsBetweenFrames
-
-        // if it's time to write the next frame
-        if (event.getTimeStamp - mLastPtsWrite >= microSecondsBetweenFrames) {
-
-          // Grab image and upload it
-          val image = ImageTools.makeThumbnail(event.getImage)
-          futureUrl = FileUploader.uploadImage(image, filename)
-
-          imageGrabbed = true
-        }
-      }
-    }
+  def getTimeCodeFromSeconds(time: Double): String = {
+    val seconds = time % 60
+    val minutes = Math.floor(time / 60) % 60
+    val hours = Math.floor(time / 3600)
+    s"$hours:$minutes:$seconds"
   }
 
-  def generateThumbnail(videoUrl: String): Future[String] = {
+  /**
+   * Create a thumbnail from a video.
+   * We use FFMPEG to get an image from the video, turn it into a thumbnail, and upload it
+   * The command is of the following form
+   * ffmpeg -i {video} -ss {timecode} -f image2 -vframes 1 {outfile}
+   * @param videoUrl The URL of the video
+   * @param time The time, in seconds, of the frame to retrieve. Defaults to the time defined in the conf file.
+   * @return A future containing the URL of the thumbnail
+   */
+  def generateThumbnail(videoUrl: String, time: Double = thumbnailTime): Future[String] =
     Future {
-//      val reader = ToolFactory.makeReader(videoUrl)
-//
-//      // stipulate that we want BufferedImages created in BGR 24bit color space
-//      reader.setBufferedImageTypeToGenerate(BufferedImage.TYPE_3BYTE_BGR)
-//
-//      // Add the image grabber
-//      val filename = FileUploader.uniqueFilename(videoUrl + ".jpg")
-//      val isListener = new ImageSnapListener(filename)
-//      reader.addListener(isListener)
-//
-//      // Read packets until we get a thumbnail
-//      while (!isListener.imageGrabbed)
-//        reader.readPacket()
-//
-//      reader.close()
-//      isListener.futureUrl
-      ""
-    }//.flatMap(_.map(s => s)) // Combine the futures
-  }
+
+      // Check that we are able to get the video
+      if (!ResourceHelper.isBrightcove(videoUrl) && !ResourceHelper.isYouTube(videoUrl)) {
+
+        // Make a unique file to save the image to
+        val filename = "/tmp/" + FileUploader.uniqueFilename("out.jpg")
+        val file = new File(filename)
+
+        // Execute ffmpeg to get the frame and wait for it to finish
+        val timeCode = getTimeCodeFromSeconds(time)
+        val command = s"$ffmpeg -i $videoUrl -ss $timeCode -f image2 -vframes 1 $filename"
+        val process = Runtime.getRuntime.exec(command)
+        process.waitFor()
+
+        // Now process the image and upload it
+        val image = ImageIO.read(file)
+        file.delete()
+        val thumbnail = ImageTools.makeThumbnail(image)
+        FileUploader.uploadImage(thumbnail, FileUploader.uniqueFilename("thumbnail.jpg"))
+      } else
+        Future("")
+    }.flatMap(_.map(s => s))
 
 }
