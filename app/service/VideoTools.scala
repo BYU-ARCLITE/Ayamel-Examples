@@ -2,7 +2,7 @@ package service
 
 import concurrent.{ExecutionContext, Future}
 import ExecutionContext.Implicits.global
-import play.api.Play
+import play.api.{Logger, Play}
 import play.api.Play.current
 import java.io.File
 import javax.imageio.ImageIO
@@ -48,6 +48,7 @@ object VideoTools {
         // Execute ffmpeg to get the frame and wait for it to finish
         val timeCode = getTimeCodeFromSeconds(time)
         val command = s"$ffmpeg -i $videoUrl -ss $timeCode -f image2 -vframes 1 $filename"
+        Logger.debug(s"Command: $command")
         val process = Runtime.getRuntime.exec(command)
         process.waitFor()
 
