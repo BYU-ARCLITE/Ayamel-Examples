@@ -61,6 +61,17 @@ Also, note that if you use S3 then you must set up your bucket with CORS support
 </CORSConfiguration>
 ```
 
+### Configure ffmpeg
+
+The computer that is running Ayamel must also have ffmpeg installed and available. You must define the location of the
+software:
+
+    media.video.ffmpeg="/usr/bin/ffmpeg"
+
+or
+
+    media.video.ffmpeg="c:\\Program Files\\ffmpeg\\bin\\ffmpeg.exe"
+
 ### Configure PlayGraph
 
 This uses PlayGraph. So you need to have both an authoring key and a playback key. Then set the following configuration entries:
