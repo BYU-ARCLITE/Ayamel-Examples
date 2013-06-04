@@ -20,7 +20,8 @@ import service.TimeTools
  * @param role The permissions of the user
  */
 case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: String, name: Option[String] = None,
-                email: Option[String] = None, role: Int = 0, picture: Option[String] = None, accountLinkId: Long = -1)
+                email: Option[String] = None, role: Int = 0, picture: Option[String] = None, accountLinkId: Long = -1,
+                created: String = TimeTools.now(), lastLogin: String = TimeTools.now())
   extends SQLSavable with SQLDeletable {
 
   /**
@@ -31,12 +32,12 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
     if (id.isDefined) {
       update(User.tableName, 'id -> id, 'authId -> authId, 'authScheme -> authScheme.name, 'username -> username,
         'name -> name.getOrElse(""), 'email -> email.getOrElse(""), 'role -> role, 'picture -> picture,
-        'accountLinkId -> accountLinkId)
+        'accountLinkId -> accountLinkId, 'created -> created, 'lastLogin -> lastLogin)
       this
     } else {
       val id = insert(User.tableName, 'authId -> authId, 'authScheme -> authScheme.name, 'username -> username,
         'name -> name.getOrElse(""), 'email -> email.getOrElse(""), 'role -> role, 'picture -> picture,
-        'accountLinkId -> accountLinkId)
+        'accountLinkId -> accountLinkId, 'created -> created, 'lastLogin -> lastLogin)
       this.copy(id)
     }
   }
@@ -438,11 +439,13 @@ object User extends SQLSelectable[User] {
       get[String](tableName + ".email") ~
       get[Int](tableName + ".role") ~
       get[Option[String]](tableName + ".picture") ~
-      get[Long](tableName + ".accountLinkId") map {
-      case id ~ authId ~ authScheme ~ username ~ name ~ email ~ role ~ picture ~ accountLinkId => {
+      get[Long](tableName + ".accountLinkId") ~
+      get[String](tableName + ".created") ~
+      get[String](tableName + ".lastLogin") map {
+      case id ~ authId ~ authScheme ~ username ~ name ~ email ~ role ~ picture ~ accountLinkId ~ created ~ lastLogin => {
         val _name = if (name.isEmpty) None else Some(name)
         val _email = if (email.isEmpty) None else Some(email)
-        User(id, authId, Symbol(authScheme), username, _name, _email, role, picture, accountLinkId)
+        User(id, authId, Symbol(authScheme), username, _name, _email, role, picture, accountLinkId, created, lastLogin)
       }
     }
   }

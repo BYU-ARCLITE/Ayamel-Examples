@@ -16,7 +16,7 @@
     }
 }
 
-@main("Ayamel - Manage Users") {
+@main("Ayamel - User Accounts") {
 
     <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/admin.css")"/>
 
@@ -25,11 +25,9 @@
 
     <div class="padded">
 
-        <div class="pad-bottom-med">
-            <a href="@routes.Users.admin()"><i class="icon-arrow-left"></i> Back to dashboard</a>
-        </div>
+        @views.html.users.admin.navbar("userAccounts")
 
-        <h1>Manage Users</h1>
+        <h1>Users Accounts</h1>
 
         <table class="table table-bordered table-striped table-condensed">
             <tr>

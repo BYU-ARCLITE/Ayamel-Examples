@@ -48,11 +48,11 @@
 }
 
 .contentItem.blockFormat h3 {
-    white-space: nowrap;
     overflow: hidden;
     width: 100%;
     text-overflow: ellipsis;
     margin: 0;
+    height: 75px;
 }
 
 .contentItem.tableFormat {

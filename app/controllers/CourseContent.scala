@@ -1,7 +1,7 @@
 package controllers
 
 import play.api.mvc.{Action, Controller}
-import service.{MobileDetection, ExcelWriter, LMSAuth}
+import service.{TimeTools, MobileDetection, ExcelWriter, LMSAuth}
 import play.core.parsers.FormUrlEncodedParser
 import controllers.authentication.Authentication
 import play.api.Play
@@ -32,6 +32,7 @@ object CourseContent extends Controller {
                 // Get the custom parameters
                 val query = FormUrlEncodedParser.parse(request.body, request.charset.getOrElse("utf-8"))
                   .filterKeys(_.startsWith("custom")).map(d => (d._1.substring(7), d._2))
+                user.get.copy(lastLogin = TimeTools.now()).save
                 Redirect(routes.CourseContent.viewInCourse(id, courseId).toString(), query)
                   .withSession("userId" -> user.get.id.get.toString)
               } else

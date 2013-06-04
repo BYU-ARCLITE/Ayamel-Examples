@@ -1,0 +1,51 @@
+@(users: List[User])(implicit request: RequestHeader, user: User)
+
+@optStr(str: Option[String]) = {
+    @if(str.isDefined) {
+        @shorten(str.get)
+    } else {
+        <em>Not set</em>
+    }
+}
+
+@shorten(str: String) = {
+    @if(str.length > 15) {
+        <a href="#" class="shortened" data-toggle="tooltip" title="@str">@{str.substring(0, 12) + "..."}</a>
+    } else {
+        @str
+    }
+}
+
+@main("Ayamel - User Logins") {
+
+    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/admin.css")"/>
+
+    <div class="adminBackground">
+    </div>
+
+    <div class="padded">
+
+        @views.html.users.admin.navbar("accountLogins")
+
+        <h1>User Logins</h1>
+
+        <table class="table table-bordered table-striped table-condensed">
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Account Created</th>
+                <th>Last Login</th>
+            </tr>
+            @for(_user <- users) {
+                <tr>
+                    <td>@_user.id.get</td>
+                    <td>@optStr(_user.name)</td>
+                    <td>@service.TimeTools.prettyTime(_user.created)</td>
+                    <td>@service.TimeTools.prettyTime(_user.lastLogin)</td>
+                </tr>
+            }
+        </table>
+
+    </div>
+
+}

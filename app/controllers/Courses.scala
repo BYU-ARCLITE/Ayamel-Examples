@@ -35,9 +35,10 @@ object Courses extends Controller {
       getCourse(id) {
         course =>
           val user = LMSAuth.ltiAuth(course)
-          if (user.isDefined)
+          if (user.isDefined) {
+            user.get.copy(lastLogin = TimeTools.now()).save
             Redirect(routes.Courses.view(id)).withSession("userId" -> user.get.id.get.toString)
-          else
+          } else
             Errors.forbidden
       }
   }

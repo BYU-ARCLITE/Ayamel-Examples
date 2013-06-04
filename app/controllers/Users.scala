@@ -204,6 +204,15 @@ object Users extends Controller {
         }
   }
 
+  def logins = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+        Authentication.enforceRole(User.roles.admin) {
+          val users = User.list
+          Ok(views.html.users.admin.logins(users))
+        }
+  }
+
   def getUser(id: Long)(f: User => Result)(implicit request: RequestHeader): Result = {
     val user = User.findById(id)
     if (user.isDefined) {
