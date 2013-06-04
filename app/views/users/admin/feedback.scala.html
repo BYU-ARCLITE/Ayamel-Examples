@@ -10,9 +10,7 @@
 
     <div class="padded">
 
-        <div class="pad-bottom-med">
-            <a href="@routes.Users.admin()"><i class="icon-arrow-left"></i> Back to dashboard</a>
-        </div>
+        @views.html.users.admin.navbar("feedback")
 
         <h1>Site Feedback</h1>
 
@@ -22,14 +20,19 @@
                 <th>User</th>
                 <th>Error Code</th>
                 <th>Description</th>
-                <th>Delete</th>
+                <th>Time</th>
+                <th>Actions</th>
             </tr>
             @for(problem <- feedback.filter(_.category == "error")) {
                 <tr>
                     <td>@problem.userId</td>
                     <td>@problem.getErrorInfo._1</td>
                     <td>@problem.getErrorInfo._2</td>
-                    <td><a href="@routes.Users.deleteFeedback(problem.id.get)" class="btn btn-danger"><i class="icon-trash"></i></a></td>
+                    <td>@service.TimeTools.prettyTime(problem.submitted)</td>
+                    <td>
+                        <a href="@routes.Users.deleteFeedback(problem.id.get)" class="btn btn-danger"><i class="icon-trash"></i></a>
+                        <button class="btn info-button" data-content="@problem.description"><i class="icon-info"></i></button>
+                    </td>
                 </tr>
             }
         </table>
@@ -41,15 +44,24 @@
                 <th>Problem</th>
                 <th>Steps to Reproduce</th>
                 <th>User Agent</th>
-                <th>Delete</th>
+                <th>Time</th>
+                <th>Actions</th>
             </tr>
             @for(problem <- feedback.filter(_.category == "problem")) {
                 <tr>
                     <td>@problem.userId</td>
                     <td>@problem.getProblemInfo._1</td>
                     <td>@problem.getProblemInfo._2</td>
-                    <td>@problem.getProblemInfo._3</td>
-                    <td><a href="@routes.Users.deleteFeedback(problem.id.get)" class="btn btn-danger"><i class="icon-trash"></i></a></td>
+                    <td>
+                        <div class="userAgent">
+                            @problem.getProblemInfo._3
+                        </div>
+                    </td>
+                    <td>@service.TimeTools.prettyTime(problem.submitted)</td>
+                    <td>
+                        <a href="@routes.Users.deleteFeedback(problem.id.get)" class="btn btn-danger"><i class="icon-trash"></i></a>
+                        <button class="btn info-button" data-content="@problem.description"><i class="icon-info"></i></button>
+                    </td>
                 </tr>
             }
         </table>
@@ -59,13 +71,18 @@
             <tr>
                 <th>User</th>
                 <th>Suggestion</th>
-                <th>Delete</th>
+                <th>Time</th>
+                <th>Actions</th>
             </tr>
             @for(problem <- feedback.filter(_.category == "suggestion")) {
                 <tr>
                     <td>@problem.userId</td>
                     <td>@problem.getSuggestionInfo</td>
-                    <td><a href="@routes.Users.deleteFeedback(problem.id.get)" class="btn btn-danger"><i class="icon-trash"></i></a></td>
+                    <td>@service.TimeTools.prettyTime(problem.submitted)</td>
+                    <td>
+                        <a href="@routes.Users.deleteFeedback(problem.id.get)" class="btn btn-danger"><i class="icon-trash"></i></a>
+                        <button class="btn info-button" data-content="@problem.description"><i class="icon-info"></i></button>
+                    </td>
                 </tr>
             }
         </table>
@@ -78,7 +95,8 @@
                 <th>Ease of Finding</th>
                 <th>Usefulness</th>
                 <th>Comments</th>
-                <th>Delete</th>
+                <th>Time</th>
+                <th>Actions</th>
             </tr>
             @for(problem <- feedback.filter(_.category == "rating")) {
                 <tr>
@@ -87,7 +105,11 @@
                     <td>@problem.getThoughtInfo._2</td>
                     <td>@problem.getThoughtInfo._3</td>
                     <td>@problem.getThoughtInfo._4</td>
-                    <td><a href="@routes.Users.deleteFeedback(problem.id.get)" class="btn btn-danger"><i class="icon-trash"></i></a></td>
+                    <td>@service.TimeTools.prettyTime(problem.submitted)</td>
+                    <td>
+                        <a href="@routes.Users.deleteFeedback(problem.id.get)" class="btn btn-danger"><i class="icon-trash"></i></a>
+                        <button class="btn info-button" data-content="@problem.description"><i class="icon-info"></i></button>
+                    </td>
                 </tr>
             }
         </table>
@@ -95,5 +117,20 @@
 
 
     </div>
+
+    <script type="text/javascript">
+        $(function() {
+            $(".info-button").popover({
+                placement: "left",
+                title: "Raw data"
+            });
+        });
+    </script>
+
+    <style type="text/css">
+        .userAgent {
+            max-width: 250px;
+        }
+    </style>
 
 }

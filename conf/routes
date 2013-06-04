@@ -96,6 +96,7 @@ GET     /admin/users                        controllers.Users.manageUsers
 POST    /admin/users/setRole                controllers.Users.setRole
 POST    /admin/users/notify                 controllers.Users.sendNotification
 POST    /admin/users/:id/delete             controllers.Users.delete(id: Long)
+GET     /admin/logins                       controllers.Users.logins
 GET     /admin/courses                      controllers.Users.manageCourses
 GET     /admin/courses/:id/delete           controllers.Users.deleteCourse(id: Long)
 GET     /admin/content                      controllers.Users.manageContent

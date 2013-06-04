@@ -1,0 +1,36 @@
+@(page: String)
+
+@active(item: String) = @{if(item == page) {"active"}else{""}}
+
+<div class="navbar">
+    <div class="navbar-inner">
+        <ul class="nav">
+            <li class="@active("dashboard")"><a href="@routes.Users.admin()"><i class="icon-dashboard"></i> Dashboard</a></li>
+            <li class="divider-vertical"></li>
+
+            <li class="dropdown">
+                <a class="dropdown-toggle" data-toggle="dropdown" href="#"><i class="icon-group"></i>
+                    Users <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                    <li class="@active("teacherRequests")"><a href="@routes.Users.teacherApprovalPage()"><i class="icon-briefcase"></i> Teacher Requests</a></li>
+                    <li class="@active("userAccounts")"><a href="@routes.Users.manageUsers()"><i class="icon-user"></i> User Accounts</a></li>
+                    <li class="@active("userLogins")"><a href="@routes.Users.logins()"><i class="icon-signin"></i> User Logins</a></li>
+                </ul>
+            </li>
+
+            <li class="@active("courses")"><a href="@routes.Users.manageCourses()"><i class="icon-book"></i> Courses</a></li>
+
+            <li class="@active("content")"><a href="@routes.Users.manageContent()"><i class="icon-picture"></i> Content</a></li>
+
+            <li class="dropdown">
+                <a class="dropdown-toggle" data-toggle="dropdown" href="#"><i class="icon-globe"></i>
+                    Website <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                    <li class="@active("homePageContent")"><a href="@routes.Users.homePageContent()"><i class="icon-home"></i> Home Page Content</a></li>
+                    <li class="@active("feedback")"><a href="@routes.Users.feedback()"><i class="icon-bullhorn"></i> Feedback</a></li>
+                    <li class="@active("settings")"><a href="@routes.Users.siteSettings()"><i class="icon-cogs"></i> Settings</a></li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+</div>

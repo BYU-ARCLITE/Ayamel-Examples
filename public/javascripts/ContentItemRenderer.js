@@ -50,13 +50,17 @@ var ContentItemRenderer = (function() {
 
 
         conditions: {
-            captions: function (content) {
+            captions: function (content, courseId) {
                 return function () {
+                    if (courseId)
+                        return content.settings["course_" + courseId + ":enabledCaptionTracks"];
                     return content.settings.enabledCaptionTracks;
                 };
             },
-            annotations: function (content) {
+            annotations: function (content, courseId) {
                 return function () {
+                    if (courseId)
+                        return content.settings["course_" + courseId + ":enabledAnnotationDocuments"];
                     return content.settings.enabledAnnotationDocuments;
                 };
             },
@@ -68,7 +72,13 @@ var ContentItemRenderer = (function() {
         },
 
         helpers: {
-            level: function (content) {
+            level: function (content, courseId) {
+                if (courseId) {
+                    if (content.settings["course_" + courseId + ":level"])
+                        return content.settings["course_" + courseId + ":level"];
+                    else
+                        return 1;
+                }
                 if (content.settings.level)
                     return content.settings.level;
                 return 1;
@@ -86,9 +96,9 @@ var ContentItemRenderer = (function() {
             title: args.content.name,
             type: args.content.contentType,
             views: contentTemplates.helpers.views(args.content),
-            level: contentTemplates.helpers.level(args.content),
-            annotations: contentTemplates.conditions.annotations(args.content),
-            captions: contentTemplates.conditions.captions(args.content),
+            level: contentTemplates.helpers.level(args.content, args.courseId),
+            annotations: contentTemplates.conditions.annotations(args.content, args.courseId),
+            captions: contentTemplates.conditions.captions(args.content, args.courseId),
             isVideo: contentTemplates.conditions.isVideo(args.content)
         });
 

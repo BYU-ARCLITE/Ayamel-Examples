@@ -4,6 +4,7 @@ import play.api.mvc._
 import models.{AccountLink, User}
 import anorm.NotAssigned
 import controllers.Errors
+import service.TimeTools
 
 /**
  * This controller does logging out and has a bunch of helpers for dealing with authentication and roles.
@@ -26,6 +27,7 @@ object Authentication extends Controller {
     }
 
     // Log the user in
+    loginUser.copy(lastLogin = TimeTools.now()).save
     Redirect(controllers.routes.Application.home())
       .withSession("userId" -> loginUser.id.get.toString)
       .flashing("success" -> ("Welcome " + loginUser.displayName + "!"))

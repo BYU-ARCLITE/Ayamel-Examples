@@ -4,3 +4,21 @@
     background: url("../images/users/admin.jpg") center;
     background-size: cover;
 }
+
+#button-panel {
+    text-align: center;
+    margin: 15px 0;
+}
+
+.btn-admin {
+    width: 100px;
+    height: 100px;
+    font-size: 18px;
+}
+
+.btn-admin i {
+    display: block;
+    font-size: 30px;
+    margin-top: 12px;
+    margin-bottom: 5px;
+}
