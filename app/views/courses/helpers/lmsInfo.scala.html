@@ -7,32 +7,44 @@
             <h3 id="lmsModalLabel">How to add this course to an LMS.</h3>
         </div>
         <div class="modal-body">
-            <p>Ayamel supports two methods of adding course pages into LMSs. They are:</p>
-            <h4>LTI</h4>
             <p>
-                This is the preferred method. Using this, Ayamel receives from the LMS information about the student.
-                This is simplest and easiest for the students. Not all LMSs support this.
+                You can add this course to an LMS through the LTI standard. Using this, Ayamel receives from the LMS
+                information about the student. This is simplest and easiest for the students. Note that not all LMSs
+                support this feature.
             </p>
+            <h4>Key and Secret</h4>
             <p>
-                You need three things to set up LTI: a launch url, a consumer key, and a consumer secret. The last two
-                items are sometimes referred to as the public and private keys. For this course, these items are the
-                following:
+                You will need the following public key and shared secret to set up LTI:
             </p>
             <ul>
-                <li><strong>Launch URL:</strong> <code>@routes.Courses.ltiAuth(course.id.get).absoluteURL()</code></li>
                 <li><strong>Consumer Key:</strong> <code>@course.id.get</code></li>
-                <li><strong>Consumer Secret:</strong> <code>@course.lmsKey</code></li>
+                <li><strong>Shared Secret:</strong> <code>@course.lmsKey</code></li>
             </ul>
+            <h4>XML Configuration URL</h4>
+            <p>
+                For certain LMSs which support this functionality, you can use the following configuration URL to
+                automatically configure the tool:
+            </p>
+            <p>
+                <code>@routes.Courses.ltiConfiguration(course.id.get).absoluteURL()</code>
+            </p>
+            <h4>Launch URL</h4>
+            <p>
+                If the LMS does not support the automatic configuration, you can use the following launch URL:
+            </p>
+            <p>
+                <code>@routes.Courses.ltiAuth(course.id.get).absoluteURL()</code>
+            </p>
 
-            <h4>Keyed URL</h4>
-            <p>
-                For LMSs that do not support LTI, you can link to this page with a special link. When a student clicks
-                on that link, he or she will be able to view the course page and its content, but will be unable to add
-                content. To add content, they will need to log in through Ayamel and be added to the course.
-            </p>
-            <p>
-                For this course, the keyed URL is: <code>@{routes.Courses.keyAuth(course.id.get)}?key=@course.lmsKey</code>
-            </p>
+            @*<h4>Keyed URL</h4>*@
+            @*<p>*@
+                @*For LMSs that do not support LTI, you can link to this page with a special link. When a student clicks*@
+                @*on that link, he or she will be able to view the course page and its content, but will be unable to add*@
+                @*content. To add content, they will need to log in through Ayamel and be added to the course.*@
+            @*</p>*@
+            @*<p>*@
+                @*For this course, the keyed URL is: <code>@{routes.Courses.keyAuth(course.id.get)}?key=@course.lmsKey</code>*@
+            @*</p>*@
         </div>
         <div class="modal-footer">
             <button class="btn btn-blue" data-dismiss="modal" aria-hidden="true">Close</button>

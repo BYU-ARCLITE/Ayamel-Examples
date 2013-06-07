@@ -16,7 +16,7 @@ import play.core.parsers.FormUrlEncodedParser
  */
 object LMSAuth {
 
-  def getCourseUser(course: Course, userInfo: (Option[String], Option[String], Option[String])): User = {
+  def getCourseUser(course: Course, userInfo: (Option[String], Option[String], Option[String], Option[String])): User = {
     // Check that the user information was provided. If not, then give a guest account
     if (userInfo._2.isDefined) {
       val id = course.id.get + "." + userInfo._2.get
@@ -24,6 +24,7 @@ object LMSAuth {
       if (user.isDefined)
         user.get
       else
+//        User(NotAssigned, id, 'ltiAuth, "user" + id, userInfo._1, userInfo._3, User.roles.student, userInfo._4).save // This one load the picture from LTI
         User(NotAssigned, id, 'ltiAuth, "user" + id, userInfo._1, userInfo._3, User.roles.student).save
           .enroll(course, teacher = false)
     } else
@@ -47,7 +48,8 @@ object LMSAuth {
 
       // Get the user info
       val params = FormUrlEncodedParser.parse(request.body, request.charset.getOrElse("utf-8")).mapValues(_(0))
-      val userInfo = (params.get("lis_person_name_full"), params.get("user_id"), params.get("lis_person_contact_email_primary"))
+      val userInfo = (params.get("lis_person_name_full"), params.get("user_id"),
+        params.get("lis_person_contact_email_primary"), params.get("user_image"))
 
       // Get the user based on the user info
       Some(getCourseUser(course, userInfo))
