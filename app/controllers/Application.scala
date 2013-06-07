@@ -7,6 +7,7 @@ import service.EmailTools
 import play.api.libs.json.{JsObject, Json}
 import play.api.Play
 import play.api.Play.current
+import java.net.{URL, URI, URLEncoder}
 
 object Application extends Controller {
 
@@ -30,28 +31,40 @@ object Application extends Controller {
     //      val s = TimeTools.colonTimecodeToSeconds("23:03")
     //      Ok(s.toString)
 
-      val json1 = Json.obj(
-        "val1" -> 4,
-        "val2" -> true,
-        "val3" -> "Yes"
-      )
+//      val json1 = Json.obj(
+//        "val1" -> 4,
+//        "val2" -> true,
+//        "val3" -> "Yes"
+//      )
+//
+//      val json2 = Json.obj(
+//        "val1" -> 89,
+//        "attributes" -> Json.obj(
+//          "attr1" -> "something"
+//        )
+//      )
+//
+//      val json3 = Json.obj(
+//        "attr1" -> "something else"
+//      )
+//
+//      val attrs = Json.obj(
+//        "attributes" -> ((json2 \ "attributes").asOpt[JsObject].getOrElse(Json.obj()) ++ json3)
+//      )
 
-      val json2 = Json.obj(
-        "val1" -> 89,
-        "attributes" -> Json.obj(
-          "attr1" -> "something"
-        )
-      )
+//      val url = URLEncoder.encode("http://test.com/something.mp4?blah=that", "utf-8")
 
-      val json3 = Json.obj(
-        "attr1" -> "something else"
-      )
+      def prepareUrl(url: String): String = {
+        val urlObj = new URL(url)
+        new URI(urlObj.getProtocol, urlObj.getHost, urlObj.getPath, null).toString
+      }
+//
+//      val str = "http://test.com/something else.mp4?blah=that"
 
-      val attrs = Json.obj(
-        "attributes" -> ((json2 \ "attributes").asOpt[JsObject].getOrElse(Json.obj()) ++ json3)
-      )
+//      val url = uri.toURL.toString
 
-      Ok(json2 ++ attrs)
+      val url = prepareUrl("http://www.test.com/mush/something else.mp4?blah=that")
+      Ok(url)
   }
 
   def search = Authentication.authenticatedAction() {

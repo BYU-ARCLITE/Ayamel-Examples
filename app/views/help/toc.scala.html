@@ -1,0 +1,24 @@
+@()(implicit request: RequestHeader, user: Option[User])
+
+@template(title: String)(content: Html)(r: RequestHeader, u: Option[User]) = @{
+    if(user.isDefined)
+        main(title)(content)(r, u.get)
+    else
+        simple(title)(content)(r, u)
+}
+
+@template("Ayamel - Help Pages") {
+
+    <div class="padded">
+
+        <h1>Help and Tutorial Pages</h1>
+
+        <p>
+            Understanding how Ayamel works can be difficult. We know. For that reason we are working hard on creating a
+            series of tutorials in order to help you do what you need to do. However, it is a work in progress and many
+            are not ready yet.
+        </p>
+
+        @views.html.help.helpTopics()
+    </div>
+}(request, user)

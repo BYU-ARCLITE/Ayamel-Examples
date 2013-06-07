@@ -1,6 +1,6 @@
 package controllers
 
-import play.api.mvc.Controller
+import play.api.mvc.{Action, Controller}
 import controllers.authentication.Authentication
 import models.{HelpPage, User}
 import play.api.Play
@@ -15,15 +15,21 @@ import Play.current
  */
 object HelpPages extends Controller {
 
-  def view(id: Long) = Authentication.authenticatedAction() {
+  def tableOfContents = Action {
     implicit request =>
-      implicit user =>
-        val helpPage = HelpPage.findById(id)
-        if (helpPage.isDefined) {
-          val resourceLibraryUrl = Play.configuration.getString("resourceLibrary.baseUrl").get
-          Ok(views.html.help.view(helpPage.get, resourceLibraryUrl))
-        } else
-          Errors.notFound
+      implicit val user = request.session.get("userId").flatMap(id => User.findById(id.toLong))
+      Ok(views.html.help.toc())
+  }
+
+  def view(id: Long) = Action {
+    implicit request =>
+      implicit val user = request.session.get("userId").flatMap(id => User.findById(id.toLong))
+      val helpPage = HelpPage.findById(id)
+      if (helpPage.isDefined) {
+        val resourceLibraryUrl = Play.configuration.getString("resourceLibrary.baseUrl").get
+        Ok(views.html.help.view(helpPage.get, resourceLibraryUrl))
+      } else
+        Errors.notFound
   }
 
   def edit(id: Long) = Authentication.authenticatedAction() {
