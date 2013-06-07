@@ -17,7 +17,7 @@ import play.api.Play.current
  * @param endDate When the course ceases to be functional
  * @param lmsKey A key for connecting with LMSs
  */
-case class Course(id: Pk[Long], name: String, startDate: String, endDate: String,
+case class Course(id: Pk[Long], name: String, startDate: String, endDate: String, enrollment: Symbol = 'closed,
                   lmsKey: String = HashTools.md5Hex(Random.nextString(32))) extends SQLSavable with SQLDeletable {
 
   /**
@@ -27,10 +27,11 @@ case class Course(id: Pk[Long], name: String, startDate: String, endDate: String
   def save: Course = {
     if (id.isDefined) {
       update(Course.tableName, 'id -> id, 'name -> name, 'startDate -> startDate, 'endDate -> endDate,
-        'lmsKey -> lmsKey)
+        'enrollment -> enrollment.name, 'lmsKey -> lmsKey)
       this
     } else {
-      val id = insert(Course.tableName, 'name -> name, 'startDate -> startDate, 'endDate -> endDate, 'lmsKey -> lmsKey)
+      val id = insert(Course.tableName, 'name -> name, 'startDate -> startDate, 'endDate -> endDate,
+        'enrollment -> enrollment.name, 'lmsKey -> lmsKey)
       this.copy(id)
     }
   }
@@ -186,8 +187,9 @@ object Course extends SQLSelectable[Course] {
       get[String](tableName + ".name") ~
       get[String](tableName + ".startDate") ~
       get[String](tableName + ".endDate") ~
+      get[String](tableName + ".enrollment") ~
       get[String](tableName + ".lmsKey") map {
-      case id~name~startDate~endDate~lmsKey => Course(id, name, startDate, endDate, lmsKey)
+      case id~name~startDate~endDate~enrollment~lmsKey => Course(id, name, startDate, endDate, Symbol(enrollment), lmsKey)
     }
   }
 
@@ -209,8 +211,8 @@ object Course extends SQLSelectable[Course] {
    * @param data Fixture data
    * @return The user
    */
-  def fromFixture(data: (String, String, String, String)): Course =
-    Course(NotAssigned, data._1, data._2, data._3, data._4)
+  def fromFixture(data: (String, String, String, Symbol, String)): Course =
+    Course(NotAssigned, data._1, data._2, data._3, data._4, data._5)
 
   /**
    * Search the names of courses

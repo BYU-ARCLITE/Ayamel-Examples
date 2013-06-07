@@ -5,26 +5,29 @@ import play.api.mvc.{AnyContent, Request}
 import models.{Course, User}
 import anorm.NotAssigned
 import play.core.parsers.FormUrlEncodedParser
-import java.io.{File, FileWriter}
 
 /**
  * This provides methods of authenticating from an LMS. These methods are:
  * <ul>
- *   <li>LTI - The request is signed using OAuth 1a and contains student and LMS info.</li>
- *   <li>Key - The key is included in the URL and the student is logged on using a guest account.</li>
+ * <li>LTI - The request is signed using OAuth 1a and contains student and LMS info.</li>
+ * <li>Key - The key is included in the URL and the student is logged on using a guest account.</li>
  * </ul>
  * The key method is to be used in an LMS when it does not support LTI.
  */
 object LMSAuth {
 
-  def getCourseUser(course: Course, userInfo: (String, String, String)): User = {
-    val id = course.id.get + "." + userInfo._2
-    val user = User.findByAuthInfo(id, 'ltiAuth)
-    if (user.isDefined)
-      user.get
-    else
-      User(NotAssigned, id, 'ltiAuth, "user" + id, Some(userInfo._1), Some(userInfo._3), User.roles.student).save
-        .enroll(course, teacher = false)
+  def getCourseUser(course: Course, userInfo: (Option[String], Option[String], Option[String])): User = {
+    // Check that the user information was provided. If not, then give a guest account
+    if (userInfo._2.isDefined) {
+      val id = course.id.get + "." + userInfo._2.get
+      val user = User.findByAuthInfo(id, 'ltiAuth)
+      if (user.isDefined)
+        user.get
+      else
+        User(NotAssigned, id, 'ltiAuth, "user" + id, userInfo._1, userInfo._3, User.roles.student).save
+          .enroll(course, teacher = false)
+    } else
+      getGuestAccount(course)
   }
 
   /**
@@ -44,7 +47,7 @@ object LMSAuth {
 
       // Get the user info
       val params = FormUrlEncodedParser.parse(request.body, request.charset.getOrElse("utf-8")).mapValues(_(0))
-      val userInfo = (params("lis_person_name_full"), params("user_id"), params("lis_person_contact_email_primary"))
+      val userInfo = (params.get("lis_person_name_full"), params.get("user_id"), params.get("lis_person_contact_email_primary"))
 
       // Get the user based on the user info
       Some(getCourseUser(course, userInfo))

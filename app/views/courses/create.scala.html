@@ -7,12 +7,25 @@
 
         <form class="form-horizontal" action="@routes.Courses.create()" method="post">
             <div class="control-group">
-                <label class="control-label">Course Name</label>
+                <label class="control-label" for="courseName">Course Name</label>
                 <div class="controls">
-                    <input type="text" name="courseName" />
+                    <input type="text" name="courseName" id="courseName" placeholder="Course Name" />
                 </div>
             </div>
             <div class="control-group">
+                <label class="control-label">Enrollment</label>
+                <div class="controls">
+                    <label class="radio">
+                        <input type="radio" name="enrollment" id="optionsRadios1" value="closed" checked>
+                        <strong>Closed</strong> — Users must be approved by instructors before they can see the content
+                    </label>
+                    <label class="radio">
+                        <input type="radio" name="enrollment" id="optionsRadios2" value="open">
+                        <strong>Open</strong> — Anybody can join and see the content
+                    </label>
+                </div>
+            </div>
+            <!--<div class="control-group">
                 <label class="control-label">Start Date</label>
                 <div class="controls">
                     <input type="text" name="startDate" placeholder="mm/dd/yyyy"/>
@@ -23,7 +36,7 @@
                 <div class="controls">
                     <input type="text" name="endDate" placeholder="mm/dd/yyyy"/>
                 </div>
-            </div>
+            </div>-->
             <div class="control-group">
                 <div class="controls">
                     <input class="btn btn-blue" type="submit" value="Create Course Page"/>

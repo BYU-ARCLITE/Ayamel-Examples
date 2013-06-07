@@ -1,6 +1,6 @@
 @(user: User, course: Course)(implicit request: RequestHeader)
 
-@if(user.role == User.roles.teacher || user.role == User.roles.admin) {
+@if(user.canEdit(course)) {
     <div id="lmsModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="lmsModalLabel" aria-hidden="true">
         <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
