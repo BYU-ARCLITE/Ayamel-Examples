@@ -1,21 +1,35 @@
-@(helpPage: HelpPage, resourceLibraryUrl: String)(implicit request: RequestHeader, user: User)
+@(helpPage: HelpPage, resourceLibraryUrl: String)(implicit request: RequestHeader, user: Option[User])
 
 @processContents(page: HelpPage) = @{
     page.contents.replaceAll("\\[content:(\\d+)\\]", "<div class=\"contentDisplay\" data-id=\"$1\"></div>")
 }
 
-@main("Ayamel - " + helpPage.title){
+@template(title: String)(content: Html)(r: RequestHeader, u: Option[User]) = @{
+    if(user.isDefined)
+        main(title)(content)(r, u.get)
+    else
+        simple(title)(content)(r, u)
+}
+
+@template("Ayamel - " + helpPage.title) {
 
     @views.html.content.dependencies()
 
     <div class="padded">
+
+        <ul class="breadcrumb">
+            <li><a href="@routes.Application.home()">Home</a> <span class="divider">/</span></li>
+            <li><a href="@routes.HelpPages.tableOfContents()">Help Pages</a> <span class="divider">/</span></li>
+            <li class="active">@helpPage.title</li>
+        </ul>
+
         <div>
             <div class="pull-left">
                 <h1>@helpPage.title</h1>
             </div>
 
             <div class="pull-right">
-                @if(user.role == User.roles.admin) {
+                @if(user.isDefined && user.get.role == User.roles.admin) {
                     <a class="btn btn-yellow pad-top-med" href="@routes.HelpPages.edit(helpPage.id.get)"><i class="icon-edit"></i> Edit</a>
                 }
             </div>
@@ -41,4 +55,4 @@
             });
         });
     </script>
-}
+}(request, user)

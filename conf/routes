@@ -111,6 +111,7 @@ GET     /admin/settings                     controllers.Users.siteSettings
 POST    /admin/settings                     controllers.Users.saveSiteSettings
 
 # Help pages
+GET     /help                               controllers.HelpPages.tableOfContents
 GET     /help/:id                           controllers.HelpPages.view(id: Long)
 GET     /help/:id/edit                      controllers.HelpPages.edit(id: Long)
 POST    /help/:id/edit                      controllers.HelpPages.save(id: Long)

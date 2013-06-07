@@ -11,6 +11,7 @@ import ExecutionContext.Implicits.global
 import anorm.NotAssigned
 import service.ContentDescriptor
 import dataAccess.{PlayGraph, ResourceController}
+import java.net.{URI, URL}
 
 /**
  * The controller for dealing with content.
@@ -72,6 +73,12 @@ object ContentController extends Controller {
 
       // Guests cannot create content
         Authentication.enforceNotRole(User.roles.guest) {
+
+          def prepareUrl(url: String): String = {
+            val urlObj = new URL(url)
+            new URI(urlObj.getProtocol, urlObj.getHost, urlObj.getPath, null).toString
+          }
+
           // Collect the information
           val data = request.body
           val contentType = Symbol(data("contentType")(0))
@@ -80,7 +87,7 @@ object ContentController extends Controller {
           val keywords = data("keywords")(0)
           val categories = data.get("categories").map(_.toList).getOrElse(Nil)
           val labels = data.get("labels").map(_.toList).getOrElse(Nil)
-          val url = data("url")(0)
+          val url = prepareUrl(data("url")(0))
           val mime = ResourceHelper.getMimeFromUri(url)
 
           // Create the content
