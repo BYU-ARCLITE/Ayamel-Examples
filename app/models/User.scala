@@ -385,7 +385,8 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
    * Check's the user's permission level to see if he/she can create a course.
    * @return
    */
-  def canCreateCourse: Boolean = role == User.roles.teacher || role == User.roles.admin
+//  def canCreateCourse: Boolean = role == User.roles.teacher || role == User.roles.admin
+  def canCreateCourse: Boolean = role != User.roles.guest
 
   /**
    * Admins and non-guest members can add content to a course
@@ -402,7 +403,7 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
     role == User.roles.admin || (canEdit(course) && request.courseId == course.id.get)
 
   def canEdit(course: Course): Boolean =
-    role == User.roles.admin || (role == User.roles.teacher && course.getTeachers.contains(this))
+    role == User.roles.admin || course.getTeachers.contains(this)
 
 
   //       _____      _   _

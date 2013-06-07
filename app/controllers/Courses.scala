@@ -5,6 +5,7 @@ import play.api.mvc._
 import models.{AddCourseRequest, User, Content, Course}
 import service.{TimeTools, LMSAuth}
 import anorm.NotAssigned
+import play.core.parsers.FormUrlEncodedParser
 
 /**
  * This controller manages all the pages relating to courses, including authentication.
@@ -122,11 +123,12 @@ object Courses extends Controller {
 
           // Collect info
           val courseName = request.body("courseName")(0)
-          val startDate = request.body("startDate")(0)
-          val endDate = request.body("endDate")(0)
+//          val startDate = request.body("startDate")(0)
+//          val endDate = request.body("endDate")(0)
+          val enrollment = Symbol(request.body("enrollment")(0))
 
           // Create the course
-          val course = Course(NotAssigned, courseName, TimeTools.parseDate(startDate), TimeTools.parseDate(endDate)).save
+          val course = Course(NotAssigned, courseName, "", "", enrollment).save
           user.enroll(course, teacher = true)
 
           // Redirect to the course page
@@ -182,14 +184,29 @@ object Courses extends Controller {
 
             // Make sure it's not a guest
             Authentication.enforceNotRole(User.roles.guest) {
-              val message = request.body("message")(0)
-              AddCourseRequest(NotAssigned, user.id.get, course.id.get, message).save
 
-              // Notify the teachers
-              val notificationMessage = "A student has requested to join your course \"" + course.name + "\"."
-              course.getTeachers.foreach { _.sendNotification(notificationMessage)}
+              // Check to see what kind of enrollment the course is
+              if (course.enrollment == 'closed) {
 
-              Ok(views.html.courses.pending(course))
+                val message = request.body("message")(0)
+                AddCourseRequest(NotAssigned, user.id.get, course.id.get, message).save
+
+                // Notify the teachers
+                val notificationMessage = "A student has requested to join your course \"" + course.name + "\"."
+                course.getTeachers.foreach { _.sendNotification(notificationMessage)}
+
+                Ok(views.html.courses.pending(course))
+              } else if (course.enrollment == 'open) {
+
+                // Notify the teachers
+                val notificationMessage = "A student has joined your course \"" + course.name + "\"."
+                course.getTeachers.foreach { _.sendNotification(notificationMessage)}
+
+                user.enroll(course, teacher = false)
+                Redirect(routes.Courses.view(course.id.get))
+              } else {
+                Redirect(routes.Application.home()).flashing("error" -> "Error: Unknown course enrollment type")
+              }
             }
         }
   }
