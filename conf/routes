@@ -110,6 +110,9 @@ GET     /admin/feedback/:id/delete          controllers.Users.deleteFeedback(id:
 GET     /admin/settings                     controllers.Users.siteSettings
 POST    /admin/settings                     controllers.Users.saveSiteSettings
 
+# CaptionAider pages
+GET     /captionaider                       controllers.CaptionAider.view
+
 # Help pages
 GET     /help                               controllers.HelpPages.tableOfContents
 GET     /help/:id                           controllers.HelpPages.view(id: Long)
