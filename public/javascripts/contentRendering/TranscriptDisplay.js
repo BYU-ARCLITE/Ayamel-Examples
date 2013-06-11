@@ -93,6 +93,7 @@ var TranscriptDisplay = (function() {
                         success: function(){
 
                             // Add the cues for the track
+                            transcript.track = this;
                             this.cues.forEach(function (cue) {
 
                                 var html = Mustache.to_html(cueTemplate, {direction: direction}, {text: cue.text});
