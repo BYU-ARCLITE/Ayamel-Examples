@@ -1,4 +1,12 @@
-@(content: models.Content, resourceLibraryUrl: String)(implicit request: RequestHeader, user: User)
+@(content: models.Content, course: Option[Course], resourceLibraryUrl: String)(implicit request: RequestHeader, user: User)
+
+@languageSelect(id: String) = {
+    <select id="@id">
+        <option value="eng">English</option>
+        <option value="fre">French</option>
+        <option value="0">Others...</option>
+    </select>
+}
 
 @editor("Ayamel - CaptionAider") {
 
@@ -26,73 +34,186 @@
 
     <div class="container">
         <div class="mainContent">
-            <div style="padding: 0 10px;">
+            <div class="padded">
+                <ul class="breadcrumb">
+                    @if(course.isDefined) {
+                        <li><a href="@routes.Courses.view(course.get.id.get)">@course.get.name</a> <span class="divider">/</span></li>
+                        <li><a href="@routes.CourseContent.viewInCourse(content.id.get, course.get.id.get)">@content.name</a> <span class="divider">/</span></li>
+                    } else {
+                        <li><a href="@routes.ContentController.view(content.id.get)">@content.name</a> <span class="divider">/</span></li>
+                    }
+                    <li class="active">CaptionAider</li>
+                </ul>
                 <div id="contentHolder" class="@content.contentType.name"></div>
             </div>
         </div>
     </div>
 
-    <div id="editor">
-        <center style="position:relative;">
-            <b style="position:absolute;top:0px;left:1em;" id="vidtitle"></b>
-            <span style="position:absolute;top:0px;right:1em;"><b>Current Time: </b><span id="timestamp">0:00:00.000</span></span>
-            <div class="btn-toolbar" style="display:inline-block;margin: 0;">
+    <div id="bottomContainer">
+        <div id="toolbarHolder">
+            <div class="toolbar">
+                <strong>Actions:</strong>
                 <div class="btn-group">
-                    <button id="undb" class="btn btn-mini btn-inverse"><i class="icon-backward icon-white"></i> Undo</button>
-                    <button id="redb" class="btn btn-mini btn-inverse">Redo <i class="icon-forward icon-white"></i></button>
+                    <button class="btn btn-inverse" id="undoButton" title="Undo"><i class="icon-undo"></i> Undo</button>
+                    <button class="btn btn-inverse" id="redoButton" title="Redo"><i class="icon-repeat"></i> Redo</button>
+                    <button class="btn btn-inverse" id="plusFontButton" title="Increase Font Size"><i class="icon-plus-sign"></i> Font</button>
+                    <button class="btn btn-inverse" id="minusFontButton" title="Decrease Font Size"><i class="icon-minus-sign"></i> Font</button>
                 </div>
+            </div>
+
+            <div class="toolbar">
+                <strong>Tracks:</strong>
                 <div class="btn-group">
-                    <button class="btn btn-mini btn-inverse" id="newb"><i class="icon-plus icon-white"></i> New Track</button>
-                    <button class="btn btn-mini btn-inverse dropdown-toggle" data-toggle="dropdown"><i class="icon-upload icon-white"></i> Load Track <span class="caret"></span></button>
-                    <ul class="dropdown-menu pull-right" id="lodm" style="cursor:pointer;"></ul>
+                    <button class="btn btn-inverse" id="newTrackButton" title="Create a new track" data-target="#newTrackModal" data-toggle="modal"><i class="icon-file"></i> New</button>
+                    <button class="btn btn-inverse" title="Save tracks" data-target="#saveTrackModal" data-toggle="modal"><i class="icon-save"></i> Save</button>
+                    <button class="btn btn-inverse" title="Save tracks" data-target="#loadTrackModal" data-toggle="modal"><i class="icon-folder-open"></i> Load</button>
                 </div>
+
                 <div class="btn-group">
-                    <button class="btn btn-mini btn-inverse dropdown-toggle" data-toggle="dropdown"><i class="icon-ok icon-white"></i> Save Tracks <span class="caret"></span></button>
-                    <ul class="dropdown-menu" style="cursor:pointer;">
-                        <li id="ssrv">To Server</li>
+                    <a class="btn btn-inverse dropdown-toggle" data-toggle="dropdown" href="#">
+                        <i class="icon-file-alt"></i> <span id="formatLabel">VTT</span>
+                        <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu" id="formatMenu">
+                            <!-- dropdown menu links -->
                     </ul>
                 </div>
-                <div class="btn-group">
-                    <button class="btn btn-mini btn-inverse dropdown-toggle" style="width:5.5em;" data-toggle="dropdown"><span id="flabel">VTT</span> <span class="caret"></span></button>
-                    <ul id="typm" class="dropdown-menu" style="cursor:pointer;"></ul>
-                </div>
-                <div class="btn-group">
-                    <button class="btn btn-mini btn-inverse dropdown-toggle" data-toggle="dropdown">Tracks <span class="caret"></span></button>
-                    <ul id="trkm" class="dropdown-menu" style="cursor:pointer;"></ul>
-                </div>
-                <div class="btn-group">
-                    <button class="btn btn-mini btn-inverse dropdown-toggle" data-toggle="dropdown">Show Transcript <span class="caret"></span></button>
-                    <ul class="dropdown-menu" id="trnm" style="cursor:pointer;"></ul>
-                </div>
-                <div class="btn-group">
-                    <button id="pbtn" class="btn btn-mini btn-inverse"><i class="icon-plus icon-white"></i> Font</button>
-                    <button id="mbtn" class="btn btn-mini btn-inverse"><i class="icon-minus icon-white"></i> Font</button>
-                </div>
             </div>
-            <div class="btn-toolbar" style="display:inline-block;margin: 0 0 2px 0;">
-                <div class="btn-group" data-toggle="buttons-check">
-                    <button id="automove" class="btn btn-mini btn-inverse">Move After Add</button>
-                </div>
+
+            <div class="toolbar">
+                <strong>Tools:</strong>
                 <div class="btn-group" data-toggle="buttons-radio">
-                    <button id="selb" class="btn btn-mini btn-inverse active"><i class="icon-pencil icon-white"></i> Select</button>
-                    <button id="movb" class="btn btn-mini btn-inverse"><i class="icon-move icon-white"></i> Move</button>
-                    <button id="sftb" class="btn btn-mini btn-inverse"><i class="icon-move icon-white"></i> Time Shift</button>
-                    <button id="creb" class="btn btn-mini btn-inverse"><i class="icon-plus icon-white"></i> Add Cue</button>
-                    <button id="splb" class="btn btn-mini btn-inverse">| Split</button>
-                    <button id="delb" class="btn btn-mini btn-inverse"><i class="icon-trash icon-white"></i> Delete</button>
-                    <button id="scrb" class="btn btn-mini btn-inverse"><i class="icon-resize-horizontal icon-white"></i> Scroll</button>
-                    <button id="ordb" class="btn btn-mini btn-inverse"><i class="icon-resize-vertical icon-white"></i> Reorder </button>
-                    <button id="repb" class="btn btn-mini btn-inverse"><i class="icon-repeat icon-white"></i> Set Repeat</button>
+                    <button class="btn btn-inverse active" id="selectToolButton" title="Select Tool"><i class="icon-ok"></i></button>
+                    <button class="btn btn-inverse" id="moveToolButton" title="Move Tool"><i class="icon-move"></i></button>
+                    <button class="btn btn-inverse" id="timeShiftToolButton" title="Time Shift Tool"><i class="icon-resize-horizontal"></i></button>
+                    <button class="btn btn-inverse" id="addCueToolButton" title="Add Cue Tool"><i class="icon-plus"></i></button>
+                    <button class="btn btn-inverse" id="splitToolButton" title="Split Tool"><i class="icon-cut"></i></button>
+                    <button class="btn btn-inverse" id="deleteToolButton" title="Delete Tool"><i class="icon-trash"></i></button>
+                    <button class="btn btn-inverse" id="scrollToolButton" title="Scroll Tool"><i class="icon-ellipsis-horizontal"></i></button>
+                    <button class="btn btn-inverse" id="reorderToolButton" title="Reorder Tool"><i class="icon-reorder"></i></button>
+                    <button class="btn btn-inverse" id="repeatToolButton" title="Set Repeat Tool"><i class="icon-repeat"></i></button>
                 </div>
                 <div class="btn-group">
-                    <button id="abrb" class="btn btn-mini btn-inverse disabled" style="width:9em;">Enable Repeat</button>
-                    <button id="clrb" class="btn btn-mini btn-inverse disabled">Clear Repeat</button>
+                    <button class="btn btn-inverse disabled" id="enableRepeatButton" title="Enable Repeat" data-toggle="button"><i id="repeatIcon" class="icon-circle-blank"></i></button>
+                    <button class="btn btn-inverse disabled" id="clearRepeatButton" title="Clear Repeat"><i class="icon-ban-circle"></i></button>
                 </div>
+                <button class="btn btn-inverse" id="moveAfterAddButton" title="Move After Add" data-toggle="button">
+                    <i class="icon-plus"></i>
+                    <i class="icon-angle-right"></i>
+                    <i class="icon-move"></i>
+                </button>
             </div>
-        </center>
-        <div id="tl"></div>
+
+            <div id="timestamp">0:00:00</div>
+        </div>
+
+        <div id="timeline"></div>
     </div>
-    <div id="timeline"></div>
+
+    <div id="newTrackModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="newTrackModalLabel" aria-hidden="true">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3 id="newTrackModalLabel">Create a new track</h3>
+        </div>
+        <div class="modal-body">
+            <form class="form-horizontal">
+                <div class="control-group">
+                    <label class="control-label" for="trackName">Name</label>
+                    <div class="controls">
+                        <input type="text" id="trackName" placeholder="Name">
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label" for="trackType">Type</label>
+                    <div class="controls">
+                        <select id="trackType">
+                            <option value="subtitles">Subtitles</option>
+                            <option value="captions">Captions</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label" for="trackLanguage">Language</label>
+                    <div class="controls">
+                        @languageSelect("trackLanguage")
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+            <button class="btn btn-blue" id="createTrackButton">Create</button>
+        </div>
+    </div>
+
+    <div id="saveTrackModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="saveTrackModalLabel" aria-hidden="true">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3 id="saveTrackModalLabel">Save tracks</h3>
+        </div>
+        <div class="modal-body">
+            <form class="form-horizontal">
+                <div class="control-group">
+                    <label class="control-label" for="tracksToSave">Which Tracks</label>
+                    <div class="controls">
+                        <select id="tracksToSave" multiple="multiple"></select>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label">Destination</label>
+                    <div class="controls">
+                        <div id="saveDestinations">
+                            <label class="radio">
+                                <input type="radio" name="saveDestination" value="ayamel" checked>
+                                Ayamel
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+            <button class="btn btn-blue" id="saveTrackButton">Save</button>
+        </div>
+    </div>
+
+    <div id="loadTrackModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="loadTrackModalLabel" aria-hidden="true">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3 id="saveTrackModalLabel">Load track</h3>
+        </div>
+        <div class="modal-body">
+            <form class="form-horizontal">
+                <div class="control-group">
+                    <label class="control-label" for="loadType">Type</label>
+                    <div class="controls">
+                        <select id="loadType">
+                            <option value="subtitles">Subtitles</option>
+                            <option value="captions">Captions</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label" for="loadLanguage">Language</label>
+                    <div class="controls">
+                        @languageSelect("loadLanguage")
+                    </div>
+                </div>
+                 <div class="control-group">
+                    <label class="control-label">Source</label>
+                    <div class="controls">
+                        <div id="loadDestinations">
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+            <button class="btn btn-blue" id="loadTrackButton">Load</button>
+        </div>
+    </div>
 
     <script type="text/javascript">
         var content = [@Html(content.toJson.toString())][0];

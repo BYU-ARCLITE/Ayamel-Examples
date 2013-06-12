@@ -111,7 +111,8 @@ GET     /admin/settings                     controllers.Users.siteSettings
 POST    /admin/settings                     controllers.Users.saveSiteSettings
 
 # CaptionAider pages
-GET     /captionaider                       controllers.CaptionAider.view
+GET     /captionaider/:id/:courseId         controllers.CaptionAider.view(id: Long, courseId: Long)
+POST    /captionaider/save                  controllers.CaptionAider.save
 
 # Help pages
 GET     /help                               controllers.HelpPages.tableOfContents
