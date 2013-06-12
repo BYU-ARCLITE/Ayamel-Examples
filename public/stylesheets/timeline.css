@@ -1,5 +1,49 @@
-#timeline {
+#bottomContainer {
     position: fixed;
     bottom: 0;
     width: 100%;
+    background: #505050;
+    border-top: 1px solid #686868;
+}
+
+#toolbarHolder {
+    text-align: center;
+    margin: 5px 0;
+}
+
+.toolbar {
+    background: #eee;
+    padding: 10px;
+    -webkit-border-radius: 8px;
+    -moz-border-radius: 8px;
+    border-radius: 8px;
+    display: inline-block;
+    -webkit-box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.5);
+    -moz-box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.5);
+    box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.5);
+    margin: 5px;
+}
+
+#timeline {
+    border-top: 1px solid #222;
+    margin-bottom: -5px;
+}
+
+#timestamp {
+    color: white;
+    display: inline-block;
+    overflow: hidden;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin: 2px 5px;
+    padding: 8px 15px;
+    background: #222;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+    -webkit-box-shadow: inset 1px 2px 7px rgba(0, 0, 0, 0.4), 0 1px 0 rgba(255, 255, 255, 0.2);
+    -moz-box-shadow: inset 1px 2px 7px rgba(0, 0, 0, 0.4), 0 1px 0 rgba(255, 255, 255, 0.2);
+    box-shadow: inset 1px 2px 7px rgba(0, 0, 0, 0.4), 0 1px 0 rgba(255, 255, 255, 0.2);
+    min-width: 80px;
 }

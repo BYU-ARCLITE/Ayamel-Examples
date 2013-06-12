@@ -28,7 +28,13 @@
             <div class="modal-body">
 
                 <p>
-                    You can upload a <code>.srt</code> or <code>.vtt</code> file to add time-based captions.
+                    You can add captions with the CaptionAider tool.
+                </p>
+                <p><a href="@routes.CaptionAider.view(content.id.get, course.map(_.id.get).getOrElse(0))" class="btn btn-yellow">Add captions with CaptionAider</a></p>
+
+                <hr>
+                <p>
+                    You can also upload a <code>.vtt</code> file to add time-based captions.
                 </p>
 
                 <form class="form-horizontal" id="captionTrackForm" method="post" enctype="multipart/form-data" action="@captionTrackUrl">
