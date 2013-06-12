@@ -201,7 +201,7 @@ var VideoRenderer = (function () {
 //            components: components,
             startTime: args.startTime,
             endTime: args.endTime,
-            renderCue: args.renderCue || function (cue) {
+            renderCue: args.renderCue || function (cue) { // Check to use a different renderer
                 var node = document.createElement('div');
                 node.appendChild(cue.getCueAsHTML(cue.track.kind === 'subtitles'));
 
