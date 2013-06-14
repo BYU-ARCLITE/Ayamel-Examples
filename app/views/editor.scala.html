@@ -14,7 +14,8 @@
             ("screen", "stylesheets/bootstrap.min.css"),
             ("screen", "stylesheets/bootstrap-responsive.min.css"),
             ("screen", "stylesheets/font-awesome.min.css"),
-            ("screen", "stylesheets/main.css")
+            ("screen", "stylesheets/main.css"),
+            ("screen", "javascripts/chosen/chosen.css")
           ) ++ moreStyles
         )
 
@@ -22,9 +23,10 @@
         <script src="@routes.Assets.at("javascripts/jquery-1.9.0.min.js")" type="text/javascript"></script>
         <script src="@routes.Assets.at("javascripts/bootstrap.min.js")" type="text/javascript"></script>
         <script type="text/javascript" src="@routes.Assets.at("javascripts/mustache.js")"></script>
+        <script type="text/javascript" src="@routes.Assets.at("javascripts/chosen/chosen.jquery.min.js")"></script>
         <script src="@routes.Assets.at("javascripts/ContentItemRenderer.js")" type="text/javascript"></script>
         <script src="@routes.Assets.at("javascripts/ActivityStreams.js")" type="text/javascript"></script>
-        <script src="@routes.Assets.at("javascripts/angular.min.js")" type="text/javascript"></script>
+        @*<script src="@routes.Assets.at("javascripts/angular.min.js")" type="text/javascript"></script>*@
 
         <script type="text/javascript" src="@routes.Assets.at("EditorWidgets/Save.js")"></script>
         <script type="text/javascript" src="@routes.Assets.at("EditorWidgets/CommandStack.js")"></script>

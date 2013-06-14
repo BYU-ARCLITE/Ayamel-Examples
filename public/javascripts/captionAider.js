@@ -41,6 +41,7 @@ $(function() {
                 enableRepeatButton = document.getElementById("enableRepeatButton"),
                 repeatIcon = document.getElementById("repeatIcon"),
                 videoPlayer = args.videoPlayer,
+                transcript = args.transcriptPlayer,
                 renderer = videoPlayer.captionRenderer;
 
             captionEditor = CaptionEditor({
@@ -57,15 +58,38 @@ $(function() {
 
             // Set up listeners
             function setlen(){ timeline.length = videoPlayer.duration; timestamp.textContent = timeline.timeCode; }
-            function frame_change() { timeline.currentTime = this.currentTime; }
+            function frame_change() {
+                timeline.currentTime = this.currentTime;
+//                transcript.currentTime = this.currentTime;
+            }
 
             videoPlayer.addEventListener('loadedmetadata',setlen,false);
             videoPlayer.addEventListener('durationchange',setlen,false);
             videoPlayer.addEventListener("timeupdate",frame_change.bind(videoPlayer),false);
             timeline.on('jump', function(time){ videoPlayer.currentTime = time; });
-            timeline.on('move', function(){ renderer.rebuildCaptions(false); });
-            timeline.on('resizer', function(){ renderer.rebuildCaptions(false); });
-            timeline.on('resizel', function(){ renderer.rebuildCaptions(false); });
+            timeline.on('move', function(){
+                renderer.rebuildCaptions(false);
+                transcript.update();
+            });
+            timeline.on('resizer', function(){
+                renderer.rebuildCaptions(false);
+                transcript.update();
+            });
+            timeline.on('resizel', function(){
+                renderer.rebuildCaptions(false);
+                transcript.update();
+            });
+            timeline.on('addtrack',function(track){
+                if (timeline.trackIndices[track.textTrack.label] === undefined) {
+                    videoPlayer.captionRenderer.addTextTrack(track.textTrack);
+                    videoPlayer.controlBar.addTrack(track.textTrack);
+                    transcript.addTrack(track.textTrack)
+                }
+            });
+
+            timeline.on("cuechange", function(event) {
+                transcript.update();
+            });
 
             automove.addEventListener("click", function() {
                 if(automove.classList.contains('active')){
@@ -81,6 +105,7 @@ $(function() {
                 "use strict";
                 if(timeline.spanInView(seg.startTime,seg.endTime)){
                     renderer.rebuildCaptions(true);
+                    transcript.update();
                 }
             });
             timeline.on('create',function(seg) {
@@ -89,35 +114,46 @@ $(function() {
                     timeline.currentTool = Timeline.MOVE;
                     $("#moveToolButton").button("toggle");
                 }
-                if(seg.active){ renderer.rebuildCaptions(false); }
+                if(seg.active){
+                    renderer.rebuildCaptions(false);
+                }
+                transcript.update();
             });
             timeline.on('unpaste',function(segs) {
                 "use strict";
                 if(segs.some(function(seg){ return timeline.spanInView(seg.startTime,seg.endTime); })){
                     renderer.rebuildCaptions(true);
+                    transcript.update();
                 }
             });
             timeline.on('paste',function(segs) {
                 "use strict";
-                if(segs.some(function(seg){ return seg.active; })){ renderer.rebuildCaptions(false); }
+                if(segs.some(function(seg){ return seg.active; })){
+                    renderer.rebuildCaptions(false);
+                    transcript.update();
+                }
             });
             timeline.on('merge',function(seg) {
                 "use strict";
                 renderer.rebuildCaptions(true);
+                transcript.update();
             });
             timeline.on('unmerge',function(seg) {
                 "use strict";
                 renderer.rebuildCaptions(true);
+                transcript.update();
             });
             timeline.on('split',function(seg) {
                 "use strict";
                 renderer.rebuildCaptions(true);
+                transcript.update();
             });
             timeline.on('timeupdate', function(){ timestamp.textContent = timeline.timeCode; });
 
             // Track selection
             videoPlayer.addEventListener("enabletrack", function(event) {
-                timeline.addTextTrack(event.track);
+                if (timeline.trackIndices[event.track.label] === undefined)
+                    timeline.addTextTrack(event.track);
             });
             videoPlayer.addEventListener("disabletrack", function(event) {
                 timeline.removeTextTrack(event.track.label);
@@ -176,9 +212,10 @@ $(function() {
                 timeline.addTextTrack(track, true);
                 $('#newTrackModal').modal('hide');
 
-                // Add the track to the player
+                // Add the track to the player and transcript
                 videoPlayer.captionRenderer.addTextTrack(track);
                 videoPlayer.controlBar.addTrack(track);
+                transcript.addTrack(track);
 
                 // Clear the form
                 $trackName.val("");
@@ -291,11 +328,12 @@ $(function() {
                         kind: kind,
                         label: fileObj.name,
                         lang: language,
-                        success: function() {
-                            this.mode = "showing";
-                            timeline.addTextTrack(this,true);
-                            videoPlayer.captionRenderer.addTextTrack(this);
-                            videoPlayer.controlBar.addTrack(this);
+                        success: function(track) {
+                            track.mode = "showing";
+                            timeline.addTextTrack(track, true);
+                            videoPlayer.captionRenderer.addTextTrack(track);
+                            videoPlayer.controlBar.addTrack(track);
+                            transcript.addTrack(track);
                         }
                     });
                 });

@@ -1,11 +1,21 @@
 @(content: models.Content, course: Option[Course], resourceLibraryUrl: String)(implicit request: RequestHeader, user: User)
 
 @languageSelect(id: String) = {
-    <select id="@id">
-        <option value="eng">English</option>
-        <option value="fre">French</option>
-        <option value="0">Others...</option>
+    <select class="chzn-select" id="@id">
+        @*<option value="eng">English</option>*@
+        @*<option value="fre">French</option>*@
+        @*<option value="0">Others...</option>*@
     </select>
+
+    <script type="text/javascript">
+        (function () {
+            var $select = $("#@id");
+            Object.keys(Ayamel.utils.langCodes).forEach(function (key) {
+                $select.append("<option value='" + key + "'>" + Ayamel.utils.langCodes[key].name + "</option>");
+            });
+            <!--$select.chosen();-->
+        }());
+    </script>
 }
 
 @editor("Ayamel - CaptionAider") {
