@@ -220,7 +220,8 @@ var VideoRenderer = (function () {
 
                 return {node: node};
             },
-            aspectRatio: Ayamel.aspectRatios.hdVideo
+            aspectRatio: Ayamel.aspectRatios.hdVideo,
+            captionTrackCallback: args.captionTrackCallback
         });
 
         var registerPlay = true;
@@ -247,15 +248,14 @@ var VideoRenderer = (function () {
 
     function setupTranscripts(args) {
         if (showTranscript(args)) {
-            var transcriptDisplay = new TranscriptDisplay({
-                transcripts: args.transcripts,
+            var transcriptPlayer = new TranscriptPlayer({
+                captionTracks: args.captionTracks,
                 $holder: args.layout.$transcript,
-                filter: function (cue, $cue) {
-
+                filter: function(cue, $cue) {
                     // Attach the translator
                     if (args.translator) {
                         args.translator.attach($cue[0], cue.track.language, "en", {
-                            captionTrackId: determineTranscriptFromCue(args.transcripts, cue),
+                            captionTrackId: cue.track.resourceId,
                             cueIndex: cue.track.cues.indexOf(cue)
                         });
                     }
@@ -266,16 +266,50 @@ var VideoRenderer = (function () {
                     }
                 }
             });
-            transcriptDisplay.bindToMediaPlayer(args.videoPlayer);
 
-            transcriptDisplay.addEventListener("transcriptionTabChange", function (event) {
-                console.log("Transcription tab change");
-                console.log(event);
+            // Cue clicking
+            transcriptPlayer.addEventListener("cueClick", function(event) {
+                var id = event.cue.track.cues.indexOf(event.cue);
+                args.videoPlayer.currentTime = event.cue.startTime;
+                ActivityStreams.predefined.transcriptCueClick(event.track.resourceId, id);
             });
-            transcriptDisplay.addEventListener("transcriptionCueClick", function (event) {
-                ActivityStreams.predefined.transcriptCueClick(event.transcript.id, event.cueIndex);
+
+            args.videoPlayer.addEventListener("timeupdate", function() {
+                transcriptPlayer.currentTime = args.videoPlayer.currentTime;
             });
-            return transcriptDisplay;
+
+            return transcriptPlayer;
+
+
+//            var transcriptDisplay = new TranscriptDisplay({
+//                transcripts: args.transcripts,
+//                $holder: args.layout.$transcript,
+//                filter: function (cue, $cue) {
+//
+//                    // Attach the translator
+//                    if (args.translator) {
+//                        args.translator.attach($cue[0], cue.track.language, "en", {
+//                            captionTrackId: determineTranscriptFromCue(args.transcripts, cue),
+//                            cueIndex: cue.track.cues.indexOf(cue)
+//                        });
+//                    }
+//
+//                    // Add annotations
+//                    if (args.annotator) {
+//                        args.annotator.annotate($cue);
+//                    }
+//                }
+//            });
+//            transcriptDisplay.bindToMediaPlayer(args.videoPlayer);
+//
+//            transcriptDisplay.addEventListener("transcriptionTabChange", function (event) {
+//                console.log("Transcription tab change");
+//                console.log(event);
+//            });
+//            transcriptDisplay.addEventListener("transcriptionCueClick", function (event) {
+//                ActivityStreams.predefined.transcriptCueClick(event.transcript.id, event.cueIndex);
+//            });
+//            return transcriptDisplay;
         }
         return null;
     }
@@ -300,16 +334,19 @@ var VideoRenderer = (function () {
                     // Create the annotator
                     args.annotator = createAnnotator(args);
 
-                    // Set up the video player
-                    setupVideoPlayer(args, function (videoPlayer) {
-                        args.videoPlayer = videoPlayer;
-
-                        // Set up the transcription
-                        setupTranscripts(args);
+                    // Prepare to create the Transcript when the video player is created
+                    args.captionTrackCallback = function(tracks) {
+                        args.captionTracks = tracks;
+                        args.transcriptPlayer = setupTranscripts(args);
 
                         if (args.callback) {
                             args.callback(args);
                         }
+                    };
+
+                    // Set up the video player
+                    setupVideoPlayer(args, function (videoPlayer) {
+                        args.videoPlayer = videoPlayer;
                     });
                 });
             });

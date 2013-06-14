@@ -8,105 +8,101 @@
 
     <script type="text/javascript" src="javascripts/jquery-1.9.0.min.js"></script>
     <script type="text/javascript" src="Caption-Renderer/caption-renderer.js"></script>
-    <script type="text/javascript" src="Ayamel.js/js/swfobject.js"></script>
-
-    <script type="text/javascript" src="Ayamel.js/js/player2/js/Ayamel.js"></script>
-    <script type="text/javascript" src="Ayamel.js/js/player2/js/AyamelPlayer.js"></script>
-    <script type="text/javascript" src="Ayamel.js/js/player2/js/CaptionTrackLoader.js"></script>
-    <script type="text/javascript" src="Ayamel.js/js/player2/js/ControlBar.js"></script>
-    <script type="text/javascript" src="Ayamel.js/js/player2/js/FullScreenHandler.js"></script>
-    <script type="text/javascript" src="Ayamel.js/js/player2/js/KeyBinder.js"></script>
-    <script type="text/javascript" src="Ayamel.js/js/player2/js/MediaPlayer.js"></script>
-    <script type="text/javascript" src="Ayamel.js/js/player2/js/ProgressBar.js"></script>
-
-    <script type="text/javascript" src="Ayamel.js/js/player2/js/controls/CaptionsMenu.js"></script>
-    <script type="text/javascript" src="Ayamel.js/js/player2/js/controls/FullScreenButton.js"></script>
-    <script type="text/javascript" src="Ayamel.js/js/player2/js/controls/PlayButton.js"></script>
-    <script type="text/javascript" src="Ayamel.js/js/player2/js/controls/TimeCode.js"></script>
-    <script type="text/javascript" src="Ayamel.js/js/player2/js/controls/VolumeSlider.js"></script>
-
-    <script type="text/javascript" src="Ayamel.js/js/player2/js/plugins/brightcove.js"></script>
-
-    <script type="text/javascript" src="Caption-Renderer/caption-renderer.js"></script>
-    <script type="text/javascript" src="TimedText/TimedText.js"></script>
-    <script type="text/javascript" src="TimedText/TextTrack.js"></script>
-    <script type="text/javascript" src="TimedText/TextTrackCue.js"></script>
-    <script type="text/javascript" src="TimedText/WebVTT.js"></script>
-
-    <link rel="stylesheet" href="Ayamel.js/js/player2/css/player2.css"/>
+    <script type="text/javascript" src="javascripts/mustache.js"></script>
+    
     <link rel="stylesheet" href="stylesheets/bootstrap.min.css"/>
     <link rel="stylesheet" href="stylesheets/font-awesome.css"/>
 </head>
 <body>
 
+<link rel="stylesheet" href="stylesheets/content.css"/>
+<link rel="stylesheet" href="stylesheets/annotations.css"/>
+<link rel="stylesheet" href="Ayamel.js/js/player2/css/player2.css"/>
+
+<script language="JavaScript" type="text/javascript" src="http://admin.brightcove.com/js/BrightcoveExperiences.js"></script>
+
+<script type="text/javascript" src="Ayamel.js/js/async.js"></script>
+<script type="text/javascript" src="Ayamel.js/js/Resource.js"></script>
+<script type="text/javascript" src="Ayamel.js/js/swfobject.js"></script>
+
+<!-- Caption rendering and timed text -->
+<script type="text/javascript" src="Caption-Renderer/caption-renderer.js"></script>
+<script type="text/javascript" src="TimedText/TimedText.js"></script>
+<script type="text/javascript" src="TimedText/TextTrack.js"></script>
+<script type="text/javascript" src="TimedText/TextTrackCue.js"></script>
+<script type="text/javascript" src="TimedText/WebVTT.js"></script>
+
+<script type="text/javascript" src="Ayamel.js/js/player2/js/Ayamel.js"></script>
+<script type="text/javascript" src="Ayamel.js/js/player2/js/AnimationHandler.js"></script>
+<script type="text/javascript" src="Ayamel.js/js/player2/js/AyamelPlayer.js"></script>
+<script type="text/javascript" src="Ayamel.js/js/player2/js/CaptionTrackLoader.js"></script>
+<script type="text/javascript" src="Ayamel.js/js/player2/js/ControlBar.js"></script>
+<script type="text/javascript" src="Ayamel.js/js/player2/js/FullScreenHandler.js"></script>
+<script type="text/javascript" src="Ayamel.js/js/player2/js/KeyBinder.js"></script>
+<script type="text/javascript" src="Ayamel.js/js/player2/js/LangCodes.js"></script>
+<script type="text/javascript" src="Ayamel.js/js/player2/js/MediaPlayer.js"></script>
+<script type="text/javascript" src="Ayamel.js/js/player2/js/Mobile.js"></script>
+<script type="text/javascript" src="Ayamel.js/js/player2/js/ProgressBar.js"></script>
+<script type="text/javascript" src="Ayamel.js/js/player2/js/controls/CaptionsMenu.js"></script>
+<script type="text/javascript" src="Ayamel.js/js/player2/js/controls/FullScreenButton.js"></script>
+<script type="text/javascript" src="Ayamel.js/js/player2/js/controls/PlayButton.js"></script>
+<script type="text/javascript" src="Ayamel.js/js/player2/js/controls/RateSlider.js"></script>
+<script type="text/javascript" src="Ayamel.js/js/player2/js/controls/SliderBar.js"></script>
+<script type="text/javascript" src="Ayamel.js/js/player2/js/controls/TimeCode.js"></script>
+<script type="text/javascript" src="Ayamel.js/js/player2/js/controls/VolumeSlider.js"></script>
+<script type="text/javascript" src="Ayamel.js/js/player2/js/plugins/brightcove.js"></script>
+<script type="text/javascript" src="Ayamel.js/js/player2/js/plugins/flashVideo.js"></script>
+<script type="text/javascript" src="Ayamel.js/js/player2/js/plugins/html5Video.js"></script>
+<script type="text/javascript" src="Ayamel.js/js/player2/js/plugins/html5Audio.js"></script>
+<script type="text/javascript" src="Ayamel.js/js/player2/js/plugins/youtube.js"></script>
+
+<!-- Translation Engines -->
+<script type="text/javascript" src="javascripts/Translate.js/TranslationEngine.js"></script>
+<script type="text/javascript" src="javascripts/Translate.js/TextTranslator.js"></script>
+<script type="text/javascript" src="javascripts/Translate.js/ArcliteTranslationEngine.js"></script>
+<script type="text/javascript" src="javascripts/Translate.js/GoogleTranslationEngine.js"></script>
+<script type="text/javascript" src="javascripts/Translate.js/WordReferenceTranslationEngine.js"></script>
+
+<!-- Content rendering -->
+<script type="text/javascript" src="javascripts/BoxDrawingCanvas.js"></script>
+
+<script type="text/javascript" src="javascripts/contentRendering/AdditionalDocumentLoader.js"></script>
+<script type="text/javascript" src="javascripts/contentRendering/ContentLayoutManager.js"></script>
+<script type="text/javascript" src="javascripts/contentRendering/ContentRenderer.js"></script>
+<script type="text/javascript" src="javascripts/contentRendering/TranscriptDisplay.js"></script>
+<script type="text/javascript" src="javascripts/contentRendering/ImageRenderer.js"></script>
+<script type="text/javascript" src="javascripts/contentRendering/TextRenderer.js"></script>
+<script type="text/javascript" src="javascripts/contentRendering/VideoRenderer.js"></script>
+
+<script type="text/javascript" src="javascripts/annotating/ImageAnnotation.js"></script>
+<script type="text/javascript" src="javascripts/annotating/TextAnnotation.js"></script>
+<script type="text/javascript" src="javascripts/annotating/AnnotationManifest.js"></script>
+<script type="text/javascript" src="javascripts/annotating/ImageAnnotator.js"></script>
+<script type="text/javascript" src="javascripts/annotating/TextAnnotator.js"></script>
+<script type="text/javascript" src="javascripts/annotating/AnnotationLoader.js"></script>
+
 <div class="container">
-    <div id="container"></div>
+    This is a test
+
+    <div id="player"></div>
 </div>
 
+<script type="text/javascript" src="javascripts/contentRendering/TranscriptPlayer.js"></script>
+
 <script type="text/javascript">
-
     $(function() {
-
-        var resource = {
-            "id": "dc540ea8-f806-6b73-23d1-5fc7c87af168",
-            "categories": [
-                "Education"
-            ],
-            "dateModified": "2013-04-13T18:08:06.814Z",
-            "description": "",
-            "keywords": "",
-            "language": "en",
-            "status": "awaiting content",
-            "title": "Come and Get It",
-            "type": "video",
-            "content": {
-                "files": [
-                    {
-                        "streamUri": "brightcove://1644660342001",
-                        "mime": "video/brightcove",
-                        "representation": "original",
-                        "quality": "1"
-                    }
-                ]
-            },
-            "_id": "dc540ea8-f806-6b73-23d1-5fc7c87af168",
-            "_rev": "4-5e9042ac47758a4c6fae5259247e1efd"
-        };
-
-        var captions = [
-            {
-                "id": "02c3a9e9-bcc3-14b9-4be5-46448ca4a74a",
-                "categories": [],
-                "dateModified": "2013-04-13T18:08:59.588Z",
-                "description": "",
-                "keywords": "subtitles",
-                "language": "fr",
-                "status": "awaiting content",
-                "title": "Transcription",
-                "type": "text",
-                "content": {
-                    "files": [
-                        {
-                            "downloadUri": "https://s3.amazonaws.com/ayamel/de3b50d0865fbaa0c7ceebd044bd9ba5.vtt",
-                            "mime": "text/vtt",
-                            "representation": "original",
-                            "quality": "1"
-                        }
-                    ]
-                },
-                "_id": "02c3a9e9-bcc3-14b9-4be5-46448ca4a74a",
-                "_rev": "2-ad3ffeb43de9291e667dbdd09d286cec"
-            }
-        ];
-
-        window.player = new Ayamel.classes.AyamelPlayer({
-            resource: resource,
-            $holder: $("#container"),
-            captionTracks: captions
-        });
+        var url1 = "http://localhost:9005/api/v1/resources/fbe72e8a-468b-f0f7-286e-0507317cba51",
+            url2 = "http://localhost:9005/api/v1/resources/f0883218-b0a0-da9a-2577-04fbc644c03f";
+        ResourceLibrary.load(url1, function (resource1) {
+            ResourceLibrary.load(url2, function (resource2) {
+                window.transcriptPlayer = new TranscriptPlayer({
+                    captionTracks: [resource1, resource2],
+                    $holder: $("#player")
+                });
+            });
+        })
     });
 </script>
-
 
 </body>
 </html>
