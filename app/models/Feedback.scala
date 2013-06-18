@@ -27,7 +27,7 @@ case class Feedback(id: Pk[Long], userId: Long, category: String, description: S
 
   def getErrorInfo: (String, String) = {
     val pattern = "^Error Code: (.*), Description: (.*)$".r
-    description match {
+    description.replaceAll("\\n", "") match {
       case pattern(errorCode, errorDescription) => (errorCode, errorDescription)
       case _ => ("error", "error")
     }
@@ -35,7 +35,7 @@ case class Feedback(id: Pk[Long], userId: Long, category: String, description: S
 
   def getProblemInfo: (String, String, String) = {
     val pattern = "^Problem: (.*), Reproduce: (.*), User Agent: (.*)$".r
-    description match {
+    description.replaceAll("\\n", "") match {
       case pattern(problem, reproduce, userAgent) => (problem, reproduce, userAgent)
       case _ => ("error", "error", "error")
     }
@@ -43,7 +43,7 @@ case class Feedback(id: Pk[Long], userId: Long, category: String, description: S
 
   def getSuggestionInfo: String = {
     val pattern = "^Feature: (.*)$".r
-    description match {
+    description.replaceAll("\\n", "") match {
       case pattern(suggestion) => suggestion
       case _ => "error"
     }
@@ -51,7 +51,7 @@ case class Feedback(id: Pk[Long], userId: Long, category: String, description: S
 
   def getThoughtInfo: (String, String, String, String) = {
     val pattern = "^Navigate: (.*), Find: (.*), Useful: (.*), Comments: (.*)$".r
-    description match {
+    description.replaceAll("\\n", "") match {
       case pattern(navigate, find, useful, comments) => (navigate, find, useful, comments)
       case _ => ("error", "error", "error", "error")
     }

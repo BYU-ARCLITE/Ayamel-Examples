@@ -37,7 +37,7 @@ object ContentController extends Controller {
 
           // A user can get the JSON if he can see the content or has provided the auth key (sharing)
             val authKey = request.queryString.get("authKey").getOrElse("")
-            if (content.isVisibleBy(user) || (content.shareability != Content.shareability.notShareable && content.authKey == authKey))
+            if (content.isVisibleBy(user) || content.shareability != Content.shareability.notShareable && content.authKey == authKey)
               Ok(content.toJson)
             else
               Forbidden
@@ -90,8 +90,12 @@ object ContentController extends Controller {
           val url = prepareUrl(data("url")(0))
           val mime = ResourceHelper.getMimeFromUri(url)
 
+          // TODO: Languages
+          val languages = List("eng")
+
           // Create the content
-          val info = ContentDescriptor(title, description, keywords, categories, url, mime, labels = labels)
+          val info = ContentDescriptor(title, description, keywords, categories, url, mime, labels = labels,
+            languages = languages)
           Async {
             ContentManagement.createContent(info, user, contentType).map(content => {
               Redirect(routes.ContentController.view(content.id.get)).flashing("success" -> "Content added")
@@ -119,6 +123,9 @@ object ContentController extends Controller {
           val categories = data.get("categories").map(_.toList).getOrElse(Nil)
           val labels = data.get("labels").map(_.toList).getOrElse(Nil)
 
+          // TODO: Languages
+          val languages = List("eng")
+
           Async {
             // Upload the file
             val file = request.body.file("file").get
@@ -126,10 +133,11 @@ object ContentController extends Controller {
               url =>
 
               // Create the content
-                val info = ContentDescriptor(title, description, keywords, categories, url, file.contentType.get, labels = labels)
+                val info = ContentDescriptor(title, description, keywords, categories, url, file.contentType.get,
+                  labels = labels, languages = languages)
                 ContentManagement.createContent(info, user, contentType).map {
                   content =>
-                    Redirect(routes.ContentController.view(content.id.get)) flashing ("success" -> "Content added")
+                    Redirect(routes.ContentController.view(content.id.get)).flashing("success" -> "Content added")
                 }
             }
           }

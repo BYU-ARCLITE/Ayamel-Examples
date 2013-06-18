@@ -39,11 +39,13 @@ object CaptionAider extends Controller {
         ContentController.getContent(contentId) {
           content =>
 
+            // TODO: Handle updating the information
+
             val params = request.body.dataParts.mapValues(_(0))
             val mime = params("mime")
             val name = params("name")
             val label = params("label")
-            val language = params("language")
+            val languages = List(params("language"))
             val kind = params("kind")
             val data = params("data")
             val stream = new ByteArrayInputStream(data.getBytes)
@@ -58,7 +60,7 @@ object CaptionAider extends Controller {
                   url =>
 
                   // Create subtitle (subject) resource
-                    ResourceHelper.createResourceWithUri(label, "", kind, Nil, "text", url, mime, language).flatMap {
+                    ResourceHelper.createResourceWithUri(label, "", "", Nil, "text", url, mime, languages, Map("kind" -> kind)).flatMap {
                       resource =>
                         val subjectId = (resource \ "id").as[String]
 

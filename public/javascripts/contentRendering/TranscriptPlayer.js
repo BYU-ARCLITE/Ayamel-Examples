@@ -7,13 +7,11 @@
  */
 var TranscriptPlayer = (function () {
 
-    // TODO: Adding listeners to the DOM
-    // TODO: Sync button
     // TODO: Resizing
 
     var template =
         '<div class="transcriptDisplay">' +
-            '<select></select>' +
+            '<div class="form-inline"><select></select> <button type="button" class="btn" data-toggle="button" title="Sync with media"><i class="icon-refresh"></i></button></div>' +
             '<div></div>' +
         '</div>';
 
@@ -52,11 +50,13 @@ var TranscriptPlayer = (function () {
         var _this = this;
         var i;
         var $select;
+        var $button;
         var $transcriptContainer;
 
         // Create the element
-        $select = this.$element.children("select").html("");
-        $transcriptContainer = this.$element.children("div").html("");
+        $select = this.$element.find("select").html("");
+        $button = this.$element.find("button");
+        $transcriptContainer = this.$element.children("div:last-child").html("");
 
         // Add the tracks
         this.cueMap = {};
@@ -64,6 +64,16 @@ var TranscriptPlayer = (function () {
             $select.append(Mustache.to_html(optionTemplate, {index: i, name: this.tracks[i].label}));
             $transcriptContainer.append(renderTranscript.call(this, i));
         }
+
+        // Set up the sync button
+        if (this.syncButton) {
+            $button.button('toggle');
+            $button[0].removeEventListener("click");
+            $button[0].addEventListener("click", function() {
+                _this.sync = !$(this).hasClass("active");
+            });
+        } else
+            $button.remove();
 
         // Set up changing
         $select[0].removeEventListener("change");
@@ -82,25 +92,39 @@ var TranscriptPlayer = (function () {
         this.tracks = [];
         this.activeCues = [];
         this.filter = args.filter || function(){};
+        this.sync = this.syncButton = args.syncButton || false;
+
 
         Object.defineProperties(this, {
             currentTime: {
                 set: function (value) {
                     var time = Number(value);
 
-                    // Remove highlight
-                    _this.activeCues.forEach(function ($cue) {
-                        $cue.removeClass("active");
-                    });
-                    _this.activeCues = [];
+                    // Check the active cues Remove highlight
+                    _this.activeCues = _this.activeCues.map(function (data) {
+                        if (data[1].startTime > time || data[1].endTime < time) {
+                            data[0].removeClass("active");
+                            return null;
+                        }
+                        return data;
+                    }).filter(function(d){return !!d;});
 
                     // Highlight any active cues
                     this.tracks[activeTrack].cues.forEach(function (cue) {
                         if (cue.startTime <= time && cue.endTime >= time) {
                             var id = cue.track.cues.indexOf(cue);
                             var $cue = _this.cueMap[activeTrack][id];
-                            $cue.addClass("active");
-                            _this.activeCues.push($cue);
+                            if (!$cue.hasClass("active")) {
+                                $cue.addClass("active");
+                                _this.activeCues.push([$cue, cue]);
+
+                                // Scroll
+                                if (_this.sync) {
+                                    $cue.parent()[0].scrollTop = 0;
+                                    var top = $cue.offset().top - $cue.parent().offset().top;
+                                    $cue.parent()[0].scrollTop = top - 20;
+                                }
+                            }
                         }
                     });
                 }

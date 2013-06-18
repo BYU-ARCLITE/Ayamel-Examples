@@ -9,15 +9,6 @@
     }
 }
 
-@captionTrackUrl = @{
-    if (course.isDefined && user.canEdit(course.get)) {
-        val courseQuery = "?course=" + course.get.id.get
-        routes.DocumentManager.addCaptionTrack(content.id.get).toString() + courseQuery
-    } else {
-        routes.DocumentManager.addCaptionTrack(content.id.get).toString()
-    }
-}
-
 @if(true) {
     @if(content.contentType == 'video || content.contentType == 'audio) {
         <div id="captionTrackModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="captionTrackModalLabel" aria-hidden="true">
@@ -28,37 +19,14 @@
             <div class="modal-body">
 
                 <p>
-                    You can add captions with the CaptionAider tool.
+                    Add or edit captions with
+                    <a href="@routes.CaptionAider.view(content.id.get, course.map(_.id.get).getOrElse(0))" class="btn btn-yellow">CaptionAider</a>
                 </p>
-                <p><a href="@routes.CaptionAider.view(content.id.get, course.map(_.id.get).getOrElse(0))" class="btn btn-yellow">Add captions with CaptionAider</a></p>
 
                 <hr>
-                <p>
-                    You can also upload a <code>.vtt</code> file to add time-based captions.
-                </p>
 
-                <form class="form-horizontal" id="captionTrackForm" method="post" enctype="multipart/form-data" action="@captionTrackUrl">
-                    <div class="control-group">
-                        <label class="control-label" for="captionTrackTitle">Title</label>
-                        <div class="controls">
-                            <input type="text" id="captionTrackTitle" name="title" placeholder="Title">
-                        </div>
-                    </div>
-                    <div class="control-group">
-                        <label class="control-label" for="captionTrackLanguage">Language</label>
-                        <div class="controls">
-                            <input type="text" id="captionTrackLanguage" name="language" placeholder="Language (2 letter code)">
-                        </div>
-                    </div>
-                    <div class="control-group">
-                        <label class="control-label" for="file">File</label>
-                        <div class="controls">
-                            <input type="file" id="file" name="file">
-                        </div>
-                    </div>
-                    <input type="submit" style="position: absolute; left: -9999px; width: 1px; height: 1px;"/>
-                </form>
-
+                <p>TODO: Publish caption tracks</p>
+                <!--TODO: Publish caption tracks-->
             </div>
             <div class="modal-footer">
                 <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
@@ -109,7 +77,6 @@
                 $("#captionTrackForm").submit();
             });
 
-            var url = "@resourceLibraryUrl/@content.resourceId";
             var template =
                 '<tr>' +
                     '<td>{{title}}</td>' +
@@ -119,7 +86,7 @@
             var publishButtonTemplate = '<a href="{{#pr}}#{{/pr}}{{^pr}}{{publishUrl}}{{/pr}}" class="btn {{#pr}}disabled{{/pr}}">Publish</a>';
             var acceptButtonTemplate = '<a href="{{acceptUrl}}" class="btn">Accept</a>';
 
-            ResourceLibrary.load(url, function(resource) {
+            ResourceLibrary.load("@content.resourceId", function(resource) {
                 var $tbody = $("#existingAnnotations").children("tbody");
                 var owner = @content.isEditableBy(user);
                 var courseId = @course.map(_.id.get).getOrElse(0);

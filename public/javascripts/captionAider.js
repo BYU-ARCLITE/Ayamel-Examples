@@ -1,6 +1,6 @@
 $(function() {
-    function renderCue(cue) {
-        return captionEditor.make(cue);
+    function renderCue(renderedCue, area, kind) {
+        return captionEditor.make(renderedCue, area, kind);
     }
 
     // Render the content
@@ -49,6 +49,13 @@ $(function() {
                 renderer: renderer,
                 timeline: timeline
             });
+
+            // Check for unsaved tracks before leaving
+            window.addEventListener('beforeunload',function(e){
+                if(!commandStack.saved){
+                    return "You have unsaved tracks. Your unsaved changes will be lost.";
+                }
+            }, false);
 
             window.addEventListener('resize',function(){
                 "use strict";
@@ -288,6 +295,7 @@ $(function() {
                                 type: "post",
                                 success: function (data) {
                                     alert("Saved Successfully");
+                                    commandStack.saved = true;
                                 }
                             })
                         }

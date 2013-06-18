@@ -8,7 +8,8 @@ import ExecutionContext.Implicits.global
 
 
 case class ContentDescriptor(title: String, description: String, keywords: String, categories: List[String],
-                             url: String, mime: String, thumbnail: Option[String] = None, labels: List[String] = Nil)
+                             url: String, mime: String, thumbnail: Option[String] = None, labels: List[String] = Nil,
+                             languages: List[String])
 
 /**
  * This service helps with the creation and management of content objects and their corresponding resources.
@@ -55,7 +56,7 @@ object ContentManagement {
   def createVideo(info: ContentDescriptor, owner: User): Future[Content] = {
     // Create the resource
     ResourceHelper.createResourceWithUri(info.title, info.description, info.keywords, info.categories, "video",
-      info.url, info.mime).map(resource => {
+      info.url, info.mime, info.languages).map(resource => {
 
       val resourceId = (resource \ "id").as[String]
 
@@ -79,7 +80,7 @@ object ContentManagement {
   def createAudio(info: ContentDescriptor, owner: User): Future[Content] = {
     // Create the resource
     ResourceHelper.createResourceWithUri(info.title, info.description, info.keywords, info.categories, "audio",
-      info.url, info.mime).map(resource => {
+      info.url, info.mime, info.languages).map(resource => {
 
       val resourceId = (resource \ "id").as[String]
 
@@ -99,7 +100,7 @@ object ContentManagement {
   def createText(info: ContentDescriptor, owner: User): Future[Content] = {
     // Create the resource
     ResourceHelper.createResourceWithUri(info.title, info.description, info.keywords, info.categories, "text",
-      info.url, info.mime).map(resource => {
+      info.url, info.mime, info.languages).map(resource => {
 
       val resourceId = (resource \ "id").as[String]
 
@@ -119,7 +120,7 @@ object ContentManagement {
   def createImage(info: ContentDescriptor, owner: User): Future[Content] = {
     // Create the resource
     ResourceHelper.createResourceWithUri(info.title, info.description, info.keywords, info.categories, "image",
-      info.url, info.mime).map(resource => {
+      info.url, info.mime, info.languages).map(resource => {
 
       val resourceId = (resource \ "id").as[String]
 

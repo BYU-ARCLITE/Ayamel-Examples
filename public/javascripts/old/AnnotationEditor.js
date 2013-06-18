@@ -348,8 +348,7 @@ var AnnotationEditor = (function() {
         if (docId.length > 0) {
 
             // Load the annotation document
-            var url = resourceLibraryUrl + "/" + docId;
-            ResourceLibrary.load(url, function (resource) {
+            ResourceLibrary.load(docId, function (resource) {
                 docUrl = resource.content.files[0].downloadUri;
                 SimpleAnnotator.load(docUrl, function(manifest) {
                     callback(manifest);
@@ -392,8 +391,7 @@ var AnnotationEditor = (function() {
             contentType = "text";
 
             // Load all the transcripts
-            var url = resourceLibraryUrl + "/" + content.resourceId;
-            ResourceLibrary.load(url, function (resource) {
+            ResourceLibrary.load(content.resourceId, function (resource) {
                 resource.getTranscripts(function (transcripts) {
 
                     // Check if we are loading an annotation doc

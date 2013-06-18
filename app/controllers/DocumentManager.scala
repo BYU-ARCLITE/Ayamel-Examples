@@ -20,54 +20,54 @@ import models.Course
  */
 object DocumentManager extends Controller {
 
-  val subtitleExtentionMimes = Map(
-    "vtt" -> "text/vtt",
-    "srt" -> "text/srt",
-    "ttml" -> "application/ttml+xml"
-  )
-
-  def addCaptionTrack(id: Long) = Authentication.authenticatedAction(parse.multipartFormData) {
-    implicit request =>
-      implicit user =>
-        ContentController.getContent(id) {
-          content =>
-
-            if (content.contentType == 'video || content.contentType == 'audio) {
-
-              // Get the mime type
-              val file = request.body.file("file").get
-              val ext = file.filename.substring(file.filename.lastIndexOf(".") + 1)
-              val mime = subtitleExtentionMimes(ext)
-
-              // Get the title and language
-              val title = request.body.dataParts("title")(0)
-              val language = request.body.dataParts("language")(0)
-
-              Async {
-                // Upload the file
-                FileUploader.uploadFile(file.ref.file, FileUploader.uniqueFilename(file.filename), mime).flatMap {
-                  url =>
-
-                    // Create subtitle (subject) resource
-                    ResourceHelper.createResourceWithUri(title, "", "subtitles", Nil, "text", url, mime, language).flatMap {
-                      resource =>
-                        val subjectId = (resource \ "id").as[String]
-
-                        AdditionalDocumentAdder.add(content, subjectId, 'captionTrack) {
-                          course =>
-                            val route =
-                              if (course.isDefined) routes.CourseContent.viewInCourse(content.id.get, course.get.id.get)
-                              else routes.ContentController.view(content.id.get)
-                            Redirect(route).flashing("info" -> "Caption track added")
-                        }
-                    }
-                }
-              }
-
-            } else
-              Errors.forbidden
-        }
-  }
+//  val subtitleExtentionMimes = Map(
+//    "vtt" -> "text/vtt",
+//    "srt" -> "text/srt",
+//    "ttml" -> "application/ttml+xml"
+//  )
+//
+//  def addCaptionTrack(id: Long) = Authentication.authenticatedAction(parse.multipartFormData) {
+//    implicit request =>
+//      implicit user =>
+//        ContentController.getContent(id) {
+//          content =>
+//
+//            if (content.contentType == 'video || content.contentType == 'audio) {
+//
+//              // Get the mime type
+//              val file = request.body.file("file").get
+//              val ext = file.filename.substring(file.filename.lastIndexOf(".") + 1)
+//              val mime = subtitleExtentionMimes(ext)
+//
+//              // Get the title and language
+//              val title = request.body.dataParts("title")(0)
+//              val language = request.body.dataParts("language")(0)
+//
+//              Async {
+//                // Upload the file
+//                FileUploader.uploadFile(file.ref.file, FileUploader.uniqueFilename(file.filename), mime).flatMap {
+//                  url =>
+//
+//                    // Create subtitle (subject) resource
+//                    ResourceHelper.createResourceWithUri(title, "", "subtitles", Nil, "text", url, mime, language).flatMap {
+//                      resource =>
+//                        val subjectId = (resource \ "id").as[String]
+//
+//                        AdditionalDocumentAdder.add(content, subjectId, 'captionTrack) {
+//                          course =>
+//                            val route =
+//                              if (course.isDefined) routes.CourseContent.viewInCourse(content.id.get, course.get.id.get)
+//                              else routes.ContentController.view(content.id.get)
+//                            Redirect(route).flashing("info" -> "Caption track added")
+//                        }
+//                    }
+//                }
+//              }
+//
+//            } else
+//              Errors.forbidden
+//        }
+//  }
 
   def addAnnotations(id: Long) = Authentication.authenticatedAction(parse.multipartFormData) {
     implicit request =>
@@ -79,13 +79,16 @@ object DocumentManager extends Controller {
             val mime = "application/json"
             val title = request.body.dataParts("title")(0)
 
+            // TODO: Handle the language of the annotations
+            val languages = List("eng")
+
             Async {
               // Upload the file
               FileUploader.uploadFile(file.ref.file, FileUploader.uniqueFilename(file.filename), mime).flatMap {
                 url =>
 
                 // Create subtitle (subject) resource
-                  ResourceHelper.createResourceWithUri(title, "", "annotations", Nil, "text", url, mime).flatMap {
+                  ResourceHelper.createResourceWithUri(title, "", "annotations", Nil, "text", url, mime, languages).flatMap {
                     resource =>
                       val subjectId = (resource \ "id").as[String]
                       AdditionalDocumentAdder.add(content, subjectId, 'annotations) {
@@ -120,8 +123,11 @@ object DocumentManager extends Controller {
             val annotations = request.body("annotations")(0)
             val stream = new ByteArrayInputStream(annotations.getBytes("UTF-8"))
             val length = annotations.getBytes("UTF-8").size // Don't use string length. Breaks if there are 2-byte characters
-          val mime = "application/json"
+            val mime = "application/json"
             val filename = request.body.get("filename").map(_(0)).getOrElse(FileUploader.uniqueFilename(annotations + ".json"))
+
+            // TODO: Handle the language of the annotations
+            val languages = List("eng")
 
             Async {
               // Upload the annotations
@@ -132,7 +138,7 @@ object DocumentManager extends Controller {
                 // If there is a title defined then this is a new annotation document
                   if (title.isDefined) {
                     // Create subtitle (subject) resource
-                    ResourceHelper.createResourceWithUri(title.get, "", "annotations", Nil, "text", url, mime).flatMap {
+                    ResourceHelper.createResourceWithUri(title.get, "", "annotations", Nil, "text", url, mime, languages).flatMap {
                       resource =>
                         val subjectId = (resource \ "id").as[String]
 
