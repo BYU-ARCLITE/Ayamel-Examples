@@ -251,6 +251,7 @@ var VideoRenderer = (function () {
             var transcriptPlayer = new TranscriptPlayer({
                 captionTracks: args.captionTracks,
                 $holder: args.layout.$transcript,
+                syncButton: true,
                 filter: function(cue, $cue) {
                     // Attach the translator
                     if (args.translator) {
@@ -279,37 +280,6 @@ var VideoRenderer = (function () {
             });
 
             return transcriptPlayer;
-
-
-//            var transcriptDisplay = new TranscriptDisplay({
-//                transcripts: args.transcripts,
-//                $holder: args.layout.$transcript,
-//                filter: function (cue, $cue) {
-//
-//                    // Attach the translator
-//                    if (args.translator) {
-//                        args.translator.attach($cue[0], cue.track.language, "en", {
-//                            captionTrackId: determineTranscriptFromCue(args.transcripts, cue),
-//                            cueIndex: cue.track.cues.indexOf(cue)
-//                        });
-//                    }
-//
-//                    // Add annotations
-//                    if (args.annotator) {
-//                        args.annotator.annotate($cue);
-//                    }
-//                }
-//            });
-//            transcriptDisplay.bindToMediaPlayer(args.videoPlayer);
-//
-//            transcriptDisplay.addEventListener("transcriptionTabChange", function (event) {
-//                console.log("Transcription tab change");
-//                console.log(event);
-//            });
-//            transcriptDisplay.addEventListener("transcriptionCueClick", function (event) {
-//                ActivityStreams.predefined.transcriptCueClick(event.transcript.id, event.cueIndex);
-//            });
-//            return transcriptDisplay;
         }
         return null;
     }

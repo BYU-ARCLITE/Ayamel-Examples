@@ -34,6 +34,12 @@ var TextTranslator = (function () {
     TextTranslator.prototype.attach = function attach(DOMNode, srcLang, destLang, eventData) {
         var _this = this;
 
+        // Because translation engines look for two-letter codes, make sure that's what we are dealing with
+        if (srcLang.length === 3)
+            srcLang = Ayamel.utils.downgradeLangCode(srcLang);
+        if (destLang.length === 3)
+            destLang = Ayamel.utils.downgradeLangCode(destLang);
+
         function translate(text) {
             // Translate it if it's not empty
             if (text !== '') {

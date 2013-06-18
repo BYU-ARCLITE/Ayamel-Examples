@@ -147,8 +147,7 @@
             });
 
             // Load metadata
-            var resourceUrl = "@resourceLibraryUrl/@content.resourceId";
-            ResourceLibrary.load(resourceUrl, function(resource) {
+            ResourceLibrary.load("@content.resourceId", function(resource) {
                 $("#title").val(resource.title);
                 $("#description").val(resource.description);
                 $("#keywords").val(resource.keywords);

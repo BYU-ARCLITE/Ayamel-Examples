@@ -24,19 +24,19 @@
 
 @main("Ayamel - " + content.name, moreStyles) {
 
-    <!-- Ayamel scripts -->
-    <script src="@routes.Assets.at("Ayamel.js/js/async.js")" type="text/javascript"></script>
-    <script src="@routes.Assets.at("Ayamel.js/js/annotator.js")" type="text/javascript"></script>
-    <script src="@routes.Assets.at("Ayamel.js/js/Resource.js")" type="text/javascript"></script>
-
-    <script type="text/javascript" src="@routes.Assets.at("Ayamel.js/js/player2/js/Ayamel.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("Ayamel.js/js/player2/js/Mobile.js")"></script>
-
     <!-- Timed text -->
     <script type="text/javascript" src="@routes.Assets.at("TimedText/TimedText.js")"></script>
     <script type="text/javascript" src="@routes.Assets.at("TimedText/TextTrack.js")"></script>
     <script type="text/javascript" src="@routes.Assets.at("TimedText/TextTrackCue.js")"></script>
     <script type="text/javascript" src="@routes.Assets.at("TimedText/WebVTT.js")"></script>
+
+    <!-- Ayamel scripts -->
+    <script src="@routes.Assets.at("Ayamel.js/js/async.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.at("Ayamel.js/js/annotator.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.at("Ayamel.js/js/Resource.js")" type="text/javascript"></script>
+    <script type="text/javascript" src="@routes.Assets.at("Ayamel.js/js/player2/js/Ayamel.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("Ayamel.js/js/player2/js/CaptionTrackLoader.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("Ayamel.js/js/player2/js/Mobile.js")"></script>
 
     <!-- Content rendering -->
     <script type="text/javascript" src="@routes.Assets.at("javascripts/mustache.js")"></script>
@@ -45,7 +45,7 @@
     <script type="text/javascript" src="@routes.Assets.at("javascripts/contentRendering/AdditionalDocumentLoader.js")"></script>
     <script type="text/javascript" src="@routes.Assets.at("javascripts/contentRendering/ContentLayoutManager.js")"></script>
     <script type="text/javascript" src="@routes.Assets.at("javascripts/contentRendering/ContentRenderer.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/contentRendering/TranscriptDisplay.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/contentRendering/TranscriptPlayer.js")"></script>
     <script type="text/javascript" src="@routes.Assets.at("javascripts/contentRendering/ImageRenderer.js")"></script>
     <script type="text/javascript" src="@routes.Assets.at("javascripts/contentRendering/TextRenderer.js")"></script>
     <script type="text/javascript" src="@routes.Assets.at("javascripts/contentRendering/VideoRenderer.js")"></script>
@@ -68,7 +68,7 @@
         <script type="text/javascript">
             $(function() {
 
-                ContentRenderer.setResourceLibraryUrl("@resourceLibraryUrl");
+                ResourceLibrary.setBaseUrl("@resourceLibraryUrl");
                 var content = @Html(content.toJson.toString());
 
                 var $annotationEditor = $("#annotationEditor");

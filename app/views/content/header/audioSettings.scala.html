@@ -63,7 +63,6 @@
 <script type="text/javascript">
     $(function() {
         var content = @Html(content.toJson.toString());
-        var url = "@resourceLibraryUrl/@content.resourceId";
 
         var captionTracks = [];
         if (content.settings.enabledCaptionTracks) {
@@ -75,7 +74,7 @@
             annotationDocs = content.settings.enabledAnnotationDocuments.split(",");
         }
 
-        ResourceLibrary.load(url, function(resource) {
+        ResourceLibrary.load("@content.resourceId", function(resource) {
 
             var $captionTracks = $("#captionTracks");
             AdditionalDocumentLoader.captionTracks.loadEnablable({

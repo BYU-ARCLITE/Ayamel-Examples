@@ -71,7 +71,7 @@ POST    /content/:id/thumbnail          controllers.ContentEditing.changeThumbna
 GET     /content/:id/edit               controllers.ContentEditing.editImage(id: Long)
 POST    /content/:id/edit               controllers.ContentEditing.saveImageEdits(id: Long)
 GET     /content/:id/makeThumb/:time    controllers.ContentEditing.createThumbnail(id: Long, time: Double)
-POST    /content/:id/addCaptionTrack    controllers.DocumentManager.addCaptionTrack(id: Long)
+#POST    /content/:id/addCaptionTrack    controllers.DocumentManager.addCaptionTrack(id: Long)
 POST    /content/:id/addAnnotations     controllers.DocumentManager.addAnnotations(id: Long)
 GET     /content/:id/annotations        controllers.DocumentManager.editAnnotations(id: Long)
 POST    /content/:id/annotations        controllers.DocumentManager.saveAnnotations(id: Long)

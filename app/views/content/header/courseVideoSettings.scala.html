@@ -75,7 +75,6 @@
 <script type="text/javascript">
     $(function() {
         var content = @Html(content.toJson.toString());
-        var url = "@resourceLibraryUrl/@content.resourceId";
         var coursePrefix = "course_@{course.id.get}:";
 
         var captionTracks = [];
@@ -88,7 +87,7 @@
             annotationDocs = content.settings[coursePrefix + "enabledAnnotationDocuments"].split(",");
         }
 
-        ResourceLibrary.load(url, function(resource) {
+        ResourceLibrary.load("@content.resourceId", function(resource) {
 
             var $captionTracks = $("#courseCaptionTracks");
             AdditionalDocumentLoader.captionTracks.loadEnablable({

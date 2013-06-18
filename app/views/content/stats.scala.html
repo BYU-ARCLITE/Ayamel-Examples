@@ -152,8 +152,7 @@
                 var $this = $(this);
                 var id = $this.text();
                 if (id) {
-                    var url = resourceLibraryUrl + "/" + id;
-                    ResourceLibrary.load(url, function (resource) {
+                    ResourceLibrary.load(id, function (resource) {
                         $this.text(resource.title);
                     });
                 }

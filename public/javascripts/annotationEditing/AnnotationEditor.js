@@ -353,11 +353,41 @@ var AnnotationEditor = (function() {
                             }
                         });
                     } else {
-                        var display = new TranscriptDisplay({
-                            transcripts: args.transcripts,
-                            $holder: _this.$element,
-                            filter: function (cue, $cue) {
-                                setupTextAnnotations(textAnnotator, $cue);
+//                        var display = new TranscriptDisplay({
+//                            transcripts: args.transcripts,
+//                            $holder: _this.$element,
+//                            filter: function (cue, $cue) {
+//                                setupTextAnnotations(textAnnotator, $cue);
+//                            }
+//                        });
+
+
+                        async.map(args.transcripts, function(resource, callback) {
+                            Ayamel.utils.loadCaptionTrack(resource, function(track) {
+                                callback(null, track);
+                            });
+                        }, function(err, captionTracks) {
+
+                            // Keep track on where we were
+                            var visible = $(".transcriptContent:visible")[0];
+                            if (visible) {
+                                var index = $(".transcriptContent").toArray().indexOf(visible);
+                                var scrollTop = visible.scrollTop;
+                            }
+
+                            var player = new TranscriptPlayer({
+                                captionTracks: captionTracks,
+                                $holder: _this.$element,
+                                filter: function(cue, $cue) {
+                                    setupTextAnnotations(textAnnotator, $cue);
+                                }
+                            });
+
+                            // Go back to where we were
+                            if (visible) {
+                                player.activeTranscript = index;
+                                player.$element.find("select").val(index);
+                                $(".transcriptContent:visible")[0].scrollTop = scrollTop;
                             }
                         });
                     }
@@ -534,8 +564,7 @@ var AnnotationEditor = (function() {
             if (docId.length > 0) {
 
                 // Load the annotation document
-                var url = args.resourceLibraryUrl + "/" + docId;
-                ResourceLibrary.load(url, function (resource) {
+                ResourceLibrary.load(docId, function (resource) {
                     var docUrl = resource.content.files[0].downloadUri;
                     AnnotationLoader.load(docUrl, function(manifest) {
                         callback({
@@ -557,8 +586,7 @@ var AnnotationEditor = (function() {
 
         function loadTranscripts(args, callback) {
             if (args.content.contentType === "video" || args.content.contentType === "audio") {
-                var url = args.resourceLibraryUrl + "/" + args.content.resourceId;
-                ResourceLibrary.load(url, function (resource) {
+                ResourceLibrary.load(args.content.resourceId, function (resource) {
                     ContentRenderer.getTranscripts({
                         userId: args.userId,
                         owner: args.owner,

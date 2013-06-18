@@ -22,7 +22,11 @@
 
 @main("Ayamel - " + content.name) {
 
+    @views.html.content.dependencies()
+
     <script type="text/javascript">
+        ResourceLibrary.setBaseUrl("@resourceLibraryUrl");
+
         var coursePrefix = "@course.map(c => "course_" + c.id.get + ":").getOrElse("")";
         $(function() {
             // Register the page for later activity stream calls
@@ -32,8 +36,6 @@
             ActivityStreams.predefined.pageload();
         });
     </script>
-
-    @views.html.content.dependencies()
 
     <!-- OAuth and Cryptography -->
     <script type="text/javascript" src="@routes.Assets.at("javascripts/sha1.js")"></script>
@@ -135,49 +137,7 @@
             <i class="@contentIcons(content.contentType)"></i> @content.name
         </h1>
 
-        <div id="viewMetadataModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="viewMetadataModalLabel" aria-hidden="true">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                <h3 id="viewMetadataModalLabel">Metadata</h3>
-            </div>
-            <div class="modal-body" ng-controller="MetadataCtrl">
-                <table class="table table-bordered pad-top-med">
-                    <tr>
-                        <th>Title</th>
-                        <td>{{title}}</td>
-                    </tr>
-                    <tr>
-                        <th>Description</th>
-                        <td>{{description}}</td>
-                    </tr>
-                    <tr>
-                        <th>Keywords</th>
-                        <td>{{keywords}}</td>
-                    </tr>
-                    <tr>
-                        <th>Categories</th>
-                        <td>{{categories}}</td>
-                    </tr>
-                </table>
-            </div>
-            <div class="modal-footer">
-                <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
-            </div>
-        </div>
-        <script>
-            // The angular controller
-            function MetadataCtrl($scope){
-                var url = "@resourceLibraryUrl/@content.resourceId";
-                ResourceLibrary.load(url, function(resource){
-                    $scope.title = resource.title;
-                    $scope.description = resource.description;
-                    $scope.keywords = resource.keywords;
-                    $scope.categories = resource.categories.join(', ');
-                    //$scope.labels = resource.labels;
-                    $scope.$apply();
-                });
-            }
-        </script>
+        <!-- TODO: Metadata -->
 
         <div id="contentHolder" class="@content.contentType.name"></div>
 
@@ -190,8 +150,7 @@
                     @*["@dataAccess.PlayGraph.playerKey.consumerKey", "@dataAccess.PlayGraph.playerKey.consumerSecret"]*@
                 @*);*@
 
-                // Set up the environment
-                ContentRenderer.setResourceLibraryUrl("@resourceLibraryUrl");
+
 
                 // Render the content
                 var content = [@Html(content.toJson.toString())][0];
@@ -200,7 +159,7 @@
                     content: content,
                     userId: "@user.id.get",
                     owner: @content.isEditableBy(user),
-                    teacher: @course.map(c => user.canEdit(c)).getOrElse(false),
+                    teacher: @course.exists(c => user.canEdit(c)),
                     courseId: @course.map(_.id.get).getOrElse(0),
                     holder: contentHolder,
                     coursePrefix: coursePrefix,
