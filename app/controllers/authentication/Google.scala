@@ -43,7 +43,7 @@ object Google extends Controller {
           val email = userInfo.attributes("email")
 
           val name = firstName + " " + lastName
-          val user = Authentication.getAuthenticatedUser(username, 'google, Some(name), Some(email))
+          val user = Authentication.getAuthenticatedUser(email, 'google, Some(name), Some(email))
 
           if (action == "merge")
             Authentication.merge(user)
