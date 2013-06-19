@@ -18,6 +18,7 @@ object VideoTools {
 
   private val thumbnailTime = Play.configuration.getDouble("media.video.thumbnailTime").get
   private val ffmpeg = Play.configuration.getString("media.video.ffmpeg").get
+  private val ffmpegExists = new File(ffmpeg).exists()
 
   def getTimeCodeFromSeconds(time: Double): String = {
     val seconds = Math.floor((time % 60) * 100) / 100
@@ -39,7 +40,7 @@ object VideoTools {
     Future {
 
       // Check that we are able to get the video
-      if (!ResourceHelper.isBrightcove(videoUrl) && !ResourceHelper.isYouTube(videoUrl)) {
+      if (ffmpegExists && !ResourceHelper.isBrightcove(videoUrl) && !ResourceHelper.isYouTube(videoUrl)) {
 
         // Make a unique file to save the image to
         val filename = "/tmp/" + FileUploader.uniqueFilename("out.jpg")

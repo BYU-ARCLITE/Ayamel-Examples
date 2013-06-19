@@ -66,20 +66,21 @@ var TranscriptPlayer = (function () {
         }
 
         // Set up the sync button
-        if (this.syncButton) {
-            $button.button('toggle');
-            $button[0].removeEventListener("click");
-            $button[0].addEventListener("click", function() {
-                _this.sync = !$(this).hasClass("active");
-            });
-        } else
-            $button.remove();
+        if (!this.inited) {
+            if (this.syncButton) {
+                $button.button('toggle');
+                $button[0].addEventListener("click", function() {
+                    _this.sync = !$(this).hasClass("active");
+                });
+            } else
+                $button.remove();
 
-        // Set up changing
-        $select[0].removeEventListener("change");
-        $select[0].addEventListener("change", function() {
-            _this.activeTranscript = $(this).val();
-        });
+            // Set up changing
+            $select[0].addEventListener("change", function() {
+                _this.activeTranscript = $(this).val();
+            });
+            this.inited = true;
+        }
 
         $holder.html(this.$element);
     }
@@ -88,6 +89,7 @@ var TranscriptPlayer = (function () {
         var _this = this;
         var activeTrack = -1;
 
+        this.inited = false;
         this.$element = $(template);
         this.tracks = [];
         this.activeCues = [];
