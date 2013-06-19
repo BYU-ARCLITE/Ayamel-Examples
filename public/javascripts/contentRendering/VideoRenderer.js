@@ -203,7 +203,8 @@ var VideoRenderer = (function () {
             endTime: args.endTime,
             renderCue: args.renderCue || function (renderedCue, area, kind) { // Check to use a different renderer
                 var node = document.createElement('div');
-                node.appendChild(cue.getCueAsHTML(cue.track.kind === 'subtitles'));
+                var cue = renderedCue.cue;
+                node.appendChild(cue.getCueAsHTML(kind === 'subtitles'));
 
                 // Attach the translator
                 if (args.translator) {
@@ -302,14 +303,23 @@ var VideoRenderer = (function () {
                     // Create the annotator
                     args.annotator = createAnnotator(args);
 
+                    var loaded = false;
+                    function setupTranscriptWithPlayer(args) {
+                        // Make sure that the stuff is defined
+                        if (args.videoPlayer && args.transcriptPlayer && !loaded) {
+                            args.videoPlayer.addEventListener("timeupdate", function() {
+                                args.transcriptPlayer.currentTime = args.videoPlayer.currentTime;
+                            });
+                            loaded = true;
+                        }
+                    }
+
                     // Prepare to create the Transcript when the video player is created
                     args.captionTrackCallback = function(tracks) {
                         args.captionTracks = tracks;
                         args.transcriptPlayer = setupTranscripts(args);
 
-                        args.videoPlayer.addEventListener("timeupdate", function() {
-                            args.transcriptPlayer.currentTime = args.videoPlayer.currentTime;
-                        });
+                        setupTranscriptWithPlayer(args);
 
                         if (args.callback) {
                             args.callback(args);
@@ -319,6 +329,7 @@ var VideoRenderer = (function () {
                     // Set up the video player
                     setupVideoPlayer(args, function (videoPlayer) {
                         args.videoPlayer = videoPlayer;
+                        setupTranscriptWithPlayer(args);
                     });
                 });
             });
