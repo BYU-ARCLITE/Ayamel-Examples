@@ -257,7 +257,7 @@ object Users extends Controller {
         }
   }
 
-  def delete(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
+  def delete(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
         Authentication.enforceRole(User.roles.admin) {

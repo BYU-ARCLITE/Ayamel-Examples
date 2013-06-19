@@ -1,6 +1,6 @@
 $(function() {
-    function renderCue(renderedCue, area, kind) {
-        return captionEditor.make(renderedCue, area, kind);
+    function renderCue(renderedCue, area) {
+        return captionEditor.make(renderedCue, area);
     }
 
     // Render the content

@@ -1,6 +1,6 @@
 package models
 
-import anorm.{NotAssigned, ~, Pk}
+import anorm.{Id, NotAssigned, ~, Pk}
 import dataAccess.sqlTraits.{SQLDeletable, SQLSelectable, SQLSavable}
 import anorm.SqlParser._
 import play.api.db.DB
@@ -59,21 +59,19 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
     // Delete the user's notifications
     Notification.listByUser(this).foreach(_.delete())
 
-    // Delete all linked accounts
-    // TODO: This is potentially an endless loop. Fix it. Issue # 13
-    getAccountLink.map {
-      accountLink =>
-//        accountLink.getUsers.filterNot(_ == this).foreach(_.delete())
-        accountLink.delete()
-    }
-
     // Delete add course requests
     AddCourseRequest.list.filter(_.userId == id.get).foreach(_.delete())
 
     // Delete teacher request
     TeacherRequest.findByUser(this).map(_.delete())
 
-    // Delete this user
+    // Delete all linked accounts
+    getAccountLink.map {
+      accountLink =>
+        if (accountLink.primaryAccount == id.get) {
+          accountLink.userIds.filterNot(_ == id.get).foreach(uid => delete(User.tableName, Id(uid)))
+        }
+    }
     delete(User.tableName, id)
   }
 
@@ -170,10 +168,10 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
     })
 
     // Move the teacher request over if this one doesn't have one.
-    if (TeacherRequest.findByUser(this).isDefined)
-      TeacherRequest.findByUser(user).foreach { _.delete() }
-    else
-      TeacherRequest.findByUser(user).foreach { _.copy(userId = id.get) }
+//    if (TeacherRequest.findByUser(this).isDefined)
+//      TeacherRequest.findByUser(user).foreach { _.delete() }
+//    else
+//      TeacherRequest.findByUser(user).foreach { _.copy(userId = id.get) }
   }
 
   /**
@@ -201,10 +199,10 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
       this.copy(role = newRole, accountLinkId = accountLink.id.get).save
       user.copy(role = newRole, accountLinkId = accountLink.id.get).save
 
-    } else if((id1 != -1 && id2 == -1) || (id1 == -1 && id2 != -1)) { // Case 2
+    } else if(Math.min(id1, id2) == -1) { // Case 2
 
-      // Transfer ownership from this user's primary account to the other user's primary account
-      getAccountLink.map(_.getPrimaryUser).getOrElse(this).consolidateOwnership(
+      // Transfer ownership from the other user's primary account to this one
+      consolidateOwnership(
         user.getAccountLink.map(_.getPrimaryUser).getOrElse(user)
       )
 
