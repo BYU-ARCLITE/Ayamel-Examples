@@ -310,6 +310,10 @@ var VideoRenderer = (function () {
                             args.videoPlayer.addEventListener("timeupdate", function() {
                                 args.transcriptPlayer.currentTime = args.videoPlayer.currentTime;
                             });
+
+                            if (args.callback) {
+                                args.callback(args);
+                            }
                             loaded = true;
                         }
                     }
@@ -321,9 +325,6 @@ var VideoRenderer = (function () {
 
                         setupTranscriptWithPlayer(args);
 
-                        if (args.callback) {
-                            args.callback(args);
-                        }
                     };
 
                     // Set up the video player
