@@ -201,7 +201,7 @@ var VideoRenderer = (function () {
 //            components: components,
             startTime: args.startTime,
             endTime: args.endTime,
-            renderCue: args.renderCue || function (cue) { // Check to use a different renderer
+            renderCue: args.renderCue || function (renderedCue, area, kind) { // Check to use a different renderer
                 var node = document.createElement('div');
                 node.appendChild(cue.getCueAsHTML(cue.track.kind === 'subtitles'));
 
@@ -218,7 +218,7 @@ var VideoRenderer = (function () {
                     args.annotator.annotate($(node));
                 }
 
-                return {node: node};
+                renderedCue.node = node;
             },
             aspectRatio: Ayamel.aspectRatios.hdVideo,
             captionTrackCallback: args.captionTrackCallback
@@ -275,9 +275,7 @@ var VideoRenderer = (function () {
                 ActivityStreams.predefined.transcriptCueClick(event.track.resourceId, id);
             });
 
-            args.videoPlayer.addEventListener("timeupdate", function() {
-                transcriptPlayer.currentTime = args.videoPlayer.currentTime;
-            });
+
 
             return transcriptPlayer;
         }
@@ -308,6 +306,10 @@ var VideoRenderer = (function () {
                     args.captionTrackCallback = function(tracks) {
                         args.captionTracks = tracks;
                         args.transcriptPlayer = setupTranscripts(args);
+
+                        args.videoPlayer.addEventListener("timeupdate", function() {
+                            args.transcriptPlayer.currentTime = args.videoPlayer.currentTime;
+                        });
 
                         if (args.callback) {
                             args.callback(args);

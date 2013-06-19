@@ -60,7 +60,7 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
     Notification.listByUser(this).foreach(_.delete())
 
     // Delete all linked accounts
-    // TODO: This is potentially an endless loop. Fix it
+    // TODO: This is potentially an endless loop. Fix it. Issue # 13
     getAccountLink.map {
       accountLink =>
 //        accountLink.getUsers.filterNot(_ == this).foreach(_.delete())
@@ -142,7 +142,7 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
    * @return The notification
    */
   def sendNotification(message: String): Notification = {
-    // TODO: Possibly send an email as well
+    // TODO: Possibly send an email as well. Issue # 52
     Notification(NotAssigned, this.id.get, message).save
   }
 

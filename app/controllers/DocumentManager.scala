@@ -79,7 +79,7 @@ object DocumentManager extends Controller {
             val mime = "application/json"
             val title = request.body.dataParts("title")(0)
 
-            // TODO: Handle the language of the annotations
+            // TODO: Handle the language of the annotations. Issue # 48
             val languages = List("eng")
 
             Async {
@@ -126,12 +126,12 @@ object DocumentManager extends Controller {
             val mime = "application/json"
             val filename = request.body.get("filename").map(_(0)).getOrElse(FileUploader.uniqueFilename(annotations + ".json"))
 
-            // TODO: Handle the language of the annotations
+            // TODO: Handle the language of the annotations. Issue # 49
             val languages = List("eng")
 
             Async {
               // Upload the annotations
-              // TODO: Somehow make sure that the user isn't overwriting somebody else's annotations
+              // TODO: Somehow make sure that the user isn't overwriting somebody else's annotations. Issue # 50
               FileUploader.uploadStream(stream, filename, length, mime).flatMap {
                 url =>
 

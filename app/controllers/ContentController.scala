@@ -90,7 +90,7 @@ object ContentController extends Controller {
           val url = prepareUrl(data("url")(0))
           val mime = ResourceHelper.getMimeFromUri(url)
 
-          // TODO: Languages
+          // TODO: Languages. Issue # 46
           val languages = List("eng")
 
           // Create the content
@@ -123,7 +123,7 @@ object ContentController extends Controller {
           val categories = data.get("categories").map(_.toList).getOrElse(Nil)
           val labels = data.get("labels").map(_.toList).getOrElse(Nil)
 
-          // TODO: Languages
+          // TODO: Languages. Issue #47
           val languages = List("eng")
 
           Async {
