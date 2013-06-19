@@ -201,16 +201,15 @@ var VideoRenderer = (function () {
 //            components: components,
             startTime: args.startTime,
             endTime: args.endTime,
-            renderCue: args.renderCue || function (renderedCue, area, kind) { // Check to use a different renderer
+            renderCue: args.renderCue || function (renderedCue, area) { // Check to use a different renderer
                 var node = document.createElement('div');
-                var cue = renderedCue.cue;
-                node.appendChild(cue.getCueAsHTML(kind === 'subtitles'));
+                node.appendChild(renderedCue.getCueAsHTML(renderedCue.kind === 'subtitles'));
 
                 // Attach the translator
                 if (args.translator) {
-                    args.translator.attach(node, cue.track.language, "en", {
-                        captionTrackId: determineTranscriptFromCue(args.transcripts, cue),
-                        cueIndex: "" + cue.track.cues.indexOf(cue)
+                    args.translator.attach(node, renderedCue.language, "en", {
+                        captionTrackId: determineTranscriptFromCue(args.transcripts, renderedCue.cue),
+                        cueIndex: "" + renderedCue.cue.track.cues.indexOf(renderedCue.cue)
                     });
                 }
 
