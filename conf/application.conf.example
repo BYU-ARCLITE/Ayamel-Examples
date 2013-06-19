@@ -34,7 +34,7 @@ application.langs="en"
 # By convention, the default datasource is named `default`
 #
 db.default.driver=com.mysql.jdbc.Driver
-db.default.url="jdbc:mysql://localhost/ayamel_examples?characterEncoding=UTF-8"
+db.default.url="jdbc:mysql://localhost/ayamel?characterEncoding=UTF-8"
 db.default.user=root
 db.default.password=root
 
@@ -56,7 +56,7 @@ logger.play=INFO
 # Logger provided to your application:
 logger.application=DEBUG
 
-resourceLibrary.baseUrl="http://ayamel.americancouncils.org/api/v1/resources"
+resourceLibrary.baseUrl="http://ayamel.americancouncils.org/api/v1/"
 
 # Upload engine settings
 uploadEngine="s3"

@@ -282,7 +282,7 @@ object Content extends SQLSelectable[Content] {
     DB.withConnection {
       implicit connection =>
         val sqlQuery = "%" + query + "%"
-        // TODO: Search the resource library metadata
+        // TODO: Search the resource library metadata. Issue # 51
         anorm.SQL("SELECT * from " + tableName + " where name like {query} and visibility = {public}")
           .on('query -> sqlQuery, 'public -> visibility.public).as(simple *)
     }

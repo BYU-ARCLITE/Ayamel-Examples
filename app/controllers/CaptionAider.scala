@@ -39,7 +39,7 @@ object CaptionAider extends Controller {
         ContentController.getContent(contentId) {
           content =>
 
-            // TODO: Handle updating the information
+            // TODO: Handle updating the information. Issue # 45
 
             val params = request.body.dataParts.mapValues(_(0))
             val mime = params("mime")
