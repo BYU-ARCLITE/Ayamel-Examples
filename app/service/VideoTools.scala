@@ -42,22 +42,26 @@ object VideoTools {
       // Check that we are able to get the video
       if (ffmpegExists && !ResourceHelper.isBrightcove(videoUrl) && !ResourceHelper.isYouTube(videoUrl)) {
 
-        // Make a unique file to save the image to
-        val filename = "/tmp/" + FileUploader.uniqueFilename("out.jpg")
-        val file = new File(filename)
+        try {
+          // Make a unique file to save the image to
+          val filename = "/tmp/" + FileUploader.uniqueFilename("out.jpg")
+          val file = new File(filename)
 
-        // Execute ffmpeg to get the frame and wait for it to finish
-        val timeCode = getTimeCodeFromSeconds(time)
-        val command = s"$ffmpeg -i $videoUrl -ss $timeCode -f image2 -vframes 1 $filename"
-        Logger.debug(s"Command: $command")
-        val process = Runtime.getRuntime.exec(command)
-        process.waitFor()
+          // Execute ffmpeg to get the frame and wait for it to finish
+          val timeCode = getTimeCodeFromSeconds(time)
+          val command = s"$ffmpeg -i $videoUrl -ss $timeCode -f image2 -vframes 1 $filename"
+          Logger.debug(s"Command: $command")
+          val process = Runtime.getRuntime.exec(command)
+          process.waitFor()
 
-        // Now process the image and upload it
-        val image = ImageIO.read(file)
-        file.delete()
-        val thumbnail = ImageTools.makeThumbnail(image)
-        FileUploader.uploadImage(thumbnail, FileUploader.uniqueFilename("thumbnail.jpg"))
+          // Now process the image and upload it
+          val image = ImageIO.read(file)
+          file.delete()
+          val thumbnail = ImageTools.makeThumbnail(image)
+          FileUploader.uploadImage(thumbnail, FileUploader.uniqueFilename("thumbnail.jpg"))
+        } catch {
+          case _: Throwable => Future("")
+        }
       } else
         Future("")
     }.flatMap(_.map(s => s))
