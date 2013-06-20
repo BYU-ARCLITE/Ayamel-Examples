@@ -203,7 +203,7 @@ var VideoRenderer = (function () {
             endTime: args.endTime,
             renderCue: args.renderCue || function (renderedCue, area) { // Check to use a different renderer
                 var node = document.createElement('div');
-                node.appendChild(renderedCue.getCueAsHTML(renderedCue.kind === 'subtitles'));
+                node.appendChild(renderedCue.cue.getCueAsHTML(renderedCue.kind === 'subtitles'));
 
                 // Attach the translator
                 if (args.translator) {
