@@ -404,4 +404,15 @@ object Users extends Controller {
         }
   }
 
+  def proxy(id: Long) = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+      Authentication.enforceRole(User.roles.admin) {
+
+        val proxyUser = User.findById(id).get
+        Redirect(routes.Application.home()).withSession("userId" -> id.toString)
+          .flashing("info" -> ("You are now using the site as " + proxyUser.displayName + ". To end proxy you must log out then back in with your normal account."))
+      }
+  }
+
 }
