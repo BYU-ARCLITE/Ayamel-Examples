@@ -110,6 +110,7 @@ GET     /admin/feedback                     controllers.Users.feedback
 GET     /admin/feedback/:id/delete          controllers.Users.deleteFeedback(id: Long)
 GET     /admin/settings                     controllers.Users.siteSettings
 POST    /admin/settings                     controllers.Users.saveSiteSettings
+GET     /admin/proxy/:id                    controllers.Users.proxy(id: Long)
 
 # CaptionAider pages
 GET     /captionaider/:id/:courseId         controllers.CaptionAider.view(id: Long, courseId: Long)

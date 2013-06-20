@@ -73,6 +73,7 @@
                     </td>
                     <td>
                         @if(user != _user) {
+                            <a href="@routes.Users.proxy(_user.id.get)" class="btn btn-small btn-yellow">Proxy</a>
                             <a href="#notificationModal" role="button" data-toggle="modal" class="btn btn-small btn-blue sendNote" data-id="@_user.id.get">Notify</a>
                             <a href="#deleteModal" role="button" data-toggle="modal" class="btn btn-small btn-magenta deleteUser" data-id="@_user.id.get">Delete</a>
                         }
