@@ -11,7 +11,7 @@ import ExecutionContext.Implicits.global
 import anorm.NotAssigned
 import service.ContentDescriptor
 import dataAccess.{PlayGraph, ResourceController}
-import java.net.{URI, URL}
+import java.net.{URLDecoder, URI, URL}
 
 /**
  * The controller for dealing with content.
@@ -75,8 +75,13 @@ object ContentController extends Controller {
         Authentication.enforceNotRole(User.roles.guest) {
 
           def prepareUrl(url: String): String = {
-            val urlObj = new URL(url)
-            new URI(urlObj.getProtocol, urlObj.getHost, urlObj.getPath, null).toString
+
+            // Check to see if we need to encode (we will if the decoded is the same as the encoded)
+            if (URLDecoder.decode(url, "utf-8") == url) {
+              val urlObj = new URL(url)
+              new URI(urlObj.getProtocol, urlObj.getHost, urlObj.getPath, null).toString
+            } else
+              url
           }
 
           // Collect the information
