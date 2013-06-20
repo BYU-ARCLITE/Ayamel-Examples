@@ -1,0 +1,63 @@
+@()(implicit request: RequestHeader, user: User)
+
+@moreStyles =  @{
+    List(
+      ("screen", "stylesheets/content.css")
+    )
+}
+
+@main("Ayamel - Add Content", moreStyles) {
+
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/fileFix.js")"></script>
+
+    <div class="padded">
+
+        <h1>Add Content</h1>
+
+        <ul class="nav nav-tabs">
+            <li><a href="@routes.ContentController.createPage("page")">Upload File</a></li>
+            <li><a href="@routes.ContentController.createPage("url")">Link to URL</a></li>
+            <li class="active"><a href="#">Batch Add</a></li>
+            <li><a href="@routes.ContentController.createPage("resource")">Load from Resource</a></li>
+            <li><a href="@routes.ContentController.createPage("playlist")">Create Playlist</a></li>
+        </ul>
+
+
+        <h2>Information</h2>
+
+        <p>
+            Include a file where each line is an item you want to upload. On each line, the fields are delimited with a
+            tab. The order of fields is as follows:
+        </p>
+        <table class="table table-bordered">
+            <tbody>
+                <tr>
+                    <td>Title</td>
+                    <td>Description</td>
+                    <td>URL</td>
+                    <td>Content Type (video, audio, image, text)</td>
+                    <td>Labels (comma separated)</td>
+                    <td>Languages (3-letter code, comma separated)</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p>Upload the file here:</p>
+
+        <form class="form-horizontal" method="post" action="@routes.ContentController.createFromUrlBatch()" enctype="multipart/form-data">
+            <div class="control-group">
+                <label class="control-label" for="file">File</label>
+                <div class="controls">
+                    <input type="file" id="file" name="file">
+                </div>
+            </div>
+            <div class="control-group">
+                <div class="controls">
+                    <button type="submit" class="btn btn-blue">Start batch</button>
+                </div>
+            </div>
+        </form>
+
+    </div>
+
+}

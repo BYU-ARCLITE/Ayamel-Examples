@@ -6,7 +6,7 @@ import service._
 import models.{User, Content}
 import play.api.Play
 import Play.current
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{Future, ExecutionContext}
 import ExecutionContext.Implicits.global
 import anorm.NotAssigned
 import service.ContentDescriptor
@@ -55,6 +55,8 @@ object ContentController extends Controller {
         Authentication.enforceNotRole(User.roles.guest) {
           if (page == "url")
             Ok(views.html.content.create.url())
+          else if (page == "batch")
+            Ok(views.html.content.create.batchUrl())
           else if (page == "resource")
             Ok(views.html.content.create.resource())
           else if (page == "playlist")
@@ -62,6 +64,16 @@ object ContentController extends Controller {
           else
             Ok(views.html.content.create.file())
         }
+  }
+
+  def prepareUrl(url: String): String = {
+
+    // Check to see if we need to encode (we will if the decoded is the same as the encoded)
+    if (URLDecoder.decode(url, "utf-8") == url) {
+      val urlObj = new URL(url)
+      new URI(urlObj.getProtocol, urlObj.getHost, urlObj.getPath, null).toString
+    } else
+      url
   }
 
   /**
@@ -73,16 +85,6 @@ object ContentController extends Controller {
 
       // Guests cannot create content
         Authentication.enforceNotRole(User.roles.guest) {
-
-          def prepareUrl(url: String): String = {
-
-            // Check to see if we need to encode (we will if the decoded is the same as the encoded)
-            if (URLDecoder.decode(url, "utf-8") == url) {
-              val urlObj = new URL(url)
-              new URI(urlObj.getProtocol, urlObj.getHost, urlObj.getPath, null).toString
-            } else
-              url
-          }
 
           // Collect the information
           val data = request.body
@@ -106,6 +108,72 @@ object ContentController extends Controller {
               Redirect(routes.ContentController.view(content.id.get)).flashing("success" -> "Content added")
             })
           }
+        }
+  }
+
+  /**
+   * Creates content based on the posted data (URL)
+   */
+  def createFromUrlBatch = Authentication.authenticatedAction(parse.multipartFormData) {
+    implicit request =>
+      implicit user =>
+
+      // Guests cannot create content
+        Authentication.enforceNotRole(User.roles.guest) {
+
+          val file = request.body.file("file").get.ref.file
+          val data = io.Source.fromFile(file).getLines().toList
+          var count = 0
+
+          Future {
+            data.map(line => Future {
+              // Collect the data
+              val parts = line.split("\t")
+              val title = parts(0)
+              val description = parts(1)
+              val url = parts(2)
+              val contentType = Symbol(parts(3))
+              val labels = parts(4).split(",").toList
+              val languages = parts(5).split(",").toList
+              val categories = Nil
+              val keywords = labels.mkString(",")
+              val mime = ResourceHelper.getMimeFromUri(url)
+
+              val info = ContentDescriptor(title, description, keywords, categories, url, mime, labels = labels,
+                languages = languages)
+              ContentManagement.createContent(info, user, contentType).map(content => {
+                count += 1
+                if (count == data.size) {
+                  user.sendNotification("Your batch file upload has finished.")
+                }
+              })
+            })
+          }
+
+          Redirect(routes.Application.home()).flashing("info" -> "We have started processing your batch file. You will receive a notification when it is done.")
+
+//          // Collect the information
+//          val data = request.body
+//          val contentType = Symbol(data("contentType")(0))
+//          val title = data("title")(0)
+//          val description = data("description")(0)
+//          val keywords = data("keywords")(0)
+//          val categories = data.get("categories").map(_.toList).getOrElse(Nil)
+//          val labels = data.get("labels").map(_.toList).getOrElse(Nil)
+//          val url = prepareUrl(data("url")(0))
+//          val mime = ResourceHelper.getMimeFromUri(url)
+//
+//          // TODO: Languages. Issue # 46
+//          val languages = List("eng")
+//
+//          // Create the content
+//          val info = ContentDescriptor(title, description, keywords, categories, url, mime, labels = labels,
+//            languages = languages)
+//          Async {
+//            ContentManagement.createContent(info, user, contentType).map(content => {
+//              Redirect(routes.ContentController.view(content.id.get)).flashing("success" -> "Content added")
+//            })
+//          }
         }
   }
 
