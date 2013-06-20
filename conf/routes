@@ -44,6 +44,7 @@ POST    /course/:courseId/content/:id/lti               controllers.CourseConten
 GET     /course/:courseId/content/:id/stats             controllers.CourseContent.statsInCourse(id: Long, courseId: Long)
 GET     /course/:courseId/content/:id/stats/download    controllers.CourseContent.downloadStatsInCourse(id: Long, courseId: Long)
 GET     /course/:courseId/content/:id/stats/clear       controllers.CourseContent.clearStatsInCourse(id: Long, courseId: Long)
+GET     /course/:courseId/content/:id/remove            controllers.CourseContent.removeFromCourse(id: Long, courseId: Long)
 POST    /course/:courseId/content/:id/settings          controllers.ContentEditing.setCourseSettings(id: Long, courseId: Long)
 
 # Content pages

@@ -8,6 +8,7 @@ import play.api.Play
 import play.api.Play.current
 import scala.concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
+import models.ContentListing
 
 /**
  * Created with IntelliJ IDEA.
@@ -146,6 +147,24 @@ object CourseContent extends Controller {
                   val courseLink = "<a href=\"" + routes.Courses.view(course.id.get).toString() + "\">" + course.name + "</a>"
                   Redirect(routes.CourseContent.viewInCourse(content.id.get, course.id.get))
                     .flashing("success" -> ("Content added to course " + courseLink))
+                } else
+                  Errors.forbidden
+            }
+        }
+  }
+
+  def removeFromCourse(id: Long, courseId: Long) = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+        ContentController.getContent(id) {
+          content =>
+            Courses.getCourse(courseId) {
+              course =>
+
+                // Make user the user is allowed to do this
+                if (user canEdit course) {
+                  ContentListing.listByContent(content).find(_.courseId == courseId).map(_.delete())
+                  Redirect(routes.Courses.view(courseId)).flashing("info" -> "Content removed")
                 } else
                   Errors.forbidden
             }
