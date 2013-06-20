@@ -52,6 +52,7 @@ GET     /content                        controllers.ContentController.public
 GET     /content/mine                   controllers.ContentController.mine
 GET     /content/create/:page           controllers.ContentController.createPage(page: String)
 POST    /content/create/url             controllers.ContentController.createFromUrl
+POST    /content/create/batch           controllers.ContentController.createFromUrlBatch
 POST    /content/create/file            controllers.ContentController.createFromFile
 POST    /content/create/resource        controllers.ContentController.createFromResource
 POST    /content/create/playlist        controllers.ContentController.createPlaylist
