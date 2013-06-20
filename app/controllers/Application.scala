@@ -2,12 +2,14 @@ package controllers
 
 import authentication.Authentication
 import play.api.mvc._
-import models.{Setting, Feedback, Content, Course}
-import service.EmailTools
+import models._
+import service.{DocumentPermissionChecker, EmailTools}
 import play.api.libs.json.{JsObject, Json}
 import play.api.Play
 import play.api.Play.current
 import java.net.{URL, URI, URLEncoder}
+import anorm.{Id, NotAssigned}
+import models.Content
 
 object Application extends Controller {
 
@@ -28,43 +30,17 @@ object Application extends Controller {
 
   def test = Action {
     request =>
-    //      val s = TimeTools.colonTimecodeToSeconds("23:03")
-    //      Ok(s.toString)
 
-//      val json1 = Json.obj(
-//        "val1" -> 4,
-//        "val2" -> true,
-//        "val3" -> "Yes"
-//      )
-//
-//      val json2 = Json.obj(
-//        "val1" -> 89,
-//        "attributes" -> Json.obj(
-//          "attr1" -> "something"
-//        )
-//      )
-//
-//      val json3 = Json.obj(
-//        "attr1" -> "something else"
-//      )
-//
-//      val attrs = Json.obj(
-//        "attributes" -> ((json2 \ "attributes").asOpt[JsObject].getOrElse(Json.obj()) ++ json3)
-//      )
+      val globalResource = Json.obj(
+        "id" -> "josh3"
+      )
+      val user2 = User(Id(5), "", 'a, "", role = User.roles.admin)
+      val course = Course(Id(8), "", "", "")
+      val content1 = Content(NotAssigned, "", 'a, "", "")
+      val checker1 = new DocumentPermissionChecker(user2, content1, Some(course), DocumentPermissionChecker.documentTypes.captionTrack)
 
-//      val url = URLEncoder.encode("http://test.com/something.mp4?blah=that", "utf-8")
-
-      def prepareUrl(url: String): String = {
-        val urlObj = new URL(url)
-        new URI(urlObj.getProtocol, urlObj.getHost, urlObj.getPath, null).toString
-      }
-//
-//      val str = "http://test.com/something else.mp4?blah=that"
-
-//      val url = uri.toURL.toString
-
-      val url = prepareUrl("http://www.test.com/mush/something else.mp4?blah=that")
-      Ok(url)
+      val result = checker1.canEnable(globalResource)
+      Ok(result.toString)
   }
 
   def search = Authentication.authenticatedAction() {
