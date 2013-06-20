@@ -105,7 +105,7 @@ object ResourceController {
    */
   def getRelations(id: String, relationType: Symbol = 'id) = {
     val idKey = if (relationType == 'subject) "subjectId" else if (relationType == 'object) "objectId" else "id"
-    WS.url(baseUrl + s"/relations?$idKey=$id").get().map(_.json)
+    WS.url(baseUrl + s"relations?$idKey=$id").get().map(_.json)
   }
 
   def addRelation(subjectId: String, objectId: String, relationType: String,
@@ -121,7 +121,7 @@ object ResourceController {
   }
 
   def deleteRelation(id: String, relationId: String): Future[JsValue] =
-    WS.url(baseUrl + "/" + id + "/relations/" + relationId).delete().map(_.json)
+    WS.url(baseUrl + id + "/relations/" + relationId).delete().map(_.json)
 
   /**
    * Gets an upload url for a particular resource.
