@@ -91,14 +91,12 @@ object ContentController extends Controller {
           val contentType = Symbol(data("contentType")(0))
           val title = data("title")(0)
           val description = data("description")(0)
-          val keywords = data("keywords")(0)
           val categories = data.get("categories").map(_.toList).getOrElse(Nil)
           val labels = data.get("labels").map(_.toList).getOrElse(Nil)
           val url = prepareUrl(data("url")(0))
           val mime = ResourceHelper.getMimeFromUri(url)
-
-          // TODO: Languages. Issue # 46
-          val languages = List("eng")
+          val keywords = labels.mkString(",")
+          val languages = data.get("languages").map(_.toList).getOrElse(List("eng"))
 
           // Create the content
           val info = ContentDescriptor(title, description, keywords, categories, url, mime, labels = labels,
@@ -151,29 +149,6 @@ object ContentController extends Controller {
           }
 
           Redirect(routes.Application.home()).flashing("info" -> "We have started processing your batch file. You will receive a notification when it is done.")
-
-//          // Collect the information
-//          val data = request.body
-//          val contentType = Symbol(data("contentType")(0))
-//          val title = data("title")(0)
-//          val description = data("description")(0)
-//          val keywords = data("keywords")(0)
-//          val categories = data.get("categories").map(_.toList).getOrElse(Nil)
-//          val labels = data.get("labels").map(_.toList).getOrElse(Nil)
-//          val url = prepareUrl(data("url")(0))
-//          val mime = ResourceHelper.getMimeFromUri(url)
-//
-//          // TODO: Languages. Issue # 46
-//          val languages = List("eng")
-//
-//          // Create the content
-//          val info = ContentDescriptor(title, description, keywords, categories, url, mime, labels = labels,
-//            languages = languages)
-//          Async {
-//            ContentManagement.createContent(info, user, contentType).map(content => {
-//              Redirect(routes.ContentController.view(content.id.get)).flashing("success" -> "Content added")
-//            })
-//          }
         }
   }
 
@@ -192,12 +167,10 @@ object ContentController extends Controller {
           val contentType = Symbol(data("contentType")(0))
           val title = data("title")(0)
           val description = data("description")(0)
-          val keywords = data("keywords")(0)
           val categories = data.get("categories").map(_.toList).getOrElse(Nil)
           val labels = data.get("labels").map(_.toList).getOrElse(Nil)
-
-          // TODO: Languages. Issue #47
-          val languages = List("eng")
+          val keywords = labels.mkString(",")
+          val languages = data.get("languages").map(_.toList).getOrElse(List("eng"))
 
           Async {
             // Upload the file

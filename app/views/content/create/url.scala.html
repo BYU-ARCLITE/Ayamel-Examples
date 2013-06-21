@@ -9,6 +9,9 @@
 @main("Ayamel - Add Content", moreStyles) {
 
     <script type="text/javascript" src="@routes.Assets.at("javascripts/labelsInput.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("Ayamel.js/js/player2/js/Ayamel.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("Ayamel.js/js/player2/js/LangCodes.js")"></script>
+
 
     <div class="padded">
 
@@ -56,9 +59,9 @@
                 </div>
             </div>
             <div class="control-group">
-                <label class="control-label" for="keywords">Keywords</label>
+                <label class="control-label" for="languages">Languages</label>
                 <div class="controls">
-                    <input type="text" id="keywords" name="keywords" placeholder="Keywords">
+                    @views.html.content.languages("languages", multiple = true)
                 </div>
             </div>
             <div class="control-group">
