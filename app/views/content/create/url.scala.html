@@ -101,4 +101,32 @@
 
     </div>
 
+    <script type="text/javascript">
+        $(function() {
+
+            var typeMap = {
+                video: "video",
+                audio: "audio",
+                image: "image",
+                text: "text",
+                application: "text"
+            };
+
+            $("#url").change(function() {
+                // Try to detect the mime type
+                $.ajax("/ajax/util/detectMime", {
+                    type: "post",
+                    data: {
+                        uri: $(this).val()
+                    },
+                    dataType: "text",
+                    success: function(mime) {
+                        var type = mime.split("/")[0];
+                        $("#contentType").val(typeMap[type]);
+                    }
+                });
+            });
+        });
+    </script>
+
 }

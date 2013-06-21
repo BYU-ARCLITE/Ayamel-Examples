@@ -2,7 +2,7 @@ package controllers.ajax
 
 import play.api.mvc.{Action, Controller}
 import play.api.libs.json.{JsString, JsObject, Json}
-import service.SerializationTools
+import service.{ResourceHelper, SerializationTools}
 import scala.concurrent.{ExecutionContext, Future, Await}
 import scala.concurrent.duration._
 import ExecutionContext.Implicits.global
@@ -59,6 +59,13 @@ object Util extends Controller {
             Ok(Json.obj("success" -> false))
         })
       }
+  }
+
+  def detectMime = Action(parse.urlFormEncoded) {
+    request =>
+      val uri = request.body("uri")(0)
+      val mime = ResourceHelper.getMimeFromUri(uri)
+      Ok(mime)
   }
 
 }
