@@ -3,145 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <title></title>
-
-    <script type="text/javascript" src="javascripts/jquery-1.9.0.min.js"></script>
-    <script type="text/javascript" src="javascripts/angular.min.js"></script>
-    <script type="text/javascript" src="javascripts/mustache.js"></script>
-    <script type="text/javascript" src="javascripts/sha1.js"></script>
-
-    <link rel="stylesheet" href="stylesheets/bootstrap.min.css"/>
-    <link rel="stylesheet" href="stylesheets/font-awesome.css"/>
-
-    <script type="text/javascript" src="Ayamel.js/js/player2/js/Ayamel.js"></script>
-    <script type="text/javascript" src="Ayamel.js/js/player2/js/KeyBinder.js"></script>
-
-    <script type="text/javascript" src="javascripts/exercises/ExerciseHandler.js"></script>
-    <script type="text/javascript" src="javascripts/exercises/questions/MultipleChoice.js"></script>
-    <script type="text/javascript" src="javascripts/exercises/questions/FreeResponse.js"></script>
-
-    <style type="text/css">
-        .prompt {
-            background: #efefef;
-            padding: 10px 5px;
-            margin: 20px 0 5px 0;
-            border-radius: 4px;
-        }
-        .choices {
-            margin-left: 20px;
-        }
-    </style>
 </head>
-<body ng-app>
+<body>
 
-<div ng-controller="QuestionsController" class="container">
+<link rel="stylesheet" href="stylesheets/bootstrap.min.css"/>
 
-    <!--Exercise creation box-->
-    <h2>Create a new question</h2>
-    <div style="display: inline-block">
-        <div class="well">
-            <strong>Question Data</strong>
-            <div>
-                <label for="questionPrompt">Prompt</label>
-                <input id="questionPrompt" type="text" ng-model="questionPrompt" placeholder="Question Prompt"/>
-            </div>
-            <div>
-                <label for="questionType">Question Type</label>
-                <select ng-model="questionType" id="questionType" ng-change="updateType()">
-                    <option value="checkbox">MC: Check box</option>
-                    <option value="radio">MC: Radio button</option>
-                    <option value="text">Free: Text input</option>
-                    <option value="textarea">Free: Text area</option>
-                </select>
-            </div>
-            <div>
-                <div ng-show="choicesVisible">
-                    <label for="optionText">Choices</label>
-                    <ul ng-repeat="choice in choices">
-                        <li>{{choice}} <a href="#" ng-click="remove($index, choices)"><i class="icon-trash"></i></a></li>
-                    </ul>
-                    <form class="form-inline" ng-submit="addChoice()">
-                        <input type="text" id="optionText" placeholder="Option text" ng-model="optionText">
-                        <input type="submit" class="btn" value="Add Option">
-                    </form>
-                </div>
-            </div>
-            <div>
-                <label for="answerText">Answers</label>
-                <ul ng-repeat="answer in answers">
-                    <li>{{answer}} <a href="#" ng-click="remove($index, answers)"><i class="icon-trash"></i></a></li>
-                </ul>
-                <form class="form-inline" ng-submit="addAnswer()">
-                    <input id="answerText" ng-model="answerText" placeholder="Answer text" type="text"/>
-                    <input class="btn" type="submit" value="Add Answer"/>
-                </form>
-            </div>
-            <hr>
-            <button ng-click="createQuestion()" class="btn btn-primary">Create Question</button>
-        </div>
-    </div>
+<script type="text/javascript" src="javascripts/jquery-1.9.0.min.js"></script>
+<script type="text/javascript" src="javascripts/mustache.js"></script>
+<script type="text/javascript" src="javascripts/SettingsForm.js"></script>
+<script type="text/javascript" src="javascripts/ContentSettings.js"></script>
 
-    <h2>Your questions</h2>
-    <a class="btn" ng-click="dump()" href="#">Check answers</a>
-    <div ng-repeat="question in questions">
-        <div ng-bind-html-unsafe="question.$element"></div>
-    </div>
-
-</div>
+Content settings
+<div id="contentSettings"></div>
 
 <script type="text/javascript">
+    $(function() {
+        var content = {"id":16,"name":"Dreyfus","contentType":"video","thumbnail":"","resourceId":"4a73496a-6b51-f529-6bee-3918eb45bbc3","dateAdded":"2013-06-20T14:16:37.423-06:00","visibility":2,"shareability":3,"settings":{"level":"4","enabledCaptionTracks":"7c2a6e27-cfcd-67a3-af69-eb4ebe8eb6d2","enabledAnnotationDocuments":"","includeTranscriptions":"true"},"authKey":"07c350d1f295cb26bc4d365bbddd4d5c","views":8,"labels":[]};
 
-    function QuestionsController($scope) {
-        // Question type
-        var freeResponseTypes = ["text", "textarea"];
-        $scope.questionType = "checkbox";
-        $scope.updateType = function() {
-            $scope.choicesVisible = !(freeResponseTypes.indexOf($scope.questionType) >= 0);
-        };
+        new ContentSettings({
+            content: content,
+            owner: true,
+            $holder: $("#contentSettings")
+        });
+    });
 
-        $scope.remove = function ($index, array) {
-            array.splice($index, 1);
-        };
-
-        // Choices
-        $scope.choicesVisible = true;
-        $scope.choices = [];
-        $scope.addChoice = function() {
-            if ($scope.optionText) {
-                $scope.choices.push($scope.optionText);
-                $scope.optionText = "";
-            }
-        };
-
-        // Answers
-        $scope.answers = [];
-        $scope.addAnswer = function() {
-            if ($scope.answerText) {
-                $scope.answers.push($scope.answerText);
-                $scope.answerText = "";
-            }
-        };
-
-        // Question creation
-        $scope.questions = [];
-        $scope.createQuestion = function() {
-            var question = ExerciseHandler.createQuestion({
-                prompt: $scope.questionPrompt,
-                choices: $scope.choices.slice(0),
-                answers: $scope.answers.slice(0),
-                type: $scope.questionType
-            });
-            $scope.questions.push(question);
-            $scope.choices = [];
-            $scope.questionPrompt = "";
-        };
-
-        $scope.dump = function() {
-            var grade = ExerciseHandler.grade();
-            alert(grade);
-        }
-    }
 </script>
-
 
 </body>
 </html>

@@ -344,7 +344,7 @@ object ContentController extends Controller {
         // Check that everything is in place to view the content
           if (content.authKey == authKey && content.shareability != Content.shareability.notShareable) {
             val resourceLibraryUrl = Play.configuration.getString("resourceLibrary.baseUrl").get
-            val embed = request.queryString.get("embed").map(_(0).toBoolean).getOrElse(false)
+            val embed = request.queryString.get("embed").exists(_(0).toBoolean)
             Ok(views.html.content.share.view(content, resourceLibraryUrl, embed))
           } else
             Ok("You are not allowed to view this content")
