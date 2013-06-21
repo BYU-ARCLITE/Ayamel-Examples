@@ -1,23 +1,5 @@
 @(content: models.Content, course: Option[Course], resourceLibraryUrl: String)(implicit request: RequestHeader, user: User)
 
-@languageSelect(id: String) = {
-    <select class="chzn-select" id="@id">
-        @*<option value="eng">English</option>*@
-        @*<option value="fre">French</option>*@
-        @*<option value="0">Others...</option>*@
-    </select>
-
-    <script type="text/javascript">
-        (function () {
-            var $select = $("#@id");
-            Object.keys(Ayamel.utils.langCodes).forEach(function (key) {
-                $select.append("<option value='" + key + "'>" + Ayamel.utils.langCodes[key].name + "</option>");
-            });
-            <!--$select.chosen();-->
-        }());
-    </script>
-}
-
 @editor("Ayamel - CaptionAider") {
 
     <link rel="stylesheet" href="@routes.Assets.at("subtitle-timeline-editor/timeline.css")"/>
@@ -145,7 +127,7 @@
                 <div class="control-group">
                     <label class="control-label" for="trackLanguage">Language</label>
                     <div class="controls">
-                        @languageSelect("trackLanguage")
+                        @views.html.content.languages("trackLanguage")
                     </div>
                 </div>
             </form>
@@ -207,7 +189,7 @@
                 <div class="control-group">
                     <label class="control-label" for="loadLanguage">Language</label>
                     <div class="controls">
-                        @languageSelect("loadLanguage")
+                        @views.html.content.languages("loadLanguage")
                     </div>
                 </div>
                  <div class="control-group">

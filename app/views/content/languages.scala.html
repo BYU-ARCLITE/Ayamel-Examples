@@ -1,0 +1,34 @@
+@(id: String, multiple: Boolean = false, all: Boolean = false)
+
+@multipleAttr = {
+    @if(multiple) {
+        multiple="multiple"
+    }
+}
+
+
+@if(true) {
+    <select name="@id" id="@id" @multipleAttr ></select>
+    @if(all) {
+        <script type="text/javascript">
+            (function () {
+                var $select = $("#@id");
+                Object.keys(Ayamel.utils.langCodes).forEach(function (key) {
+                    $select.append("<option value='" + key + "'>" + Ayamel.utils.langCodes[key].name + "</option>");
+                });
+            }());
+        </script>
+    } else {
+        @* Only include a subset of languages *@
+        <script type="text/javascript">
+            (function () {
+                var $select = $("#@id");
+                Object.keys(Ayamel.utils.p1map).forEach(function (p1) {
+                    var code = Ayamel.utils.p1map[p1];
+                    var name = Ayamel.utils.getLangName(code);
+                    $select.append("<option value='" + code + "'>" + name + "</option>");
+                });
+            }());
+        </script>
+    }
+}
