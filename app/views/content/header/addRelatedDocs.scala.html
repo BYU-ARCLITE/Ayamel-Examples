@@ -10,132 +10,295 @@
 }
 
 @if(true) {
+
+    <script type="text/javascript">
+        var courseId = @course.map(_.id.get).getOrElse(0);
+        var owner = @content.isEditableBy(user);
+        var teacher = @course.exists(c => user.canEdit(c));
+        var userId = @user.id.get;
+    </script>
+
     @if(content.contentType == 'video || content.contentType == 'audio) {
-        <div id="captionTrackModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="captionTrackModalLabel" aria-hidden="true">
+        <div id="captionTrackModal" class="modal bigModal hide fade" tabindex="-1" role="dialog" aria-labelledby="captionTrackModalLabel" aria-hidden="true">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                <h3 id="captionTrackModalLabel">Add Caption Track</h3>
+                <h3 id="captionTrackModalLabel">Captions/Subtitles</h3>
             </div>
             <div class="modal-body">
 
-                <p>
-                    Add or edit captions with
-                    <a href="@routes.CaptionAider.view(content.id.get, course.map(_.id.get).getOrElse(0))" class="btn btn-yellow">CaptionAider</a>
-                </p>
+                <div class="row-fluid">
+                    <div class="span6">
+                        <h4>Add/Edit Tracks</h4>
+                        <div style="position: relative">
+                            <ul class="nav nav-pills">
+                                <li><a href="#personalCaptions" data-toggle="pill">Personal</a></li>
 
-                <hr>
+                                @if(course.isDefined) {
+                                    <li><a href="#courseCaptions" data-toggle="pill">Course</a></li>
+                                }
+                            </ul>
+                        </div>
+                        <div class="clearfix"></div>
 
-                <p>TODO: Publish caption tracks</p>
-                <!--TODO: Publish caption tracks. Issue # 53 -->
+                        <div class="tab-content">
+                            <div class="tab-pane" id="personalCaptions">
+
+                                <p>
+                                    Add or edit personal caption tracks with CaptionAider.
+                                </p>
+
+                                <a href="@routes.CaptionAider.view(content.id.get, 0)" class="btn btn-yellow"><i class="icon-desktop"></i> Launch CaptionAider</a>
+                            </div>
+                            @if(course.isDefined) {
+                                <div class="tab-pane" id="courseCaptions">
+
+                                    <p>
+                                        Add or edit course-visible caption tracks with CaptionAider.
+                                    </p>
+
+                                    <a href="@routes.CaptionAider.view(content.id.get, course.get.id.get)" class="btn btn-magenta"><i class="icon-desktop"></i> Launch CaptionAider</a>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="span6">
+                        <h4>Publish caption tracks</h4>
+
+                        <p>
+                            <strong>A note on publishing:</strong> When you press the <em>publish</em> button a request is sent to
+                            the content owner. If he or she accepts your annotation set then you lose ownership of it. So don't
+                            request for your annotations to be publish until you are entirely finished editing them.
+                        </p>
+                        <!--TODO: Publish caption tracks. Issue # 53 -->
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
-                <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
-                <button class="btn btn-blue" id="addCaptionTrackButton">Add</button>
+                <div>
+                    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+                    <button class="btn btn-blue" id="addCaptionTrackButton">Add</button>
+                </div>
             </div>
         </div>
+
+        <script type="text/javascript">
+            $(function() {
+                $('#captionTrackModal a[href="#personalCaptions"]').tab('show');
+            });
+        </script>
     }
 
-    <div id="annotationsModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="annotationsModalLabel" aria-hidden="true">
+    <div id="annotationsModal" class="modal bigModal hide fade" tabindex="-1" role="dialog" aria-labelledby="annotationsModalLabel" aria-hidden="true">
         <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-            <h3 id="annotationsModalLabel">Add Annotations</h3>
+            <h3 id="annotationsModalLabel">Annotations</h3>
         </div>
         <div class="modal-body">
+            <div class="row-fluid">
+                <div class="span6">
+                    <h4>Add/Edit Annotations</h4>
 
-            <h4>New Annotations</h4>
-            <a id="annotationLink" href="@annotationUrl">Create a new Annotation Set</a>
+                    <div style="position: relative">
+                        <ul class="nav nav-pills">
+                            <li><a href="#personalAnnotations" data-toggle="pill">Personal</a></li>
 
-            <h4>Edit Existing Annotations</h4>
-            <table id="existingAnnotations" class="table table-bordered">
-                <tbody>
-                </tbody>
-            </table>
+                            @if(course.isDefined && user.canEdit(course.get)) {
+                                <li><a href="#courseAnnotations" data-toggle="pill">Course</a></li>
+                            }
+                        </ul>
+                    </div>
+                    <div class="clearfix"></div>
 
-            @if(!content.isEditableBy(user)) {
-                <p id="publishNote">
-                    <strong>A note on publishing:</strong> When you press the <em>publish</em> button a request is sent to
-                    the content owner. If he or she accepts your annotation set then you lose ownership of it. So don't
-                    request for your annotations to be publish until you are entirely finished editing them.
-                </p>
-            } else {
-                <h4>Accept Publish Requests</h4>
-                <table id="annotationPublishRequests" class="table table-bordered">
-                    <tbody>
-                    </tbody>
-                </table>
-            }
+                    <div class="tab-content">
+                        <div class="tab-pane" id="personalAnnotations">
 
+                            <p>Add or edit personal annotations sets.</p>
+                            <a class="btn btn-yellow" href="@routes.DocumentManager.editAnnotations(content.id.get)"><i class="icon-file-text"></i> Create a new Annotation Set</a>
+
+                            <table id="personalAnnotationsTable" class="table table-bordered pad-top-high">
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                        @if(course.isDefined && user.canEdit(course.get)) {
+                            <div class="tab-pane" id="courseAnnotations">
+                                <p>Add or edit course-visible annotations sets.</p>
+                                <a class="btn btn-magenta" href="@{routes.DocumentManager.editAnnotations(content.id.get)}?course=@course.get.id.get"><i class="icon-file-text"></i> Create a new Annotation Set</a>
+
+                                <table id="courseAnnotationsTable" class="table table-bordered pad-top-high">
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="span6">
+                    <h4>Publish Annotation Sets</h4>
+
+                    <p>
+                        <strong>A note on publishing:</strong> When you press the <em>publish</em> button a request is sent to
+                        the content owner. If he or she accepts your annotation set then you lose ownership of it. So don't
+                        request for your annotations to be publish until you are entirely finished editing them.
+                    </p>
+
+                    <!--<table id="annotationPublishRequests" class="table table-bordered">-->
+                        <!--<tbody>-->
+                        <!--</tbody>-->
+                    <!--</table>-->
+                </div>
+            </div>
         </div>
         <div class="modal-footer">
-            <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+            <div>
+                <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+            </div>
         </div>
     </div>
 
     <script type="text/javascript">
         $(function() {
-            $("#addCaptionTrackButton").click(function() {
-                $("#captionTrackForm").submit();
-            });
 
-            var template =
+            $('#annotationsModal a[href="#personalAnnotations"]').tab('show');
+//            <a href="{{#pr}}#{{/pr}}{{^pr}}{{publishUrl}}{{/pr}}" class="btn {{#pr}}disabled{{/pr}}">Publish</a>
+            //                            var publishUrl = "/content/" + content.id + "/publish/" + annotation.id +
+//                                (courseId ? "?course=" + courseId : "");
+            var rowTemplate =
                 '<tr>' +
-                    '<td>{{title}}</td>' +
-                    '<td>{{>buttons}}</td>' +
+                    '<td>{{name}} ({{language}})</td>' +
+                    '<td>' +
+                        '<a href="/content/{{contentId}}/annotations?doc={{resourceId}}{{#course}}&courseId={{courseId}}{{/course}}" class="btn"><i class="icon-edit-sign"></i> Edit</a>' +
+                        '{{^owner}}' +
+                            '{{^published}}' +
+                                '&nbsp;<a href="/content/{{contentId}}/publish/{{resourceId}}{{#course}}?courseId={{courseId}}{{/course}}" class="btn"><i class="icon-cloud-upload"></i> Publish</a>' +
+                            '{{/published}}' +
+                            '{{#published}}' +
+                                '&nbsp;<a href="#" class="btn disabled"><i class="icon-cloud-upload"></i> Publish</a>' +
+                            '{{/published}}' +
+                        '{{/owner}}' +
+                    '</td>' +
                 '</tr>';
-            var editButtonTemplate = '<a href="{{editUrl}}" class="btn">Edit</a>';
-            var publishButtonTemplate = '<a href="{{#pr}}#{{/pr}}{{^pr}}{{publishUrl}}{{/pr}}" class="btn {{#pr}}disabled{{/pr}}">Publish</a>';
-            var acceptButtonTemplate = '<a href="{{acceptUrl}}" class="btn">Accept</a>';
-
-            ResourceLibrary.load("@content.resourceId", function(resource) {
-                var $tbody = $("#existingAnnotations").children("tbody");
-                var owner = @content.isEditableBy(user);
-                var courseId = @course.map(_.id.get).getOrElse(0);
-                var content = @Html(content.toJson.toString());
-
-                AdditionalDocumentLoader.annotations.loadEditable({
-                    userId: "@user.id.get",
-                    owner: owner,
-                    teacher: [@course.map(c => user.canEdit(c)).getOrElse(false)][0],
-                    courseId: courseId,
-                    content: content,
-                    resource: resource,
-                    callback: function (annotations) {
-                        annotations.forEach(function (annotation) {
-                            var editUrl = "/content/" + content.id + "/annotations?doc=" + annotation.id +
-                                (courseId ? "&course=" + courseId : "");
-                            var publishUrl = "/content/" + content.id + "/publish/" + annotation.id +
-                                (courseId ? "?course=" + courseId : "");
-
-                            var buttons = Mustache.to_html(editButtonTemplate, {editUrl: editUrl});
-                            if (!owner) {
-                                buttons += "&nbsp;" + Mustache.to_html(publishButtonTemplate, {
-                                    publishUrl: publishUrl,
-                                    pr: annotation.attributes && annotation.attributes.publishStatus
-                                });
-                            }
-
-                            var html = Mustache.to_html(template, {title: annotation.title}, {buttons: buttons});
-                            $tbody.append(html);
-                        });
-                    }
-                });
-
-                if (owner) {
-                    var $prTbody = $("#annotationPublishRequests").children("tbody");
-                    AdditionalDocumentLoader.annotations.loadPublishRequested({
-                        resource: resource,
-                        callback: function (annotations) {
-                            annotations.forEach(function (annotation) {
-                                var acceptUrl = "/content/" + content.id + "/accept/" + annotation.id +
-                                    (courseId ? "?course=" + courseId : "");
-                                var buttons = Mustache.to_html(acceptButtonTemplate, {acceptUrl: acceptUrl});
-                                var html = Mustache.to_html(template, {title: annotation.title}, {buttons: buttons});
-                                $prTbody.append(html);
-                            });
-                        }
+            function loadAnnotations(ids, $table, courseId) {
+                // Turn those IDs into resources
+                async.map(ids, function (id, asyncCallback) {
+                    ResourceLibrary.load(id, function (resource) {
+                        asyncCallback(null, resource);
                     });
+                }, function (err, data) {
+
+                    // Now populate the table
+                    var $tbody = $table.find("tbody");
+                    data.forEach(function (resource) {
+                        var published = resource.attributes && resource.attributes.publishStatus;
+                        var html = Mustache.to_html(rowTemplate, {
+                            name: resource.title,
+                            language: Ayamel.utils.getLangName(resource.languages[0]),
+                            contentId: content.id,
+                            resourceId: resource.id,
+                            course: !!courseId,
+                            courseId: courseId,
+                            owner: owner,
+                            published: published
+                        });
+                        $tbody.append(html)
+                    });
+                });
+            }
+
+            // Load personal annotations
+            $.ajax("/ajax/permissionChecker", {
+                type: "post",
+                data: {
+                    contentId: content.id,
+                    owner: owner,
+                    userId: userId,
+                    permission: "edit",
+                    documentType: "annotations"
+                },
+                success: function(data) {
+                    loadAnnotations(data, $("#personalAnnotationsTable"), 0);
                 }
             });
+
+            // Load course annotations
+            if (teacher) {
+                $.ajax("/ajax/permissionChecker", {
+                    type: "post",
+                    data: {
+                        contentId: content.id,
+                        courseId: courseId,
+                        permission: "edit",
+                        documentType: "annotations"
+                    },
+                    success: function(data) {
+                        loadAnnotations(data, $("#courseAnnotationsTable"), 0);
+                    }
+                });
+            }
+
+            // TODO: Load publishable annotations. Issue #53
+
+
+//
+//            var template =
+//                '<tr>' +
+//                    '<td>{{title}}</td>' +
+//                    '<td>{{>buttons}}</td>' +
+//                '</tr>';
+//            var editButtonTemplate = '<a href="{{editUrl}}" class="btn">Edit</a>';
+//            var publishButtonTemplate = '<a href="{{#pr}}#{{/pr}}{{^pr}}{{publishUrl}}{{/pr}}" class="btn {{#pr}}disabled{{/pr}}">Publish</a>';
+//            var acceptButtonTemplate = '<a href="{{acceptUrl}}" class="btn">Accept</a>';
+//
+//            ResourceLibrary.load("@content.resourceId", function(resource) {
+//                var $tbody = $("#existingAnnotations").children("tbody");
+//                var owner = @content.isEditableBy(user);
+//                var courseId = @course.map(_.id.get).getOrElse(0);
+//                var content = @Html(content.toJson.toString());
+//
+//                AdditionalDocumentLoader.annotations.loadEditable({
+//                    userId: "@user.id.get",
+//                    owner: owner,
+//                    teacher: [@course.map(c => user.canEdit(c)).getOrElse(false)][0],
+//                    courseId: courseId,
+//                    content: content,
+//                    resource: resource,
+//                    callback: function (annotations) {
+//                        annotations.forEach(function (annotation) {
+//                            var editUrl = "/content/" + content.id + "/annotations?doc=" + annotation.id +
+//                                (courseId ? "&course=" + courseId : "");
+//                            var publishUrl = "/content/" + content.id + "/publish/" + annotation.id +
+//                                (courseId ? "?course=" + courseId : "");
+//
+//                            var buttons = Mustache.to_html(editButtonTemplate, {editUrl: editUrl});
+//                            if (!owner) {
+//                                buttons += "&nbsp;" + Mustache.to_html(publishButtonTemplate, {
+//                                    publishUrl: publishUrl,
+//                                    pr: annotation.attributes && annotation.attributes.publishStatus
+//                                });
+//                            }
+//
+//                            var html = Mustache.to_html(template, {title: annotation.title}, {buttons: buttons});
+//                            $tbody.append(html);
+//                        });
+//                    }
+//                });
+//
+//                if (owner) {
+//                    var $prTbody = $("#annotationPublishRequests").children("tbody");
+//                    AdditionalDocumentLoader.annotations.loadPublishRequested({
+//                        resource: resource,
+//                        callback: function (annotations) {
+//                            annotations.forEach(function (annotation) {
+//                                var acceptUrl = "/content/" + content.id + "/accept/" + annotation.id +
+//                                    (courseId ? "?course=" + courseId : "");
+//                                var buttons = Mustache.to_html(acceptButtonTemplate, {acceptUrl: acceptUrl});
+//                                var html = Mustache.to_html(template, {title: annotation.title}, {buttons: buttons});
+//                                $prTbody.append(html);
+//                            });
+//                        }
+//                    });
+//                }
+//            });
         });
     </script>
 }

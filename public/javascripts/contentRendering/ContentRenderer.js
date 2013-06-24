@@ -17,47 +17,102 @@ var ContentRenderer = (function () {
     }
 
     function getTranscripts(args, callback) {
-        AdditionalDocumentLoader.captionTracks.loadVisible({
-            userId: args.userId,
-            owner: args.owner,
-            teacher: args.teacher,
-            courseId: args.courseId,
-            content: args.content,
-            resource: args.resource,
-            callback: callback
-        });
-    }
-
-    function getAnnotations(args, callback) {
-        AdditionalDocumentLoader.annotations.loadVisible({
-            userId: args.userId,
-            owner: args.owner,
-            teacher: args.teacher,
-            courseId: args.courseId,
-            content: args.content,
-            resource: args.resource,
-            callback: function (annotations) {
-
-                // Load the annotation files
-                async.map(annotations, function (annotation, asyncCallback) {
-                    $.ajax(annotation.content.files[0].downloadUri, {
-                        dataType: "json",
-                        success: function(data) {
-                            AnnotationLoader.load(data, function(manifest) {
-                                if (manifest) {
-                                    manifest.resourceId = annotation.id;
-                                }
-                                asyncCallback(null, manifest);
-                            });
-                        }, error: function(data){
-                            asyncCallback(data);
-                        }
+        $.ajax("/ajax/permissionChecker", {
+            type: "post",
+            data: {
+                courseId: args.courseId,
+                contentId: content.id,
+                permission: args.permission || "view",
+                documentType: "captionTrack"
+            },
+            success: function(data) {
+                // Now turn those IDs into resources
+                async.map(data, function (id, asyncCallback) {
+                    ResourceLibrary.load(id, function (resource) {
+                        asyncCallback(null, resource);
                     });
-                }, function (err, results) {
-                    callback(results);
+                }, function (err, data) {
+                    callback(data);
                 });
             }
         });
+
+//        AdditionalDocumentLoader.captionTracks.loadVisible({
+//            userId: args.userId,
+//            owner: args.owner,
+//            teacher: args.teacher,
+//            courseId: args.courseId,
+//            content: args.content,
+//            resource: args.resource,
+//            callback: callback
+//        });
+    }
+
+    function getAnnotations(args, callback) {
+        $.ajax("/ajax/permissionChecker", {
+            type: "post",
+            data: {
+                courseId: args.courseId,
+                contentId: content.id,
+                permission: args.permission || "view",
+                documentType: "captionTrack"
+            },
+            success: function(data) {
+                // Now turn those IDs into resources then into annotation manifests
+                async.map(data, function (id, asyncCallback) {
+                    ResourceLibrary.load(id, function (resource) {
+
+                        // Now get the actual annotation manifest
+                        $.ajax(resource.content.files[0].downloadUri, {
+                            dataType: "json",
+                            success: function(data) {
+                                AnnotationLoader.load(data, function(manifest) {
+                                    if (manifest) {
+                                        manifest.resourceId = resource.id;
+                                    }
+                                    asyncCallback(null, manifest);
+                                });
+                            }, error: function(data){
+                                asyncCallback(data);
+                            }
+                        });
+                    });
+                }, function (err, data) {
+                    callback(data);
+                });
+            }
+        });
+
+
+//        AdditionalDocumentLoader.annotations.loadVisible({
+//            userId: args.userId,
+//            owner: args.owner,
+//            teacher: args.teacher,
+//            courseId: args.courseId,
+//            content: args.content,
+//            resource: args.resource,
+//            callback: function (annotations) {
+//
+//                // Load the annotation files
+//                async.map(annotations, function (annotation, asyncCallback) {
+//                    $.ajax(annotation.content.files[0].downloadUri, {
+//                        dataType: "json",
+//                        success: function(data) {
+//                            AnnotationLoader.load(data, function(manifest) {
+//                                if (manifest) {
+//                                    manifest.resourceId = annotation.id;
+//                                }
+//                                asyncCallback(null, manifest);
+//                            });
+//                        }, error: function(data){
+//                            asyncCallback(data);
+//                        }
+//                    });
+//                }, function (err, results) {
+//                    callback(results);
+//                });
+//            }
+//        });
     }
 
 

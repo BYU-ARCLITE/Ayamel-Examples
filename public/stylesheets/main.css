@@ -413,3 +413,44 @@ h1, h2, h3, h4, h5, h6 {
 .btn.color-light-magenta, .btn.color-light-magenta:hover {
     color: #FCB3D3;
 }
+
+/* Special modal classes */
+
+.modal.bigModal {
+    width: auto;
+    height: auto;
+    left: 30px;
+    margin: 0;
+    bottom: 30px;
+    right: 30px;
+}
+
+.bigModal.fade {
+    -webkit-transition: opacity .3s linear;
+    -moz-transition: opacity .3s linear;
+    -o-transition: opacity .3s linear;
+    transition: opacity .3s linear;
+}
+
+.bigModal.fade.in, .bigModal.fade.out {
+    top: 30px;
+}
+
+.bigModal .modal-body {
+    max-height: none;
+    position: absolute;
+    width: auto;
+    top: 49px;
+    bottom: 65px;
+}
+
+.bigModal .modal-footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    padding: 0;
+}
+
+.bigModal .modal-footer > div {
+    padding: 14px 15px 15px;
+}
