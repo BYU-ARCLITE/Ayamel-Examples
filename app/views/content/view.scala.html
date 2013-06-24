@@ -152,18 +152,23 @@
                 @*);*@
 
 
+                // Make sure we have enough room
+                var $contentHolder = $("#contentHolder");
+                var controlBarHeight = 61;
+                var buffer = 50;
+                ScreenAdapter.containByHeight($contentHolder, Ayamel.aspectRatios.hdVideo, controlBarHeight + buffer);
 
                 // Render the content
-                var contentHolder = $("#contentHolder")[0];
                 ContentRenderer.render({
                     content: content,
                     userId: "@user.id.get",
                     owner: @content.isEditableBy(user),
                     teacher: @course.exists(c => user.canEdit(c)),
                     courseId: @course.map(_.id.get).getOrElse(0),
-                    holder: contentHolder,
+                    holder: $contentHolder[0],
                     coursePrefix: coursePrefix,
                     annotate: true,
+                    aspectRatio: Ayamel.aspectRatios.hdVideo,
                     startTime: "@request.queryString.get("starttime").getOrElse("0")",
                     endTime: "@request.queryString.get("endtime").getOrElse("-1")"
                 });
