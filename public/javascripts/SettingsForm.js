@@ -145,6 +145,26 @@ var SettingsForm = (function() {
         return TextInput
     })();
 
+    var HiddenInput = (function() {
+
+        var template = '<input type="hidden" id="{{name}}" name="{{name}}">';
+
+        function HiddenInput(args) {
+            this.data = {
+                name: args.name
+            };
+            this.attach = args.attach;
+        }
+        HiddenInput.prototype.render = function() {
+            var html = Mustache.to_html(template, this.data);
+            var $element = $(html);
+            this.attach($element);
+            return $element;
+        };
+
+        return HiddenInput
+    })();
+
     var Submit = (function() {
 
         var template = '<input type="submit" class="btn{{#classes}} {{.}}{{/classes}}" value="{{text}}">';
@@ -170,6 +190,7 @@ var SettingsForm = (function() {
         SettingsForm: SettingsForm,
         formParts: {
             CheckBox: CheckBox,
+            HiddenInput: HiddenInput,
             RadioButtons: RadioButtons,
             Select: Select,
             Submit: Submit,

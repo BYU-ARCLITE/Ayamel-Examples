@@ -22,10 +22,11 @@
 
 @main("Ayamel - " + content.name) {
 
-    @views.html.content.dependencies()
+    @views.html.content.header.dependencies()
 
     <script type="text/javascript">
         ResourceLibrary.setBaseUrl("@resourceLibraryUrl");
+        var content = @Html(content.toJson.toString());
 
         var coursePrefix = "@course.map(c => "course_" + c.id.get + ":").getOrElse("")";
         $(function() {
@@ -46,6 +47,7 @@
     <script type="text/javascript" src="@routes.Assets.at("javascripts/labelsInput.js")"></script>
 
     <script type="text/javascript" src="@routes.Assets.at("javascripts/SettingsForm.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/ContentSettings.js")"></script>
 
     <div class="padded">
 
@@ -94,20 +96,15 @@
                                     </a>
                                     <ul class="dropdown-menu">
                                         <li><a href="#lmsModal" data-toggle="modal"><i class="icon-briefcase"></i> Add to LMS</a></li>
-                                        <li><a href="#courseSettingsModal" data-toggle="modal"><i class="icon-cogs"></i> Edit course settings</a></li>
                                         <li><a href="@routes.CourseContent.statsInCourse(content.id.get, course.get.id.get)"><i class="icon-bar-chart"></i> View course stats</a></li>
                                         <li><a href="@routes.CourseContent.removeFromCourse(content.id.get, course.get.id.get)"><i class="icon-remove"></i> Remove from course</a></li>
                                     </ul>
-                                    @views.html.content.header.courseSettings(content, course, resourceLibraryUrl)
+                                    @views.html.content.header.LTISettings(content, course.get)
                                 </li>
                             } else {
                                 @if(user.canCreateCourse) {
                                     <li><a href="#addToCourseModal" data-toggle="modal"><i class="icon-book"></i> Add to Course</a></li>
                                     @views.html.content.header.addToCourse(content)
-                                }
-                                @if(!content.isEditableBy(user)) {
-                                    <li><a href="#personalSettingsModal" data-toggle="modal"><i class="icon-cogs"></i> Edit personal settings</a></li>
-                                    @views.html.content.header.personalSettings(content, resourceLibraryUrl)
                                 }
                             }
 
@@ -117,7 +114,6 @@
                                         <i class="icon-pencil"></i> Edit <b class="caret"></b>
                                     </a>
                                     <ul class="dropdown-menu">
-                                        <li><a href="#settingsModal" data-toggle="modal"><i class="icon-cogs"></i> Edit settings</a></li>
                                         <li><a href="#metadataModal" data-toggle="modal"><i class="icon-info-sign"></i> Edit metadata</a></li>
                                         <li><a href="#thumbnailModal" data-toggle="modal"><i class="icon-camera"></i> Set thumbnail</a></li>
                                         <li><a href="#shareabilityModal" data-toggle="modal"><i class="icon-share"></i> Set shareability</a></li>
@@ -129,6 +125,9 @@
                                     @views.html.content.header.settings(content, resourceLibraryUrl)
                                 </li>
                             }
+
+                            <li><a href="#configurationModal" data-toggle="modal"><i class="icon-cogs"></i> Configuration</a></li>
+                            @views.html.content.header.configuration(content, resourceLibraryUrl, course)
                         </ul>
                     </div>
                 </div>
@@ -155,7 +154,6 @@
 
 
                 // Render the content
-                var content = [@Html(content.toJson.toString())][0];
                 var contentHolder = $("#contentHolder")[0];
                 ContentRenderer.render({
                     content: content,

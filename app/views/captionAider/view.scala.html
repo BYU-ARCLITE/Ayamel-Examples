@@ -22,7 +22,7 @@
     <script type="text/javascript" src="@routes.Assets.at("subtitle-timeline-editor/aurora/flac.js")"></script>
     <script type="text/javascript" src="@routes.Assets.at("subtitle-timeline-editor/aurora/mp3.js")"></script>
 
-    @views.html.content.dependencies()
+    @views.html.content.header.dependencies()
 
     <div class="container">
         <div class="mainContent">
@@ -127,7 +127,7 @@
                 <div class="control-group">
                     <label class="control-label" for="trackLanguage">Language</label>
                     <div class="controls">
-                        @views.html.content.languages("trackLanguage")
+                        @views.html.content.header.languages("trackLanguage")
                     </div>
                 </div>
             </form>
@@ -189,7 +189,7 @@
                 <div class="control-group">
                     <label class="control-label" for="loadLanguage">Language</label>
                     <div class="controls">
-                        @views.html.content.languages("loadLanguage")
+                        @views.html.content.header.languages("loadLanguage")
                     </div>
                 </div>
                  <div class="control-group">

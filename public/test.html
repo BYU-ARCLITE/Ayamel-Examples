@@ -10,6 +10,12 @@
 
 <script type="text/javascript" src="javascripts/jquery-1.9.0.min.js"></script>
 <script type="text/javascript" src="javascripts/mustache.js"></script>
+
+<script type="text/javascript" src="Ayamel.js/js/player2/js/Ayamel.js"></script>
+<script type="text/javascript" src="Ayamel.js/js/player2/js/LangCodes.js"></script>
+<script type="text/javascript" src="Ayamel.js/js/async.min.js"></script>
+<script type="text/javascript" src="Ayamel.js/js/Resource.js"></script>
+
 <script type="text/javascript" src="javascripts/SettingsForm.js"></script>
 <script type="text/javascript" src="javascripts/ContentSettings.js"></script>
 
@@ -19,6 +25,8 @@ Content settings
 <script type="text/javascript">
     $(function() {
         var content = {"id":16,"name":"Dreyfus","contentType":"video","thumbnail":"","resourceId":"4a73496a-6b51-f529-6bee-3918eb45bbc3","dateAdded":"2013-06-20T14:16:37.423-06:00","visibility":2,"shareability":3,"settings":{"level":"4","enabledCaptionTracks":"7c2a6e27-cfcd-67a3-af69-eb4ebe8eb6d2","enabledAnnotationDocuments":"","includeTranscriptions":"true"},"authKey":"07c350d1f295cb26bc4d365bbddd4d5c","views":8,"labels":[]};
+
+        ResourceLibrary.setBaseUrl("http://localhost:9005/api/v1/");
 
         new ContentSettings({
             content: content,

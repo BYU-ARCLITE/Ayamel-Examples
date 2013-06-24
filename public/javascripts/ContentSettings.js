@@ -34,6 +34,20 @@ var ContentSettings = (function() {
     }
 
     var predefined = {
+        contentType: {
+            type: "hidden",
+            name: "contentType",
+            attach: function($control, context, content) {
+                $control.val(content.contentType);
+            }
+        },
+        saveButton: {
+            type: "submit",
+            classes: ["btn-blue"],
+            text: "Save",
+            attach: function($control, context, content) {
+            }
+        },
         playbackLevel: {
             type: "radio",
             label: "Playback level",
@@ -81,11 +95,12 @@ var ContentSettings = (function() {
             name: "captionTracks",
             multiple: true,
             options: function(context, content) {
-                // TODO: Get the document name and language from the ID
-                return content.enableableCaptionTracks.map(function (id) {
+                // Get the document name and language from the ID
+                return content.enableableCaptionTracks.map(function (resource) {
+                    var language = Ayamel.utils.getLangName(resource.languages[0]);
                     return {
-                        text: id,
-                        value: id
+                        text: resource.title + " (" + language + ")",
+                        value: resource.id
                     };
                 });
             },
@@ -101,11 +116,12 @@ var ContentSettings = (function() {
             name: "annotationDocs",
             multiple: true,
             options: function(context, content) {
-                // TODO: Get the document name and language from the ID
-                return content.enableableAnnotationDocuments.map(function (id) {
+                // Get the document name and language from the ID
+                return content.enableableAnnotationDocuments.map(function (resource) {
+                    var language = Ayamel.utils.getLangName(resource.languages[0]);
                     return {
-                        text: id,
-                        value: id
+                        text: resource.title + " (" + language + ")",
+                        value: resource.id
                     };
                 });
             },
@@ -120,61 +136,137 @@ var ContentSettings = (function() {
     var settings = {
         personal: {
             video: [
+                predefined.contentType,
                 predefined.enabledCaptionTracks,
-                predefined.enabledAnnotations
+                predefined.enabledAnnotations,
+                predefined.saveButton
             ],
             audio: [
+                predefined.contentType,
                 predefined.enabledCaptionTracks,
                 predefined.enabledAnnotations
             ],
             image: [
-                predefined.enabledAnnotations
+                predefined.contentType,
+                predefined.enabledAnnotations,
+                predefined.saveButton
             ],
             text: [
-                predefined.enabledAnnotations
+                predefined.contentType,
+                predefined.enabledAnnotations,
+                predefined.saveButton
             ]
         },
         course: {
             video: [
+                predefined.contentType,
                 predefined.playbackLevel,
                 predefined.showTranscriptions,
                 predefined.enabledCaptionTracks,
-                predefined.enabledAnnotations
+                predefined.enabledAnnotations,
+                predefined.saveButton
             ],
             audio: [
+                predefined.contentType,
                 predefined.playbackLevel,
                 predefined.showTranscriptions,
                 predefined.enabledCaptionTracks,
-                predefined.enabledAnnotations
+                predefined.enabledAnnotations,
+                predefined.saveButton
             ],
             image: [
-                predefined.enabledAnnotations
+                predefined.contentType,
+                predefined.enabledAnnotations,
+                predefined.saveButton
             ],
             text: [
-                predefined.enabledAnnotations
+                predefined.contentType,
+                predefined.enabledAnnotations,
+                predefined.saveButton
             ]
         },
         global: {
             video: [
+                predefined.contentType,
                 predefined.playbackLevel,
                 predefined.showTranscriptions,
                 predefined.enabledCaptionTracks,
-                predefined.enabledAnnotations
+                predefined.enabledAnnotations,
+                predefined.saveButton
             ],
             audio: [
+                predefined.contentType,
                 predefined.playbackLevel,
                 predefined.showTranscriptions,
                 predefined.enabledCaptionTracks,
-                predefined.enabledAnnotations
+                predefined.enabledAnnotations,
+                predefined.saveButton
             ],
             image: [
-                predefined.enabledAnnotations
+                predefined.contentType,
+                predefined.enabledAnnotations,
+                predefined.saveButton
             ],
             text: [
-                predefined.enabledAnnotations
+                predefined.contentType,
+                predefined.enabledAnnotations,
+                predefined.saveButton
             ]
         }
     };
+
+    var initActions = [
+        function (args, context, callback) {
+
+            // Get the list of enableable caption tracks
+            $.ajax("/ajax/permissionChecker", {
+                type: "post",
+                data: {
+                    contentId: args.content.id,
+                    courseId: context.courseId,
+                    permission: "enable",
+                    documentType: "captionTrack"
+                },
+                success: function(data) {
+
+                    // Now turn those IDs into resources
+                    async.map(data, function (id, asyncCallback) {
+                        ResourceLibrary.load(id, function (resource) {
+                            asyncCallback(null, resource);
+                        });
+                    }, function (err, data) {
+                        args.content.enableableCaptionTracks = data;
+                        callback();
+                    });
+                }
+            });
+        },
+        function (args, context, callback) {
+
+            // Get the list of enableable caption tracks
+            $.ajax("/ajax/permissionChecker", {
+                type: "post",
+                data: {
+                    contentId: args.content.id,
+                    courseId: context.courseId,
+                    permission: "enable",
+                    documentType: "annotations"
+                },
+                success: function(data) {
+
+                    // Now turn those IDs into resources
+                    async.map(data, function (id, asyncCallback) {
+                        ResourceLibrary.load(id, function (resource) {
+                            asyncCallback(null, resource);
+                        });
+                    }, function (err, data) {
+                        args.content.enableableAnnotationDocuments = data;
+                        callback();
+                    });
+                }
+            });
+        }
+    ];
 
     function createControls(config, context, content) {
         if (config.type === "radio") {
@@ -204,8 +296,30 @@ var ContentSettings = (function() {
                     config.attach($control, context, content);
                 }
             });
+        } else if (config.type === "hidden") {
+            return new SettingsForm.formParts.HiddenInput({
+                name: config.name,
+                attach: function ($control) {
+                    config.attach($control, context, content);
+                }
+            });
+        } else if (config.type === "submit") {
+            return new SettingsForm.formParts.Submit({
+                name: config.name,
+                classes: config.classes,
+                text: config.text,
+                attach: function ($control) {
+                    config.attach($control, context, content);
+                }
+            });
         }
         return null;
+    }
+
+    function init(args, context, callback) {
+        async.forEach(initActions, function(action, asyncCallback) {
+            action(args, context, asyncCallback);
+        }, callback);
     }
 
     function ContentSettings(args) {
@@ -218,42 +332,20 @@ var ContentSettings = (function() {
         };
         var permissionLevel = getPermissionLevel(context);
 
-        // Before we create the form, we want to collect data first
-        // Get a list of caption tracks we are allowed to enable
-        $.ajax("/ajax/permissionChecker", {
-            type: "post",
-            data: {
-                contentId: args.content.id,
-                courseId: context.courseId,
-                permission: "enable",
-                documentType: "captionTrack"
-            },
-            success: function(data){
-                args.content.enableableCaptionTracks = data;
+        // Do any async actions now
+        init(args, context, function () {
 
-                // Now get a list of annotation documents we are allowed to enable
-                $.ajax("/ajax/permissionChecker", {
-                    type: "post",
-                    data: {
-                        contentId: args.content.id,
-                        courseId: context.courseId,
-                        permission: "enable",
-                        documentType: "annotations"
-                    },
-                    success: function(data){
-                        args.content.enableableAnnotationDocuments = data;
+            // Create the form
+            var controls = settings[permissionLevel][args.content.contentType].map(function(config) {
+                return createControls(config, context, args.content);
+            });
+            new SettingsForm.SettingsForm({
+                $holder: args.$holder,
+                controls: controls,
+                method: args.method,
+                action: args.action
+            });
 
-                        // Create the form
-                        var controls = settings[permissionLevel][args.content.contentType].map(function(config) {
-                            return createControls(config, context, args.content);
-                        });
-                        var form = new SettingsForm.SettingsForm({
-                            $holder: args.$holder,
-                            controls: controls
-                        });
-                    }
-                });
-            }
         });
     }
     return ContentSettings;
