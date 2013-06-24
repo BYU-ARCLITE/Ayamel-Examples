@@ -78,13 +78,13 @@
 
                             <li class="dropdown">
                                 <a class="dropdown-toggle" data-toggle="dropdown" href="#">
-                                    <i class="icon-plus"></i> Add <b class="caret"></b>
+                                    <i class="icon-quote-left"></i> Text <b class="caret"></b>
                                 </a>
                                 <ul class="dropdown-menu">
                                     @if(content.contentType == 'video || content.contentType == 'audio) {
-                                        <li><a href="#captionTrackModal" data-toggle="modal"><span class="captionsIcon"></span> Add @userLevelText captions</a></li>
+                                        <li><a href="#captionTrackModal" data-toggle="modal"><span class="captionsIcon"></span> Captions/Subtitles</a></li>
                                     }
-                                    <li><a href="#annotationsModal" data-toggle="modal"><i class="icon-comments"></i> Add @userLevelText annotations</a></li>
+                                    <li><a href="#annotationsModal" data-toggle="modal"><i class="icon-comments"></i> Annotations</a></li>
                                 </ul>
                                 @views.html.content.header.addRelatedDocs(content, course, resourceLibraryUrl)
                             </li>

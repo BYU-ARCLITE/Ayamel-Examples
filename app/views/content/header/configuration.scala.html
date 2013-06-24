@@ -11,8 +11,8 @@
             <ul class="nav nav-pills">
                 <li><a href="#personalSettings" data-toggle="pill">Personal</a></li>
 
-                @if(course.isDefined) {
-                <li><a href="#courseSettings" data-toggle="pill">Course</a></li>
+                @if(course.isDefined && user.canEdit(course.get)) {
+                    <li><a href="#courseSettings" data-toggle="pill">Course</a></li>
                 }
             </ul>
         </div>
@@ -23,9 +23,8 @@
             <div class="tab-pane" id="personalSettings">
             </div>
 
-            @if(course.isDefined) {
-            <div class="tab-pane" id="courseSettings">
-            </div>
+            @if(course.isDefined && user.canEdit(course.get)) {
+                <div class="tab-pane" id="courseSettings"></div>
             }
 
 
@@ -63,7 +62,7 @@
                 content: content,
                 courseId: courseId,
                 $holder: $("#courseSettings"),
-                action: "@routes.ContentEditing.setSettings(content.id.get)",
+                action: "@{routes.ContentEditing.setCourseSettings(content.id.get, course.map(_.id.get).getOrElse(0))}",
                 method: "post"
             });
         }

@@ -13,13 +13,14 @@ $(function() {
     contentHolder = $("#contentHolder")[0];
     ContentRenderer.render({
         content: content,
-        userId: 1,
-        owner: true,
-        teacher: false,
-        courseId: 0,
+        userId: userId,
+        owner: owner,
+        teacher: teacher,
+        courseId: courseId,
         holder: contentHolder,
         coursePrefix: "",
         annotate: true,
+        permission: "edit",
         startTime: 0,
         endTime: -1,
         renderCue: renderCue,
