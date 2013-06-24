@@ -29,7 +29,7 @@
 
         <link rel="stylesheet" href="@routes.Assets.at("stylesheets/ipad.css")"/>
 
-        @views.html.content.dependencies()
+        @views.html.content.header.dependencies()
 
         <script type="text/javascript">
             var coursePrefix = "@course.map(c => "course_" + c.id.get + ":").getOrElse("")";
