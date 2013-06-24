@@ -439,7 +439,7 @@ h1, h2, h3, h4, h5, h6 {
 .bigModal .modal-body {
     max-height: none;
     position: absolute;
-    width: 100%;
+    width: auto;
     top: 49px;
     bottom: 65px;
 }

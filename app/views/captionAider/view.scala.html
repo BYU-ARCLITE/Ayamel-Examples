@@ -208,7 +208,11 @@
     </div>
 
     <script type="text/javascript">
-        var content = [@Html(content.toJson.toString())][0];
+        var content = @Html(content.toJson.toString());
+        var courseId = @course.map(_.id.get).getOrElse(0);
+        var userId = @user.id.get;
+        var owner = @content.isEditableBy(user);
+        var teacher = @course.exists(c => user.canEdit(c));
         ResourceLibrary.setBaseUrl("@resourceLibraryUrl");
     </script>
 
