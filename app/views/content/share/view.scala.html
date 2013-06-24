@@ -42,6 +42,9 @@
 
         <script type="text/javascript">
             $(function() {
+
+                ResourceLibrary.setBaseUrl("@resourceLibraryUrl");
+
                 // Register the page for later activity stream calls
                 ActivityStreams.registerPage("content", "share:view", [@content.id.get][0]);
 
@@ -86,11 +89,8 @@
         <script type="text/javascript">
             $(function() {
 
-                // Set up the environment
-                ContentRenderer.setResourceLibraryUrl("@resourceLibraryUrl");
-
                 // Render the content
-                var content = [@Html(content.toJson.toString())][0];
+                var content = @Html(content.toJson.toString());
                 var contentHolder = $("#contentHolder")[0];
                 ContentRenderer.render({
                     content: content,
