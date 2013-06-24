@@ -21,7 +21,7 @@ var ContentRenderer = (function () {
             type: "post",
             data: {
                 courseId: args.courseId,
-                contentId: content.id,
+                contentId: args.content.id,
                 permission: args.permission || "view",
                 documentType: "captionTrack"
             },
@@ -53,7 +53,7 @@ var ContentRenderer = (function () {
             type: "post",
             data: {
                 courseId: args.courseId,
-                contentId: content.id,
+                contentId: args.content.id,
                 permission: args.permission || "view",
                 documentType: "captionTrack"
             },
