@@ -24,7 +24,7 @@
                     <div class="span9">
                         <form action="@routes.Users.uploadProfilePicture()" method="post" enctype="multipart/form-data">
                             <div>
-                                <label for="file">Upload a new image:</label>
+                                <label for="file">To update your profile picture, upload a new image:</label>
                                 <input type="file" id="file" name="file">
                             </div>
                             <div class="pad-top-high">
@@ -36,6 +36,8 @@
 
 
                 <h2>Personal Information</h2>
+
+                <p>To change your personal information, fill in the following fields and click <em>Save Changes</em>.</p>
 
                 <form class="form-horizontal" method="post" action="@routes.Users.saveSettings()">
                     <div class="control-group">
