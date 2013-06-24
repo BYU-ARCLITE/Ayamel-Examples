@@ -189,10 +189,12 @@
                     // Now populate the table
                     var $tbody = $table.find("tbody");
                     data.forEach(function (resource) {
+                        var langCode = resource.languages[0].length === 3 ? resource.languages[0] : Ayamel.utils.upgradeLangCode(resource.languages[0]);
+                        var language = Ayamel.utils.getLangName(langCode);
                         var published = resource.attributes && resource.attributes.publishStatus;
                         var html = Mustache.to_html(rowTemplate, {
                             name: resource.title,
-                            language: Ayamel.utils.getLangName(resource.languages[0]),
+                            language: language,
                             contentId: content.id,
                             resourceId: resource.id,
                             course: !!courseId,
