@@ -154,9 +154,6 @@
 
                 // Make sure we have enough room
                 var $contentHolder = $("#contentHolder");
-                var controlBarHeight = 61;
-                var buffer = 50;
-                ScreenAdapter.containByHeight($contentHolder, Ayamel.aspectRatios.hdVideo, controlBarHeight + buffer);
 
                 // Render the content
                 ContentRenderer.render({
@@ -168,6 +165,11 @@
                     holder: $contentHolder[0],
                     coursePrefix: coursePrefix,
                     annotate: true,
+                    screenAdaption: {
+                        fit: true,
+                        scroll: true,
+                        padding: 61
+                    },
                     aspectRatio: Ayamel.aspectRatios.hdVideo,
                     startTime: "@request.queryString.get("starttime").getOrElse("0")",
                     endTime: "@request.queryString.get("endtime").getOrElse("-1")"

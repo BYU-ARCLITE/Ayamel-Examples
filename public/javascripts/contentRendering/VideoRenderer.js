@@ -194,6 +194,11 @@ var VideoRenderer = (function () {
         Ayamel.prioritizedPlugins.video = ["html5", "flash", "brightcove", "youtube"];
         Ayamel.prioritizedPlugins.audio = ["html5"];
 
+        // Make sure the element will be contained on the page
+        if (args.screenAdaption && args.screenAdaption.fit) {
+            ScreenAdapter.containByHeight(args.layout.$player, Ayamel.aspectRatios.hdVideo, args.screenAdaption.padding);
+        }
+
         var videoPlayer = new Ayamel.classes.AyamelPlayer({
             $holder: args.layout.$player,
             resource: args.resource,
@@ -223,6 +228,15 @@ var VideoRenderer = (function () {
             aspectRatio: Ayamel.aspectRatios.hdVideo,
             captionTrackCallback: args.captionTrackCallback
         });
+
+        if (args.screenAdaption && args.screenAdaption.scroll) {
+            videoPlayer.addEventListener("durationchange", function () {
+                // The video is loaded. Scroll the window to see it
+                if (!ScreenAdapter.isEntirelyVisible(args.layout.$player, args.screenAdaption.padding)) {
+                    ScreenAdapter.scrollTo(args.layout.$player.offset().top - 10);
+                }
+            });
+        }
 
         var registerPlay = true;
         videoPlayer.addEventListener("play", function (event) {
