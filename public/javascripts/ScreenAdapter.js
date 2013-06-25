@@ -23,7 +23,7 @@ var ScreenAdapter = (function() {
             newHeight = window.innerHeight - padding;
             newWidth = newHeight * aspectRatio;
         } else {
-            newHeight = proportionalVertical + padding;
+            newHeight = proportionalVertical;
             newWidth = proportionalVertical * aspectRatio
         }
 
