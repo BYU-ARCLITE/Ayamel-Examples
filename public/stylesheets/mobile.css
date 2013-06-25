@@ -1,19 +1,21 @@
-body.ipad {
+body.mobile {
     overflow: hidden;
     background: #1a1a1a;
 }
 
-.ipad #contentHolder {
+.mobile #contentHolder {
     position: relative;
+    margin-bottom: 0;
+    overflow: hidden;
 }
 
-.ipad .primary {
+.mobile .primary {
     position: absolute;
     left: 0;
     top: 0;
 }
 
-.ipad .secondary {
+.mobile .secondary {
     background: white;
     position: absolute;
     left: 0;
@@ -24,24 +26,20 @@ body.ipad {
     font-size: 18pt;
 }
 
-.ipad .secondaryContent {
+.mobile .secondaryContent {
     padding: 8px;
 }
 
-.ipad .transcriptContent, .ipad #Definitions, .ipad #Annotations {
+.mobile .transcriptContent, .mobile #Definitions, .mobile #Annotations {
     max-height: none;
 }
 
-.ipad #contentHolder {
-    margin-bottom: 0;
-}
-
-.ipad .caption-cue {
+.mobile .caption-cue {
     font-size: 18pt;
 }
 
 @media (max-width: 767px) {
-    body.ipad {
+    body.mobile {
         padding: 0;
     }
 }
