@@ -28,10 +28,10 @@ $(function() {
         coursePrefix: "",
         annotate: true,
         permission: "edit",
-        screenAdaption: {
-            fit: true,
-            padding: 100
-        },
+//        screenAdaption: {
+//            fit: true,
+//            padding: 100
+//        },
         startTime: 0,
         endTime: -1,
         renderCue: renderCue,
@@ -228,7 +228,7 @@ $(function() {
                     track = new TextTrack(type, name, language);
                 track.mode = "showing";
                 track.readyState = TextTrack.LOADED;
-                timeline.addTextTrack(track, true);
+                timeline.addTextTrack(track, "text/vtt", true);
                 $('#newTrackModal').modal('hide');
 
                 // Add the track to the player and transcript
@@ -348,9 +348,9 @@ $(function() {
                         kind: kind,
                         label: fileObj.name,
                         lang: language,
-                        success: function(track) {
+                        success: function(track, mime) {
                             track.mode = "showing";
-                            timeline.addTextTrack(track, true);
+                            timeline.addTextTrack(track, mime, true);
                             videoPlayer.captionRenderer.addTextTrack(track);
                             videoPlayer.controlBar.addTrack(track);
                             transcript.addTrack(track);

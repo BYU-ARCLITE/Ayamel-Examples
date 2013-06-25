@@ -86,7 +86,6 @@
                                     }
                                     <li><a href="#annotationsModal" data-toggle="modal"><i class="icon-comments"></i> Annotations</a></li>
                                 </ul>
-                                @views.html.content.header.addRelatedDocs(content, course, resourceLibraryUrl)
                             </li>
 
                             @if(course.isDefined && user.canEdit(course.get)) {
@@ -133,6 +132,7 @@
                 </div>
             </div>
         </div>
+        @views.html.content.header.addRelatedDocs(content, course, resourceLibraryUrl)
 
         <h1>
             <i class="@contentIcons(content.contentType)"></i> @content.name

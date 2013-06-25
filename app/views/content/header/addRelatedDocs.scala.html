@@ -1,14 +1,5 @@
 @(content: models.Content, course: Option[Course], resourceLibraryUrl: String)(implicit user: User)
 
-@annotationUrl = @{
-    if (course.isDefined && user.canEdit(course.get)) {
-        val courseQuery = "?course=" + course.get.id.get
-        routes.DocumentManager.editAnnotations(content.id.get).toString() + courseQuery
-    } else {
-        routes.DocumentManager.editAnnotations(content.id.get).toString()
-    }
-}
-
 @if(true) {
 
     <script type="text/javascript">
