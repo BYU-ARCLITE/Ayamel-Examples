@@ -9,6 +9,9 @@
 #toolbarHolder {
     text-align: center;
     margin: 5px 0;
+    width: auto;
+    overflow-x: auto;
+    white-space: nowrap;
 }
 
 .toolbar {
