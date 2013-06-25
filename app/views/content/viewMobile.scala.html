@@ -20,20 +20,23 @@
         )
 
         <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.png")">
+
         <script src="@routes.Assets.at("javascripts/jquery-1.9.0.min.js")" type="text/javascript"></script>
         <script src="@routes.Assets.at("javascripts/bootstrap.min.js")" type="text/javascript"></script>
         <script type="text/javascript" src="@routes.Assets.at("javascripts/mustache.js")"></script>
         <script src="@routes.Assets.at("javascripts/ContentItemRenderer.js")" type="text/javascript"></script>
         <script src="@routes.Assets.at("javascripts/ActivityStreams.js")" type="text/javascript"></script>
-        <script src="@routes.Assets.at("javascripts/angular.min.js")" type="text/javascript"></script>
+        <script type="text/javascript" src="@routes.Assets.at("javascripts/ScreenAdapter.js")"></script>
+        @*<script src="@routes.Assets.at("javascripts/angular.min.js")" type="text/javascript"></script>*@
 
-        <link rel="stylesheet" href="@routes.Assets.at("stylesheets/ipad.css")"/>
+        <link rel="stylesheet" href="@routes.Assets.at("stylesheets/mobile.css")"/>
 
         @views.html.content.header.dependencies()
 
         <script type="text/javascript">
             var coursePrefix = "@course.map(c => "course_" + c.id.get + ":").getOrElse("")";
             $(function() {
+                ResourceLibrary.setBaseUrl("@resourceLibraryUrl");
                 // Register the page for later activity stream calls
                 ActivityStreams.registerPage("content", coursePrefix + "view", [@content.id.get][0]);
 
@@ -42,7 +45,7 @@
             });
         </script>
     </head>
-    <body class="ipad">
+    <body class="mobile">
 
         <div class="headerBar">
             <div class="container">
@@ -103,10 +106,8 @@
                     event.stopPropagation();
                 });
 
-                ContentRenderer.setResourceLibraryUrl("@resourceLibraryUrl");
-
                 // Render the content
-                var content = [@Html(content.toJson.toString())][0];
+                var content = @Html(content.toJson.toString());
                 var contentHolder = $("#contentHolder")[0];
                 ContentRenderer.render({
                     content: content,

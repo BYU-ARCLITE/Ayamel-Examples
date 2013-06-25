@@ -138,55 +138,53 @@ var ContentLayoutManager = (function() {
 
         function arrangeWindow() {
 
-            // Have the contents container fill the rest of the screen
-            var width = window.innerWidth;
-            var height = window.innerHeight - $(".headerBar").height();
-            var secondaryHeight;
+            var sizes = {
+                header: 41,
+                controls: 101,
+                secondary: 300
+            };
+            var aspectRatio = Ayamel.aspectRatios.hdVideo;
 
-            $container.width(width).height(height);
+            // Have the contents container fill the rest of the screen
+            var availableWidth = window.innerWidth;
+            var availableHeight = window.innerHeight - sizes.header;
+            var newHeight;
+
+            $container.width(availableWidth).height(availableHeight);
 
             // Detect which orientation the device is
-            if (width > height) {
+            if (availableWidth > availableHeight) {
                 // Landscape
                 $("body").addClass("landscapeOrientation").removeClass("portraitOrientation");
 
-                // Set up the primary container
-//                var primaryWidthPercentage = 0.65;
-                // Make sure the video container will fit
-                var videoWidth = height;
-                var videoHeight = (videoWidth / Ayamel.aspectRatios.hdVideo) + 100;
-                if (videoHeight > height) {
-
-                    // Video player won't fit. Resize
-                    videoWidth = height * Ayamel.aspectRatios.hdVideo;
-                    $primary.width(videoWidth).height(height);
+                // First see if we can fit the video with 100% height and have enough space for secondary
+                var newWidth = (availableHeight - sizes.controls) * aspectRatio;
+                if (newWidth <= window.innerWidth - sizes.secondary) {
+                    // Yes we can
+                    $primary.height(availableHeight).width(newWidth);
+                    $secondary.height(availableHeight).width(availableWidth - newWidth).css("left", newWidth).css("top", 0);
                 } else {
-                    $primary.width(height).height(height);
+                    // No we can't. So give the secondary container everything it needs and adapt the player to the rest
+                    newWidth = window.innerWidth - sizes.secondary;
+                    newHeight = (newWidth / aspectRatio) + sizes.controls;
+                    var marginTop = (availableHeight - newHeight) / 2;
+                    $primary.height(newHeight).width(newWidth).css("margin-top", marginTop);
+                    $secondary.height(availableHeight).width(sizes.secondary).css("left", newWidth).css("top", 0);
                 }
-
-                // Set up the secondary container
-                secondaryHeight = height;
-                $secondary.width(width - videoWidth).height(secondaryHeight).css("left", videoWidth).css("top", 0);
             } else {
                 // Portrait
                 $("body").addClass("portraitOrientation").removeClass("landscapeOrientation");
 
                 // Set up the primary container
-                $primary.width(width).css("height", "auto");
-                var primaryHeight = $primary.height();
-                if (primaryHeight === 0) {
-                    // Figure out how big the player will be
-                    var playerHeight = (width / Ayamel.aspectRatios.hdVideo) + 100;
-                    $primary.height(primaryHeight = playerHeight);
-                }
+                newHeight = (availableWidth / aspectRatio) + sizes.controls;
+                $primary.width(availableWidth).height(newHeight);
 
                 // Set up the secondary container
-                secondaryHeight = height - primaryHeight;
-                $secondary.width(width).height(secondaryHeight).css("left", 0).css("top", primaryHeight);
+                $secondary.width(availableWidth).height(availableHeight - newHeight).css("left", 0).css("top", newHeight);
             }
 
-            $secondaryContent.height(secondaryHeight - 16);
-            $secondaryContent.find('.tab-pane').height(secondaryHeight - 76);
+//            $secondaryContent.height(secondaryHeight - 16);
+//            $secondaryContent.find('.tab-pane').height(secondaryHeight - 76);
         }
 
         $(window).resize(function () {

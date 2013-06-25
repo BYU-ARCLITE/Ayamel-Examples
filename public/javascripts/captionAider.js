@@ -10,7 +10,14 @@ $(function() {
         enabledCaptionTracks: content.settings.enabledCaptionTracks,
         includeTranscriptions: "true"
     };
-    contentHolder = $("#contentHolder")[0];
+    var $contentHolder = $("#contentHolder");
+    var contentHolder = $contentHolder[0];
+
+    // Figure out what size the video player needs to be so that the timeline and tools don't spill over
+    var paddingTop = $contentHolder.offset().top;
+    // 61px for player controls. 252px for timeline and tools.
+    var paddingBottom = 313;
+
     ContentRenderer.render({
         content: content,
         userId: userId,
@@ -21,6 +28,10 @@ $(function() {
         coursePrefix: "",
         annotate: true,
         permission: "edit",
+        screenAdaption: {
+            fit: true,
+            padding: 100
+        },
         startTime: 0,
         endTime: -1,
         renderCue: renderCue,
