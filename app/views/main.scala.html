@@ -72,13 +72,15 @@
 
                         <div class="link">
                             <a href="#" class="headerDropdownLink" data-target="#profileDropdown">
-                                <i class="icon-user"></i> Profile
+                                <span class="profileIcon" style="background-image: url(@user.getPicture)"></span>
+                                @*<i class="icon-user"></i> Profile*@
                                 @if(!notifications.isEmpty) {
                                     <span class="badge badge-yellow pad-left-low">@notifications.size</span>
                                 }
                             </a>
                             <div id="profileDropdown" class="headerDropdown">
-                                <div class="dropdownPoint"></div>
+                                <div class="dropdownPoint light"></div>
+                                <div class="displayName">@user.displayName</div>
                                 <div class="dropdownItem">
                                     <a href="@routes.Users.accountSettings()"><i class="icon-cog"></i> Account Settings</a>
                                 </div>

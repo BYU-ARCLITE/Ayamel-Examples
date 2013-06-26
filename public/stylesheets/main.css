@@ -113,6 +113,29 @@ h1, h2, h3, h4, h5, h6 {
     position: relative;
 }
 
+.profileIcon {
+    width: 30px;
+    height: 30px;
+    display: inline-block;
+    background-color: #000;
+    background-size: cover;
+    background-position: center;
+    margin-bottom: -11px;
+    margin-top: -2px;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
+    -webkit-box-shadow: 0 0 1px 2px rgba(0, 0, 0, 0.2);
+    -moz-box-shadow: 0 0 1px 2px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 0 1px 2px rgba(0, 0, 0, 0.2);
+ }
+
+.link:hover .profileIcon {
+    -webkit-box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    -moz-box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
 .headerDropdown {
     position: absolute;
     background: #333;
@@ -121,9 +144,13 @@ h1, h2, h3, h4, h5, h6 {
     top: 40px;
     left: 50%;
     width: 200px;
-    margin-left: -100px;
+    margin-left: -109px;
+    -webkit-border-radius: 7px;
+    -moz-border-radius: 7px;
     border-radius: 7px;
-    box-shadow: 1px 2px 15px rgba(0,0,0,0.5);
+    -webkit-box-shadow: 1px 2px 15px rgba(0, 0, 0, 0.5);
+    -moz-box-shadow: 1px 2px 15px rgba(0, 0, 0, 0.5);
+    box-shadow: 1px 2px 15px rgba(0, 0, 0, 0.5);
 }
 
 .headerDropdown > div.dropdownPoint {
@@ -139,12 +166,29 @@ h1, h2, h3, h4, h5, h6 {
     padding: 0;
 }
 
+.headerDropdown > div.dropdownPoint.light {
+    top: -19px;
+    border-bottom: 20px solid #666;
+}
+
 .headerDropdown > div {
     padding: 5px
 }
 
 .headerDropdown > div > a {
     display: block;
+}
+
+.headerDropdown .displayName {
+    text-align: center;
+    font-style: italic;
+    margin: -10px -10px 0 -10px;
+    background: #666;
+    border-bottom: 1px solid #000;
+    border-top: 1px solid #ddd;;
+    -webkit-border-radius: 7px 7px 0 0;
+    -moz-border-radius: 7px 7px 0 0;
+    border-radius: 7px 7px 0 0;
 }
 
 .headerBar .links > .link a {
