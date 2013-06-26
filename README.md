@@ -11,6 +11,7 @@ This is the Ayamel site developed by the ARCLITE Lab at Brigham Young University
  - <a href="#running">Running</a>
     - <a href="#development-server">Development Server</a>
     - <a href="#production-server">Production Server</a>
+ - <a href="#api">API</a>
 
 ## Setup
 
@@ -114,3 +115,7 @@ From the project root directory, start the app with Play, specifying the port th
     play "start -DapplyEvolutions.default=true 9000"
     
 This would run the server on port 9000.
+
+## API
+
+The most up-to-date version of the ScalaDoc is <a href="sartre3.byu.edu/ayamel/api">here</a>.
