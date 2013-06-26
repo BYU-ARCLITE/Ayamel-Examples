@@ -7,7 +7,7 @@ import play.api.db.DB
 import play.api.Play.current
 import play.api.Logger
 import controllers.routes
-import service.TimeTools
+import service.{EmailTools, TimeTools}
 
 /**
  * User
@@ -141,6 +141,13 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
    */
   def sendNotification(message: String): Notification = {
     // TODO: Possibly send an email as well. Issue # 52
+    if (Setting.findByName("notifications.users.emailOn.notification").get.value == "true" && email.isDefined) {
+      EmailTools.sendEmail(List((displayName, email.get)), "Ayamel notification") {
+        s"You have received the following notification:\n\n$message"
+      } {
+        s"<p>You have received the following notification:</p><p>$message</p>"
+      }
+    }
     Notification(NotAssigned, this.id.get, message).save
   }
 
