@@ -118,4 +118,4 @@ This would run the server on port 9000.
 
 ## API
 
-The most up-to-date version of the ScalaDoc is <a href="sartre3.byu.edu/ayamel/api">here</a>.
+The most up-to-date version of the ScalaDoc is <a href="http://sartre3.byu.edu/ayamel/api">here</a>.
