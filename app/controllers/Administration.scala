@@ -192,6 +192,22 @@ object Administration extends Controller {
         }
   }
 
+  def batchUpdateContent = Authentication.authenticatedAction(parse.urlFormEncoded) {
+    implicit request =>
+      implicit user =>
+        Authentication.enforceRole(User.roles.admin) {
+
+          val params = request.body.mapValues(_(0))
+          val content = params("ids").split(",").filterNot(_.isEmpty).map(id => Content.findById(id.toLong).get)
+
+          // Update the content
+          val shareability = params("shareability").toInt
+          val visibility = params("visibility").toInt
+          content.foreach(_.copy(shareability = shareability, visibility = visibility).save)
+          Redirect(routes.Administration.manageContent()).flashing("info" -> "Contents updated")
+        }
+  }
+
   def homePageContent = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>

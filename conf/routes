@@ -103,6 +103,7 @@ GET     /admin/courses                      controllers.Administration.manageCou
 POST    /admin/courses/:id                  controllers.Administration.editCourse(id: Long)
 GET     /admin/courses/:id/delete           controllers.Administration.deleteCourse(id: Long)
 GET     /admin/content                      controllers.Administration.manageContent
+POST    /admin/content                      controllers.Administration.batchUpdateContent
 GET     /admin/homePageContent              controllers.Administration.homePageContent
 POST    /admin/homePageContent              controllers.Administration.createHomePageContent
 GET     /admin/homePageContent/:id/active   controllers.Administration.toggleHomePageContent(id: Long)

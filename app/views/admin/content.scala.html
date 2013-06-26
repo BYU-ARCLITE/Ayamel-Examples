@@ -21,6 +21,8 @@
 
         <h1>Manage Content</h1>
 
+        <a href="#batchEditModal" role="button" class="btn btn-blue pad-bottom-high" data-toggle="modal"><i class="icon-edit"></i> Batch edit</a>
+
         <table class="table table-bordered table-striped table-condensed">
             <tr>
                 <th>Id</th>
@@ -30,6 +32,7 @@
                 <th>Resource Id</th>
                 <th>Type</th>
                 <th>Actions</th>
+                <th></th>
             </tr>
             @for(content <- contentList) {
                 <tr>
@@ -65,15 +68,83 @@
                     <td>
                         <a href="@routes.ContentController.view(content.id.get)" class="btn">View</a>
                     </td>
+                    <td>
+                        <input type="checkbox" class="contentSelector" data-id="@content.id.get">
+                    </td>
                 </tr>
             }
         </table>
 
+        <a href="#batchEditModal" role="button" class="btn btn-blue" data-toggle="modal"><i class="icon-edit"></i> Batch edit</a>
+
+    </div>
+
+    <div id="batchEditModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="batchEditModal" aria-hidden="true">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3 id="batchEditModal">Batch edit</h3>
+        </div>
+        <div class="modal-body">
+            <form class="form-horizontal" method="post" action="@routes.Administration.batchUpdateContent()">
+                <input type="hidden" name="ids" id="ids">
+                <div class="control-group">
+                    <label class="control-label">Shareability</label>
+                    <div class="controls">
+                        <label class="radio">
+                            <input type="radio" name="shareability" id="shareability1" value="1" checked>
+                            Not shareable
+                        </label>
+                        <label class="radio">
+                            <input type="radio" name="shareability" id="shareability2" value="2">
+                            Shareable by owner only
+                        </label>
+                        <label class="radio">
+                            <input type="radio" name="shareability" id="shareability3" value="3">
+                            Shareable by anybody who can see the content
+                        </label>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label">Visibility</label>
+                    <div class="controls">
+                        <label class="radio">
+                            <input type="radio" name="visibility" id="visibility1" value="1" checked>
+                            Private
+                        </label>
+                        <label class="radio">
+                            <input type="radio" name="visibility" id="visibility1" value="2">
+                            Tightly Restricted
+                        </label>
+                        <label class="radio">
+                            <input type="radio" name="visibility" id="visibility1" value="3">
+                            Loosely Restricted
+                        </label>
+                        <label class="radio">
+                            <input type="radio" name="visibility" id="visibility1" value="4">
+                            Public
+                        </label>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <div class="controls">
+                        <button type="submit" class="btn btn-blue">Save</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+        </div>
     </div>
 
     <script type="text/javascript">
         $(function() {
             $(".shortened").tooltip();
+
+            $("#batchEditModal").on("show", function() {
+                var ids = $(".contentSelector:checked").map(function(e, f){return $(f).attr("data-id");}).toArray().join(",");
+                $("#ids").val(ids);
+            });
         });
     </script>
 
