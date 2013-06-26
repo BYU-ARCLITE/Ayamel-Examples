@@ -283,7 +283,7 @@ $(function() {
                     destination = $("input[name=saveDestination]:checked").val(),
                     key, data, textTrack;
                 if (tracks && tracks.length) {
-                    var exportedTracks = timeline.exportTracks(format, tracks);
+                    var exportedTracks = timeline.exportTracks(tracks);
                     if (destination === "ayamel") {
 
                         // Saving to the server. Provide all the information and data and let it handle everything
