@@ -152,7 +152,8 @@ object Fixtures {
     ("notifications.notifyOn.errorReport", "true"),
     ("notifications.notifyOn.bugReport", "true"),
     ("notifications.notifyOn.rating", "false"),
-    ("notifications.notifyOn.suggestion", "false")
+    ("notifications.notifyOn.suggestion", "false"),
+    ("notifications.users.emailOn.notification", "true")
   )
 
   def create() {
