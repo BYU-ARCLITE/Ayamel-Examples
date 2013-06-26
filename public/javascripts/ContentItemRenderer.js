@@ -231,7 +231,7 @@ var ContentItemRenderer = (function() {
             // Set up organizing
             var filters = args.filters;
             if (args.labels) {
-                args.organization = args.organization || "contentType";
+                args.organization = args.organization || "labels";
                 args.$holder.append(createOrganizer(args));
 
                 if (args.organization === "labels") {
