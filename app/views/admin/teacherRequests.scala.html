@@ -9,7 +9,7 @@
 
     <div class="padded">
 
-        @views.html.users.admin.navbar("teacherRequests")
+        @views.html.admin.navbar("teacherRequests")
 
         <h1>Teacher Request Approval</h1>
 
@@ -26,8 +26,8 @@
                     <td>@teacherRequest.getUser.email.getOrElse("None")</td>
                     <td>@teacherRequest.reason</td>
                     <td>
-                        <a href="@routes.Users.approveTeacher(teacherRequest.id.get)" class="btn btn-blue">Approve</a>
-                        <a href="@routes.Users.denyTeacher(teacherRequest.id.get)" class="btn btn-magenta">Deny</a>
+                        <a href="@routes.Administration.approveTeacher(teacherRequest.id.get)" class="btn btn-blue">Approve</a>
+                        <a href="@routes.Administration.denyTeacher(teacherRequest.id.get)" class="btn btn-magenta">Deny</a>
                     </td>
                 </tr>
             }
