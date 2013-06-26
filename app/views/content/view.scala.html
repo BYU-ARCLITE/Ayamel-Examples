@@ -140,7 +140,16 @@
 
         <!-- TODO: Metadata. Issue # 54 -->
 
-        <div id="contentHolder" class="@content.contentType.name"></div>
+        @*<div id="contentHolder" class="@content.contentType.name"></div>*@
+        @*<div class="well" style="margin-top: 100px;">*@
+            @*<div id="description">*@
+                @*<h3>Description</h3>*@
+                @*<p></p>*@
+            @*</div>*@
+
+
+
+        @*</div>*@
 
         <script type="text/javascript">
             $(function() {
@@ -174,6 +183,22 @@
                     startTime: "@request.queryString.get("starttime").getOrElse("0")",
                     endTime: "@request.queryString.get("endtime").getOrElse("-1")"
                 });
+
+                // Show the metadata
+//                ResourceLibrary.load(content.resourceId, function(resource) {
+//                    if (resource.description) {
+//                        $("#description p").text(resource.description);
+//                    } else {
+//                        $("#description").remove();
+//                    }
+//
+//                    var $languages = $("#languages");
+//                    resource.languages.forEach(function (langCode) {
+//                        langCode = langCode.length === 2 ? Ayamel.utils.upgradeLangCode(langCode) : langCode;
+//                        var language = Ayamel.utils.getLangName(langCode);
+//                        $languages.append('<span class="label label-info">' + language + '</span>')
+//                    });
+//                })
             });
         </script>
     </div>
