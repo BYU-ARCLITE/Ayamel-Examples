@@ -125,6 +125,17 @@
                     </div>
                 </div>
                 <div class="control-group">
+                    <label class="control-label" for="trackFormat">Format</label>
+                    <div class="controls">
+                        <select id="trackFormat">
+                            <option value="text/vtt" selected="selected">WebVTT</option>
+                            <option value="text/srt">SubRip</option>
+                            <option value="application/ttml+xml">TTML</option>
+                            <option value="text/x-ssa">Sub Station Alpha</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="control-group">
                     <label class="control-label" for="trackLanguage">Language</label>
                     <div class="controls">
                         @views.html.content.header.languages("trackLanguage")

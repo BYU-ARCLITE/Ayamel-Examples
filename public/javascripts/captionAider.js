@@ -1,6 +1,6 @@
 $(function() {
-    function renderCue(renderedCue, area) {
-        return captionEditor.make(renderedCue, area);
+    function renderCue(renderedCue, area, renderFunc) {
+        return captionEditor.make(renderedCue, area, renderFunc);
     }
 
     // Render the content
@@ -171,8 +171,9 @@ $(function() {
 
             // Track selection
             videoPlayer.addEventListener("enabletrack", function(event) {
-                if (timeline.trackIndices[event.track.label] === undefined)
-                    timeline.addTextTrack(event.track);
+                if (timeline.trackIndices[event.track.label] === undefined) {
+                    timeline.addTextTrack(event.track, event.track.mime);
+                }
             });
             videoPlayer.addEventListener("disabletrack", function(event) {
                 timeline.removeTextTrack(event.track.label);
@@ -225,10 +226,11 @@ $(function() {
                     type = $("#trackType").val(),
                     name = $trackName.val() || "Untitled",
                     language = $("#trackLanguage").val(),
-                    track = new TextTrack(type, name, language);
+                    track = new TextTrack(type, name, language),
+                    mime = $("#trackFormat").val();
                 track.mode = "showing";
                 track.readyState = TextTrack.LOADED;
-                timeline.addTextTrack(track, "text/vtt", true);
+                timeline.addTextTrack(track, mime, true);
                 $('#newTrackModal').modal('hide');
 
                 // Add the track to the player and transcript
