@@ -37,13 +37,13 @@
 
     <div class="padded">
 
-        @views.html.users.admin.navbar("settings")
+        @views.html.admin.navbar("settings")
 
         <h1>Site Settings</h1>
 
         <h2>Admin Email Notifications</h2>
 
-        <form class="form-horizontal" method="post" action="@routes.Users.saveSiteSettings()">
+        <form class="form-horizontal" method="post" action="@routes.Administration.saveSiteSettings()">
             @settingTextField("notifications.emails", "Emails (comma separated)")
             @settingCheckBox("notifications.notifyOn.error", "Email on error")
             @settingCheckBox("notifications.notifyOn.errorReport", "Email on error report")

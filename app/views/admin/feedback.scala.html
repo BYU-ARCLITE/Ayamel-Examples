@@ -10,7 +10,7 @@
 
     <div class="padded">
 
-        @views.html.users.admin.navbar("feedback")
+        @views.html.admin.navbar("feedback")
 
         <h1>Site Feedback</h1>
 
@@ -30,7 +30,7 @@
                     <td>@problem.getErrorInfo._2</td>
                     <td>@service.TimeTools.prettyTime(problem.submitted)</td>
                     <td>
-                        <a href="@routes.Users.deleteFeedback(problem.id.get)" class="btn btn-danger"><i class="icon-trash"></i></a>
+                        <a href="@routes.Administration.deleteFeedback(problem.id.get)" class="btn btn-danger"><i class="icon-trash"></i></a>
                         <button class="btn info-button" data-content="@problem.description"><i class="icon-info"></i></button>
                     </td>
                 </tr>
@@ -59,7 +59,7 @@
                     </td>
                     <td>@service.TimeTools.prettyTime(problem.submitted)</td>
                     <td>
-                        <a href="@routes.Users.deleteFeedback(problem.id.get)" class="btn btn-danger"><i class="icon-trash"></i></a>
+                        <a href="@routes.Administration.deleteFeedback(problem.id.get)" class="btn btn-danger"><i class="icon-trash"></i></a>
                         <button class="btn info-button" data-content="@problem.description"><i class="icon-info"></i></button>
                     </td>
                 </tr>
@@ -80,7 +80,7 @@
                     <td>@problem.getSuggestionInfo</td>
                     <td>@service.TimeTools.prettyTime(problem.submitted)</td>
                     <td>
-                        <a href="@routes.Users.deleteFeedback(problem.id.get)" class="btn btn-danger"><i class="icon-trash"></i></a>
+                        <a href="@routes.Administration.deleteFeedback(problem.id.get)" class="btn btn-danger"><i class="icon-trash"></i></a>
                         <button class="btn info-button" data-content="@problem.description"><i class="icon-info"></i></button>
                     </td>
                 </tr>
@@ -107,7 +107,7 @@
                     <td>@problem.getThoughtInfo._4</td>
                     <td>@service.TimeTools.prettyTime(problem.submitted)</td>
                     <td>
-                        <a href="@routes.Users.deleteFeedback(problem.id.get)" class="btn btn-danger"><i class="icon-trash"></i></a>
+                        <a href="@routes.Administration.deleteFeedback(problem.id.get)" class="btn btn-danger"><i class="icon-trash"></i></a>
                         <button class="btn info-button" data-content="@problem.description"><i class="icon-info"></i></button>
                     </td>
                 </tr>

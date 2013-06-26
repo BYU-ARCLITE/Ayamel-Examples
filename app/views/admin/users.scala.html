@@ -25,7 +25,7 @@
 
     <div class="padded">
 
-        @views.html.users.admin.navbar("userAccounts")
+        @views.html.admin.navbar("userAccounts")
 
         <h1>Users Accounts</h1>
 
@@ -73,7 +73,7 @@
                     </td>
                     <td>
                         @if(user != _user) {
-                            <a href="@routes.Users.proxy(_user.id.get)" class="btn btn-small btn-yellow">Proxy</a>
+                            <a href="@routes.Administration.proxy(_user.id.get)" class="btn btn-small btn-yellow">Proxy</a>
                             <a href="#notificationModal" role="button" data-toggle="modal" class="btn btn-small btn-blue sendNote" data-id="@_user.id.get">Notify</a>
                             <a href="#deleteModal" role="button" data-toggle="modal" class="btn btn-small btn-magenta deleteUser" data-id="@_user.id.get">Delete</a>
                         }
@@ -91,7 +91,7 @@
         </div>
         <div class="modal-body">
             <label for="role">Set the role for user #<span id="roleUserIdDisplay"></span>:</label>
-            <form id="userRoleForm" method="post" action="@routes.Users.setRole()">
+            <form id="userRoleForm" method="post" action="@routes.Administration.setRole()">
                 <select id="role" name="role">
                     <option value="@User.roles.guest">Guest</option>
                     <option value="@User.roles.student">Student</option>
@@ -116,7 +116,7 @@
         <div class="modal-body">
             <label for="role">Send a notification to user #<span id="noteUserIdDisplay"></span>:</label>
 
-            <form id="notificationForm" class="form-horizontal" method="post" action="@routes.Users.sendNotification()">
+            <form id="notificationForm" class="form-horizontal" method="post" action="@routes.Administration.sendNotification()">
                 <div class="control-group">
                     <label class="control-label" for="message">Message</label>
                     <div class="controls">
