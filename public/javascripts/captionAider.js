@@ -18,6 +18,11 @@ $(function() {
     // 61px for player controls. 252px for timeline and tools.
     var paddingBottom = 313;
 
+    function updateSpacing() {
+        $("#bottomSpacer").css("margin-top", $("#bottomContainer").height() + "px");
+        ScreenAdapter.scrollTo(document.body.scrollHeight - window.innerHeight);
+    }
+
     ContentRenderer.render({
         content: content,
         userId: userId,
@@ -55,6 +60,8 @@ $(function() {
                 videoPlayer = args.videoPlayer,
                 transcript = args.transcriptPlayer,
                 renderer = videoPlayer.captionRenderer;
+
+            updateSpacing();
 
             captionEditor = CaptionEditor({
                 stack: commandStack,
@@ -102,7 +109,8 @@ $(function() {
                 if (timeline.trackIndices[track.textTrack.label] === undefined) {
                     videoPlayer.captionRenderer.addTextTrack(track.textTrack);
                     videoPlayer.controlBar.addTrack(track.textTrack);
-                    transcript.addTrack(track.textTrack)
+                    transcript.addTrack(track.textTrack);
+                    updateSpacing();
                 }
             });
 
@@ -173,10 +181,12 @@ $(function() {
             videoPlayer.addEventListener("enabletrack", function(event) {
                 if (timeline.trackIndices[event.track.label] === undefined) {
                     timeline.addTextTrack(event.track, event.track.mime);
+                    updateSpacing();
                 }
             });
             videoPlayer.addEventListener("disabletrack", function(event) {
                 timeline.removeTextTrack(event.track.label);
+                updateSpacing();
             });
 
             //Bind the toolbar buttons
@@ -237,29 +247,72 @@ $(function() {
                 videoPlayer.captionRenderer.addTextTrack(track);
                 videoPlayer.controlBar.addTrack(track);
                 transcript.addTrack(track);
+                updateSpacing();
 
                 // Clear the form
                 $trackName.val("");
             });
 
             // Format dropdown menu
-            (function(){
-                "use strict";
-                var $li, li, key, formats = TimedText.mime_types,
-                    formatMenu = document.getElementById('formatMenu'),
-                    formatLabel = document.getElementById('formatLabel');
-                for(key in formats){
-                    $li = $("<li><a href='#'></a></li>");
-                    li = $li[0];
-                    $li.children("a").html(formats[key].extension.toUpperCase());
-                    li['data-key'] = key;
-                    li.addEventListener('click',function(){
-                        format = this['data-key'];
-                        formatLabel.innerHTML = $(this).children("a").text();
-                    },false);
-                    formatMenu.appendChild(li);
+//            (function(){
+//                "use strict";
+//                var $li, li, key, formats = TimedText.mime_types,
+//                    formatMenu = document.getElementById('formatMenu'),
+//                    formatLabel = document.getElementById('formatLabel');
+//                for(key in formats){
+//                    $li = $("<li><a href='#'></a></li>");
+//                    li = $li[0];
+//                    $li.children("a").html(formats[key].extension.toUpperCase());
+//                    li['data-key'] = key;
+//                    li.addEventListener('click',function(){
+//                        format = this['data-key'];
+//                        formatLabel.innerHTML = $(this).children("a").text();
+//                    },false);
+//                    formatMenu.appendChild(li);
+//                }
+//            }());
+
+            // Edit track
+            $("#editTrackModal").on("show", function() {
+
+                // Update the track select control
+                var $editTrack = $("#editTrack").html('<option id="dummyTrackOption">Select a track</option>');
+                for (var name in timeline.trackIndices) {
+                    $editTrack.append('<option value="' + timeline.trackIndices[name] + '">' + name + '</option>');
                 }
-            }());
+
+                // Hide the other controls
+                $("#editControls").hide();
+            });
+
+            $("#editTrack").change(function () {
+                var track = timeline.tracks[$(this).val()];
+                $("#dummyTrackOption").remove();
+
+                // Update and show the other controls
+                $("#editControls").show();
+                $("#editTrackName").val(track.textTrack.label);
+                $("#editTrackType").val(track.textTrack.kind);
+                $("#editTrackLanguage").val(track.textTrack.language);
+            });
+
+            $("#editTrackButton").click(function() {
+                var track = timeline.tracks[$("#editTrack").val()];
+                track.textTrack.kind = $("#editTrackType").val();
+                track.textTrack.language = $("#editTrackLanguage").val();
+
+                // Update the label
+                var newName = $("#editTrackName").val();
+                if (newName !== track.textTrack.label) {
+                    timeline.trackIndices[newName] = timeline.trackIndices[track.textTrack.label];
+                    delete timeline.trackIndices[track.textTrack.label];
+                    track.textTrack.label = newName;
+                }
+
+                $("#editTrackModal").modal("hide");
+                timeline.render();
+                return false;
+            });
 
             // Add save destinations
             (function () {
@@ -310,6 +363,7 @@ $(function() {
                                 success: function (data) {
                                     alert("Saved Successfully");
                                     commandStack.saved = true;
+                                    timeline.render();
                                 }
                             })
                         }
@@ -320,6 +374,7 @@ $(function() {
                             exportedTracks, destination,
                             function(){
                                 commandStack.saved = true;
+                                timeline.render();
                                 alert("Saved Successfully");
                             },
                             function(){ alert("Error Saving; please try again."); }
@@ -356,6 +411,7 @@ $(function() {
                             videoPlayer.captionRenderer.addTextTrack(track);
                             videoPlayer.controlBar.addTrack(track);
                             transcript.addTrack(track);
+                            updateSpacing();
                         }
                     });
                 });
