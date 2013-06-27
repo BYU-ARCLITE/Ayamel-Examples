@@ -97,6 +97,24 @@ object Courses extends Controller {
         }
   }
 
+  /**
+   * Edit course information
+   */
+  def edit(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
+    implicit request =>
+      implicit user =>
+        getCourse(id) {
+          course =>
+            if (user canEdit course) {
+              val name = request.body("courseName")(0)
+              val enrollment = Symbol(request.body("courseEnrollment")(0))
+              course.copy(name = name, enrollment = enrollment).save
+              Redirect(routes.Courses.view(id)).flashing("info" -> "Course updated")
+            } else
+              Errors.forbidden
+        }
+  }
+
   def addContent(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>

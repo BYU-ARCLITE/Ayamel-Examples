@@ -365,7 +365,7 @@ $(function() {
                                     commandStack.saved = true;
                                     timeline.render();
                                 }
-                            })
+                            });
                         }
                     } else {
 
