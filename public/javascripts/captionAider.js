@@ -177,6 +177,14 @@ $(function() {
             });
             timeline.on('timeupdate', function(){ timestamp.textContent = timeline.timeCode; });
 
+            // Listen for track creation from drop
+            timeline.on('dropTrack', function (track) {
+                videoPlayer.captionRenderer.addTextTrack(track);
+                videoPlayer.controlBar.addTrack(track);
+                transcript.addTrack(track);
+                updateSpacing();
+            });
+
             // Track selection
             videoPlayer.addEventListener("enabletrack", function(event) {
                 if (timeline.trackIndices[event.track.label] === undefined) {
