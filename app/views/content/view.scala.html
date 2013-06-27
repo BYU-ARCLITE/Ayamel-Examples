@@ -135,22 +135,24 @@
         </div>
         @views.html.content.header.addRelatedDocs(content, course, resourceLibraryUrl)
 
-        <h1>
-            <i class="@contentIcons(content.contentType)"></i> @content.name
-        </h1>
-
-        <!-- TODO: Metadata. Issue # 54 -->
-
         <div id="contentHolder" class="@content.contentType.name"></div>
-        @*<div class="well" style="margin-top: 100px;">*@
-            @*<div id="description">*@
-                @*<h3>Description</h3>*@
-                @*<p></p>*@
-            @*</div>*@
 
+        <div>
+            <h1>
+                <i class="@contentIcons(content.contentType)"></i> @content.name
+                <small class="pad-left-high" id="metadataCategories"></small>
+            </h1>
+            <p id="metadataDescription"></p>
 
+            <div class="inline-block">
+                <div class="well">
+                    <div id="metadataLanguages"><i class="icon-globe"></i> </div>
+                    <div id="metadataLabels"><i class="icon-tags"></i> </div>
+                </div>
+            </div>
 
-        @*</div>*@
+            <!-- TODO: Metadata. Issue # 54 -->
+        </div>
 
         <script type="text/javascript">
             $(function() {
@@ -186,20 +188,20 @@
                 });
 
                 // Show the metadata
-//                ResourceLibrary.load(content.resourceId, function(resource) {
-//                    if (resource.description) {
-//                        $("#description p").text(resource.description);
-//                    } else {
-//                        $("#description").remove();
-//                    }
-//
-//                    var $languages = $("#languages");
-//                    resource.languages.forEach(function (langCode) {
-//                        langCode = langCode.length === 2 ? Ayamel.utils.upgradeLangCode(langCode) : langCode;
-//                        var language = Ayamel.utils.getLangName(langCode);
-//                        $languages.append('<span class="label label-info">' + language + '</span>')
-//                    });
-//                })
+               ResourceLibrary.load(content.resourceId, function(resource) {
+                    console.log(resource);
+                    $("#metadataCategories").text(resource.categories.join(", "))
+                    $("#metadataDescription").text(resource.description);
+
+                    var $metadataLanguages = $("#metadataLanguages");
+                    resource.languages.forEach(function (langCode) {
+                        langCode = langCode.length === 2 ? Ayamel.utils.upgradeLangCode(langCode) : langCode;
+                        var language = Ayamel.utils.getLangName(langCode);
+                        $metadataLanguages.append('<em class="pad-left-high">' + language + '</em>');
+                    });
+
+                    $("#metadataLabels").append(resource.keywords.split(",").filter(function(w){return !!w;}).map(function(w){return "<span class='label label-info pad-left-med'>" + w + "</span>";}))
+               })
             });
         </script>
     </div>
