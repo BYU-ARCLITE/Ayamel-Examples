@@ -15,7 +15,7 @@
     display: inline-block;
 }
 
-.courseTitle > .btn {
+.courseTitle > .btn-group, .courseTitle > .btn {
     margin-top: -15px;
     margin-left: 30px;
 }
