@@ -1,0 +1,45 @@
+@(user: User, course: Course)(implicit request: RequestHeader)
+
+@if(user.canEdit(course)) {
+    <div id="editCourseModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="editCourseModalLabel" aria-hidden="true">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3 id="editCourseModalLabel">Edit course</h3>
+        </div>
+        <div class="modal-body">
+            <form class="form-horizontal" method="post" action="@routes.Courses.edit(course.id.get)">
+              <div class="control-group">
+                <label class="control-label" for="courseName">Name</label>
+                <div class="controls">
+                  <input type="text" id="courseName" name="courseName" value="@course.name">
+                </div>
+              </div>
+
+              <div class="control-group">
+                  <label class="control-label" for="courseEnrollment">Enrollment</label>
+                  <div class="controls">
+                      <select name="courseEnrollment" id="courseEnrollment">
+                          <option value="open">Open</option>
+                          <option value="closed">Closed</option>
+                      </select>
+                  </div>
+              </div>
+
+              <div class="control-group">
+                <div class="controls">
+                  <button type="submit" class="btn">Save changes</button>
+                </div>
+              </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-blue" data-dismiss="modal" aria-hidden="true">Close</button>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+    	$(function() {
+    		$("#courseEnrollment").val("@course.enrollment.name");
+    	});
+    </script>
+}
