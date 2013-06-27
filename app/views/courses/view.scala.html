@@ -17,10 +17,11 @@
         <div class="courseTitle">
             <h1>@course.name</h1>
             @if(user canEdit course) {
-                <a href="#lmsModal" role="button" class="btn btn-yellow" data-toggle="modal"><i class="icon-book"></i> Add to an LMS</a>
+                <a href="#editCourseModal" role="button" class="btn btn-yellow" data-toggle="modal"><i class="icon-pencil"></i> Edit</a>
                 @if(!course.getRequests.isEmpty) {
                     <a href="@routes.Courses.approvePage(course.id.get)" class="btn btn-yellow"><i class="icon-user"></i> Approve/Deny Student Requests</a>
                 }
+                <a href="#lmsModal" role="button" class="btn btn-blue" data-toggle="modal"><i class="icon-book"></i> Add to an LMS</a>
             }
         </div>
 
@@ -72,6 +73,8 @@
     </div>
 
     @views.html.courses.helpers.lmsInfo(user, course)
+
+    @views.html.courses.helpers.editCourse(user, course)
 
     @views.html.courses.helpers.addContent(user, course)
 
