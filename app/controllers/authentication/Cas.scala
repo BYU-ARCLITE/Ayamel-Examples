@@ -6,6 +6,7 @@ import concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
 import models.User
 import anorm.NotAssigned
+import java.net.URLEncoder
 
 /**
  * Controller which handles BYU CAS authentication.
@@ -15,20 +16,20 @@ object Cas extends Controller {
   /**
    * Redirects to the CAS login page.
    */
-  def login(action: String) = Action {
+  def login(action: String, path: String = "") = Action {
     implicit request =>
-      val service = routes.Cas.callback(action).absoluteURL()
+      val service = routes.Cas.callback(action, path).absoluteURL()
       Redirect("https://cas.byu.edu:443?service=" + service, 302)
   }
 
   /**
    * When the CAS login is successful, it is redirected here, where the TGT and login are taken care of.
    */
-  def callback(action: String) = Action {
+  def callback(action: String, path: String = "") = Action {
     implicit request =>
     // Retrieve the TGT
       val tgt = request.queryString("ticket")(0)
-      val casService = routes.Cas.callback(action).absoluteURL()
+      val casService = routes.Cas.callback(action, path).absoluteURL()
 
       // Verify the TGT with CAS to get the user id
       val url = "https://cas.byu.edu/cas/serviceValidate?ticket=" + tgt + "&service=" + casService
@@ -41,7 +42,7 @@ object Cas extends Controller {
           if (action == "merge")
             Authentication.merge(user)
           else
-            Authentication.login(user)
+            Authentication.login(user, path)
         })
       }
   }

@@ -5,6 +5,7 @@ import models.{AccountLink, User}
 import anorm.NotAssigned
 import controllers.Errors
 import service.TimeTools
+import java.net.{URLDecoder, URLEncoder}
 
 /**
  * This controller does logging out and has a bunch of helpers for dealing with authentication and roles.
@@ -16,7 +17,7 @@ object Authentication extends Controller {
    * @param user The user to log
    * @return The result. To be called from within an action
    */
-  def login(user: User): Result = {
+  def login(user: User, path: String)(implicit request: RequestHeader): Result = {
 
     // Check if the user's account is merged. If it is, then login with the primary account, if this one isn't it
     var loginUser = user
@@ -28,8 +29,14 @@ object Authentication extends Controller {
 
     // Log the user in
     loginUser.copy(lastLogin = TimeTools.now()).save
-    Redirect(controllers.routes.Application.home())
-      .withSession("userId" -> loginUser.id.get.toString)
+
+    // Redirect
+    {
+      if (path.isEmpty)
+        Redirect(controllers.routes.Application.home())
+      else
+        Redirect(path)
+    }.withSession("userId" -> loginUser.id.get.toString)
       .flashing("success" -> ("Welcome " + loginUser.displayName + "!"))
   }
 
@@ -113,9 +120,10 @@ object Authentication extends Controller {
       val user = getUserFromRequest()
       if (user.isDefined) {
         f(request)(user.get)
-      } else
-        Redirect(controllers.routes.Application.index()).flashing("alert" -> "You are not logged in")
+      } else {
+        Redirect(controllers.routes.Application.index().toString(), Map("path" -> List(request.path)))
+          .flashing("alert" -> "You are not logged in")
+      }
   }
-
 
 }

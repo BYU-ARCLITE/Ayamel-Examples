@@ -18,8 +18,10 @@ object Application extends Controller {
       val user = Authentication.getUserFromRequest()
       if (user.isDefined)
         Redirect(controllers.routes.Application.home()).withSession("userId" -> user.get.id.get.toString)
-      else
-        Ok(views.html.application.index())
+      else {
+        val path = request.queryString.get("path").map(path => path(0)).getOrElse("")
+        Ok(views.html.application.index(path))
+      }
   }
 
   def home = Authentication.authenticatedAction() {
