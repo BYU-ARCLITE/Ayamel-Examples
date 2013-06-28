@@ -1,4 +1,4 @@
-@()(implicit request: RequestHeader)
+@(path: String)(implicit request: RequestHeader)
 
 <!DOCTYPE html>
 <html>
@@ -71,10 +71,10 @@
 
             <div class="clearfix">
                 <div class="pull-left">
-                    <a class="btn btn-danger btn-large" href="@controllers.authentication.routes.Google.login("login")"><i class="icon-google-plus"></i> Sign in with Google</a>
+                    <a class="btn btn-danger btn-large" href="@controllers.authentication.routes.Google.login("login", path)"><i class="icon-google-plus"></i> Sign in with Google</a>
                 </div>
                 <div class="pull-right">
-                    <a class="btn btn-primary btn-large" href="@controllers.authentication.routes.Cas.login("login")"><img src="@routes.Assets.at("images/auth/byu.png")" /> Sign in with BYU</a>
+                    <a class="btn btn-primary btn-large" href="@controllers.authentication.routes.Cas.login("login", path)"><img src="@routes.Assets.at("images/auth/byu.png")" /> Sign in with BYU</a>
                 </div>
             </div>
 
@@ -142,7 +142,7 @@
             <h3 id="signupModalLabel">Create an account</h3>
         </div>
         <div class="modal-body">
-            <form class="form-horizontal" id="signupForm" method="post" action="@controllers.authentication.routes.Password.createAccount()">
+            <form class="form-horizontal" id="signupForm" method="post" action="@controllers.authentication.routes.Password.createAccount(path)">
                 <div class="control-group">
                     <label class="control-label" for="username">Username</label>
                     <div class="controls">
@@ -189,7 +189,7 @@
         </div>
 
         <div class="modal-body">
-            <form class="form-horizontal" id="loginForm" method="post" action="@controllers.authentication.routes.Password.login("login")">
+            <form class="form-horizontal" id="loginForm" method="post" action="@controllers.authentication.routes.Password.login("login", path)">
                 <div class="control-group">
                     <label class="control-label" for="username">Username</label>
                     <div class="controls">

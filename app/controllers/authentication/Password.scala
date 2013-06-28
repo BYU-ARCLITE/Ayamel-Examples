@@ -14,7 +14,7 @@ import models.User
  */
 object Password extends Controller {
 
-  def login(action: String) = Action(parse.urlFormEncoded) {
+  def login(action: String, path: String = "") = Action(parse.urlFormEncoded) {
     implicit request =>
       val username = request.body("username")(0)
       val password = request.body("password")(0)
@@ -29,18 +29,19 @@ object Password extends Controller {
         if (action == "merge")
           Authentication.merge(user.get)
         else
-          Authentication.login(user.get)
+          Authentication.login(user.get, path)
       } else {
 
         if (action == "merge")
           Redirect(controllers.routes.Users.accountSettings()).flashing("error" -> "Invalid username/password.")
         else
-          Redirect(controllers.routes.Application.index()).flashing("error" -> "Invalid username/password.")
+          Redirect(controllers.routes.Application.index().toString(), request.queryString)
+            .flashing("error" -> "Invalid username/password.")
       }
   }
 
-  def createAccount = Action(parse.urlFormEncoded) {
-    request =>
+  def createAccount(path: String = "") = Action(parse.urlFormEncoded) {
+    implicit request =>
       val username = request.body("username")(0)
       val password1 = request.body("password1")(0)
       val password2 = request.body("password2")(0)
@@ -55,10 +56,12 @@ object Password extends Controller {
         if (password1 == password2) {
           val passwordHash = HashTools.sha256Base64(password1)
           val user = User(NotAssigned, passwordHash, 'password, username, Some(name), Some(email), User.roles.student).save
-          Authentication.login(user)
+          Authentication.login(user, path)
         } else
-          Redirect(controllers.routes.Application.index()).flashing("alert" -> "Passwords do not match")
+          Redirect(controllers.routes.Application.index().toString(), request.queryString)
+            .flashing("alert" -> "Passwords do not match")
       } else
-        Redirect(controllers.routes.Application.index()).flashing("alert" -> "That username is already taken.")
+        Redirect(controllers.routes.Application.index().toString(), request.queryString)
+          .flashing("alert" -> "That username is already taken.")
   }
 }

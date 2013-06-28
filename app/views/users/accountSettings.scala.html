@@ -159,8 +159,8 @@
                     <div class="row-fluid">
                         <div class="span6 offset3">
                             <div class="well">
-                                <a class="btn btn-danger btn-block" href="@controllers.authentication.routes.Google.login("merge")"><i class="icon-google-plus"></i> Google</a>
-                                <a class="btn btn-primary btn-block" href="@controllers.authentication.routes.Cas.login("merge")"><img src="@routes.Assets.at("images/auth/byu.png")" style="height: 14px; margin-top: -2px;" /> BYU</a>
+                                <a class="btn btn-danger btn-block" href="@controllers.authentication.routes.Google.login("merge", "")"><i class="icon-google-plus"></i> Google</a>
+                                <a class="btn btn-primary btn-block" href="@controllers.authentication.routes.Cas.login("merge", "")"><img src="@routes.Assets.at("images/auth/byu.png")" style="height: 14px; margin-top: -2px;" /> BYU</a>
                                 <a href="#passwordModal" role="button" class="btn btn-magenta btn-block" data-toggle="modal"><i class="icon-key"></i> Username/Password</a>
                             </div>
                         </div>
@@ -177,7 +177,7 @@
         </div>
 
         <div class="modal-body">
-            <form class="form-horizontal" id="loginForm" method="post" action="@controllers.authentication.routes.Password.login("merge")">
+            <form class="form-horizontal" id="loginForm" method="post" action="@controllers.authentication.routes.Password.login("merge", "")">
                 <div class="control-group">
                     <label class="control-label" for="username">Username</label>
                     <div class="controls">
