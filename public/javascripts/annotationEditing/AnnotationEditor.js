@@ -460,7 +460,19 @@ var AnnotationEditor = (function() {
 
         var template =
             '<form method="post" action="/content/{{id}}/annotations{{courseQuery}}">' +
-                '{{>title}}' +
+                '<input type="hidden" name="resourceId" value="{{resourceId}}">' +
+                '<div class="control-group">' +
+                    '<label class="control-label" for="title">Title</label>' +
+                    '<div class="controls">' +
+                        '<input type="text" id="title" name="title" placeholder="Title" value="{{title}}">' +
+                    '</div>' +
+                '</div>' +
+                '<div class="control-group">' +
+                    '<label class="control-label" for="language">Language</label>' +
+                    '<div class="controls">' +
+                        '<select id="language" name="language"></select>' +
+                    '</div>' +
+                '</div>' +
                 '<div class="control-group">' +
                     '<div class="controls">' +
                         '<input type="submit" id="saveAnnotations" href="#" class="btn btn-blue" value="Save Changes" />' +
@@ -468,14 +480,6 @@ var AnnotationEditor = (function() {
                     '</div>' +
                 '</div>' +
             '</form>';
-
-        var titleTemplate =
-            '<div class="control-group">' +
-            '    <label class="control-label" for="title">Title</label>' +
-            '    <div class="controls">' +
-            '    <input type="text" id="title" name="title" placeholder="Title">' +
-            '   </div>' +
-            '</div>';
 
         function generateDoc(args) {
             var annotations = args.manifest.annotations;
@@ -501,12 +505,25 @@ var AnnotationEditor = (function() {
 
         function AnnotationSaver(args) {
             var _this = this;
-
-            var title = args.filename.length === 0 ? titleTemplate : "";
-            this.$element = $(Mustache.to_html(template, {
+            var html = Mustache.to_html(template, {
+                title: args.resource ? args.resource.title : "",
                 id: args.content.id,
-                courseQuery: args.courseId ? "?course=" + args.courseId : ""
-            }, {title: title}));
+                courseQuery: args.courseId ? "?course=" + args.courseId : "",
+                resourceId: args.resource ? args.resource.id : ""
+            });
+            this.$element = $(html);
+
+            // Include the languages
+            var $select = this.$element.find("select");
+            Object.keys(Ayamel.utils.p1map).forEach(function (p1) {
+                var code = Ayamel.utils.p1map[p1];
+                var name = Ayamel.utils.getLangName(code);
+                $select.append("<option value='" + code + "'>" + name + "</option>");
+            });
+            if (args.resource) {
+                $select.val(args.resource.languages[0]);
+            }
+
             this.$element.find("#saveAnnotations").click(function (event) {
                 var $form = _this.$element;
 
@@ -569,6 +586,7 @@ var AnnotationEditor = (function() {
                     AnnotationLoader.load(docUrl, function(manifest) {
                         callback({
                             manifest: manifest,
+                            resource: resource,
                             filename: docUrl.substr(docUrl.lastIndexOf("/") + 1)
                         });
                     });
@@ -577,8 +595,10 @@ var AnnotationEditor = (function() {
 
                 // No annotation document. Create a new manifest
                 var manifest = new AnnotationManifest(args.type, []);
+                manifest.language = "eng";
                 callback({
                     manifest: manifest,
+                    resource: null,
                     filename: ""
                 });
             }
@@ -608,6 +628,7 @@ var AnnotationEditor = (function() {
             // Load the manifest
             loadManifest(args, function (manifestData) {
                 args.manifest = manifestData.manifest;
+                args.resource = manifestData.resource;
                 args.filename = manifestData.filename;
 
                 loadTranscripts(args, function (transcripts) {

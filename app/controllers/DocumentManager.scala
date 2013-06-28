@@ -1,15 +1,17 @@
 package controllers
 
-import play.api.mvc.Controller
+import play.api.mvc.{RequestHeader, Result, Controller}
 import controllers.authentication.Authentication
-import service.{AdditionalDocumentAdder, ResourceHelper, FileUploader}
+import service.{DocumentPermissionChecker, AdditionalDocumentAdder, ResourceHelper, FileUploader}
 import play.api.Play
 import play.api.Play.current
-import java.io.ByteArrayInputStream
+import java.io.{InputStream, ByteArrayInputStream}
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
-import models.Course
+import models.{User, Content, Course}
+import dataAccess.ResourceController
+import play.api.libs.json.{JsObject, Json}
 
 /**
  * Created with IntelliJ IDEA.
@@ -20,40 +22,39 @@ import models.Course
  */
 object DocumentManager extends Controller {
 
-  def addAnnotations(id: Long) = Authentication.authenticatedAction(parse.multipartFormData) {
-    implicit request =>
-      implicit user =>
-        ContentController.getContent(id) {
-          content =>
-
-            val file = request.body.file("file").get
-            val mime = "application/json"
-            val title = request.body.dataParts("title")(0)
-
-            // TODO: Handle the language of the annotations. Issue # 48
-            val languages = List("eng")
-
-            Async {
-              // Upload the file
-              FileUploader.uploadFile(file.ref.file, FileUploader.uniqueFilename(file.filename), mime).flatMap {
-                url =>
-
-                // Create subtitle (subject) resource
-                  ResourceHelper.createResourceWithUri(title, "", "annotations", Nil, "text", url, mime, languages).flatMap {
-                    resource =>
-                      val subjectId = (resource \ "id").as[String]
-                      AdditionalDocumentAdder.add(content, subjectId, 'annotations) {
-                        course =>
-                          val route =
-                            if (course.isDefined) routes.CourseContent.viewInCourse(content.id.get, course.get.id.get)
-                            else routes.ContentController.view(content.id.get)
-                          Redirect(route).flashing("info" -> "Annotations added")
-                      }
-                  }
-              }
-            }
-        }
-  }
+//  def addAnnotations(id: Long) = Authentication.authenticatedAction(parse.multipartFormData) {
+//    implicit request =>
+//      implicit user =>
+//        ContentController.getContent(id) {
+//          content =>
+//
+//            val file = request.body.file("file").get
+//            val mime = "application/json"
+//            val title = request.body.dataParts("title")(0)
+//
+//            val languages = List("eng")
+//
+//            Async {
+//              // Upload the file
+//              FileUploader.uploadFile(file.ref.file, FileUploader.uniqueFilename(file.filename), mime).flatMap {
+//                url =>
+//
+//                // Create subtitle (subject) resource
+//                  ResourceHelper.createResourceWithUri(title, "", "annotations", Nil, "text", url, mime, languages).flatMap {
+//                    resource =>
+//                      val subjectId = (resource \ "id").as[String]
+//                      AdditionalDocumentAdder.add(content, subjectId, 'annotations) {
+//                        course =>
+//                          val route =
+//                            if (course.isDefined) routes.CourseContent.viewInCourse(content.id.get, course.get.id.get)
+//                            else routes.ContentController.view(content.id.get)
+//                          Redirect(route).flashing("info" -> "Annotations added")
+//                      }
+//                  }
+//              }
+//            }
+//        }
+//  }
 
   def editAnnotations(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
@@ -65,53 +66,82 @@ object DocumentManager extends Controller {
         }
   }
 
+  def createAnnotations(stream: InputStream, filename: String, length: Long, mime: String, title: String,
+                        languages: List[String], content: Content)(callback: Result)
+                       (implicit request: RequestHeader, user: User): Future[Result] = {
+
+    // First upload the annotation data
+    FileUploader.uploadStream(stream, filename, length, mime).flatMap {
+      url =>
+
+        // Next create a resource
+        ResourceHelper.createResourceWithUri(title, "", "annotations", Nil, "text", url, mime, languages).flatMap {
+          resource =>
+            val subjectId = (resource \ "id").as[String]
+
+            // Add a relation
+            AdditionalDocumentAdder.add(content, subjectId, 'annotations) {
+              course =>
+                callback
+            }
+        }
+    }
+  }
+
+  def updateAnnotations(stream: InputStream, filename: String, length: Long, mime: String, resourceId: String,
+                        title: String, languages: List[String]) {
+    // Update the data
+    FileUploader.uploadStream(stream, filename, length, mime)
+
+    // Update the resource
+    ResourceController.updateResource(resourceId, Json.obj(
+      "title" -> title,
+      "languages" -> languages
+    ))
+  }
+
   def saveAnnotations(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
         ContentController.getContent(id) {
           content =>
-            val title = request.body.get("title").map(_(0))
-            val annotations = request.body("annotations")(0)
+            val data = request.body.mapValues(_(0))
+            val title = data("title")
+            val annotations = data("annotations")
             val stream = new ByteArrayInputStream(annotations.getBytes("UTF-8"))
             val length = annotations.getBytes("UTF-8").size // Don't use string length. Breaks if there are 2-byte characters
             val mime = "application/json"
-            val filename = request.body.get("filename").map(_(0)).getOrElse(FileUploader.uniqueFilename(annotations + ".json"))
-
-            // TODO: Handle the language of the annotations. Issue # 49
-            val languages = List("eng")
+            val filename = data.get("filename").getOrElse(FileUploader.uniqueFilename(annotations + ".json"))
+            val languages = List(request.body("language")(0))
+            val resourceId = data("resourceId")
+            val course = request.queryString.get("course").flatMap(id => Course.findById(id(0).toLong))
 
             Async {
-              // Upload the annotations
-              // TODO: Somehow make sure that the user isn't overwriting somebody else's annotations. Issue # 50
-              FileUploader.uploadStream(stream, filename, length, mime).flatMap {
-                url =>
 
-                // If there is a title defined then this is a new annotation document
-                  if (title.isDefined) {
-                    // Create subtitle (subject) resource
-                    ResourceHelper.createResourceWithUri(title.get, "", "annotations", Nil, "text", url, mime, languages).flatMap {
-                      resource =>
-                        val subjectId = (resource \ "id").as[String]
+              if (resourceId.isEmpty) {
+                // We are uploading a new thing
+                createAnnotations(stream, filename, length, mime, title, languages, content) {
+                  Redirect(
+                    if (course.isDefined) routes.CourseContent.viewInCourse(content.id.get, course.get.id.get)
+                    else routes.ContentController.view(content.id.get)
+                  ).flashing("info" -> "Annotations updated")
+                }
+              } else {
+                // We are updating. Check that we are allowed to do this
+                val checker = new DocumentPermissionChecker(user, content, course, DocumentPermissionChecker.documentTypes.annotations)
+                ResourceController.getResource(resourceId).map { data =>
+                  if (checker.canEdit((data \ "resource").as[JsObject])) {
 
-                        AdditionalDocumentAdder.add(content, subjectId, 'annotations) {
-                          course =>
-                            val route =
-                              if (course.isDefined) routes.CourseContent.viewInCourse(content.id.get, course.get.id.get)
-                              else routes.ContentController.view(content.id.get)
-                            Redirect(route).flashing("info" -> "Annotations added")
-                        }
-                    }
+                    // We are, so create a new annotation set
+                    updateAnnotations(stream, filename, length, mime, resourceId, title, languages)
+                    Redirect(
+                      if (course.isDefined) routes.CourseContent.viewInCourse(content.id.get, course.get.id.get)
+                      else routes.ContentController.view(content.id.get)
+                    ).flashing("info" -> "Annotations updated")
                   } else {
-
-                    // We are just updating
-                    Future {
-                      val course = request.body.get("course").flatMap(id => Course.findById(id(0).toLong))
-                      Redirect(
-                        if (course.isDefined) routes.CourseContent.viewInCourse(content.id.get, course.get.id.get)
-                        else routes.ContentController.view(content.id.get)
-                        ).flashing("info" -> "Annotations updated")
-                    }
+                    Errors.forbidden
                   }
+                }
               }
             }
         }
