@@ -232,12 +232,11 @@ object ContentController extends Controller {
 
           Async {
             // Create the node content
-            val nodeContent = SerializationTools.serializeMap(Map("status" -> "started"))
-            PlayGraph.Author.NodeContent.create(nodeContent).flatMap(nodeContentJson => {
+            PlayGraph.Author.NodeContent.create("").flatMap(nodeContentJson => {
               val nodeContentId = (nodeContentJson \ "nodeContent" \ "id").as[Long]
 
               // Create the node
-              PlayGraph.Author.Node.create(nodeContentId, "data", "0").flatMap(nodeJson => {
+              PlayGraph.Author.Node.create(nodeContentId, "data").flatMap(nodeJson => {
                 val nodeId = (nodeJson \ "node" \ "id").as[Long]
 
                 // Create the graph
@@ -246,10 +245,11 @@ object ContentController extends Controller {
 
                   // Create playlist
                   val title = request.body("title")(0)
-                  val content = Content(NotAssigned, title, 'playlist, "", graphId.toString).save
+                  val content = Content(NotAssigned, title, 'playlist, "", graphId.toString,
+                    settings = Map("description" -> request.body("description")(0))).save
                   user.addContent(content)
 
-                  Redirect(routes.ContentController.view(content.id.get))
+                  Redirect(routes.Playlists.about(content.id.get))
                 })
               })
             })
@@ -266,16 +266,19 @@ object ContentController extends Controller {
         getContent(id) {
           content =>
 
-          // Check that the user can view the content
-            if (content isVisibleBy user) {
-              val resourceLibraryUrl = Play.configuration.getString("resourceLibrary.baseUrl").get
-
-              if (MobileDetection.isMobile())
-                Ok(views.html.content.viewMobile(content, resourceLibraryUrl))
-              else
-                Ok(views.html.content.view(content, resourceLibraryUrl))
-            } else
-              Errors.forbidden
+            // Check for playlists
+            if (content.contentType == 'playlist) {
+              Redirect(routes.Playlists.about(id))
+            } else {
+              // Check that the user can view the content
+              if (content isVisibleBy user) {
+                if (MobileDetection.isMobile())
+                  Ok(views.html.content.viewMobile(content, ResourceController.baseUrl))
+                else
+                  Ok(views.html.content.view(content, ResourceController.baseUrl))
+              } else
+                Errors.forbidden
+            }
         }
   }
 
@@ -291,8 +294,7 @@ object ContentController extends Controller {
 
           // Only owners can view stats
             if (content isEditableBy user) {
-              val resourceLibraryUrl = Play.configuration.getString("resourceLibrary.baseUrl").get
-              Ok(views.html.content.stats(content, resourceLibraryUrl))
+              Ok(views.html.content.stats(content, ResourceController.baseUrl))
             } else
               Errors.forbidden
         }
@@ -343,9 +345,8 @@ object ContentController extends Controller {
 
         // Check that everything is in place to view the content
           if (content.authKey == authKey && content.shareability != Content.shareability.notShareable) {
-            val resourceLibraryUrl = Play.configuration.getString("resourceLibrary.baseUrl").get
             val embed = request.queryString.get("embed").exists(_(0).toBoolean)
-            Ok(views.html.content.share.view(content, resourceLibraryUrl, embed))
+            Ok(views.html.content.share.view(content, ResourceController.baseUrl, embed))
           } else
             Ok("You are not allowed to view this content")
       }

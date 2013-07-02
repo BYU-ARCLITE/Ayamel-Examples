@@ -1,0 +1,36 @@
+@()(implicit request: RequestHeader)
+
+<!doctype html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <title>PlayGraph Authoring tool test</title>
+
+    <script type="text/javascript" src="/assets/javascripts/jquery-1.9.0.min.js"></script>
+    <script type="text/javascript" src="/assets/javascripts/bootstrap.min.js"></script>
+
+    <script type="text/javascript" src="/assets/javascripts/Mustache.js"></script>
+    <script type="text/javascript" src="/assets/javascripts/ContentItemRenderer.js"></script>
+    <script type="text/javascript" src="/assets/javascripts/PopupBrowser.js"></script>
+
+    <link rel="stylesheet" href="/assets/stylesheets/bootstrap.min.css"/>
+    <link rel="stylesheet" href="/assets/stylesheets/bigModal.css"/>
+    <link rel="stylesheet" href="/assets/stylesheets/content.css"/>
+    <link rel="stylesheet" href="/assets/stylesheets/font-awesome.min.css"/>
+</head>
+<body>
+
+<form action="http://localhost:9000/author" method="post">
+    <input name="author" value="66d7f51fae3c392b3cd2179404cb4afaea620d19" type="hidden"/>
+    <input name="player" value="024618fb223d20a1731147128dfeb157a6008f3f" type="hidden"/>
+    <input name="graph" value="1" type="hidden"/>
+    <input name="action" value="edit" type="hidden"/>
+    <input name="exit" value="http://localhost:9001" type="hidden"/>
+    <input name="play" value="http://localhost:9001/home" type="hidden"/>
+    <input name="widgets" value="http://localhost:9001/assets/javascripts/playGraph/widgets.js" type="hidden"/>
+
+    <input value="Test" type="submit" class="btn"/>
+</form>
+
+</body>
+</html>

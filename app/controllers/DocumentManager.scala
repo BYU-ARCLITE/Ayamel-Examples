@@ -61,8 +61,7 @@ object DocumentManager extends Controller {
       implicit user =>
         ContentController.getContent(id) {
           content =>
-            val resourceLibraryUrl = Play.configuration.getString("resourceLibrary.baseUrl").get
-            Ok(views.html.content.annotationEditor(content, resourceLibraryUrl))
+            Ok(views.html.content.annotationEditor(content, ResourceController.baseUrl))
         }
   }
 

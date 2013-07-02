@@ -194,8 +194,7 @@ object ContentEditing extends Controller {
           content =>
             if (content isEditableBy user) {
               if (content.contentType == 'image) {
-                val resourceLibraryUrl = Play.configuration.getString("resourceLibrary.baseUrl").get
-                Ok(views.html.content.editImage(content, resourceLibraryUrl))
+                Ok(views.html.content.editImage(content, ResourceController.baseUrl))
               } else
                 Errors.forbidden
             } else

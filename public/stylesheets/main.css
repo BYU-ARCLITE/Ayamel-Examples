@@ -483,7 +483,8 @@ h1, h2, h3, h4, h5, h6 {
 .bigModal .modal-body {
     max-height: none;
     position: absolute;
-    width: auto;
+    left: 0;
+    right: 0;
     top: 49px;
     bottom: 65px;
 }

@@ -31,18 +31,19 @@ object Application extends Controller {
   }
 
   def test = Action {
-    request =>
+    implicit request =>
 
-      val globalResource = Json.obj(
-        "id" -> "josh3"
-      )
-      val user2 = User(Id(5), "", 'a, "", role = User.roles.admin)
-      val course = Course(Id(8), "", "", "")
-      val content1 = Content(NotAssigned, "", 'a, "", "")
-      val checker1 = new DocumentPermissionChecker(user2, content1, Some(course), DocumentPermissionChecker.documentTypes.captionTrack)
-
-      val result = checker1.canEnable(globalResource)
-      Ok(result.toString)
+//      val globalResource = Json.obj(
+//        "id" -> "josh3"
+//      )
+//      val user2 = User(Id(5), "", 'a, "", role = User.roles.admin)
+//      val course = Course(Id(8), "", "", "")
+//      val content1 = Content(NotAssigned, "", 'a, "", "")
+//      val checker1 = new DocumentPermissionChecker(user2, content1, Some(course), DocumentPermissionChecker.documentTypes.captionTrack)
+//
+//      val result = checker1.canEnable(globalResource)
+//      Ok(result.toString)
+      Ok(views.html.test())
   }
 
   def search = Authentication.authenticatedAction() {

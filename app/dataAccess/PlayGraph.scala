@@ -3,7 +3,7 @@ package dataAccess
 import service.joshmonson.oauth.{OAuthRequest, OAuthKey}
 import play.api.Play
 import play.api.Play.current
-import play.api.libs.json.{JsString, JsValue}
+import play.api.libs.json.{Json, JsString, JsValue}
 import scala.concurrent.{ExecutionContext, Future}
 import play.api.libs.ws.WS
 import java.net.URLEncoder
@@ -24,7 +24,7 @@ object PlayGraph {
 //      "", ""
 //    )
 
-  private val authorKey = OAuthKey(
+  val authorKey = OAuthKey(
     Play.configuration.getString("playgraph.author.key").get,
     Play.configuration.getString("playgraph.author.secret").get,
     "", ""
@@ -255,18 +255,21 @@ object PlayGraph {
        * Create a node
        * @param contentId The ID of the content
        * @param contentType The type of the content
-       * @param script The finish script
+       * @param transitions A list of transitions
        * @param labels A list of labels
+       * @param settings Custom settings for the node
        * @return A future json. Example: {"success":true,"node":{"id":10,"contentId":8,"contentType":"data","script":"0","labels":[""]}}
        */
-      def create(contentId: Long, contentType: String, script: String, labels: List[String] = Nil): Future[JsValue] = {
+      def create(contentId: Long, contentType: String, transitions: List[(Long, String)] = Nil,
+                 labels: List[String] = Nil, settings: String = ""): Future[JsValue] = {
 
         val path = "api/v1/author/node"
         val postBody = Map(
           "contentId" -> contentId.toString,
           "contentType" -> contentType,
-          "script" -> script,
-          "labels" -> labels.mkString(",")
+          "transitions" -> transitions.map(t => Json.obj("targetId"->t._1,"rule"->t._2)).mkString("[",",","]"),
+          "labels" -> labels.mkString(","),
+          "settings" -> settings
         )
         val auth = sign(authorKey, path, "POST", postBody)
 
@@ -291,19 +294,22 @@ object PlayGraph {
        * @param id The ID of the node
        * @param contentId The ID of the content
        * @param contentType The type of the content
-       * @param script The finish script
+       * @param transitions A list of transitions
        * @param labels A list of labels
+       * @param settings Custom settings for the node
        * @return A future json
        */
       def update(id: Long, contentId: Option[Long] = None, contentType: Option[String] = None,
-                 script: Option[String] = None, labels: Option[List[String]] = None): Future[JsValue] = {
+                 transitions: Option[List[(Long, String)]] = None, labels: Option[List[String]] = None,
+                 settings: Option[String]): Future[JsValue] = {
 
         val path = "api/v1/author/node/" + id
         val postBody = Map(
           "contentId" -> contentId.map(_.toString),
           "contentType" -> contentType,
-          "script" -> script,
-          "labels" -> labels.map(_.mkString(","))
+          "transitions" -> transitions.map(_.map(t => Json.obj("targetId"->t._1,"rule"->t._2)).mkString("[",",","]")),
+          "labels" -> labels.map(_.mkString(",")),
+          "settings" -> settings
         ).filter(_._2.isDefined).mapValues(_.get)
         val auth = sign(authorKey, path, "POST", postBody)
 
@@ -370,6 +376,18 @@ object PlayGraph {
      */
     def get(sessionId: Long): Future[String] = {
       val path = "api/v1/player/content/" + sessionId
+      val auth = sign(playerKey, path, "GET")
+
+      WS.url(host + path).withHeaders("Authorization" -> auth).get().map(_.body)
+    }
+
+    /**
+     * Get the settings at the current node
+     * @param sessionId The id of the session
+     * @return The settings
+     */
+    def settings(sessionId: Long): Future[String] = {
+      val path = "api/v1/player/settings/" + sessionId
       val auth = sign(playerKey, path, "GET")
 
       WS.url(host + path).withHeaders("Authorization" -> auth).get().map(_.body)
