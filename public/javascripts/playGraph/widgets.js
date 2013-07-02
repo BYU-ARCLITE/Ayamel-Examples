@@ -369,7 +369,7 @@
                 setNode: {
                     value: function(node) {
                         settings = parseSettings(node.settings);
-                        updateUI()
+                        updateUI();
                     }
                 }
             })

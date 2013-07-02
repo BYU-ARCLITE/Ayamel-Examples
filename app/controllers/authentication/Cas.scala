@@ -1,12 +1,10 @@
 package controllers.authentication
 
-import play.api.mvc.{Action, Controller}
+import play.api.mvc.{Result, Action, Controller}
 import play.api.libs.ws.WS
-import concurrent.ExecutionContext
+import scala.concurrent.{Await, Future, ExecutionContext}
+import scala.concurrent.duration._
 import ExecutionContext.Implicits.global
-import models.User
-import anorm.NotAssigned
-import java.net.URLEncoder
 
 /**
  * Controller which handles BYU CAS authentication.
@@ -33,17 +31,22 @@ object Cas extends Controller {
 
       // Verify the TGT with CAS to get the user id
       val url = "https://cas.byu.edu/cas/serviceValidate?ticket=" + tgt + "&service=" + casService
-      Async {
-        WS.url(url).get().map(response => {
-          val xml = response.xml
-          val username = ((xml \ "authenticationSuccess") \ "user").text
-          val user = Authentication.getAuthenticatedUser(username, 'cas)
 
-          if (action == "merge")
-            Authentication.merge(user)
-          else
-            Authentication.login(user, path)
-        })
+      // Don't use Async, but rather wait for a period of time because CAS sometimes times out.
+      val r: Future[Result] = WS.url(url).get().map(response => {
+        val xml = response.xml
+        val username = ((xml \ "authenticationSuccess") \ "user").text
+        val user = Authentication.getAuthenticatedUser(username, 'cas)
+
+        if (action == "merge")
+          Authentication.merge(user)
+        else
+          Authentication.login(user, path)
+      })
+      try {
+        Await.result(r, 20 seconds)
+      } catch {
+        case _: Throwable => Redirect(controllers.routes.Application.index()).flashing("error" -> "An error occurred with CAS. Either log in with a different method or <a href=\"mailto:arclitelab@gmail.com\">notify an administrator</a>.")
       }
   }
 }
