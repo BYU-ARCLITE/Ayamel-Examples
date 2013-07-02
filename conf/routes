@@ -86,6 +86,10 @@ POST    /content/:id/annotations        controllers.DocumentManager.saveAnnotati
 GET     /content/:id/publish/:docId     controllers.DocumentManager.publishDocument(id: Long, docId: String)
 GET     /content/:id/accept/:docId      controllers.DocumentManager.acceptDocument(id: Long, docId: String)
 
+# Playlist pages
+GET     /playlist/:id/play              controllers.Playlists.view(id: Long)
+GET     /playlist/:id                   controllers.Playlists.about(id: Long)
+
 # User pages
 GET     /user/settings                  controllers.Users.accountSettings
 POST    /user/settings                  controllers.Users.saveSettings
@@ -140,6 +144,10 @@ GET     /ajax/translate/google/:src/:dest/:text             controllers.ajax.Tra
 GET     /ajax/translate/wordReference/:src/:dest/:text      controllers.ajax.Translate.translateWordReference(src: String, dest: String, text: String)
 POST    /ajax/activity                                      controllers.ajax.ActivitySaver.save
 POST    /ajax/permissionChecker                             controllers.ajax.PermissionChecker.check
+GET     /ajax/content/mine                                  controllers.ajax.ContentLister.mine
+GET     /ajax/content/course                                controllers.ajax.ContentLister.course
+GET     /ajax/content/public                                controllers.ajax.ContentLister.public
+GET     /ajax/content/:id                                   controllers.ajax.ContentLister.get(id: Long)
 
 # Feedback
 POST    /feedback                       controllers.Application.saveFeedback

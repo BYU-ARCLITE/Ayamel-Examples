@@ -115,16 +115,10 @@ var ContentRenderer = (function () {
 //        });
     }
 
-
-    function renderPlaylist(args) {
-        // TODO: Render playlist
-    }
-
     function renderContent(args) {
 
         // Check if we are rendering something from the resource library
-        if (args.content.contentType === "video" || args.content.contentType === "audio"
-            || args.content.contentType === "image" || args.content.contentType === "text") {
+        if (["video", "audio", "image", "text"].indexOf(args.content.contentType) >= 0) {
 
             ResourceLibrary.load(args.content.resourceId, function (resource) {
                 args.resource = resource;
@@ -145,7 +139,7 @@ var ContentRenderer = (function () {
                 }
             });
         } else if (args.content.contentType === "playlist") {
-            renderPlaylist(args);
+            PlayGraphPlayer.play(args);
         }
     }
 

@@ -100,6 +100,13 @@
     cursor: pointer;
 }
 
+.contentItem.selectedContent {
+    -webkit-box-shadow: inset 0 0 0 2px rgba(237, 169, 9, 1), inset 0 0 45px 3px rgba(255, 255, 0, 0.8);
+    -moz-box-shadow: inset 0 0 0 2px rgba(237, 169, 9, 1), inset 0 0 45px 3px rgba(255, 255, 0, 0.8);
+    box-shadow: inset 0 0 0 2px rgba(237, 169, 9, 1), inset 0 0 45px 3px rgba(255, 255, 0, 0.8);
+    padding: 2px 0;
+}
+
 .contentBadge.video {
     background: url("../images/videos/placeholder.jpg") center;
     background-size: cover;
@@ -117,6 +124,11 @@
 
 .contentBadge.text {
     background: url("../images/text/placeholder.jpg") center;
+    background-size: cover;
+}
+
+.contentBadge.playlist {
+    background: url("../images/playlists/placeholder.jpg") center;
     background-size: cover;
 }
 
@@ -292,7 +304,6 @@
     margin-bottom: 70px;
 }
 
-
 #imgHolder {
     width: 100%;
     height: 600px;
@@ -416,4 +427,36 @@
 
 #transcriptDisplay .transcriptContent {
     margin-top: 10px;
+}
+
+#metadataContainer {
+    background-image: linear-gradient(bottom, rgb(222,222,222) 100%, rgb(255,255,255) 0%);
+    background-image: -o-linear-gradient(bottom, rgb(222,222,222) 100%, rgb(255,255,255) 0%);
+    background-image: -moz-linear-gradient(bottom, rgb(222,222,222) 100%, rgb(255,255,255) 0%);
+    background-image: -webkit-linear-gradient(bottom, rgb(222,222,222) 100%, rgb(255,255,255) 0%);
+    background-image: -ms-linear-gradient(bottom, rgb(222,222,222) 100%, rgb(255,255,255) 0%);
+
+    background-image: -webkit-gradient(
+        linear,
+        left bottom,
+        left top,
+        color-stop(1, rgb(222,222,222)),
+        color-stop(0, rgb(255,255,255))
+    );
+
+    padding: 10px 30px;
+    -webkit-border-radius: 15px;
+    -moz-border-radius: 15px;
+    border-radius: 15px;
+
+    margin: 20px;
+    -webkit-box-shadow: inset 0px 3px 9px -3px rgba(0, 0, 0, 0.5);
+    -moz-box-shadow: inset 0px 3px 9px -3px rgba(0, 0, 0, 0.5);
+    box-shadow: inset 0px 3px 9px -3px rgba(0, 0, 0, 0.5);
+}
+
+/* Playlist stuff */
+
+#playlistPlayer #nextButton {
+    margin-top: 100px;
 }

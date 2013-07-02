@@ -25,8 +25,7 @@ object CaptionAider extends Controller {
         ContentController.getContent(id) {
           content =>
             val course = Course.findById(courseId)
-            val resourceLibraryUrl = Play.configuration.getString("resourceLibrary.baseUrl").get
-            Ok(views.html.captionAider.view(content, course, resourceLibraryUrl))
+            Ok(views.html.captionAider.view(content, course, ResourceController.baseUrl))
         }
   }
 

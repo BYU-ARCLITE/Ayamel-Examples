@@ -9,6 +9,7 @@ import play.api.Play.current
 import scala.concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
 import models.ContentListing
+import dataAccess.ResourceController
 
 /**
  * Created with IntelliJ IDEA.
@@ -55,8 +56,7 @@ object CourseContent extends Controller {
 
               // Only teachers can view stats
                 if (user canEdit course) {
-                  val resourceLibraryUrl = Play.configuration.getString("resourceLibrary.baseUrl").get
-                  Ok(views.html.content.stats(content, resourceLibraryUrl, Some(course)))
+                  Ok(views.html.content.stats(content, ResourceController.baseUrl, Some(course)))
                 } else
                   Errors.forbidden
             }
@@ -120,11 +120,10 @@ object CourseContent extends Controller {
 
               // Check that the user can view the content
                 if (content isVisibleBy user) {
-                  val resourceLibraryUrl = Play.configuration.getString("resourceLibrary.baseUrl").get
                   if (MobileDetection.isMobile())
-                    Ok(views.html.content.viewMobile(content, resourceLibraryUrl, Some(course)))
+                    Ok(views.html.content.viewMobile(content, ResourceController.baseUrl, Some(course)))
                   else
-                    Ok(views.html.content.view(content, resourceLibraryUrl, Some(course)))
+                    Ok(views.html.content.view(content, ResourceController.baseUrl, Some(course)))
                 } else
                   Errors.forbidden
             }

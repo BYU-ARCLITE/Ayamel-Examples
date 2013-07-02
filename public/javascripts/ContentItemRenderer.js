@@ -16,7 +16,7 @@ var ContentItemRenderer = (function() {
             '        <div class="contentStats">{{views}} views</div>' +
             '        <div class="contentIcons">' +
             '            {{#annotations}}<i class="icon-bookmark" title="This {{type}} has annotations."></i>{{/annotations}}' +
-            '            {{#captions}}&nbsp;<img src="/assets/images/videos/captions.png" alt="This {{type}} has captions." title="This {{type}} has captions."/>{{/captions}}' +
+            '            {{#captions}}&nbsp;<img src="http://ayamel.byu.edu/assets/images/videos/captions.png" alt="This {{type}} has captions." title="This {{type}} has captions."/>{{/captions}}' +
             '            {{#isVideo}}&nbsp;<span class="badge badge-magenta" title="This video is set to level {{level}}.">{{level}}</span>{{/isVideo}}' +
             '        </div>' +
             '    </div>' +
@@ -29,7 +29,7 @@ var ContentItemRenderer = (function() {
             '    <div class="contentStats">{{views}} Views</div>' +
             '    <div class="contentIcons">' +
             '        {{#annotations}}<i class="icon-bookmark" title="This {{type}} has annotations."></i>{{/annotations}}' +
-            '        {{#captions}}&nbsp;<img src="/assets/images/videos/captions.png" alt="This {{type}} has captions." title="This {{type}} has captions."/>{{/captions}}' +
+            '        {{#captions}}&nbsp;<img src="http://ayamel.byu.edu/assets/images/videos/captions.png" alt="This {{type}} has captions." title="This {{type}} has captions."/>{{/captions}}' +
             '        {{#isVideo}}&nbsp;<span class="badge badge-magenta" title="This video is set to level {{level}}.">{{level}}</span>{{/isVideo}}' +
             '    </div>' +
             '</div>',
@@ -43,7 +43,7 @@ var ContentItemRenderer = (function() {
             '<div class="inline-block pad-right-high pull-left">{{views}} views</div>' +
             '<div class="inline-block pad-left-high pull-right">' +
             '    {{#annotations}}<i class="icon-bookmark" title="This {{type}} has annotations."></i>{{/annotations}}' +
-            '    {{#captions}}&nbsp;<img src="/assets/images/videos/captions.png" alt="This {{type}} has captions." title="This {{type}} has captions."/>{{/captions}}' +
+            '    {{#captions}}&nbsp;<img src="http://ayamel.byu.edu/assets/images/videos/captions.png" alt="This {{type}} has captions." title="This {{type}} has captions."/>{{/captions}}' +
             '    {{#isVideo}}&nbsp;<span class="badge badge-magenta" title="This video is set to level {{level}}.">{{level}}</span>{{/isVideo}}' +
             '</div>' +
             '<div class="clearfix pad-top-low"></div>',
@@ -103,10 +103,14 @@ var ContentItemRenderer = (function() {
         });
 
         var $element = $(html).click(function () {
-            if (args.courseId) {
-                window.location = "/course/" + args.courseId + "/content/" + args.content.id;
+            if (args.click) {
+                args.click(args.content, args.courseId, $(this));
             } else {
-                window.location = "/content/" + args.content.id;
+                if (args.courseId) {
+                    window.location = "/course/" + args.courseId + "/content/" + args.content.id;
+                } else {
+                    window.location = "/content/" + args.content.id;
+                }
             }
         });
         if (args.content.thumbnail) {
@@ -279,7 +283,8 @@ var ContentItemRenderer = (function() {
                                 content: content,
                                 $holder: $contentHolder,
                                 format: args.format,
-                                courseId: args.courseId
+                                courseId: args.courseId,
+                                click: args.click
                             })
                         });
                     }
@@ -294,7 +299,8 @@ var ContentItemRenderer = (function() {
                         content: content,
                         $holder: $contentHolder,
                         format: args.format,
-                        courseId: args.courseId
+                        courseId: args.courseId,
+                        click: args.click
                     });
                 });
             }
