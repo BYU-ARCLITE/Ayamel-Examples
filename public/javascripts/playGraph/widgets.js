@@ -14,7 +14,7 @@
     $("body")
         .append('<link rel="stylesheet" href="'+host+'assets/stylesheets/bigModal.css"/>')
         .append('<link rel="stylesheet" href="'+host+'assets/stylesheets/content.css"/>');
-    $.getScript(host + "assets/javascripts/Mustache.js");
+    $.getScript(host + "assets/javascripts/mustache.js");
     $.getScript(host + "assets/javascripts/ContentItemRenderer.js");
     $.getScript(host + "assets/javascripts/PopupBrowser.js", function () {
         PopupBrowser.setHost(host);
