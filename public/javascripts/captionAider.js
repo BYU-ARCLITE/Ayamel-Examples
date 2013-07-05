@@ -389,8 +389,10 @@ $(function() {
                             function(){ alert("Error Saving; please try again."); }
                         );
                     }
+                    $("#saveTrackModal").modal("hide");
+                } else {
+                    alert("Please select a track.");
                 }
-                $("#saveTrackModal").modal("hide");
             });
 
             // Add load sources

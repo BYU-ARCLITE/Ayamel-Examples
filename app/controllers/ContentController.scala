@@ -74,7 +74,8 @@ object ContentController extends Controller {
     // Check to see if we need to encode (we will if the decoded is the same as the encoded)
     if (URLDecoder.decode(url, "utf-8") == url) {
       val urlObj = new URL(url)
-      new URI(urlObj.getProtocol, urlObj.getHost, urlObj.getPath, null).toString
+      val queryString = if (url.contains("?")) url.substring(url.indexOf("?")) else ""
+      new URI(urlObj.getProtocol, urlObj.getHost, urlObj.getPath, null).toString + queryString
     } else
       url
   }

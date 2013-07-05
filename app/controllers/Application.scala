@@ -3,12 +3,7 @@ package controllers
 import authentication.Authentication
 import play.api.mvc._
 import models._
-import service.{DocumentPermissionChecker, EmailTools}
-import play.api.libs.json.{JsObject, Json}
-import play.api.Play
-import play.api.Play.current
-import java.net.{URL, URI, URLEncoder}
-import anorm.{Id, NotAssigned}
+import service.EmailTools
 import models.Content
 
 object Application extends Controller {
@@ -33,17 +28,9 @@ object Application extends Controller {
   def test = Action {
     implicit request =>
 
-//      val globalResource = Json.obj(
-//        "id" -> "josh3"
-//      )
-//      val user2 = User(Id(5), "", 'a, "", role = User.roles.admin)
-//      val course = Course(Id(8), "", "", "")
-//      val content1 = Content(NotAssigned, "", 'a, "", "")
-//      val checker1 = new DocumentPermissionChecker(user2, content1, Some(course), DocumentPermissionChecker.documentTypes.captionTrack)
-//
-//      val result = checker1.canEnable(globalResource)
-//      Ok(result.toString)
-      Ok(views.html.test())
+      val url = ContentController.prepareUrl("http://www.youtube.com/watch?v=swz7mKnIvkQ")
+      Ok(url)
+
   }
 
   def search = Authentication.authenticatedAction() {
