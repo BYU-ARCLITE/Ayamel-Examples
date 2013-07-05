@@ -20,7 +20,7 @@ function doGet(request) {
 
     // Return information
     var result = {
-        responseIndex: responses.length
+        responseIndex: responses.length - 1
     };
 
     return ContentService.createTextOutput(JSON.stringify(result))

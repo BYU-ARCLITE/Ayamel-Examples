@@ -1,6 +1,6 @@
 @(content: models.Content, playGraphHost: String, authorKey: String, playerKey: String)(implicit request: RequestHeader, user: User)
 
-@main("Ayamel") {
+@main("Ayamel - Playlist") {
 
 	<div class="padded">
 
@@ -20,7 +20,7 @@
 				    <input name="play" value="@routes.Playlists.view(content.id.get).absoluteURL()" type="hidden"/>
 				    <input name="widgets" value="@routes.Assets.at("javascripts/playGraph/widgets.js").absoluteURL()" type="hidden"/>
 
-				    <button type="submit" class="btn btn-yellow"><i class="icon-edit-sign"></i> Edit</butotn>
+				    <button type="submit" class="btn btn-yellow"><i class="icon-edit-sign"></i> Edit</button>
 				</form>
 			}
 		</div>

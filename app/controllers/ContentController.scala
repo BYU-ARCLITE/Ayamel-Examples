@@ -10,7 +10,7 @@ import scala.concurrent.{Future, ExecutionContext}
 import ExecutionContext.Implicits.global
 import anorm.NotAssigned
 import service.ContentDescriptor
-import dataAccess.{PlayGraph, ResourceController}
+import dataAccess.{GoogleFormScripts, PlayGraph, ResourceController}
 import java.net.{URLDecoder, URI, URL}
 import play.api.libs.ws.WS
 
@@ -277,9 +277,7 @@ object ContentController extends Controller {
           val description = request.body("description")(0)
 
           Async {
-
-            WS.url(QuestionSets.createFormScript).get().map(response => {
-              val formId = (response.json \ "id").as[String]
+            GoogleFormScripts.createForm(title, user.email.get).map(formId => {
               val content = Content(NotAssigned, title, 'questions, "", formId, labels = labels,
                 settings = Map("description" -> description)).save
               user.addContent(content)

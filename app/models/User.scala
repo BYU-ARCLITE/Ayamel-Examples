@@ -320,6 +320,14 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
       accountLink.get
     }
 
+    var scorings: Option[List[Scoring]] = None
+
+    def getScorings: List[Scoring] = {
+      if (scorings.isEmpty)
+        scorings = Some(Scoring.listByUser(cacheTarget))
+      scorings.get
+    }
+
   }
 
   /**
@@ -381,6 +389,18 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
       None
     else
       cache.getAccountLink
+
+  /**
+   * Gets the list of this user's scorings
+   * @return The list of scorings
+   */
+  def getScorings = cache.getScorings
+
+  /**
+   * Gets the list of this user's scorings for a particular content
+   * @return The list of scorings
+   */
+  def getScorings(content: Content) = cache.getScorings.filter(_.contentId == content.id.get)
 
   // =======================
   //   Permission checkers

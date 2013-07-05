@@ -51,8 +51,9 @@ function doGet(request) {
 
     // Return the scores
     var result = {
-        results: results,
-        score: score
+        score: score,
+        possible: answerItemResponses.length,
+        results: results
     };
     return ContentService.createTextOutput(JSON.stringify(result))
         .setMimeType(ContentService.MimeType.JSON);

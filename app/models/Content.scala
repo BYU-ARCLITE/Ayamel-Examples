@@ -160,6 +160,7 @@ case class Content(id: Pk[Long], name: String, contentType: Symbol, thumbnail: S
   object cache {
     var activity: Option[List[Activity]] = None
     var owner: Option[User] = None
+    var scorings: Option[List[Scoring]] = None
 
     def getActivity: List[Activity] = {
       if (activity.isEmpty)
@@ -172,9 +173,17 @@ case class Content(id: Pk[Long], name: String, contentType: Symbol, thumbnail: S
         owner = User.findById(ContentOwnership.findByContent(cacheTarget).userId)
       owner.get
     }
+
+    def getScorings: List[Scoring] = {
+      if (scorings.isEmpty)
+        scorings = Some(Scoring.listByContent(cacheTarget))
+      scorings.get
+    }
   }
 
   def getOwner = cache.getOwner
+
+  def getScorings = cache.getScorings
 
   def getActivity(coursePrefix: String) = cache.getActivity.filter(_.activityContext.pageContext.action.startsWith(coursePrefix))
 

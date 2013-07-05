@@ -93,6 +93,9 @@ GET     /playlist/:id                   controllers.Playlists.about(id: Long)
 
 # Question set pages
 GET     /questions/:id                  controllers.QuestionSets.about(id: Long)
+GET     /questions/:id/take             controllers.QuestionSets.take(id: Long)
+GET     /questions/:id/getIndex         controllers.QuestionSets.getIndex(id: Long)
+GET     /questions/:id/grade/:index     controllers.QuestionSets.grade(id: Long, index: Int)
 
 # User pages
 GET     /user/settings                  controllers.Users.accountSettings
@@ -152,6 +155,7 @@ GET     /ajax/content/mine                                  controllers.ajax.Con
 GET     /ajax/content/course                                controllers.ajax.ContentLister.course
 GET     /ajax/content/public                                controllers.ajax.ContentLister.public
 GET     /ajax/content/:id                                   controllers.ajax.ContentLister.get(id: Long)
+GET     /ajax/questions/:id/grade/:index                    controllers.QuestionSets.gradeAjax(id: Long, index: Int)
 
 # Feedback
 POST    /feedback                       controllers.Application.saveFeedback
