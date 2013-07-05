@@ -1,0 +1,28 @@
+@(content: models.Content)(implicit request: RequestHeader, user: User)
+
+@main("Ayamel") {
+
+    @views.html.content.header.dependencies()
+
+	<div class="padded">
+
+        <div id="questionSetHolder"></div>
+
+        <script type="text/javascript">
+            $(function() {
+
+                var content = @Html(content.toJson.toString());
+                var $questionSetHolder = $("#questionSetHolder");
+
+                // Render the content
+                ContentRenderer.render({
+                    content: content,
+                    holder: $questionSetHolder[0]
+                });
+            });
+        </script>
+	</div>
+
+	
+
+}

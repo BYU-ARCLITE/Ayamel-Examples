@@ -1,0 +1,92 @@
+@(content: models.Content)(implicit request: RequestHeader, user: User)
+
+@userNames = @{
+    User.list.map(user => (user.id.get, user.displayName)).toMap
+}
+
+@main("Ayamel") {
+
+	<div class="padded">
+
+		<h1><i class="icon-question-sign"></i> @content.name</h1>
+
+		<p>@content.settings("description")</p>
+
+        <a class="btn btn-blue" href="@routes.QuestionSets.take(content.id.get)"><i class="icon-check"></i> Take</a>
+
+        @if(content.isEditableBy(user)) {
+
+            <a target="formEditor" class="btn btn-yellow" href="https://docs.google.com/forms/d/@content.resourceId/edit"><i class="icon-edit"></i> Edit</a>
+
+            <div class="well pad-top-high">
+                <h3>About Question Sets</h3>
+                <p>Question sets are actually Google Forms.</p>
+
+                <h4>Editing</h4>
+                <p>You can edit your form from Google Drive or by using this link:</p>
+                <p><a target="formEditor" href="https://docs.google.com/forms/d/@content.resourceId/edit">https://docs.google.com/forms/d/@content.resourceId/edit</a></p>
+
+                <h4>Setting up an answer key.</h4>
+                <p>
+                    Once you have finished editing your form, you can set up an answer key by submitting the first
+                    response.
+                </p>
+            </div>
+        }
+
+        @if(!user.getScorings(content).isEmpty) {
+        <h2>Personal Scores</h2>
+        <table class="table table-bordered table-striped">
+            <thead>
+            <tr>
+                <th>Points</th>
+                <th>Possible</th>
+                <th>Percent</th>
+                <th>Date</th>
+            </tr>
+            </thead>
+            <tbody>
+            @for(scoring <- user.getScorings(content)) {
+            <tr>
+                <td>@scoring.score</td>
+                <td>@scoring.possible</td>
+                <td>@scoring.percent%</td>
+                <td>@service.TimeTools.prettyTime(scoring.graded)</td>
+            </tr>
+            }
+            </tbody>
+        </table>
+        }
+        @if(content.isEditableBy(user) && !content.getScorings.isEmpty) {
+        <h2>All Scores</h2>
+        <p>
+            <a target="analytics" class="btn btn-blue" href="https://docs.google.com/forms/d/@content.resourceId/viewanalytics"><i class="icon-bar-chart"></i> View analytics</a>
+        </p>
+        <table class="table table-bordered table-striped">
+            <thead>
+            <tr>
+                <th>User</th>
+                <th>Points</th>
+                <th>Possible</th>
+                <th>Percent</th>
+                <th>Date</th>
+            </tr>
+            </thead>
+            <tbody>
+            @for(scoring <- content.getScorings) {
+            <tr>
+                <td>@userNames.get(scoring.userId).getOrElse("Unknown user")</td>
+                <td>@scoring.score</td>
+                <td>@scoring.possible</td>
+                <td>@scoring.percent%</td>
+                <td>@service.TimeTools.prettyTime(scoring.graded)</td>
+            </tr>
+            }
+            </tbody>
+        </table>
+        }
+	</div>
+
+	
+
+}

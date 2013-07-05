@@ -168,6 +168,9 @@ var PopupBrowser = (function() {
         },
         setHost: function(value) {
             host = value;
+        },
+        getHost: function() {
+            return host;
         }
     };
 })();

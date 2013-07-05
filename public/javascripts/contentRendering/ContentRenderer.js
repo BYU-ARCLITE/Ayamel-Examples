@@ -140,6 +140,8 @@ var ContentRenderer = (function () {
             });
         } else if (args.content.contentType === "playlist") {
             PlayGraphPlayer.play(args);
+        } else if (args.content.contentType === "questions") {
+            QuestionSetRenderer.render(args);
         }
     }
 

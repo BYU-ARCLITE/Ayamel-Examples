@@ -26,33 +26,42 @@
 
         <h2>Create Question Set</h2>
 
-        <form class="form-horizontal" method="post" action="@routes.ContentController.createQuestionSet()">
-            <input type="hidden" name="contentType" value="playlist">
-            <div class="control-group">
-                <label class="control-label" for="title">Title</label>
-                <div class="controls">
-                    <input type="text" id="title" name="title" placeholder="Title">
-                </div>
-            </div>
-            <div class="control-group">
-                <label class="control-label" for="description">Description</label>
-                <div class="controls">
-                    <input type="text" id="description" name="description" placeholder="Description">
-                </div>
-            </div>
-            <div class="control-group">
-                <label class="control-label" for="labels">Labels</label>
-                <div class="controls">
-                    <input type="labels" id="labels" name="labels" value="">
-                </div>
-            </div>
-            <div class="control-group">
-                <div class="controls">
-                    <button type="submit" class="btn btn-blue">Create</button>
-                </div>
-            </div>
-        </form>
+        @if(user.email.isDefined) {
 
+            <form class="form-horizontal" method="post" action="@routes.ContentController.createQuestionSet()">
+                <input type="hidden" name="contentType" value="playlist">
+                <div class="control-group">
+                    <label class="control-label" for="title">Title</label>
+                    <div class="controls">
+                        <input type="text" id="title" name="title" placeholder="Title">
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label" for="description">Description</label>
+                    <div class="controls">
+                        <input type="text" id="description" name="description" placeholder="Description">
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label" for="labels">Labels</label>
+                    <div class="controls">
+                        <input type="labels" id="labels" name="labels" value="">
+                    </div>
+                </div>
+                <div class="control-group">
+                    <div class="controls">
+                        <button type="submit" class="btn btn-blue">Create</button>
+                    </div>
+                </div>
+            </form>
+        } else {
+            <p><strong class="color-magenta">No email address set</strong></p>
+            <p>
+                In order to create a question set, you must have an email address. You can set yours in your
+                <a href="@routes.Users.accountSettings()">Account Settings</a>. Your email address will be the one added
+                as an author to the Google Form that will be created.
+            </p>
+        }
     </div>
 
 }

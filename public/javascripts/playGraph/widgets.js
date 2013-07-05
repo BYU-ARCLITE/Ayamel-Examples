@@ -60,7 +60,8 @@
                     "video": "http://ayamel.byu.edu/assets/images/videos/placeholder.jpg",
                     "image": "",
                     "audio": "http://ayamel.byu.edu/assets/images/audio/placeholder.jpg",
-                    "text": "http://ayamel.byu.edu/assets/images/text/placeholder.jpg"
+                    "text": "http://ayamel.byu.edu/assets/images/text/placeholder.jpg",
+                    "questions": "http://ayamel.byu.edu/assets/images/questions/placeholder.jpg"
                 }[content.contentType];
             } else
                 return content.thumbnail;
@@ -189,6 +190,8 @@
                 '<option value="button">Button</option>' +
                 '<option value="timer">Timer</option>' +
                 '<option value="media">Media End</option>' +
+                '<option value="pass">Pass</option>' +
+                '<option value="fail">Fail</option>' +
             '</select>';
 
         var ruleMap = {
@@ -197,13 +200,17 @@
             button: "trigger === \"button\";",
             timer: "trigger === \"timer\";",
             media: "trigger === \"media\";",
+            pass: "score >= passingValue;",
+            fail: "score < passingValue;",
 
             // Put in the reverse lookup as well
             "true;": "always",
             "trigger === \"click\";": "click",
             "trigger === \"button\";": "button",
             "trigger === \"timer\";": "timer",
-            "trigger === \"media\";": "media"
+            "trigger === \"media\";": "media",
+            "score >= passingValue;": "pass",
+            "score < passingValue;": "fail"
         };
 
         function TransitionRuleEditor(args) {
@@ -285,6 +292,12 @@
                             '<span class="input-long uneditable-input" id="timerValueDisabled"></span>' +
                         '</div>' +
                     '</div>' +
+                    '<div class="control-group">' +
+                        '<label class="control-label" for="inputPassword">Passing value (0-1):</label>' +
+                        '<div class="controls">' +
+                            '<input type="text" id="passingValue" placeholder="Passing value">' +
+                        '</div>' +
+                    '</div>' +
                 '</form>' +
             '</div>';
 
@@ -293,12 +306,13 @@
             button: false,
             media: false,
             timer: false,
-            time: 0
+            time: 0,
+            passingValue: 0
         };
 
         function parseSettings(settings) {
             try {
-                return JSON.parse(settings);
+                return $.extend($.extend({}, defaultSettings), JSON.parse(settings));
             } catch(e) {
                 return defaultSettings;
             }
@@ -314,6 +328,7 @@
             var $timer = this.$element.find("#timerCheckbox");
             var $time = this.$element.find("#timerValue");
             var $timeDisabled = this.$element.find("#timerValueDisabled");
+            var $passingValue = this.$element.find("#passingValue");
 
             // Set up events
             function update(event) {
@@ -328,6 +343,7 @@
             $media.change(update);
             $timer.change(update);
             $time.change(update);
+            $passingValue.change(update);
 
             // Have the UI update depending on the settings
             var settings = defaultSettings;
@@ -343,6 +359,7 @@
                     $time.hide();
                     $timeDisabled.show();
                 }
+                $passingValue.val(settings.passingValue);
             }
 
 
@@ -358,6 +375,7 @@
                     $time.hide();
                     $timeDisabled.show();
                 }
+                settings.passingValue = !!$passingValue.val() ? $passingValue.val() : 0;
             }
 
             Object.defineProperties(this, {

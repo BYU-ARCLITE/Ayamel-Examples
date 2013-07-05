@@ -318,8 +318,11 @@ var ContentItemRenderer = (function() {
             '<h2 class="pad-top-high"><i class="icon-file"></i> Text</h2>': function(content) {
                 return content.contentType === "text";
             },
-            '<h2 class="pad-top-high"><i class="icon-list-ol"></i> Playlist</h2>': function(content) {
+            '<h2 class="pad-top-high"><i class="icon-list-ol"></i> Playlists</h2>': function(content) {
                 return content.contentType === "playlist";
+            },
+            '<h2 class="pad-top-high"><i class="icon-question-sign"></i> Question Sets</h2>': function(content) {
+                return content.contentType === "questions";
             }
         }
     };
