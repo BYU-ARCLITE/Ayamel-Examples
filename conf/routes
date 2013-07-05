@@ -63,6 +63,7 @@ POST    /content/create/batch           controllers.ContentController.createFrom
 POST    /content/create/file            controllers.ContentController.createFromFile
 POST    /content/create/resource        controllers.ContentController.createFromResource
 POST    /content/create/playlist        controllers.ContentController.createPlaylist
+POST    /content/create/questions       controllers.ContentController.createQuestionSet
 GET     /content/:id                    controllers.ContentController.view(id: Long)
 GET     /content/:id/stats              controllers.ContentController.stats(id: Long)
 GET     /content/:id/stats/download     controllers.ContentController.downloadStats(id: Long)
@@ -89,6 +90,9 @@ GET     /content/:id/accept/:docId      controllers.DocumentManager.acceptDocume
 # Playlist pages
 GET     /playlist/:id/play              controllers.Playlists.view(id: Long)
 GET     /playlist/:id                   controllers.Playlists.about(id: Long)
+
+# Question set pages
+GET     /questions/:id                  controllers.QuestionSets.about(id: Long)
 
 # User pages
 GET     /user/settings                  controllers.Users.accountSettings

@@ -266,6 +266,7 @@ var VideoRenderer = (function () {
                 captionTracks: args.captionTracks,
                 $holder: args.layout.$transcript,
                 syncButton: true,
+                noUpdate: args.noUpdate,
                 filter: function(cue, $cue) {
                     // Attach the translator
                     if (args.translator) {

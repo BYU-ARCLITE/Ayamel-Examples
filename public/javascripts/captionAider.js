@@ -40,6 +40,7 @@ $(function() {
         startTime: 0,
         endTime: -1,
         renderCue: renderCue,
+        noUpdate: true, // Disable transcript player updating for now
         callback: function(args) {
             var format = "text/vtt",
                 commandStack = new EditorWidgets.CommandStack(),
