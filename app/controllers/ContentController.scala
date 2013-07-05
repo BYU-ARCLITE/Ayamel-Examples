@@ -12,6 +12,7 @@ import anorm.NotAssigned
 import service.ContentDescriptor
 import dataAccess.{PlayGraph, ResourceController}
 import java.net.{URLDecoder, URI, URL}
+import play.api.libs.ws.WS
 
 /**
  * The controller for dealing with content.
@@ -61,6 +62,8 @@ object ContentController extends Controller {
             Ok(views.html.content.create.resource())
           else if (page == "playlist")
             Ok(views.html.content.create.playlist())
+          else if (page == "questions")
+            Ok(views.html.content.create.questionSet())
           else
             Ok(views.html.content.create.file())
         }
@@ -245,13 +248,43 @@ object ContentController extends Controller {
 
                   // Create playlist
                   val title = request.body("title")(0)
-                  val content = Content(NotAssigned, title, 'playlist, "", graphId.toString,
-                    settings = Map("description" -> request.body("description")(0))).save
+                  val labels = request.body.get("labels").map(_.toList).getOrElse(Nil)
+                  val description = request.body("description")(0)
+                  val content = Content(NotAssigned, title, 'playlist, "", graphId.toString, labels = labels,
+                    settings = Map("description" -> description)).save
                   user.addContent(content)
 
                   Redirect(routes.Playlists.about(content.id.get))
                 })
               })
+            })
+          }
+        }
+  }
+
+  /**
+   * Creates content based on the posted data (File)
+   */
+  def createQuestionSet = Authentication.authenticatedAction(parse.urlFormEncoded) {
+    implicit request =>
+      implicit user =>
+
+      // Guests cannot create content
+        Authentication.enforceNotRole(User.roles.guest) {
+
+          val title = request.body("title")(0)
+          val labels = request.body.get("labels").map(_.toList).getOrElse(Nil)
+          val description = request.body("description")(0)
+
+          Async {
+
+            WS.url(QuestionSets.createFormScript).get().map(response => {
+              val formId = (response.json \ "id").as[String]
+              val content = Content(NotAssigned, title, 'questions, "", formId, labels = labels,
+                settings = Map("description" -> description)).save
+              user.addContent(content)
+
+              Redirect(routes.QuestionSets.about(content.id.get))
             })
           }
         }
@@ -269,6 +302,8 @@ object ContentController extends Controller {
             // Check for playlists
             if (content.contentType == 'playlist) {
               Redirect(routes.Playlists.about(id))
+            } else if (content.contentType == 'questions) {
+              Redirect(routes.QuestionSets.about(id))
             } else {
               // Check that the user can view the content
               if (content isVisibleBy user) {

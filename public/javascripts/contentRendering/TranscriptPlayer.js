@@ -148,16 +148,20 @@ var TranscriptPlayer = (function () {
             update: {
                 value: function() {
                     // Re-rendering can take a lot of resources. Do so sparingly by checking the last update time
-                    var updateTime = new Date().getTime();
-                    if (updateTime >= lastUpdate + updateFrequency) {
-                        lastUpdate = updateTime;
-                        render.call(this, args.$holder);
-                        _this.activeTranscript = activeTrack;
+                    if (args.noUpdate) {
+                        console.log("TODO: Make updating/rendering fast");
                     } else {
-                        // Try again in twice the frequency
-                        window.setTimeout(function() {
-                            _this.update();
-                        }, updateFrequency * 2);
+                        var updateTime = new Date().getTime();
+                        if (updateTime >= lastUpdate + updateFrequency) {
+                            lastUpdate = updateTime;
+                            render.call(this, args.$holder);
+                            _this.activeTranscript = activeTrack;
+                        } else {
+                            // Try again in twice the frequency
+                            window.setTimeout(function() {
+                                _this.update();
+                            }, updateFrequency * 2);
+                        }
                     }
                 }
             }
