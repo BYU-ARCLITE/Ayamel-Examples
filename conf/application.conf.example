@@ -92,3 +92,9 @@ smtp.port=465
 smtp.name="Ayamel Admin"
 smtp.address=""
 smtp.password=""
+
+# Settings for Google powered exercises
+exercises.createFormScript="https://script.google.com/macros/s/1234567890abcdefghijklmnopqrstuvwxyz/exec"
+exercises.getResponseIndexScript="https://script.google.com/macros/s/1234567890abcdefghijklmnopqrstuvwxyz/exec"
+exercises.gradeFormScript="https://script.google.com/macros/s/1234567890abcdefghijklmnopqrstuvwxyz/exec"
+

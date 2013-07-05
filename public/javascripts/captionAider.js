@@ -108,7 +108,7 @@ $(function() {
             timeline.on('addtrack',function(track){
                 if (timeline.trackIndices[track.textTrack.label] === undefined) {
                     videoPlayer.captionRenderer.addTextTrack(track.textTrack);
-                    videoPlayer.controlBar.addTrack(track.textTrack);
+                    videoPlayer.controlBar.components.captions.addTrack(track.textTrack);
                     transcript.addTrack(track.textTrack);
                     updateSpacing();
                 }
@@ -180,7 +180,7 @@ $(function() {
             // Listen for track creation from drop
             timeline.on('dropTrack', function (track) {
                 videoPlayer.captionRenderer.addTextTrack(track);
-                videoPlayer.controlBar.addTrack(track);
+                videoPlayer.controlBar.components.captions.addTrack(track);
                 transcript.addTrack(track);
                 updateSpacing();
             });
@@ -253,7 +253,7 @@ $(function() {
 
                 // Add the track to the player and transcript
                 videoPlayer.captionRenderer.addTextTrack(track);
-                videoPlayer.controlBar.addTrack(track);
+                videoPlayer.controlBar.components.captions.addTrack(track);
                 transcript.addTrack(track);
                 updateSpacing();
 
@@ -417,7 +417,7 @@ $(function() {
                             track.mode = "showing";
                             timeline.addTextTrack(track, mime, true);
                             videoPlayer.captionRenderer.addTextTrack(track);
-                            videoPlayer.controlBar.addTrack(track);
+                            videoPlayer.controlBar.components.captions.addTrack(track);
                             transcript.addTrack(track);
                             updateSpacing();
                         }

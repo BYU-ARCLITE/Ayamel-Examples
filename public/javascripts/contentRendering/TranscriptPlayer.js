@@ -88,6 +88,8 @@ var TranscriptPlayer = (function () {
     function TranscriptPlayer(args) {
         var _this = this;
         var activeTrack = -1;
+        var lastUpdate = 0;
+        var updateFrequency = 1000;
 
         this.inited = false;
         this.$element = $(template);
@@ -145,8 +147,18 @@ var TranscriptPlayer = (function () {
             },
             update: {
                 value: function() {
-                    render.call(this, args.$holder);
-                    _this.activeTranscript = activeTrack;
+                    // Re-rendering can take a lot of resources. Do so sparingly by checking the last update time
+                    var updateTime = new Date().getTime();
+                    if (updateTime >= lastUpdate + updateFrequency) {
+                        lastUpdate = updateTime;
+                        render.call(this, args.$holder);
+                        _this.activeTranscript = activeTrack;
+                    } else {
+                        // Try again in twice the frequency
+                        window.setTimeout(function() {
+                            _this.update();
+                        }, updateFrequency * 2);
+                    }
                 }
             }
         });
