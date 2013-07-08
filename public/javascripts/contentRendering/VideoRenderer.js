@@ -294,7 +294,7 @@ var VideoRenderer = (function () {
 
             return transcriptPlayer;
         }
-        return null;
+        return "nothing";
     }
 
     return {
@@ -321,9 +321,11 @@ var VideoRenderer = (function () {
                     function setupTranscriptWithPlayer(args) {
                         // Make sure that the stuff is defined
                         if (args.videoPlayer && args.transcriptPlayer && !loaded) {
-                            args.videoPlayer.addEventListener("timeupdate", function() {
-                                args.transcriptPlayer.currentTime = args.videoPlayer.currentTime;
-                            });
+                            if (args.transcriptPlayer !== "nothing") {
+                                args.videoPlayer.addEventListener("timeupdate", function() {
+                                    args.transcriptPlayer.currentTime = args.videoPlayer.currentTime;
+                                });
+                            }
 
                             if (args.callback) {
                                 args.callback(args);
