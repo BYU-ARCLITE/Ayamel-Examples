@@ -262,7 +262,7 @@ var VideoRenderer = (function () {
 
     function setupTranscripts(args) {
         if (showTranscript(args)) {
-            var transcriptPlayer = new TranscriptPlayer({
+            var transcriptPlayer = new TranscriptPlayer2({
                 captionTracks: args.captionTracks,
                 $holder: args.layout.$transcript,
                 syncButton: true,
