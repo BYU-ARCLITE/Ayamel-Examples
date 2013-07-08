@@ -184,6 +184,7 @@ var AnnotationEditor = (function() {
             var activeAnnotation = null;
             var startCoords = [];
             var manifest = args.manifest;
+            var transcriptPlayer;
 
             this.$element = generateElement(args);
 
@@ -369,26 +370,29 @@ var AnnotationEditor = (function() {
                         }, function(err, captionTracks) {
 
                             // Keep track on where we were
-                            var visible = $(".transcriptContent:visible")[0];
-                            if (visible) {
-                                var index = $(".transcriptContent").toArray().indexOf(visible);
-                                var scrollTop = visible.scrollTop;
-                            }
+//                            var visible = $(".transcriptContent:visible")[0];
+//                            if (visible) {
+//                                var index = $(".transcriptContent").toArray().indexOf(visible);
+//                                var scrollTop = visible.scrollTop;
+//                            }
 
-                            var player = new TranscriptPlayer({
-                                captionTracks: captionTracks,
-                                $holder: _this.$element,
-                                filter: function(cue, $cue) {
-                                    setupTextAnnotations(textAnnotator, $cue);
-                                }
-                            });
+                            if (transcriptPlayer) {
+                                transcriptPlayer.update();
+                            } else {
+                                transcriptPlayer = new TranscriptPlayer2({
+                                    captionTracks: captionTracks,
+                                    $holder: _this.$element,
+                                    filter: function(cue, $cue) {
+                                        setupTextAnnotations(textAnnotator, $cue);
+                                    }
+                                });
+                            }
 
                             // Go back to where we were
-                            if (visible) {
-                                player.activeTranscript = index;
-                                player.$element.find("select").val(index);
-                                $(".transcriptContent:visible")[0].scrollTop = scrollTop;
-                            }
+//                            if (visible) {
+//                                player.activeTranscript = index;
+//                                $(".transcriptContent:visible")[0].scrollTop = scrollTop;
+//                            }
                         });
                     }
                 }
