@@ -108,6 +108,8 @@ var ContentItemRenderer = (function() {
             } else {
                 if (args.courseId) {
                     window.location = "/course/" + args.courseId + "/content/" + args.content.id;
+                } else if (args.content.courseId) {
+                    window.location = "/course/" + args.content.courseId + "/content/" + args.content.id;
                 } else {
                     window.location = "/content/" + args.content.id;
                 }
