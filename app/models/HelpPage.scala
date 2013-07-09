@@ -11,7 +11,7 @@ import anorm.SqlParser._
  * Time: 5:12 PM
  * To change this template use File | Settings | File Templates.
  */
-case class HelpPage(id: Pk[Long], title: String, contents: String) extends SQLSavable with SQLDeletable {
+case class HelpPage(id: Pk[Long], title: String, contents: String, category: String) extends SQLSavable with SQLDeletable {
 
   /**
    * Saves the help page to the DB
@@ -19,10 +19,10 @@ case class HelpPage(id: Pk[Long], title: String, contents: String) extends SQLSa
    */
   def save: HelpPage = {
     if (id.isDefined) {
-      update(HelpPage.tableName, 'id -> id, 'title -> title, 'contents -> contents)
+      update(HelpPage.tableName, 'id -> id, 'title -> title, 'contents -> contents, 'category -> category)
       this
     } else {
-      val id = insert(HelpPage.tableName, 'title -> title, 'contents -> contents)
+      val id = insert(HelpPage.tableName, 'title -> title, 'contents -> contents, 'category -> category)
       this.copy(id)
     }
   }
@@ -42,9 +42,10 @@ object HelpPage extends SQLSelectable[HelpPage] {
   val simple = {
     get[Pk[Long]](tableName + ".id") ~
       get[String](tableName + ".title") ~
-      get[String](tableName + ".contents") map {
-      case id ~ title ~ contents => {
-        HelpPage(id, title, contents)
+      get[String](tableName + ".contents") ~
+      get[String](tableName + ".category") map {
+      case id ~ title ~ contents ~ category => {
+        HelpPage(id, title, contents, category)
       }
     }
   }

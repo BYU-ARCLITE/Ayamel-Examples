@@ -25,12 +25,18 @@
 
         <div>
             <div class="pull-left">
-                <h1>@helpPage.title</h1>
+                <h1>
+                    @helpPage.title
+                    <small>@helpPage.category</small>
+                </h1>
             </div>
 
             <div class="pull-right">
                 @if(user.isDefined && user.get.role == User.roles.admin) {
-                    <a class="btn btn-yellow pad-top-med" href="@routes.HelpPages.edit(helpPage.id.get)"><i class="icon-edit"></i> Edit</a>
+                    <div class="pad-top-med">
+                        <a class="btn btn-yellow" href="@routes.HelpPages.edit(helpPage.id.get)"><i class="icon-edit"></i> Edit</a>
+                        <a class="btn btn-magenta" href="@routes.HelpPages.delete(helpPage.id.get)"><i class="icon-trash"></i> Delete</a>
+                    </div>
                 }
             </div>
         </div>

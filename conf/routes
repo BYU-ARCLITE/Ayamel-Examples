@@ -141,6 +141,7 @@ GET     /help                               controllers.HelpPages.tableOfContent
 GET     /help/:id                           controllers.HelpPages.view(id: Long)
 GET     /help/:id/edit                      controllers.HelpPages.edit(id: Long)
 POST    /help/:id/edit                      controllers.HelpPages.save(id: Long)
+GET     /help/:id/delete                    controllers.HelpPages.delete(id: Long)
 
 # Ajax utilities
 POST    /ajax/util/serialize                                controllers.ajax.Util.serializeMap
