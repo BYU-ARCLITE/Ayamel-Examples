@@ -27,7 +27,7 @@
 
         <div id="helpTOC">
             <div id="helpCategories">
-                @for(category <- pages.keys) {
+                @for(category <- pages.keys.toList.sortWith(_ < _)) {
                     <div data-target="@category">
                         @category
                         <div class="point1"></div><div class="point2"></div>
@@ -37,7 +37,7 @@
             <div id="helpPages">
                 @for(category <- pages.keys) {
                     <div data-name="@category">
-                        @for(page <- pages(category)) {
+                        @for(page <- pages(category).sortBy(_.title)) {
                             <div><a href="@routes.HelpPages.view(page.id.get)">@page.title</a></div>
                         }
                     </div>
