@@ -6,8 +6,10 @@ $(function() {
     $("input[type='file']").each(function () {
         var $field = $(this);
         $field.after(template);
-        $field.next().click(function () {
+        $field.next().click(function (event) {
+            event.stopPropagation();
             $field.click();
+            return false;
         });
         $field.change(function () {
             var filename = $field.val().replace(/^.*(\/|\\)/, "");
