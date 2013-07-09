@@ -5,11 +5,36 @@
     <div class="padded">
         <h1>Course Directory</h1>
 
-        <ul>
-            @for(course <- courses.sortWith(_.name < _.name)) {
-                <li><a href="@routes.Courses.view(course.id.get)">@course.name</a></li>
-            }
-        </ul>
+        <p>
+            The following is a complete list of all the courses on Ayamel and their enrollment status (open or closed).
+        </p>
+
+        <div class="row-fluid">
+            <div class="span6">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                    <tr>
+                        <th>Course Name</th>
+                        <th>Enrollment</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @for(course <- courses.sortWith(_.name < _.name)) {
+                        <tr>
+                            <td><a href="@routes.Courses.view(course.id.get)">@course.name</a></td>
+                            <td>
+                                @if(course.enrollment == 'open) {
+                                    <span class="label label-blue">Open</span>
+                                } else {
+                                    <span class="label label-magenta">Closed</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
 }
