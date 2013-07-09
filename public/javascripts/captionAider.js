@@ -209,16 +209,50 @@ $(function() {
             document.getElementById('minusFontButton').addEventListener('click',function(){ renderer.fontSizeRatio -= 0.005; },false);
 
             // Tool buttons
-            function setTool(tool){	timeline.currentTool = tool; }
-            document.getElementById("selectToolButton").addEventListener('click',setTool.bind(null,Timeline.SELECT),false);
-            document.getElementById("moveToolButton").addEventListener('click',setTool.bind(null,Timeline.MOVE),false);
-            document.getElementById("timeShiftToolButton").addEventListener('click',setTool.bind(null,Timeline.SHIFT),false);
-            document.getElementById("addCueToolButton").addEventListener('click',setTool.bind(null,Timeline.CREATE),false);
-            document.getElementById("splitToolButton").addEventListener('click',setTool.bind(null,Timeline.SPLIT),false);
-            document.getElementById("deleteToolButton").addEventListener('click',setTool.bind(null,Timeline.DELETE),false);
-            document.getElementById("scrollToolButton").addEventListener('click',setTool.bind(null,Timeline.SCROLL),false);
-            document.getElementById("reorderToolButton").addEventListener('click',setTool.bind(null,Timeline.ORDER),false);
-            document.getElementById("repeatToolButton").addEventListener('click',setTool.bind(null,Timeline.REPEAT),false);
+            var toolButtonMap = {};
+            toolButtonMap[Timeline.CREATE] = document.getElementById("addCueToolButton");
+            toolButtonMap[Timeline.SELECT] = document.getElementById("selectToolButton");
+            toolButtonMap[Timeline.DELETE] = document.getElementById("deleteToolButton");
+            toolButtonMap[Timeline.MOVE]   = document.getElementById("moveToolButton");
+            toolButtonMap[Timeline.SPLIT]  = document.getElementById("splitToolButton");
+            toolButtonMap[Timeline.SCROLL] = document.getElementById("scrollToolButton");
+            toolButtonMap[Timeline.ORDER]  = document.getElementById("reorderToolButton");
+            toolButtonMap[Timeline.SHIFT]  = document.getElementById("timeShiftToolButton");
+            toolButtonMap[Timeline.REPEAT] = document.getElementById("repeatToolButton");
+            function setTool(tool){
+                timeline.currentTool = +tool;
+            }
+            Object.keys(toolButtonMap).forEach(function(tool) {
+                toolButtonMap[tool].addEventListener("click", setTool.bind(null, tool), false);
+            });
+
+            /*
+             * Set up keyboard shortcuts
+             * a - Add
+             * s - Select
+             * d - Delete
+             * v - Move
+             * q - Split
+             * r - Scroll
+             * e - Reorder
+             * f - Time shift
+             * w - Set repeat tool
+             */
+            var keyboardShortcuts = {};
+            keyboardShortcuts[Ayamel.KeyBinder.keyCodes.a] = Timeline.CREATE;
+            keyboardShortcuts[Ayamel.KeyBinder.keyCodes.s] = Timeline.SELECT;
+            keyboardShortcuts[Ayamel.KeyBinder.keyCodes.d] = Timeline.DELETE;
+            keyboardShortcuts[Ayamel.KeyBinder.keyCodes.v] = Timeline.MOVE;
+            keyboardShortcuts[Ayamel.KeyBinder.keyCodes.q] = Timeline.SPLIT;
+            keyboardShortcuts[Ayamel.KeyBinder.keyCodes.r] = Timeline.SCROLL;
+            keyboardShortcuts[Ayamel.KeyBinder.keyCodes.e] = Timeline.ORDER;
+            keyboardShortcuts[Ayamel.KeyBinder.keyCodes.f] = Timeline.SHIFT;
+            keyboardShortcuts[Ayamel.KeyBinder.keyCodes.w] = Timeline.REPEAT;
+            Object.keys(keyboardShortcuts).forEach(function(key) {
+                Ayamel.KeyBinder.addKeyBinding(key, function() {
+                    $(toolButtonMap[keyboardShortcuts[key]]).click();
+                });
+            })
 
             // AB Repeat Controls
             clearRepeatButton.addEventListener('click',function(){ timeline.clearRepeat(); },false);
