@@ -1,15 +1,22 @@
-@(helpPage: HelpPage)(implicit request: RequestHeader, user: User)
+@(helpPage: Option[HelpPage])(implicit request: RequestHeader, user: User)
 
 @main("Ayamel - Edit help page", Seq("screen" -> "wysihtml5/bootstrap-wysihtml5.css")){
     <div class="padded">
-        <h1>@helpPage.title</h1>
 
         <script type="text/javascript" src="@routes.Assets.at("wysihtml5/wysihtml5-0.3.0.js")"></script>
         <script type="text/javascript" src="@routes.Assets.at("wysihtml5/bootstrap-wysihtml5.js")"></script>
 
-        <form action="@routes.HelpPages.save(helpPage.id.get)" method="post">
-            <div>
-                <textarea id="textEditor" name="contents" placeholder="Enter text ..." style="width: 810px; height: 400px">@helpPage.contents</textarea>
+        <form action="@routes.HelpPages.save(helpPage.map(_.id.get).getOrElse(0))" method="post">
+            <div class="pad-top-med">
+                <label for="title">Title</label>
+                <input type="text" name="title" id="title" value="@helpPage.map(_.title).getOrElse("Untitled")"/>
+            </div>
+            <div class="pad-top-med">
+                <label for="category">Category</label>
+                <input type="text" name="category" id="category" value="@helpPage.map(_.category).getOrElse("Uncategorized")"/>
+            </div>
+            <div class="pad-top-med">
+                <textarea id="textEditor" name="contents" placeholder="Enter text ..." style="width: 810px; height: 400px">@helpPage.map(_.contents).getOrElse("")</textarea>
             </div>
 
             <input type="submit" class="btn btn-blue" value="Save Page"/>

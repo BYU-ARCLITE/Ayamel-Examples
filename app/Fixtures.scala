@@ -210,7 +210,7 @@ object Fixtures {
   def createHelpPages() {
     Logger.info("Creating help pages")
 
-    helpPages.foreach(title => HelpPage(NotAssigned, title, "").save)
+    helpPages.foreach(title => HelpPage(NotAssigned, title, "", "Uncategorized").save)
   }
 
   def setupSetting() {

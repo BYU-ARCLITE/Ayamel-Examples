@@ -43,7 +43,7 @@
                 <button class="btn btn-inverse btn-large btn-block homeNavButton color-light-magenta" data-target="#publicContent"><i class="icon-globe"></i> Public Content</button>
             </div>
             <div class="span3">
-                <button class="btn btn-inverse btn-large btn-block homeNavButton color-light-yellow" data-target="#helpLab"><i class="icon-beaker"></i> Help Lab</button>
+                <a class="btn btn-inverse btn-large btn-block color-light-yellow" href="@routes.HelpPages.tableOfContents()" ><i class="icon-beaker"></i> Help Lab</a>
             </div>
             <div class="span3">
                 <button class="btn btn-inverse btn-large btn-block homeNavButton" data-target="#siteNews"><i class="icon-bullhorn"></i> Site News</button>
@@ -129,18 +129,6 @@
                     });
                 });
             </script>
-        </div>
-
-        <div class="homeNavContent" id="helpLab">
-            <h1>Help and Tutorial Lab</h1>
-
-            <p>
-                Understanding how Ayamel works can be difficult. We know. For that reason we are working hard on
-                creating a series of tutorials in order to help you do what you need to do. However, it is a work in
-                progress and many are not ready yet.
-            </p>
-
-            @views.html.help.helpTopics()
         </div>
 
         <div class="homeNavContent" id="siteNews">

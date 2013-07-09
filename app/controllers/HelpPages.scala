@@ -6,6 +6,7 @@ import models.{HelpPage, User}
 import play.api.Play
 import Play.current
 import dataAccess.ResourceController
+import anorm.NotAssigned
 
 /**
  * Created with IntelliJ IDEA.
@@ -19,7 +20,8 @@ object HelpPages extends Controller {
   def tableOfContents = Action {
     implicit request =>
       implicit val user = request.session.get("userId").flatMap(id => User.findById(id.toLong))
-      Ok(views.html.help.toc())
+        val pages = HelpPage.list.groupBy(_.category)
+        Ok(views.html.help.toc(pages))
   }
 
   def view(id: Long) = Action {
@@ -38,10 +40,17 @@ object HelpPages extends Controller {
         Authentication.enforceRole(User.roles.admin) {
 
           val helpPage = HelpPage.findById(id)
-          if (helpPage.isDefined)
-            Ok(views.html.help.edit(helpPage.get))
-          else
-            Errors.notFound
+          Ok(views.html.help.edit(helpPage))
+        }
+  }
+
+  def delete(id: Long) = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+        Authentication.enforceRole(User.roles.admin) {
+
+          HelpPage.findById(id).map(_.delete())
+          Redirect(routes.HelpPages.tableOfContents()).flashing("info" -> "Help page deleted.")
         }
   }
 
@@ -51,12 +60,18 @@ object HelpPages extends Controller {
         Authentication.enforceRole(User.roles.admin) {
 
           val helpPage = HelpPage.findById(id)
+          val title = request.body("title")(0)
+          val contents = request.body("contents")(0)
+          val category = request.body("category")(0)
+
           if (helpPage.isDefined) {
-            val contents = request.body("contents")(0)
-            helpPage.get.copy(contents = contents).save
+            helpPage.get.copy(title = title, contents = contents, category = category).save
             Redirect(routes.HelpPages.view(helpPage.get.id.get)).flashing("info" -> "Help page saved.")
-          } else
-            Errors.notFound
+          } else {
+            // Create new
+            val newHelpPage = HelpPage(NotAssigned, title, contents, category).save
+            Redirect(routes.HelpPages.view(newHelpPage.id.get)).flashing("info" -> "Help page created.")
+          }
         }
   }
 

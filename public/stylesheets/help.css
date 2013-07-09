@@ -1,0 +1,111 @@
+#helpCategories {
+    width: 40%;
+    display: inline-block;
+    vertical-align: top;
+    border-right: 1px solid #aaa;
+    color: rgb(241, 46, 163);
+}
+
+#helpCategories > div {
+    padding: 5px;
+    cursor: pointer;
+
+    -webkit-transition: 0.5s ease margin-left, 0.9s ease margin-right;
+    -moz-transition: 0.5s ease margin-left, 0.9s ease margin-right;
+    -ms-transition: 0.5s ease margin-left, 0.9s ease margin-right;
+    -o-transition: 0.5s ease margin-left, 0.9s ease margin-right;
+    transition: 0.5s ease margin-left, 0.9s ease margin-right;
+}
+
+#helpCategories > div:not(.active):hover {
+    background: #f0f0f0;
+}
+
+#helpCategories > div.active {
+    border: 1px solid #999;
+    background: #eee;
+    position: relative;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+    margin-left: 40px;
+    margin-right: 5px;
+}
+
+#helpCategories > div.active .point1 {
+    position: absolute;
+    top: 50%;
+    right: -20px;
+    margin-top: -12px;
+    border-left: 20px solid #999;
+    border-top: 12px solid transparent;
+    border-bottom: 12px solid transparent;
+}
+
+#helpCategories > div.active .point2 {
+    position: absolute;
+    top: 50%;
+    right: -18px;
+    margin-top: -12px;
+    border-left: 20px solid #eee;
+    border-top: 12px solid transparent;
+    border-bottom: 12px solid transparent;
+}
+
+#helpPages {
+    width: 40%;
+    display: inline-block;
+    vertical-align: top;
+    margin-left: 20px;
+}
+
+#helpPages > div {
+    -webkit-transition: 0.5s ease margin-left;
+    -moz-transition: 0.5s ease margin-left;
+    -ms-transition: 0.5s ease margin-left;
+    -o-transition: 0.5s ease margin-left;
+    transition: 0.5s ease margin-left;
+}
+
+#helpPages > div.active {
+    -webkit-animation-duration: 0.5s;
+    -moz-animation-duration: 0.5s;
+    -o-animation-duration: 0.5s;
+    animation-duration: 0.5s;
+
+    -webkit-animation-name: slidein;
+    -moz-animation-name: slidein;
+    -o-animation-name: slidein;
+    animation-name: slidein;
+}
+
+@keyframes slidein {
+    from {margin-left: -20px; opacity: 0.5;}
+    to {margin-left: 0; opacity: 1;}
+}
+@-moz-keyframes slidein {
+    from {margin-left: -20px; opacity: 0.5;}
+    to {margin-left: 0; opacity: 1;}
+}
+@-webkit-keyframes slidein {
+    from {margin-left: -20px; opacity: 0.5;}
+    to {margin-left: 0; opacity: 1;}
+}
+@-ms-keyframes slidein {
+    from {margin-left: -20px; opacity: 0.5;}
+    to {margin-left: 0; opacity: 1;}
+}
+@-o-keyframes slidein {
+    from {margin-left: -20px; opacity: 0.5;}
+    to {margin-left: 0; opacity: 1;}
+}
+
+
+#helpPages > div:not(.active) {
+    display: none;
+
+}
+
+#helpPages > div > div {
+    padding: 5px;
+}

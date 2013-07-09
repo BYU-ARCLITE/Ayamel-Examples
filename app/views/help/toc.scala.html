@@ -1,4 +1,4 @@
-@()(implicit request: RequestHeader, user: Option[User])
+@(pages: Map[String, List[HelpPage]])(implicit request: RequestHeader, user: Option[User])
 
 @template(title: String)(content: Html)(r: RequestHeader, u: Option[User]) = @{
     if(user.isDefined)
@@ -8,6 +8,8 @@
 }
 
 @template("Ayamel - Help Pages") {
+
+    <link rel="stylesheet" href="@routes.Assets.at("stylesheets/help.css")"/>
 
     <div class="padded">
 
@@ -19,6 +21,43 @@
             are not ready yet.
         </p>
 
-        @views.html.help.helpTopics()
+        @if(user.isDefined && user.get.role == User.roles.admin) {
+            <a href="@routes.HelpPages.edit(0)" class="btn btn-yellow pad-bottom-med"><i class="icon-plus"></i> Create a new help page</a>
+        }
+
+        <div id="helpTOC">
+            <div id="helpCategories">
+                @for(category <- pages.keys) {
+                    <div data-target="@category">
+                        @category
+                        <div class="point1"></div><div class="point2"></div>
+                    </div>
+                }
+            </div>
+            <div id="helpPages">
+                @for(category <- pages.keys) {
+                    <div data-name="@category">
+                        @for(page <- pages(category)) {
+                            <div><a href="@routes.HelpPages.view(page.id.get)">@page.title</a></div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            $(function() {
+                var $categories = $("#helpCategories").children();
+                var $helpPages = $("#helpPages").children();
+                $categories.click(function() {
+                    $categories.removeClass("active");
+                    $(this).addClass("active");
+
+                    $helpPages.removeClass("active");
+                    $helpPages.filter("div[data-name=\"" + $(this).attr("data-target") + "\"]").addClass("active");
+                });
+            });
+        </script>
+
     </div>
 }(request, user)
