@@ -281,14 +281,15 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
       content.get
     }
 
-    var contentFeed: Option[List[Content]] = None
+//    var contentFeed: Option[List[Content]] = None
+    var contentFeed: Option[List[(Content, Long)]] = None
 
     def getContentFeed = {
       if (contentFeed.isEmpty)
         contentFeed = Some(
-          getEnrollment.flatMap(_.getContent)
-            .sortWith((c1, c2) => TimeTools.dateToTimestamp(c1.dateAdded) > TimeTools.dateToTimestamp(c2.dateAdded))
-            .distinct
+          getEnrollment.flatMap(course => course.getContent.map(c => (c, course.id.get)))
+            .sortWith((c1, c2) => TimeTools.dateToTimestamp(c1._1.dateAdded) > TimeTools.dateToTimestamp(c2._1.dateAdded))
+//            .distinct
         )
       contentFeed.get
     }
@@ -365,7 +366,7 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
    * @param limit The number of content objects to get
    * @return The content
    */
-  def getContentFeed(limit: Int = 5): List[Content] = cache.getContentFeed.take(limit)
+  def getContentFeed(limit: Int = 5): List[(Content, Long)] = cache.getContentFeed.take(limit)
 
   /**
    * Gets the latest announcements made in this user's courses.

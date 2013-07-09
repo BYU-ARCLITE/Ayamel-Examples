@@ -64,8 +64,14 @@
                             <div id="latestContent"></div>
                             <script type="text/javascript">
                                 $(function() {
+                                    var contentFeed = [];
+                                    @for(contentData <- user.getContentFeed(6)) {
+                                        var content_@contentData._1.id.get = @Html(contentData._1.toJson.toString);
+                                        content_@{contentData._1.id.get}.courseId = @contentData._2;
+                                        contentFeed.push(content_@contentData._1.id.get);
+                                    }
                                     ContentItemRenderer.renderAll({
-                                        content: [@Html(user.getContentFeed(6).map(_.toJson).mkString(","))],
+                                        content: contentFeed,
                                         $holder: $("#latestContent"),
                                         format: "icon"
                                     });
