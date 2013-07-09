@@ -10,6 +10,7 @@ import java.io.ByteArrayInputStream
 import dataAccess.ResourceController
 import scala.concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
+import play.api.libs.json.{JsObject, Json}
 
 /**
  * Created with IntelliJ IDEA.
@@ -37,8 +38,6 @@ object CaptionAider extends Controller {
         val contentId = params("contentId").toLong
         ContentController.getContent(contentId) {
           content =>
-
-            // TODO: Handle updating the information. Issue # 45
 
             val params = request.body.dataParts.mapValues(_(0))
             val mime = params("mime")
@@ -76,6 +75,15 @@ object CaptionAider extends Controller {
                 ResourceController.getResource(resourceId).flatMap {
                   json =>
                     val resource = json \ "resource"
+
+                    // Handle updating the information.
+                    val updatedFile = (resource \ "content" \ "files")(0).as[JsObject] ++ Json.obj("attributes" -> Json.obj("kind" -> kind))
+                    val updatedResource = resource.as[JsObject] ++ Json.obj(
+                      "title" -> label,
+                      "languages" -> languages,
+                      "content" -> Json.obj("files" -> List(updatedFile))
+                    )
+                    ResourceController.updateResource(resourceId, updatedResource)
 
                     // Now find the file
                     val url = ((resource \ "content" \ "files")(0) \ "downloadUri").as[String]
