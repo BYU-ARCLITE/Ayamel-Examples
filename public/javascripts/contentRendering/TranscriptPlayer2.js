@@ -70,8 +70,12 @@ var TranscriptPlayer2 = (function() {
                     $element[0].addEventListener(listener.event, listener.callback);
                 });
 
+                // Update the active track if there are tracks and no track is "active"
+                if (tracks.length && !activeId) {
+                    activeId = trackHash(tracks[0]);
+                }
+
                 // Set up track selection
-                activeId = !!activeId ? activeId : trackHash(tracks[0]);
                 $(attach.transcripts).hide().filter("#transcript_" + activeId).show();
                 $select = $(attach.select).change(function() {
                     activeId = $(this).val();
@@ -88,10 +92,15 @@ var TranscriptPlayer2 = (function() {
                 } else
                     $syncButton.remove();
 
-                // Set up cues
-                if (!attach.transcripts instanceof Array) {
+                // Make sure that we have an array of transcripts to work with
+                if (!attach.transcripts) {
+                    attach.transcripts = [];
+                }
+                if (!(attach.transcripts instanceof Array)) {
                     attach.transcripts = [attach.transcripts];
                 }
+
+                // Set up cues
                 attach.transcripts.forEach(function(transcript) {
                     var track = tracks[transcript.dataset.trackindex];
                     trackCueMap[trackHash(track)] = {};
@@ -186,9 +195,12 @@ var TranscriptPlayer2 = (function() {
                     if (updateTime >= lastUpdate + updateFrequency) {
                         updated = true;
                         lastUpdate = updateTime;
-                        var scrollTop = $("#transcript_" + activeId)[0].scrollTop;
+
+                        // Remember where the scroll top was
+                        var $transcript = $("#transcript_" + activeId);
+                        var scrollTop = $transcript.length ? $transcript.scrollTop() : 0;
                         render(function() {
-                            $("#transcript_" + activeId)[0].scrollTop = scrollTop;
+                            $("#transcript_" + activeId).scrollTop(scrollTop);
                         });
                     } else {
                         // Try again in twice the frequency
