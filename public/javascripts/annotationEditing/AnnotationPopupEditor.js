@@ -49,7 +49,13 @@ AnnotationPopupEditor = (function() {
              */
 
             // Setup the WYSIWYG editor
-            $(attach.editor).wysihtml5();
+            $(attach.editor).wysihtml5({
+                "stylesheets": ["/assets/wysihtml5/lib/css/wysiwyg-color.css", "/assets/wysihtml5/lib/css/highlight/github.css"], // CSS stylesheets to load
+                "color": true, // enable text color selection
+                "size": 'small', // buttons size
+                "html": true, // enable button to edit HTML
+                "format-code" : true // enable syntax highlighting
+            });
 
             // Cancel button closes the popup
             $(attach.cancel).click(function() {
@@ -172,8 +178,8 @@ AnnotationPopupEditor = (function() {
                 show: {
                     value: function ($target) {
                         var pos = $target.offset();
-                        attach.popup.style.left = (pos.left + ($target.width() / 2) - 46) + "px";
-                        attach.popup.style.top  = (pos.top + $target.height() + 20) + "px";
+                        attach.popup.style.left = (pos.left + $target.width() + 20) + "px";
+                        attach.popup.style.top  = (pos.top + ($target.height() / 2) - 100) + "px";
                         $(attach.popup).show();
                     }
                 },
