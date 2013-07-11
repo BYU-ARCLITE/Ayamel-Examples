@@ -3,36 +3,28 @@
     cursor: pointer;
 }
 
+#popupBackground {
+    position: fixed;
+    top: 0;
+    left: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 51; /* Needs to be higher than image annotation boxes */
+}
+
 #popupEditor {
     background: white;
     width: 650px;
     min-height: 200px;
     position: absolute;
-    top: 100px;
-    left: 10px;
+    top: 70px;
+    left: 50%;
+    margin-left: -325px;
     -webkit-border-radius: 10px;
     -moz-border-radius: 10px;
     border-radius: 10px;
     -webkit-box-shadow: 1px 1px 10px rgba(0, 0, 0, 1);
     -moz-box-shadow: 1px 1px 10px rgba(0, 0, 0, 1);
     box-shadow: 1px 1px 10px rgba(0, 0, 0, 1);
-}
-
-#popupEditor .point {
-    position: absolute;
-    border-top: 16px solid transparent;
-    border-bottom: 16px solid transparent;
-    top: 80px;
-}
-
-#popupEditor .point:nth-child(2) {
-    border-right: 20px solid white;
-    left: -19px;
-}
-
-#popupEditor .point:first-child {
-    border-right: 20px solid #666;
-    left: -20px;
 }
 
 #popupEditor > div:last-child {
@@ -63,7 +55,7 @@
 
 #textEditor {
     width: 615px;
-    height: 150px;
+    height: 250px;
 }
 
 .popupImage {

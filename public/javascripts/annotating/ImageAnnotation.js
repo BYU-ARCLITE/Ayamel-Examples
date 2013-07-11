@@ -18,7 +18,7 @@ var ImageAnnotation = (function(){
         this.data = data;
     }
 
-    ImageAnnotation.prototype.annotate = function(canvas, filter) {
+    ImageAnnotation.prototype.annotate = function(canvas, filter, open) {
 
         // Create the box annotation
         var x1 = this.location[0][0];
@@ -26,6 +26,7 @@ var ImageAnnotation = (function(){
         var x2 = this.location[1][0];
         var y2 = this.location[1][1];
         var box = canvas.drawBox(x1, y1, x2, y2, ["annotationBox"]);
+        box.annotation = this;
 
         // Fill the contents appropriately
         if (this.data.type === "image") {
@@ -34,10 +35,37 @@ var ImageAnnotation = (function(){
                 .css("background-size", "contain")
                 .css("background-position", "center")
                 .css("background-repeat", "no-repeat")
-                .css("background-image", "url('" + this.data.value + "')");
+                .css("background-image", "url('" + this.data.value + "')")
+
+            if (open) {
+                box.$element
+                    .css("cursor", "pointer")
+                    .click(function() {
+                        window.open(box.annotation.data.value);
+                    });
+            }
         }
         if (this.data.type === "text") {
             box.$element.html(this.data.value);
+        }
+        if (this.data.type === "content") {
+            ContentCache.load(this.data.value, function(content) {
+                var thumbnail = ContentThumbnails.resolve(content);
+                box.$element
+                    .html("")
+                    .css("background-size", "contain")
+                    .css("background-position", "center")
+                    .css("background-repeat", "no-repeat")
+                    .css("background-image", "url('" + thumbnail + "')");
+
+                if (open) {
+                    box.$element
+                        .css("cursor", "pointer")
+                        .click(function() {
+                            window.location = "/content/" + content.id;
+                        });
+                }
+            });
         }
 
         if (filter) {

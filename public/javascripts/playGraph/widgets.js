@@ -16,6 +16,7 @@
         .append('<link rel="stylesheet" href="'+host+'assets/stylesheets/content.css"/>');
     $.getScript(host + "assets/javascripts/mustache.js");
     $.getScript(host + "assets/javascripts/ContentItemRenderer.js");
+    $.getScript(host + "assets/javascripts/contentRendering/ContentThumbnails.js");
     $.getScript(host + "assets/javascripts/PopupBrowser.js", function () {
         PopupBrowser.setHost(host);
         PopupBrowser.setCrossDomain(true);
@@ -54,19 +55,6 @@
                 '<div><button class="btn btn-success">Select Content</button></div>' +
                 '</div>';
 
-        function getThumbnail(content) {
-            if (!content.thumbnail) {
-                return {
-                    "video": "http://ayamel.byu.edu/assets/images/videos/placeholder.jpg",
-                    "image": "",
-                    "audio": "http://ayamel.byu.edu/assets/images/audio/placeholder.jpg",
-                    "text": "http://ayamel.byu.edu/assets/images/text/placeholder.jpg",
-                    "questions": "http://ayamel.byu.edu/assets/images/questions/placeholder.jpg"
-                }[content.contentType];
-            } else
-                return content.thumbnail;
-        }
-
         function AyamelDataEditor(args) {
             var _this = this;
             this.$element = $(template);
@@ -93,7 +81,8 @@
                     if (!!value) {
                         contentCache[value.id] = value;
                         activeContent = value;
-                        $contentDiv.html("<img src='" + getThumbnail(value) + "'><h1>" + value.name + "</h1>");
+                        var thumbnail = ContentThumbnails.resolve(value);
+                        $contentDiv.html("<img src='" + thumbnail + "'><h1>" + value.name + "</h1>");
                     } else {
                         activeContent = null;
                         $contentDiv.html("<em>No content selected.</em>");

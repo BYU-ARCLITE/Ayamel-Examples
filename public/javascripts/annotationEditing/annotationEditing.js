@@ -93,14 +93,20 @@ $(function() {
 
                 // Create the text editor
                 var textEditor = new AnnotationTextEditor({
-                    $holder: $("#annotationTextEditor"),
+                    $holder: $("#annotationEditor"),
                     content: content,
                     manifest: data.manifest,
                     popupEditor: popupEditor
                 });
             }
             if (typeMap[content.contentType] === "image") {
-                console.log("TODO: Image annotating");
+
+                var imageEditor = new AnnotationImageEditor({
+                    $holder: $("#annotationEditor"),
+                    content: content,
+                    manifest: data.manifest,
+                    popupEditor: popupEditor
+                });
             }
 
             // Setup the navbar buttons
