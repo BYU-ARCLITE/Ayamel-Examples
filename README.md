@@ -17,17 +17,16 @@ This is the Ayamel site developed by the ARCLITE Lab at Brigham Young University
 
 ### Acquire code
 
-Clone the repository. This uses other external git repositories, so you'll need to clone those as well. The following are the repositories and their locations:
+Clone the repository. This uses other external git repositories, so to acquire them, run the install script:
 
-    public/Ayamel.js   > https://github.com/BYU-ARCLITE/Ayamel.js.git
-    public/TimedTiext  > https://github.com/BYU-ARCLITE/TimedText
+    ./install.sh
     
 ### Configure MySQL
 
-Create a database named `ayamel_examples` on your MySQL server. In `conf/application.conf` you'll need to set the following parameters to match your configuration:
+Create a database named `ayamel` on your MySQL server. In `conf/application.conf` you'll need to set the following parameters to match your configuration:
 
     db.default.driver=com.mysql.jdbc.Driver
-    db.default.url="jdbc:mysql://localhost/ayamel_examples?characterEncoding=UTF-8"
+    db.default.url="jdbc:mysql://localhost/ayamel?characterEncoding=UTF-8"
     db.default.user=root
     db.default.password=root
     
@@ -77,7 +76,7 @@ or
 
 This uses PlayGraph. So you need to have both an authoring key and a playback key. Then set the following configuration entries:
 
-    playgraph.host="http://sartre3.byu.edu:9003/"
+    playgraph.host="http://playgraph.byu.edu/"
     playgraph.author.key="author key goes here"
     playgraph.author.secret="author secret goes here"
     playgraph.player.key="player key goes here"
