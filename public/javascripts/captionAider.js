@@ -191,13 +191,13 @@ $(function() {
 
             // Track selection
             videoPlayer.addEventListener("enabletrack", function(event) {
-                if (timeline.trackIndices[event.track.label] === undefined) {
-                    timeline.addTextTrack(event.track, event.track.mime);
+                if (timeline.trackIndices[event.detail.track.label] === undefined) {
+                    timeline.addTextTrack(event.detail.track, event.detail.track.mime);
                     updateSpacing();
                 }
             });
             videoPlayer.addEventListener("disabletrack", function(event) {
-                timeline.removeTextTrack(event.track.label);
+                timeline.removeTextTrack(event.detail.track.label);
                 updateSpacing();
             });
 
