@@ -89,6 +89,9 @@ var TranscriptPlayer2 = (function() {
                     $syncButton.remove();
 
                 // Set up cues
+                if (!attach.transcripts instanceof Array) {
+                    attach.transcripts = [attach.transcripts];
+                }
                 attach.transcripts.forEach(function(transcript) {
                     var track = tracks[transcript.dataset.trackindex];
                     trackCueMap[trackHash(track)] = {};
