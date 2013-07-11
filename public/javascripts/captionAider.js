@@ -93,7 +93,9 @@ $(function() {
             videoPlayer.addEventListener('loadedmetadata',setlen,false);
             videoPlayer.addEventListener('durationchange',setlen,false);
             videoPlayer.addEventListener("timeupdate",frame_change.bind(videoPlayer),false);
-            timeline.on('jump', function(time){ videoPlayer.currentTime = time; });
+            timeline.on('jump', function(event){
+                videoPlayer.currentTime = event.time;
+            });
             timeline.on('move', function(){
                 renderer.rebuildCaptions(false);
                 transcript.update();
@@ -115,9 +117,9 @@ $(function() {
                 }
             });
 
-            timeline.on("cuechange", function(event) {
-                transcript.update();
-            });
+//            timeline.on("cuechange", function(event) {
+//                transcript.update();
+//            });
 
             automove.addEventListener("click", function() {
                 if(automove.classList.contains('active')){
@@ -129,53 +131,54 @@ $(function() {
                 }
             }, false);
 
-            timeline.on('delete',function(seg) {
-                "use strict";
-                if(timeline.spanInView(seg.startTime,seg.endTime)){
-                    renderer.rebuildCaptions(true);
-                    transcript.update();
-                }
-            });
-            timeline.on('create',function(seg) {
+//            timeline.on('delete', function(seg) {
+//                "use strict";
+//                if(timeline.spanInView(seg.startTime,seg.endTime)){
+//                    renderer.rebuildCaptions(true);
+//                    transcript.update();
+//                }
+//            });
+            timeline.on('create', function() {
                 "use strict";
                 if(automove.classList.contains('active')){
                     timeline.currentTool = Timeline.MOVE;
                     $("#moveToolButton").button("toggle");
                 }
-                if(seg.active){
-                    renderer.rebuildCaptions(false);
-                }
+            });
+            timeline.on("activeChange", function() {
+                renderer.rebuildCaptions(false);
                 transcript.update();
             });
-            timeline.on('unpaste',function(segs) {
-                "use strict";
-                if(segs.some(function(seg){ return timeline.spanInView(seg.startTime,seg.endTime); })){
-                    renderer.rebuildCaptions(true);
-                    transcript.update();
-                }
-            });
-            timeline.on('paste',function(segs) {
-                "use strict";
-                if(segs.some(function(seg){ return seg.active; })){
-                    renderer.rebuildCaptions(false);
-                    transcript.update();
-                }
-            });
-            timeline.on('merge',function(seg) {
-                "use strict";
-                renderer.rebuildCaptions(true);
-                transcript.update();
-            });
-            timeline.on('unmerge',function(seg) {
-                "use strict";
-                renderer.rebuildCaptions(true);
-                transcript.update();
-            });
-            timeline.on('split',function(seg) {
-                "use strict";
-                renderer.rebuildCaptions(true);
-                transcript.update();
-            });
+
+//            timeline.on('unpaste',function(segs) {
+//                "use strict";
+//                if(segs.some(function(seg){ return timeline.spanInView(seg.startTime,seg.endTime); })){
+//                    renderer.rebuildCaptions(true);
+//                    transcript.update();
+//                }
+//            });
+//            timeline.on('paste',function(segs) {
+//                "use strict";
+//                if(segs.some(function(seg){ return seg.active; })){
+//                    renderer.rebuildCaptions(false);
+//                    transcript.update();
+//                }
+//            });
+//            timeline.on('merge',function(seg) {
+//                "use strict";
+//                renderer.rebuildCaptions(true);
+//                transcript.update();
+//            });
+//            timeline.on('unmerge',function(seg) {
+//                "use strict";
+//                renderer.rebuildCaptions(true);
+//                transcript.update();
+//            });
+//            timeline.on('split',function(seg) {
+//                "use strict";
+//                renderer.rebuildCaptions(true);
+//                transcript.update();
+//            });
             timeline.on('timeupdate', function(){ timestamp.textContent = timeline.timeCode; });
 
             // Listen for track creation from drop
