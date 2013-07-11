@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Super select</title>
+
+    <link rel="stylesheet" href="stylesheets/bootstrap.min.css"/>
+    <link rel="stylesheet" href="stylesheets/bootstrap-responsive.min.css"/>
+    <link rel="stylesheet" href="stylesheets/font-awesome.min.css"/>
+
+    <script type="text/javascript" src="javascripts/jquery-1.9.0.min.js"></script>
+    <script type="text/javascript" src="javascripts/bootstrap.min.js"></script>
+    <script type="text/javascript" src="javascripts/TemplateEngine.js"></script>
+
+
+    <style type="text/css">
+        .superselect > span {
+            margin-right: 10px;
+            font-style: italic;
+        }
+
+        .superselect > div {
+            position: relative;
+            display: inline-block;
+        }
+
+        .superselect > div > div {
+            position: absolute;
+            width: 280px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 1px 1px 10px;
+            top: 45px;
+            left: 50%;
+            margin-left: -140px;
+        }
+
+        .superselect .point {
+            border-left: 16px solid transparent;
+            border-right: 16px solid transparent;
+            position: absolute;
+            left: 50%;
+            margin-left: -16px;
+        }
+
+        .superselect .point:first-child {
+            border-bottom: 20px solid #999;
+            top: -20px;
+        }
+
+        .superselect .point:nth-child(2) {
+            border-bottom: 20px solid #eee;
+            top: -19px;
+        }
+
+        .superselect > div > div > div:nth-child(3) {
+            background: #eee;
+            width: 266px;
+            padding: 7px;
+            border-radius: 10px 10px 0 0;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .superselect > div > div > div:nth-child(3) input {
+            width: 234px;
+            display: block;
+        }
+
+        .superselect .optionListing {
+            max-height: 220px;
+            overflow-y: scroll;
+        }
+
+        .superselect .option {
+            padding: 2px 5px;
+        }
+
+        .superselect .option:last-child {
+            border-radius: 0 0 10px 10px;
+        }
+
+        .superselect .option .check {
+            font-family: FontAwesome;
+            display: inline-block;
+            width: 20px;
+        }
+
+        .superselect .option.selected .check:before {
+            content: "\f00c";
+        }
+
+        .superselect .option:hover {
+            color: white;
+
+            background-image: linear-gradient(bottom, rgb(224,65,131) 0%, rgb(240,113,164) 100%);
+            background-image: -o-linear-gradient(bottom, rgb(224,65,131) 0%, rgb(240,113,164) 100%);
+            background-image: -moz-linear-gradient(bottom, rgb(224,65,131) 0%, rgb(240,113,164) 100%);
+            background-image: -webkit-linear-gradient(bottom, rgb(224,65,131) 0%, rgb(240,113,164) 100%);
+            background-image: -ms-linear-gradient(bottom, rgb(224,65,131) 0%, rgb(240,113,164) 100%);
+
+            background-image: -webkit-gradient(
+                linear,
+                left bottom,
+                left top,
+                color-stop(0, rgb(224,65,131)),
+                color-stop(1, rgb(240,113,164))
+            );
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <select type="superselect" name="language" id="language" data-icon="icon-globe" data-text="Select Language">
+            <option value="one">One</option>
+            <option value="two">Two</option>
+            <option value="three">Three</option>
+        </select>
+
+        <div id="blah"></div>
+    </div>
+
+    <script type="text/javascript">
+        $(function() {
+
+            var url = "/assets/templates/superselect.tmpl.html";
+
+            $("select[type=superselect]").each(function () {
+                var $select = $(this).hide();
+
+                var data = {
+                    icon: this.dataset.icon,
+                    text: this.dataset.text,
+                    options: []
+                };
+                for (var i=0; i<this.length; i++)
+                    data.options.push({
+                        value: this[i].value,
+                        text: this[i].text
+                    });
+
+                TemplateEngine.render(url, data, function ($element, attach) {
+                    $select.after($element);
+
+                    // Opening/closing the popup
+                    $(attach.popup).hide();
+                    $(attach.button).click(function() {
+                        $(attach.popup).toggle();
+                    });
+
+                    if (!attach.options) attach.options = [];
+                    if (!(attach.options instanceof Array)) attach.options = [attach.options];
+
+                    var data = {};
+
+                    // Make sure all the text data is lower case and set up clicking
+                    attach.options.forEach(function(option) {
+                        option.dataset.text = option.dataset.text.toLowerCase();
+                        option.addEventListener("click", function() {
+                            data[option.dataset.value] = option.classList.toggle("selected");
+                        }, false);
+                    });
+
+                    // The filter function
+                    function filter(value) {
+                        attach.options.forEach(function (option) {
+                            if (!value)
+                                option.style.display = "block";
+                            else {
+                                if (option.dataset.text.indexOf(value) > -1)
+                                    option.style.display = "block";
+                                else
+                                    option.style.display = "none";
+                            }
+                        });
+                    }
+
+                    $(attach.search).keyup(function() {
+                        filter($(this).val().toLowerCase());
+                    });
+                    //
+                });
+            });
+
+//            var template =
+//                "<div class='superselect'>" +
+//                    "<span>Nothing selected</span>" +
+//                    "<button class='btn'><i class='{{icon}}'></i> {{text}}</button>" +
+//                "</div>";
+
+//            $("select[type=superselect]").each(function() {
+//
+//                // Hide the actual input
+//                var $this = $(this).hide();
+//
+//                var icon = $this.attr("icon");
+//                var text = $this.attr("text");
+//                $this.after(Mustache.to_html(template, {icon: icon, text: text}));
+//                console.log(this);
+//            });
+        });
+    </script>
+
+</body>
+</html>
