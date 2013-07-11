@@ -14,7 +14,8 @@
 @moreStyles =  @{
     List(
       ("screen", "stylesheets/content.css"),
-      ("screen", "stylesheets/annotations.css")
+      ("screen", "stylesheets/annotator.css"),
+      ("screen", "wysihtml5/bootstrap-wysihtml5.css")
     )
 }
 
@@ -26,32 +27,65 @@
 
     @views.html.content.header.dependencies()
 
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/annotationEditing/AnnotationEditor.js")"></script>
+    <script type="text/javascript" src="/assets/javascripts/PopupBrowser.js"></script>
+    <script type="text/javascript" src="/assets/javascripts/annotationEditing/AnnotationPopupEditor.js"></script>
+    <script type="text/javascript" src="/assets/javascripts/annotationEditing/AnnotationTextEditor.js"></script>
+    <script type="text/javascript" src="/assets/javascripts/annotationEditing/annotationEditing.js"></script>
+    <script type="text/javascript" src="/assets/wysihtml5/wysihtml5-0.3.0.js"></script>
+    <script type="text/javascript" src="/assets/wysihtml5/bootstrap-wysihtml5.js"></script>
+
+    <link rel="stylesheet" href="/assets/wysihtml5/bootstrap-wysihtml5.css"/>
+
 
     <div class="padded">
 
         <h1><i class="@contentIcons(content.contentType)"></i> @content.name <small>Edit Annotations</small></h1>
 
-        <div id="annotationEditor"></div>
+        <div class="navbar">
+            <div class="navbar-inner">
+                <ul class="nav">
+                    <li><a href="#metadataModal" data-toggle="modal"><i class="icon-pencil"></i> Edit metadata</a></li>
+                </ul>
+                <ul class="nav pull-right">
+                    <li id="spinner"><i class="icon-spin icon-spinner icon-large pad-top-high"></i></li>
+                    <li><a href="#" id="saveButton"><i class="icon-save"></i> Save</a></li>
+                    <li><a href="@routes.ContentController.view(content.id.get)"><i class="icon-signout"></i> Quit</a></li>
+                </ul>
+            </div>
+        </div>
+        <div id="annotationTextEditor"></div>
 
         <script type="text/javascript">
-            $(function() {
-
-                ResourceLibrary.setBaseUrl("@resourceLibraryUrl");
-                var content = @Html(content.toJson.toString());
-
-                var $annotationEditor = $("#annotationEditor");
-                var editor = new AnnotationEditor({
-                    $container: $annotationEditor,
-                    content: content,
-                    userId: "@user.id.get",
-                    owner: [@content.isEditableBy(user)][0],
-                    teacher: [@course.map(c => user.canEdit(c)).getOrElse(false)][0],
-                    courseId: [@course.map(_.id.get).getOrElse(0)][0],
-                    resourceLibraryUrl : "@resourceLibraryUrl"
-                });
-            });
+            var content = @Html(content.toJson.toString);
+            ResourceLibrary.setBaseUrl("@resourceLibraryUrl");
         </script>
+
+        <div id="metadataModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="metadataModalLabel" aria-hidden="true">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h3 id="metadataModalLabel">Edit Metadata</h3>
+            </div>
+            <div class="modal-body">
+                <div class="form-horizontal">
+                    <div class="control-group">
+                        <label class="control-label" for="title">Title</label>
+                        <div class="controls">
+                            <input type="text" id="title" placeholder="Title">
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="language">Language</label>
+                        <div class="controls">
+                            @views.html.content.header.languages("language")
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+                <button class="btn btn-blue" id="saveMetadataButton">Save changes</button>
+            </div>
+        </div>
 
     </div>
 }

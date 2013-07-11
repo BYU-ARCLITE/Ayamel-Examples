@@ -99,19 +99,19 @@ object DocumentManager extends Controller {
     ))
   }
 
-  def saveAnnotations(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
+  def saveAnnotations(id: Long) = Authentication.authenticatedAction(parse.multipartFormData) {
     implicit request =>
       implicit user =>
         ContentController.getContent(id) {
           content =>
-            val data = request.body.mapValues(_(0))
+            val data = request.body.dataParts.mapValues(_(0))
             val title = data("title")
             val annotations = data("annotations")
             val stream = new ByteArrayInputStream(annotations.getBytes("UTF-8"))
             val length = annotations.getBytes("UTF-8").size // Don't use string length. Breaks if there are 2-byte characters
             val mime = "application/json"
             val filename = data.get("filename").getOrElse(FileUploader.uniqueFilename(annotations + ".json"))
-            val languages = List(request.body("language")(0))
+            val languages = List(data("language"))
             val resourceId = data("resourceId")
             val course = request.queryString.get("course").flatMap(id => Course.findById(id(0).toLong))
 
@@ -120,10 +120,11 @@ object DocumentManager extends Controller {
               if (resourceId.isEmpty) {
                 // We are uploading a new thing
                 createAnnotations(stream, filename, length, mime, title, languages, content) {
-                  Redirect(
-                    if (course.isDefined) routes.CourseContent.viewInCourse(content.id.get, course.get.id.get)
-                    else routes.ContentController.view(content.id.get)
-                  ).flashing("info" -> "Annotations updated")
+                  Ok
+//                  Redirect(
+//                    if (course.isDefined) routes.CourseContent.viewInCourse(content.id.get, course.get.id.get)
+//                    else routes.ContentController.view(content.id.get)
+//                  ).flashing("info" -> "Annotations updated")
                 }
               } else {
                 // We are updating. Check that we are allowed to do this
@@ -133,10 +134,11 @@ object DocumentManager extends Controller {
 
                     // We are, so create a new annotation set
                     updateAnnotations(stream, filename, length, mime, resourceId, title, languages)
-                    Redirect(
-                      if (course.isDefined) routes.CourseContent.viewInCourse(content.id.get, course.get.id.get)
-                      else routes.ContentController.view(content.id.get)
-                    ).flashing("info" -> "Annotations updated")
+                    Ok
+//                    Redirect(
+//                      if (course.isDefined) routes.CourseContent.viewInCourse(content.id.get, course.get.id.get)
+//                      else routes.ContentController.view(content.id.get)
+//                    ).flashing("info" -> "Annotations updated")
                   } else {
                     Errors.forbidden
                   }

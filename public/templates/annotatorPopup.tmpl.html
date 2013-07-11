@@ -1,0 +1,46 @@
+<div id="popupEditor" tmpl-attach="popup">
+    <div class="point"></div><div class="point"></div>
+
+    <div id="popupContent">
+        <div class="form-inline">
+            <label for="word">Word(s): </label>
+            <input type="text" id="word" placeholder="Word" tmpl-attach="word">
+        </div>
+        <div class="form-inline">
+            <label for="annotationType">Type: </label>
+            <select id="annotationType" tmpl-attach="type">
+                <option value="text">Text</option>
+                <option value="image">Image</option>
+                <option value="content">Content</option>
+            </select>
+        </div>
+
+        <div id="textContent" tmpl-attach="text">
+            <label for="textEditor">Text:</label>
+            <textarea id="textEditor" tmpl-attach="editor"></textarea>
+        </div>
+        <div id="imageContent" tmpl-attach="image">
+            <div class="form-inline">
+                <label for="url">URL: </label>
+                <input type="text" id="url" placeholder="http://..." tmpl-attach="url">
+            </div>
+            <div class="popupImage" tmpl-attach="imageImg"></div>
+        </div>
+        <div id="contentContent" tmpl-attach="content">
+            <div class="pad-bottom-med">Content:</div>
+            <h4 tmpl-attach="title"></h4>
+            <div class="popupImage" tmpl-attach="contentImg"></div>
+            <button class="btn btn-yellow pad-left-med" tmpl-attach="button"><i class="icon-folder-open"></i> Select Content</button>
+        </div>
+    </div>
+
+    <div>
+        <div class="pull-left">
+            <button class="btn btn-magenta" tmpl-attach="delete"><i class="icon-trash"></i></button>
+        </div>
+        <div class="pull-right">
+            <button class="btn" tmpl-attach="cancel"><i class="icon-ban-circle"></i></button>
+            <button class="btn btn-blue" tmpl-attach="save"><i class="icon-save"></i></button>
+        </div>
+    </div>
+</div>
