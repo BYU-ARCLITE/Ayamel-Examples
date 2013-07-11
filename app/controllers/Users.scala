@@ -43,6 +43,23 @@ object Users extends Controller {
           Errors.notFound
   }
 
+  def deleteNotification(id: Long) = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+
+        // Make sure the notification exists
+        val notification = Notification.findById(id)
+        if (notification.isDefined) {
+          // Make sure the notification belongs to the user
+          if (user.getNotifications.contains(notification.get)) {
+            notification.get.delete()
+            Redirect(routes.Users.notifications())flashing("info" -> "Notification deleted.")
+          } else
+            Errors.forbidden
+        } else
+          Errors.notFound
+  }
+
   def accountSettings = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>

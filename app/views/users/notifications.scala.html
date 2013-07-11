@@ -26,20 +26,21 @@
                         <td><span class="badge badge-blue">@user.getNotifications.size</span></td>
                     </tr>
                 </table>
-                <p>Click on a notification to mark it as read.</p>
+                <p>Click on an unread notification to mark it as read.</p>
+                <p>Click on a read notification to delete it.</p>
             </div>
             <div class="span8 notifications">
                 @for(notification <- user.getNotifications) {
                     @if(!notification.messageRead) {
                         <a href="@routes.Users.markNotification(notification.id.get)">
+                    } else {
+                        <a href="@routes.Users.deleteNotification(notification.id.get)">
                     }
                     <div class="notification @read(notification)" data-id="@notification.id.get">
                         <div class="message">@Html(notification.message)</div>
                         <div class="date">@service.TimeTools.prettyTime(notification.dateSent)</div>
                     </div>
-                    @if(!notification.messageRead) {
-                        </a>
-                    }
+                    </a>
                 }
                 @if(user.getNotifications.isEmpty) {
                     <em>You don't have any notifications</em>
