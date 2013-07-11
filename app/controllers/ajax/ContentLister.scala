@@ -17,8 +17,9 @@ object ContentLister extends Controller {
     implicit request =>
       implicit user =>
         val content = user.getContent.map(_.toJson)
+        val origin = request.headers.get("Origin").getOrElse("*")
         Ok(JsArray(content)).withHeaders(
-          "Access-Control-Allow-Origin" -> request.headers("Origin"),
+          "Access-Control-Allow-Origin" -> origin,
           "Access-Control-Allow-Credentials" -> "true"
         )
   }
@@ -28,8 +29,9 @@ object ContentLister extends Controller {
       implicit user =>
         val courses = user.getEnrollment
         val content = courses.map(course => (course.name, JsArray(course.getContent.map(_.toJson))))
+        val origin = request.headers.get("Origin").getOrElse("*")
         Ok(JsObject(content)).withHeaders(
-          "Access-Control-Allow-Origin" -> request.headers("Origin"),
+          "Access-Control-Allow-Origin" -> origin,
           "Access-Control-Allow-Credentials" -> "true"
         )
   }
@@ -38,8 +40,9 @@ object ContentLister extends Controller {
     implicit request =>
       implicit user =>
         val content = Content.listPublic.map(_.toJson)
+        val origin = request.headers.get("Origin").getOrElse("*")
         Ok(JsArray(content)).withHeaders(
-          "Access-Control-Allow-Origin" -> request.headers("Origin"),
+          "Access-Control-Allow-Origin" -> origin,
           "Access-Control-Allow-Credentials" -> "true"
         )
   }
@@ -48,9 +51,10 @@ object ContentLister extends Controller {
     implicit request =>
       implicit user =>
         val content = Content.findById(id)
+        val origin = request.headers.get("Origin").getOrElse("*")
         if (content.isDefined)
           Ok(content.get.toJson).withHeaders(
-            "Access-Control-Allow-Origin" -> request.headers("Origin"),
+            "Access-Control-Allow-Origin" -> origin,
             "Access-Control-Allow-Credentials" -> "true"
           )
         else

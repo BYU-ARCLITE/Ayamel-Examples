@@ -1,0 +1,90 @@
+.annotation {
+    color: #DE2174;
+    cursor: pointer;
+}
+
+#popupEditor {
+    background: white;
+    width: 625px;
+    min-height: 200px;
+    position: absolute;
+    top: 100px;
+    left: 10px;
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    border-radius: 10px;
+    -webkit-box-shadow: 1px 1px 10px rgba(0, 0, 0, 1);
+    -moz-box-shadow: 1px 1px 10px rgba(0, 0, 0, 1);
+    box-shadow: 1px 1px 10px rgba(0, 0, 0, 1);
+}
+
+#popupEditor .point {
+    position: absolute;
+    border-left: 16px solid transparent;
+    border-right: 16px solid transparent;
+    left: 30px;
+}
+
+#popupEditor .point:nth-child(2) {
+    border-bottom: 20px solid white;
+    top: -19px;
+}
+
+#popupEditor .point:first-child {
+    border-bottom: 20px solid #aaa;
+    top: -20px;
+}
+
+#popupEditor > div:last-child {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 613px;
+    background-color: #eee;
+    padding: 6px;
+    -webkit-border-radius: 0 0 10px 10px;
+    -moz-border-radius: 0 0 10px 10px;
+    border-radius: 0 0 10px 10px;
+    border-top: 1px solid #ddd;
+}
+
+#popupContent {
+    padding: 10px;
+    margin-bottom: 43px;
+}
+
+#popupContent .form-inline {
+    margin-bottom: 8px;
+}
+
+#popupContent label {
+    width: 60px;
+}
+
+#textEditor {
+    width: 590px;
+    height: 150px;
+}
+
+.popupImage {
+    display: inline-block;
+    vertical-align: middle;
+    width: 100px;
+    height: 100px;
+    background-image: url("../images/annotator/no-image.jpg");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+
+    -webkit-box-shadow: 0 0 0 3px #fff, 0 0 0 4px #999, 1px 1px 10px rgba(0, 0, 0, 01);
+    -moz-box-shadow: 0 0 0 3px #fff, 0 0 0 4px #999, 1px 1px 10px rgba(0, 0, 0, 01);
+    box-shadow: 0 0 0 3px #fff, 0 0 0 4px #999, 1px 1px 10px rgba(0, 0, 0, 01);
+}
+
+#imageContent .popupImage {
+    background-image: url("../images/annotator/no-image.jpg");
+}
+
+#contentContent .popupImage {
+    background-image: url("../images/annotator/no-content.jpg");
+}

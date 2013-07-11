@@ -36,16 +36,6 @@ var ContentRenderer = (function () {
                 });
             }
         });
-
-//        AdditionalDocumentLoader.captionTracks.loadVisible({
-//            userId: args.userId,
-//            owner: args.owner,
-//            teacher: args.teacher,
-//            courseId: args.courseId,
-//            content: args.content,
-//            resource: args.resource,
-//            callback: callback
-//        });
     }
 
     function getAnnotations(args, callback) {
@@ -82,37 +72,6 @@ var ContentRenderer = (function () {
                 });
             }
         });
-
-
-//        AdditionalDocumentLoader.annotations.loadVisible({
-//            userId: args.userId,
-//            owner: args.owner,
-//            teacher: args.teacher,
-//            courseId: args.courseId,
-//            content: args.content,
-//            resource: args.resource,
-//            callback: function (annotations) {
-//
-//                // Load the annotation files
-//                async.map(annotations, function (annotation, asyncCallback) {
-//                    $.ajax(annotation.content.files[0].downloadUri, {
-//                        dataType: "json",
-//                        success: function(data) {
-//                            AnnotationLoader.load(data, function(manifest) {
-//                                if (manifest) {
-//                                    manifest.resourceId = annotation.id;
-//                                }
-//                                asyncCallback(null, manifest);
-//                            });
-//                        }, error: function(data){
-//                            asyncCallback(data);
-//                        }
-//                    });
-//                }, function (err, results) {
-//                    callback(results);
-//                });
-//            }
-//        });
     }
 
     function renderContent(args) {
