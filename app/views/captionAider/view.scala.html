@@ -2,6 +2,8 @@
 
 @editor("Ayamel - CaptionAider") {
 
+    @views.html.content.header.dependencies()
+
     <link rel="stylesheet" href="@routes.Assets.at("subtitle-timeline-editor/timeline.css")"/>
     <link rel="stylesheet" href="@routes.Assets.at("stylesheets/timeline.css")"/>
 
@@ -21,8 +23,6 @@
     <script type="text/javascript" src="@routes.Assets.at("subtitle-timeline-editor/aurora/alac.js")"></script>
     <script type="text/javascript" src="@routes.Assets.at("subtitle-timeline-editor/aurora/flac.js")"></script>
     <script type="text/javascript" src="@routes.Assets.at("subtitle-timeline-editor/aurora/mp3.js")"></script>
-
-    @views.html.content.header.dependencies()
 
     <div class="container">
         <div class="mainContent">
