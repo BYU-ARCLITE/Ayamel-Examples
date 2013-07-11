@@ -5,7 +5,7 @@
 
 #popupEditor {
     background: white;
-    width: 625px;
+    width: 650px;
     min-height: 200px;
     position: absolute;
     top: 100px;
@@ -20,26 +20,26 @@
 
 #popupEditor .point {
     position: absolute;
-    border-left: 16px solid transparent;
-    border-right: 16px solid transparent;
-    left: 30px;
+    border-top: 16px solid transparent;
+    border-bottom: 16px solid transparent;
+    top: 80px;
 }
 
 #popupEditor .point:nth-child(2) {
-    border-bottom: 20px solid white;
-    top: -19px;
+    border-right: 20px solid white;
+    left: -19px;
 }
 
 #popupEditor .point:first-child {
-    border-bottom: 20px solid #aaa;
-    top: -20px;
+    border-right: 20px solid #666;
+    left: -20px;
 }
 
 #popupEditor > div:last-child {
     position: absolute;
     bottom: 0;
     left: 0;
-    width: 613px;
+    width: 638px;
     background-color: #eee;
     padding: 6px;
     -webkit-border-radius: 0 0 10px 10px;
@@ -62,7 +62,7 @@
 }
 
 #textEditor {
-    width: 590px;
+    width: 615px;
     height: 150px;
 }
 
