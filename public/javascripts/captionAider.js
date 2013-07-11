@@ -117,6 +117,8 @@ $(function() {
                 }
             });
 
+            Ayamel.KeyBinder.addKeyBinding(Ayamel.KeyBinder.keyCodes['|'], timeline.breakPoint.bind(timeline));
+
 //            timeline.on("cuechange", function(event) {
 //                transcript.update();
 //            });

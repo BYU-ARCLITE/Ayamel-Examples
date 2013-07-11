@@ -1,0 +1,19 @@
+<div class="superselect">
+    <span tmpl-attach="span">Nothing selected</span>
+    <div>
+        <button class="btn" tmpl-attach="button"><i class="{{icon}}"></i> {{text}}</button>
+        <div tmpl-attach="popup">
+            <div class="point"></div>
+            <div class="point"></div>
+            <div>
+                <input type="text" class="search-query" tmpl-attach="search"/>
+            </div>
+            <div class="optionListing">
+                <div class="option" data-value="{{value}}" data-text="{{text}}" tmpl-repeat="options" tmpl-attach="options">
+                    <div class="check"></div>
+                    {{text}}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
