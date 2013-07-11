@@ -158,6 +158,29 @@ var VideoRenderer = (function () {
                     args.layout.$annotations.html('<img src="' + event.annotation.data.value + '">');
                 }
 
+                if (event.annotation.data.type === "content") {
+                    ContentCache.load(event.annotation.data.value, function(content) {
+
+                        // Don't allow annotations, level 3+, transcriptions, or certain controls
+                        content.settings.level = 2;
+                        content.settings.includeTranscriptions = false;
+
+                        ContentRenderer.render({
+                            content: content,
+                            holder: args.layout.$annotations[0],
+                            annotate: false,
+                            screenAdaption: {
+                                fit: false
+                            },
+                            aspectRatio: Ayamel.aspectRatios.hdVideo,
+                            components: {
+                                left: ["play"],
+                                right: ["captions", "timeCode"]
+                            }
+                        });
+                    });
+                }
+
                 // Find the annotation doc
                 var annotationDocId = "unknown";
                 args.manifests.forEach(function (manifest) {
@@ -179,15 +202,19 @@ var VideoRenderer = (function () {
     function setupVideoPlayer(args, callback) {
 //        Ayamel.AddVideoPlayer(h5PlayerInstall, 1, function() {
 
-        var components = {
-            left: ["play", "volume"],
-            right: ["fullScreen", "timeCode"]
+        var components = args.components || {
+            left: ["play", "volume", "captions"],
+            right: ["rate", "fullScreen", "timeCode"]
         };
-        var captions;
+        var captions = args.transcripts;
 
-        if (getLevel(args) >= 2) {
-            components.left.push("captions");
-            captions = args.transcripts;
+        if (getLevel(args) === 1) {
+            ["left", "right"].forEach(function(side) {
+                var index = components[side].indexOf("captions");
+                if (index >= 0)
+                    components[side].splice(index, 1);
+            });
+            captions = null;
         }
 
         // Set the priority of players
@@ -200,6 +227,7 @@ var VideoRenderer = (function () {
         }
 
         var videoPlayer = new Ayamel.classes.AyamelPlayer({
+            components: components,
             $holder: args.layout.$player,
             resource: args.resource,
             captionTracks: captions,

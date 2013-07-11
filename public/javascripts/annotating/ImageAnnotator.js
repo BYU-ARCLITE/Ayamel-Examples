@@ -15,7 +15,7 @@ var ImageAnnotator = (function() {
 
             args.manifests.forEach(function (manifest) {
                 manifest.annotations.forEach(function (annotation) {
-                    annotation.annotate(canvas, args.filter);
+                    annotation.annotate(canvas, args.filter, args.open);
                 });
             });
 

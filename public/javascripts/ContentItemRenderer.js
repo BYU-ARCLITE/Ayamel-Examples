@@ -174,7 +174,8 @@ var ContentItemRenderer = (function() {
                 organization: args.organization,
                 labels: args.labels,
                 filters: args.filters,
-                courseId: args.courseId
+                courseId: args.courseId,
+                click: args.click
             });
         });
 
@@ -201,7 +202,8 @@ var ContentItemRenderer = (function() {
                 organization: organization,
                 labels: args.labels,
                 filters: args.filters,
-                courseId: args.courseId
+                courseId: args.courseId,
+                click: args.click
             });
         });
 

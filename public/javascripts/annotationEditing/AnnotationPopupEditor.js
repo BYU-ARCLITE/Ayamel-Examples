@@ -9,22 +9,6 @@ AnnotationPopupEditor = (function() {
 
     var templateUrl = "/assets/templates/annotatorPopup.tmpl.html";
 
-    var contentCache = {
-        cache: {},
-        load: function(id, callback) {
-            if (contentCache.cache[id])
-                callback(contentCache.cache[id]);
-            else
-                $.ajax("/content/" + id + "/json", {
-                    dataType: "json",
-                    success: function (data) {
-                        contentCache.cache[id] = data;
-                        callback(data);
-                    }
-                });
-        }
-    };
-
     function AnnotationPopupEditor(callback) {
         var _this = this;
         var annotation = null;
@@ -42,7 +26,7 @@ AnnotationPopupEditor = (function() {
         // Create from the template
         TemplateEngine.render(templateUrl, {}, function($element, attach) {
             $("body").append($element);
-            $(attach.popup).hide();
+            $(attach.background).hide();
 
             /*
              * Setup UI functionality
@@ -50,27 +34,26 @@ AnnotationPopupEditor = (function() {
 
             // Setup the WYSIWYG editor
             $(attach.editor).wysihtml5({
-                "stylesheets": ["/assets/wysihtml5/lib/css/wysiwyg-color.css", "/assets/wysihtml5/lib/css/highlight/github.css"], // CSS stylesheets to load
+                "stylesheets": ["/assets/wysihtml5/lib/css/wysiwyg-color.css"], // CSS stylesheets to load
                 "color": true, // enable text color selection
                 "size": 'small', // buttons size
-                "html": true, // enable button to edit HTML
-                "format-code" : true // enable syntax highlighting
+                "html": true // enable button to edit HTML
             });
 
             // Cancel button closes the popup
             $(attach.cancel).click(function() {
-                $(attach.popup).hide();
+                $(attach.background).hide();
             });
 
             // Save button closes the popup and sends an "update" event
             $(attach.save).click(function() {
-                $(attach.popup).hide();
+                $(attach.background).hide();
                 emit("update");
             });
 
             // Save button closes the popup and sends an "delete" event
             $(attach.delete).click(function() {
-                $(attach.popup).hide();
+                $(attach.background).hide();
                 emit("delete");
             });
 
@@ -96,18 +79,11 @@ AnnotationPopupEditor = (function() {
 
             // Content selection
             var content = null;
-            var thumbnailMap = {
-                "video": function(c){return !!c.thumbnail ? c.thumbnail : "http://ayamel.byu.edu/assets/images/videos/placeholder.jpg";},
-                "image": function(c){return c.thumbnail},
-                "audio": function(c){return !!c.thumbnail ? c.thumbnail : "http://ayamel.byu.edu/assets/images/audio/placeholder.jpg";},
-                "text": function(c){return !!c.thumbnail ? c.thumbnail : "http://ayamel.byu.edu/assets/images/text/placeholder.jpg";},
-                "questions": function(c){return !!c.thumbnail ? c.thumbnail : "http://ayamel.byu.edu/assets/images/questions/placeholder.jpg";}
-            };
             $(attach.button).click(function() {
                 PopupBrowser.selectContent(function (_content) {
-                    contentCache.cache[_content.id] = _content;
+                    ContentCache.cache[_content.id] = _content;
                     content = _content;
-                    var thumbnail = thumbnailMap[content.contentType](content);
+                    var thumbnail = ContentThumbnails.resolve(content);
                     $(attach.contentImg).css("background-image", "url(" + thumbnail + ")");
                     $(attach.title).text(content.name);
                 });
@@ -138,49 +114,49 @@ AnnotationPopupEditor = (function() {
                 if (annotation instanceof TextAnnotation) {
                     // Load the annotation data into the form
                     $(attach.word).val(annotation.regex.source);
-                    $(attach.type).val(annotation.data.type);
-                    showContentPane();
+                }
+                if (annotation instanceof ImageAnnotation) {
+                    // Hide the word editor
+                    $(attach.wordEditor).hide();
+                }
 
-                    // First clear all the content data
-                    editor.setValue("");
+                $(attach.type).val(annotation.data.type);
+                showContentPane();
+
+                // First clear all the content data
+                editor.setValue("");
+                $(attach.url).val(annotation.data.value);
+                $(attach.imageImg).css("background-image", "");
+                $(attach.contentImg).css("background-image", "");
+                content = null;
+
+                // Check the data type
+                if (annotation.data.type === "text") {
+                    // Update the text editor
+                    editor.setValue(annotation.data.value);
+
+                } else if (annotation.data.type === "image") {
+                    // Update the URL text input
                     $(attach.url).val(annotation.data.value);
-                    $(attach.imageImg).css("background-image", "");
-                    $(attach.contentImg).css("background-image", "");
-                    content = null;
+                    $(attach.imageImg).css("background-image", "url("+annotation.data.value+")");
 
-                    // Check the data type
-                    if (annotation.data.type === "text") {
-                        // Update the text editor
-                        editor.setValue(annotation.data.value);
-
-                    } else if (annotation.data.type === "image") {
-                        // Update the URL text input
-                        $(attach.url).val(annotation.data.value);
-                        $(attach.imageImg).css("background-image", "url("+annotation.data.value+")");
-
-                    } else if (annotation.data.type === "content") {
-                        // Load the content
-                        contentCache.load(annotation.data.value, function(_content) {
-                            content = _content;
-                            var thumbnail = thumbnailMap[content.contentType](content);
-                            $(attach.contentImg).css("background-image", "url(" + thumbnail + ")");
-                            $(attach.title).text(content.name);
-                        });
-                    } else {
-                        throw new Error("Unrecognized annotation data.");
-                    }
+                } else if (annotation.data.type === "content") {
+                    // Load the content
+                    ContentCache.load(annotation.data.value, function(_content) {
+                        content = _content;
+                        var thumbnail = ContentThumbnails.resolve(content);
+                        $(attach.contentImg).css("background-image", "url(" + thumbnail + ")");
+                        $(attach.title).text(content.name);
+                    });
                 } else {
-                    throw new Error("Text annotations supported only.");
+                    throw new Error("Unrecognized annotation data.");
                 }
             }
 
             Object.defineProperties(_this, {
                 show: {
-                    value: function ($target) {
-                        var pos = $target.offset();
-                        attach.popup.style.left = (pos.left + $target.width() + 20) + "px";
-                        attach.popup.style.top  = (pos.top + ($target.height() / 2) - 100) + "px";
-                        $(attach.popup).show();
+                    value: function () {
+                        $(attach.background).width(window.innerWidth).height(window.innerHeight).show();
                     }
                 },
                 annotation: {

@@ -34,7 +34,7 @@ var AnnotationTextEditor = (function() {
             manifests: [args.manifest],
             filter: function ($annotation, annotation) {
                 $annotation.click(function () {
-                    args.popupEditor.show($annotation);
+                    args.popupEditor.show();
                     args.popupEditor.annotation = annotation;
                     activeAnnotation = annotation;
                 });
