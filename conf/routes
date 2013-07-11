@@ -104,6 +104,7 @@ POST    /user/changePassword            controllers.Users.changePassword
 POST    /user/uploadPicture             controllers.Users.uploadProfilePicture
 GET     /user/notifications             controllers.Users.notifications
 GET     /user/notifications/mark/:id    controllers.Users.markNotification(id: Long)
+GET     /user/notifications/delete/:id  controllers.Users.deleteNotification(id: Long)
 GET     /user/teacher/request           controllers.Users.teacherRequestPage
 POST    /user/teacher/request           controllers.Users.submitTeacherRequest
 
