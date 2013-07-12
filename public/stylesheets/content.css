@@ -379,6 +379,10 @@
     float: right;
 }
 
+.translationResult .addToWordList {
+    margin: 5px;
+}
+
 /* Image cropping styling */
 
 .cropShader {

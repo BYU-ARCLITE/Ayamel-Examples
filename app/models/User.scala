@@ -140,7 +140,6 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
    * @return The notification
    */
   def sendNotification(message: String): Notification = {
-    // TODO: Possibly send an email as well. Issue # 52
     if (Setting.findByName("notifications.users.emailOn.notification").get.value == "true" && email.isDefined) {
       EmailTools.sendEmail(List((displayName, email.get)), "Ayamel notification") {
         s"You have received the following notification:\n\n$message"
@@ -150,6 +149,8 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
     }
     Notification(NotAssigned, this.id.get, message).save
   }
+
+  def addWord(word: String, language: String): WordListEntry = WordListEntry(NotAssigned, word, language, id.get).save
 
   /**
    * Moves user ownership and enrollment from the provided user to the current user
@@ -329,6 +330,14 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
       scorings.get
     }
 
+    var wordList: Option[List[WordListEntry]] = None
+
+    def getWordList: List[WordListEntry] = {
+      if (wordList.isEmpty)
+        wordList = Some(WordListEntry.listByUser(cacheTarget))
+      wordList.get
+    }
+
   }
 
   /**
@@ -402,6 +411,8 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
    * @return The list of scorings
    */
   def getScorings(content: Content) = cache.getScorings.filter(_.contentId == content.id.get)
+
+  def getWordList = cache.getWordList
 
   // =======================
   //   Permission checkers

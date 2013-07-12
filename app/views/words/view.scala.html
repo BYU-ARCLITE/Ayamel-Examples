@@ -1,0 +1,53 @@
+@(wordList: List[WordListEntry])(implicit request: RequestHeader, user: User)
+
+@main("Ayamel - My Word List") {
+
+    @views.html.content.header.dependencies()
+
+    <div class="padded">
+        <h1>My Word List</h1>
+
+
+
+        @if(wordList.isEmpty) {
+            <em>You have no words saved.</em>
+        } else {
+            <div>
+                <button class="btn btn-blue"><i class="icon-cloud-upload"></i> Export to Quizlet</button>
+            </div>
+
+            <div class="inline-block pad-top-med">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                    <tr>
+                        <th>Word</th>
+                        <th>Language</th>
+                        <th>Options</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @for(word <- wordList) {
+                        <tr>
+                            <td>@word.word</td>
+                            <td class="language">@word.language</td>
+                            <td>
+                                <button class="btn"><i class="icon-exchange"></i> Translate</button>
+                                <button class="btn btn-magenta"><i class="icon-trash"></i> Delete</button>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+
+    <script type="text/javascript">
+        $(function() {
+            $(".language").each(function() {
+                var langCode = this.textContent;
+                this.textContent = Ayamel.utils.getLangName(langCode);
+            });
+        });
+    </script>
+}
