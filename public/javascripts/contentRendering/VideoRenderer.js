@@ -125,8 +125,29 @@ var VideoRenderer = (function () {
                         '<div class="sourceText">' + sourceText + '</div>' +
                         '<div class="translations">' + translations.join(", ") + '</div>' +
                         '<div class="engine">' + engine + '</div>' +
-                        '</div>';
-                args.layout.$definitions.append(html);
+                        '<div class="addToWordList"><button class="btn btn-small"><i class="icon-paste"></i> Add to Word List</button></div>' +
+                    '</div>';
+
+                var $html = $(html);
+                $html.find("button").click(function() {
+                    var $addWord = $(this).parent();
+                    $.ajax("/words", {
+                        type: "post",
+                        data: {
+                            language: event.srcLang,
+                            word: sourceText
+                        },
+                        success: function() {
+                            $addWord.html("<span class='color-blue'>Added to word list.</span>");
+                        },
+                        error: function() {
+                            alert("Error adding to word list");
+                            $addWord.remove();
+                        }
+                    });
+                });
+
+                args.layout.$definitions.append($html);
                 args.layout.$definitions[0].scrollTop = args.layout.$definitions[0].scrollHeight;
 
                 if (args.layout.$definitionsTab) {

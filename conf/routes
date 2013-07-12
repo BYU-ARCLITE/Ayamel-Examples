@@ -137,6 +137,11 @@ GET     /admin/proxy/:id                    controllers.Administration.proxy(id:
 GET     /captionaider/:id/:courseId         controllers.CaptionAider.view(id: Long, courseId: Long)
 POST    /captionaider/save                  controllers.CaptionAider.save
 
+# Word List pages
+GET     /words                              controllers.WordLists.view
+POST    /words                              controllers.WordLists.add
+GET     /words/export                       controllers.WordLists.export
+
 # Help pages
 GET     /help                               controllers.HelpPages.tableOfContents
 GET     /help/:id                           controllers.HelpPages.view(id: Long)

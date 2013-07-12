@@ -98,3 +98,6 @@ exercises.createFormScript="https://script.google.com/macros/s/1234567890abcdefg
 exercises.getResponseIndexScript="https://script.google.com/macros/s/1234567890abcdefghijklmnopqrstuvwxyz/exec"
 exercises.gradeFormScript="https://script.google.com/macros/s/1234567890abcdefghijklmnopqrstuvwxyz/exec"
 
+# Settings for exporting to Quizlet
+quizlet.clientId=""
+quizlet.secretKey=""

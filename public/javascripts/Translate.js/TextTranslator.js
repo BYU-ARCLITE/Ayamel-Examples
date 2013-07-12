@@ -99,6 +99,8 @@ var TextTranslator = (function () {
             event.text = text;
             event.translations = results;
             event.engine = engine;
+            event.srcLang = Ayamel.utils.upgradeLangCode(srcLang);
+            event.destLang = Ayamel.utils.upgradeLangCode(destLang);
             _this.e.dispatchEvent(event);
         }
 
