@@ -1,0 +1,95 @@
+.superselect > span {
+    margin-right: 10px;
+    font-style: italic;
+    display: inline-block;
+    width: 150px;
+}
+
+.superselect > div {
+    position: relative;
+    display: inline-block;
+}
+
+.superselectPopup {
+    position: absolute;
+    width: 280px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 1px 1px 10px;
+    top: 45px;
+    left: 50%;
+    margin-left: -140px;
+    z-index: 2000; /* We want this to be above modals */
+}
+
+.superselectPopup .point {
+    border-left: 16px solid transparent;
+    border-right: 16px solid transparent;
+    position: absolute;
+    left: 50%;
+    margin-left: -16px;
+}
+
+.superselectPopup .point:first-child {
+    border-bottom: 20px solid #999;
+    top: -20px;
+}
+
+.superselectPopup .point:nth-child(2) {
+    border-bottom: 20px solid #eee;
+    top: -19px;
+}
+
+.superselectPopup > div:nth-child(3) {
+    background: #eee;
+    width: 266px;
+    padding: 7px;
+    border-radius: 10px 10px 0 0;
+    border-bottom: 1px solid #ccc;
+}
+
+.superselectPopup > div:nth-child(3) input {
+    width: 234px;
+    display: block;
+}
+
+.superselectPopup .optionListing {
+    max-height: 220px;
+    overflow-y: scroll;
+}
+
+.superselectPopup .option {
+    padding: 2px 5px;
+}
+
+.superselectPopup .option:last-child {
+    border-radius: 0 0 10px 10px;
+}
+
+.superselectPopup .option .check {
+    font-family: FontAwesome;
+    display: inline-block;
+    width: 20px;
+}
+
+.superselectPopup .option.selected .check:before {
+    content: "\f00c";
+}
+
+.superselectPopup .option:hover {
+    color: white;
+
+    background-image: linear-gradient(bottom, rgb(224,65,131) 0%, rgb(240,113,164) 100%);
+    background-image: -o-linear-gradient(bottom, rgb(224,65,131) 0%, rgb(240,113,164) 100%);
+    background-image: -moz-linear-gradient(bottom, rgb(224,65,131) 0%, rgb(240,113,164) 100%);
+    background-image: -webkit-linear-gradient(bottom, rgb(224,65,131) 0%, rgb(240,113,164) 100%);
+    background-image: -ms-linear-gradient(bottom, rgb(224,65,131) 0%, rgb(240,113,164) 100%);
+
+    background-image: -webkit-gradient(
+        linear,
+        left bottom,
+        left top,
+        color-stop(0, rgb(224,65,131)),
+        color-stop(1, rgb(240,113,164))
+    );
+}
