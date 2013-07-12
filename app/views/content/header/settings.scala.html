@@ -45,7 +45,7 @@
                 <div class="control-group">
                     <label class="control-label" for="languages">Languages</label>
                     <div class="controls">
-                        @views.html.content.header.languages("languages", multiple = true)
+                        @views.html.content.header.languages("languages", multiple = true, all = true, activate = false)
                     </div>
                 </div>
                 <div class="control-group">
@@ -101,7 +101,7 @@
                 $("#description").val(resource.description);
                 $("#keywords").val(resource.keywords);
                 $("#categories").val(resource.categories);
-                $("#languages").val(resource.languages);
+                $("#languages").val(resource.languages).superselect();
             });
         });
     </script>

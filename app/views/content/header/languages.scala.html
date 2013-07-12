@@ -1,34 +1,62 @@
-@(id: String, multiple: Boolean = false, all: Boolean = false)
+@(id: String, multiple: Boolean = false, all: Boolean = false, activate: Boolean = true)
 
 @multipleAttr = {
     @if(multiple) {
         multiple="multiple"
     }
 }
-
+@text = {
+    @if(multiple) {
+        Select Languages
+    } else {
+        Select Language
+    }
+}
 
 @if(true) {
-    <select name="@id" id="@id" @multipleAttr ></select>
-    @if(all) {
-        <script type="text/javascript">
-            (function () {
-                var $select = $("#@id");
+    <select type="superselect" data-icon="icon-globe" data-text="@text" name="@id" id="@id" @multipleAttr ></select>
+    <script type="text/javascript">
+        var $select = $("#@id");
+        @if(all) {
+
+            if (!window.langsLong) {
+                window.langsLong = [];
                 Object.keys(Ayamel.utils.langCodes).forEach(function (key) {
-                    $select.append("<option value='" + key + "'>" + Ayamel.utils.langCodes[key].name + "</option>");
+                    window.langsLong.push({
+                        name: Ayamel.utils.langCodes[key].name,
+                        code: key
+                    });
                 });
-            }());
-        </script>
-    } else {
-        @* Only include a subset of languages *@
-        <script type="text/javascript">
-            (function () {
-                var $select = $("#@id");
-                Object.keys(Ayamel.utils.p1map).forEach(function (p1) {
+                window.langsLong.sort(function (a,b) {
+                    return a.name.localeCompare(b.name);
+                });
+            }
+
+            window.langsLong.forEach(function(lang) {
+                $select.append("<option value='" + lang.code + "'>" + lang.name + "</option>");
+            });
+        } else {
+            if (!window.langsShort) {
+                window.langsShort = [];
+                Object.keys(Ayamel.utils.p1map).forEach(function (key) {
                     var code = Ayamel.utils.p1map[p1];
-                    var name = Ayamel.utils.getLangName(code);
-                    $select.append("<option value='" + code + "'>" + name + "</option>");
+                    window.langsShort.push({
+                        name: Ayamel.utils.getLangName(code),
+                        code: code
+                    });
                 });
-            }());
-        </script>
-    }
+                window.langsShort.sort(function (a,b) {
+                    return a.name.localeCompare(b.name);
+                });
+            }
+
+            window.langsShort.forEach(function(lang) {
+                $select.append("<option value='" + lang.code + "'>" + lang.name + "</option>");
+            });
+        }
+
+        @if(activate) {
+            $select.superselect();
+        }
+    </script>
 }
