@@ -45,7 +45,7 @@
                 <div class="control-group">
                     <label class="control-label" for="languages">Languages</label>
                     <div class="controls">
-                        @views.html.content.header.languages("languages", multiple = true, all = true, activate = false)
+                        @views.html.content.header.languages("languages", multiple = true, all = true)
                     </div>
                 </div>
                 <div class="control-group">
@@ -101,16 +101,7 @@
                 $("#description").val(resource.description);
                 $("#keywords").val(resource.keywords);
                 $("#categories").val(resource.categories);
-                $("#languages").val(resource.languages);
-            });
-
-            // Only handle the language dropdown when opening the modal
-            var superselect = false;
-            $("#metadataModal").on("show", function() {
-                if (!superselect) {
-                    $("#languages").superselect();
-                    superselect = true;
-                }
+                $("#languages")[0].setValue(resource.languages);
             });
         });
     </script>

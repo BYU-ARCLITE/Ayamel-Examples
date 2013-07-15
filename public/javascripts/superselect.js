@@ -1,136 +1,192 @@
-jQuery.fn.extend({
-    superselect: function() {
-        return this.each(function() {
-            var $select = $(this).hide();
-            var multiple = $select.prop("multiple");
+(function() {
+    function FakeOption(args) {
+        var _this = this;
+        var selected = !!args.selected;
+        var listeners = {};
+        var filterText = args.option.text.toLowerCase();
 
-            var data = {
-                icon: this.dataset.icon,
-                text: this.dataset.text,
-                options: []
-            };
-            var optionMap = {};
-            for (var i=0; i<this.length; i++) {
-                data.options.push({
-                    value: this[i].value,
-                    text: this[i].text
-                });
-                optionMap[this[i].value] = this[i];
+        args.fakeOption.addEventListener("click", function(event) {
+            event.stopPropagation();
+            _this.selected = !selected;
+        });
+
+        Object.defineProperties(this, {
+            // Setting this object's "selected" value makes sure the check mark appears and the option is selected.
+            selected: {
+                set: function(value) {
+                    if (!!value === selected)
+                        return;
+
+                    args.option.selected = selected = !!value;
+                    if (selected)
+                        args.fakeOption.classList.add("selected");
+                    else
+                        args.fakeOption.classList.remove("selected");
+                    _this.emit("change", {
+                        selected: selected,
+                        value: args.option.value,
+                        text: args.option.text
+                    });
+                }
+            },
+
+            filter: {
+                set: function(value) {
+                    if (!value || filterText.indexOf(value) > -1)
+                        args.fakeOption.style.display = "block";
+                    else
+                        args.fakeOption.style.display = "none";
+                }
+            },
+
+            value: {
+                get: function() {
+                    return args.option.value;
+                }
+            },
+
+            // Event emitting
+            emit: {
+                value: function(event, data) {
+                    if (listeners[event])
+                        listeners[event].forEach(function(callback) {callback(data);});
+                }
+            },
+
+            // Event listener binding
+            on: {
+                value: function(event, callback) {
+                    if (listeners[event])
+                        listeners[event].push(callback);
+                    else
+                        listeners[event] = [callback];
+                    return this;
+                }
             }
-
-            TemplateEngine.render("/assets/templates/superselect.tmpl.html", data, function ($element, attach) {
-                $select.after(attach.data);
-                $("body").append(attach.popup);
-
-                // Opening/closing the popup
-                $(attach.popup).hide();
-                $(attach.button).click(function(e) {
-                    e.stopPropagation();
-                    var pos = $(this).offset();
-                    $(attach.popup).toggle().offset({top: pos.top + 45, left: pos.left - $(this).width()/2});
-                    return false;
-                });
-
-                if (!attach.options) attach.options = [];
-                if (!(attach.options instanceof Array)) attach.options = [attach.options];
-
-                var data = {};
-                var selected = null;
-                var selectedOptions = [];
-
-                function label(value) {
-                    return "<span class='label label-info'>"+value+"</span> ";
-                }
-
-                function setValue(value) {
-                    if (value[0] instanceof Array) {
-                        attach.span.innerHTML = value.map(function(v){return label(v[1]);}).join("");
-                    } else {
-                        if (value.length)
-                            attach.span.innerHTML = label(value[1]);
-                        else
-                            attach.span.innerHTML = "Nothing selected";
-                    }
-
-//                $select.val(value.map(function(v){return v[0];}));
-
-                    // Unselect what shouldn't be
-                    selectedOptions.forEach(function(option) {
-                        option.selected = false;
-                    });
-
-                    // Select what should be
-                    value.forEach(function(v) {
-                        var option = optionMap[v[0]];
-                        option.selected = true;
-                        selectedOptions.push(option);
-                    })
-                }
-
-                $select.change(function() {
-                    console.log("Change select");
-                });
-
-                // Make sure all the text data is lower case and set up clicking
-                var initalValue = $select.val();
-                if (!initalValue) initalValue = [];
-                if (!(initalValue instanceof Array)) initalValue = [initalValue];
-                attach.options.forEach(function(option) {
-                    option.dataset.text = option.dataset.text.toLowerCase();
-
-                    // Set up initially
-                    if (initalValue.indexOf(option.dataset.value) > -1) {
-                        data[option.dataset.value] = true;
-                        option.classList.add("selected");
-                        selected = option;
-                    }
-
-                    // Set up clicking
-                    option.addEventListener("click", function() {
-                        if (multiple) {
-                            data[option.dataset.value] = option.classList.toggle("selected");
-                            setValue(
-                                attach.options
-                                    .filter(function(o) {return data[o.dataset.value]})
-                                    .map(function (o) {return [o.dataset.value, o.textContent]})
-                            );
-                        } else {
-                            // Disable the selected one
-                            if (selected)
-                                selected.classList.remove("selected");
-
-                            // Select this one
-                            option.classList.add("selected");
-                            selected = option;
-                            setValue([option.dataset.value, option.textContent]);
-                        }
-                    }, false);
-                });
-                setValue(
-                    attach.options
-                        .filter(function(o) {return data[o.dataset.value]})
-                        .map(function (o) {return [o.dataset.value, o.textContent]})
-                );
-
-                // The filter function
-                function filter(value) {
-                    attach.options.forEach(function (option) {
-                        // Somehow figure out how to defer reflow until the very end
-                        if (!value)
-                            option.style.display = "block";
-                        else {
-                            if (option.dataset.text.indexOf(value) > -1)
-                                option.style.display = "block";
-                            else
-                                option.style.display = "none";
-                        }
-                    });
-                }
-
-                $(attach.search).keyup(function() {
-                    filter($(this).val().toLowerCase());
-                });
-            });
         });
     }
-});
+
+    $.fn.extend({
+        superselect: function() {
+            return this.each(function() {
+                var select = this;
+                var $select = $(this).hide();
+                var multiple = $select.prop("multiple");
+                var i;
+
+                var data = {
+                    icon: this.dataset.icon,
+                    text: this.dataset.text,
+                    options: []
+                };
+                for (i=0; i<this.length; i++) {
+                    data.options.push({
+                        value: this[i].value,
+                        text: this[i].text
+                    });
+                }
+
+                TemplateEngine.render("/assets/templates/superselect.tmpl.html", data, function ($element, attach) {
+                    $select.after(attach.data);
+                    $("body").prepend(attach.popup);
+
+                    // Opening/closing the popup
+                    $(attach.popup).hide().click(function(e) {
+                        e.stopPropagation();
+                    });
+                    $(attach.button).click(function(e) {
+                        e.stopPropagation();
+                        var pos = $(this).offset();
+                        $(attach.popup).toggle().offset({top: pos.top + 45, left: pos.left - $(this).width()/2});
+                        return false;
+                    });
+                    window.addEventListener("click", function() {
+                        $(attach.popup).hide();
+                    });
+                    document.addEventListener("keyup", function(e) {
+                        if (e.keyCode == 27)
+                            $(attach.popup).hide();
+                    });
+
+
+                    // Set up the label reflection
+                    var labels = {};
+                    var displaying = 0;
+                    function setLabel(text, selected) {
+                        if (!labels[text]) {
+                            var span = document.createElement("span");
+                            span.className = "badge badge-info pad-right-low";
+                            span.innerText = text;
+                            attach.span.appendChild(span);
+                            labels[text] = span;
+                        }
+                        if (selected) {
+                            labels[text].style.display = "inline-block";
+                            displaying++;
+                        } else {
+                            labels[text].style.display = "none";
+                            displaying--;
+                        }
+                        if (!displaying)
+                            attach.nothing.style.display = "inline-block";
+                        else
+                            attach.nothing.style.display = "none";
+                    }
+
+                    /*
+                     * Setup cross bindings between the real and fake options
+                     */
+
+                    // Make sure the attached options are contained in an array
+                    if (!attach.options) attach.options = [];
+                    if (!(attach.options instanceof Array)) attach.options = [attach.options];
+
+                    // Create a "Fake Option" wrapper for each option
+                    var fakeOptions = [];
+                    for (i=0; i<select.length; i++) {
+                        fakeOptions.push(
+                            new FakeOption({
+                                option: select[i],
+                                fakeOption: attach.options[i]
+                            }).on("change", function(data) {
+                                setLabel(data.text, data.selected);
+                            })
+                        );
+                    }
+
+                    // When the value of the select changes, make sure the fake option wrappers are also updated
+                    select.setValue = function(value) {
+                        if (!(value instanceof Array))
+                            value = [value];
+
+                        // Update the fake options
+                        fakeOptions.forEach(function(fakeOption) {
+                            if (value.indexOf(fakeOption.value) > -1)
+                                fakeOption.selected = true;
+                            else
+                                fakeOption.selected = false;
+                        });
+                    };
+
+                    /*
+                     * Set up filtering
+                     */
+
+                    // The filter function
+                    function filter(value) {
+                        fakeOptions.forEach(function (fakeOption) {
+                            fakeOption.filter = value;
+                        });
+                    }
+
+                    // Activate the filtering when typing in the search bar
+                    attach.search.addEventListener("keyup", function() {
+                        var text = this.value.toLowerCase();
+                        filter(text);
+                    });
+                });
+            });
+        }
+    });
+
+})();

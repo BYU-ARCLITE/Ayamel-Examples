@@ -341,7 +341,7 @@ $(function() {
                 $("#editControls").show();
                 $("#editTrackName").val(track.textTrack.label);
                 $("#editTrackType").val(track.textTrack.kind);
-                $("#editTrackLanguage").val(track.textTrack.language);
+                $("#editTrackLanguage")[0].setValue(track.textTrack.language);
             });
 
             $("#editTrackButton").click(function() {
