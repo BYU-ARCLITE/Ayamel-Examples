@@ -1,4 +1,4 @@
-@(id: String, multiple: Boolean = false, all: Boolean = false, activate: Boolean = true)
+@(id: String, multiple: Boolean = false, all: Boolean = false)
 
 @multipleAttr = {
     @if(multiple) {
@@ -55,8 +55,6 @@
             });
         }
 
-        @if(activate) {
-            $select.superselect();
-        }
+        $select.superselect();
     </script>
 }
