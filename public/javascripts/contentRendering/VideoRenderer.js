@@ -224,16 +224,18 @@ var VideoRenderer = (function () {
 //        Ayamel.AddVideoPlayer(h5PlayerInstall, 1, function() {
 
         var components = args.components || {
-            left: ["play", "volume", "captions"],
+            left: ["play", "lastCaption", "volume", "captions"],
             right: ["rate", "fullScreen", "timeCode"]
         };
         var captions = args.transcripts;
 
         if (getLevel(args) === 1) {
             ["left", "right"].forEach(function(side) {
-                var index = components[side].indexOf("captions");
-                if (index >= 0)
-                    components[side].splice(index, 1);
+                ["lastCaption", "captions"].forEach(function(control) {
+                    var index = components[side].indexOf(control);
+                    if (index >= 0)
+                        components[side].splice(index, 1);
+                });
             });
             captions = null;
         }

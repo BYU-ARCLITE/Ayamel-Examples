@@ -73,7 +73,6 @@
                                 <li><a href="#shareModal" data-toggle="modal"><i class="icon-share-alt"></i> Share</a></li>
                                 @views.html.content.header.share(content)
                             }
-                            <li><a href="#viewMetadataModal" data-toggle="modal"><i class="icon-info-sign"></i> About</a></li>
                         </ul>
                         <ul class="nav pull-right">
 
@@ -190,7 +189,6 @@
 
                 // Show the metadata
                ResourceLibrary.load(content.resourceId, function(resource) {
-                    console.log(resource);
                     $("#metadataCategories").text(resource.categories.join(", "))
                     $("#metadataDescription").text(resource.description);
 

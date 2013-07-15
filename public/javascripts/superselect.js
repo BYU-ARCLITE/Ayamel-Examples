@@ -88,7 +88,7 @@
 
                 TemplateEngine.render("/assets/templates/superselect.tmpl.html", data, function ($element, attach) {
                     $select.after(attach.data);
-                    $("body").prepend(attach.popup);
+                    $("body").append(attach.popup);
 
                     // Opening/closing the popup
                     $(attach.popup).hide().click(function(e) {
