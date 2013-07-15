@@ -141,6 +141,7 @@ POST    /captionaider/save                  controllers.CaptionAider.save
 GET     /words                              controllers.WordLists.view
 POST    /words                              controllers.WordLists.add
 GET     /words/export                       controllers.WordLists.export
+GET     /words/auth                         controllers.WordLists.authorize
 
 # Help pages
 GET     /help                               controllers.HelpPages.tableOfContents

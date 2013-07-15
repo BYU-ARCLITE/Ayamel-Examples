@@ -45,17 +45,22 @@ object Translate extends Controller {
     })
   }
 
+  object translationServices {
+
+    def google(src: String, dest: String, text: String): Future[String] = {
+      val auth = getGoogleAuth
+      WS.url("http://translate.google.com/researchapi/translate")
+        .withQueryString("sl" -> src, "tl" -> dest, "q" -> text)
+        .withHeaders("Authorization" -> ("GoogleLogin auth=" + auth)).get().map(_.xml)
+        .map(xmlResponse => (xmlResponse \ "entry" \ "translation").text)
+    }
+  }
+
   def translateGoogle(src: String, dest: String, text: String) = Action {
     request =>
-      val authCode = getGoogleAuth
-      val xmlResponse = Await.result(
-        WS.url("http://translate.google.com/researchapi/translate")
-          .withQueryString("sl" -> src, "tl" -> dest, "q" -> text)
-          .withHeaders("Authorization" -> ("GoogleLogin auth=" + authCode)).get().map(_.xml),
-        30 seconds
-      )
-      val translation = (xmlResponse \ "entry" \ "translation").text
-      Ok(Json.obj("translation" -> translation)).as("application/json")
+      Async {
+        translationServices.google(src, dest, text).map(translation => Ok(Json.obj("translation" -> translation)))
+      }
   }
 
   def translateWordReference(src: String, dest: String, text: String) = Action {

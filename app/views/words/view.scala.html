@@ -12,33 +12,35 @@
         @if(wordList.isEmpty) {
             <em>You have no words saved.</em>
         } else {
-            <div>
-                <button class="btn btn-blue"><i class="icon-cloud-upload"></i> Export to Quizlet</button>
-            </div>
+            @for(group <- wordList.groupBy(_.language)) {
+                <h2 class="language">@group._1</h2>
 
-            <div class="inline-block pad-top-med">
-                <table class="table table-bordered table-striped">
-                    <thead>
-                    <tr>
-                        <th>Word</th>
-                        <th>Language</th>
-                        <th>Options</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    @for(word <- wordList) {
+                <div>
+                    <a href="@routes.WordLists.export()?language=@group._1" class="btn btn-blue"><i class="icon-cloud-upload"></i> Export to Quizlet</a>
+                </div>
+
+                <div class="inline-block pad-top-med">
+                    <table class="table table-bordered table-striped">
+                        <thead>
                         <tr>
-                            <td>@word.word</td>
-                            <td class="language">@word.language</td>
-                            <td>
-                                <button class="btn"><i class="icon-exchange"></i> Translate</button>
-                                <button class="btn btn-magenta"><i class="icon-trash"></i> Delete</button>
-                            </td>
+                            <th>Word</th>
+                            <th>Options</th>
                         </tr>
-                    }
-                    </tbody>
-                </table>
-            </div>
+                        </thead>
+                        <tbody>
+                        @for(word <- group._2) {
+                            <tr>
+                                <td>@word.word</td>
+                                <td>
+                                    <button class="btn"><i class="icon-exchange"></i> Translate</button>
+                                    <button class="btn btn-magenta"><i class="icon-trash"></i> Delete</button>
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
         }
     </div>
 
