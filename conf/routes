@@ -86,6 +86,7 @@ GET     /content/:id/annotations        controllers.DocumentManager.editAnnotati
 POST    /content/:id/annotations        controllers.DocumentManager.saveAnnotations(id: Long)
 GET     /content/:id/publish/:docId     controllers.DocumentManager.publishDocument(id: Long, docId: String)
 GET     /content/:id/accept/:docId      controllers.DocumentManager.acceptDocument(id: Long, docId: String)
+GET     /content/:id/delete/:docId      controllers.DocumentManager.deleteDocument(id: Long, docId: String)
 
 # Playlist pages
 GET     /playlist/:id/play              controllers.Playlists.view(id: Long)

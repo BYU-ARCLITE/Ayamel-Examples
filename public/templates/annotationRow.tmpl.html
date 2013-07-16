@@ -1,0 +1,17 @@
+<tbody>
+    <tr tmpl-repeat="resources" tmpl-closure="processRow">
+        <td>{{title}}</td>
+        <td>{{language}}</td>
+        <td>
+            <button class="btn btn-blue" tmpl-attach="edit"><i class="icon-edit-sign"></i> Edit</button>
+            <button class="btn btn-magenta" tmpl-attach="delete"><i class="icon-trash"></i> Delete</button>
+        </td>
+        <td>
+            <span tmpl-if="published"><em>Published</em></span>
+            <div tmpl-not="published">
+                <em tmpl-if="publishRequest">A publish request has been sent</em>
+                <button class="btn" tmpl-not="publishRequest" tmpl-attach="publish"><i class="icon-cloud-upload"></i> Publish</button>
+            </div>
+        </td>
+    </tr>
+</tbody>

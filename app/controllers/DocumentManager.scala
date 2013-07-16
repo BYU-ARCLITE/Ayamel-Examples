@@ -11,7 +11,7 @@ import scala.concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
 import models.{User, Content, Course}
 import dataAccess.ResourceController
-import play.api.libs.json.{JsObject, Json}
+import play.api.libs.json.{JsArray, JsObject, Json}
 
 /**
  * Created with IntelliJ IDEA.
@@ -21,40 +21,6 @@ import play.api.libs.json.{JsObject, Json}
  * To change this template use File | Settings | File Templates.
  */
 object DocumentManager extends Controller {
-
-//  def addAnnotations(id: Long) = Authentication.authenticatedAction(parse.multipartFormData) {
-//    implicit request =>
-//      implicit user =>
-//        ContentController.getContent(id) {
-//          content =>
-//
-//            val file = request.body.file("file").get
-//            val mime = "application/json"
-//            val title = request.body.dataParts("title")(0)
-//
-//            val languages = List("eng")
-//
-//            Async {
-//              // Upload the file
-//              FileUploader.uploadFile(file.ref.file, FileUploader.uniqueFilename(file.filename), mime).flatMap {
-//                url =>
-//
-//                // Create subtitle (subject) resource
-//                  ResourceHelper.createResourceWithUri(title, "", "annotations", Nil, "text", url, mime, languages).flatMap {
-//                    resource =>
-//                      val subjectId = (resource \ "id").as[String]
-//                      AdditionalDocumentAdder.add(content, subjectId, 'annotations) {
-//                        course =>
-//                          val route =
-//                            if (course.isDefined) routes.CourseContent.viewInCourse(content.id.get, course.get.id.get)
-//                            else routes.ContentController.view(content.id.get)
-//                          Redirect(route).flashing("info" -> "Annotations added")
-//                      }
-//                  }
-//              }
-//            }
-//        }
-//  }
 
   def editAnnotations(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
@@ -160,8 +126,7 @@ object DocumentManager extends Controller {
 
                 // Notify the owner
                   val contentUrl = routes.ContentController.view(id).toString()
-                  val message = "A request has been made to publish a document on your content <a href=\"" + contentUrl +
-                    "\">" + content.name + "</a>."
+                  val message = "A request has been made to publish a document on your content <a href=\"" + contentUrl + "\">" + content.name + "</a>."
                   content.getOwner.sendNotification(message)
 
                   val courseId = request.queryString.get("course").map(_(0).toLong)
@@ -202,6 +167,39 @@ object DocumentManager extends Controller {
                         Redirect(routes.ContentController.view(id))
                       ).flashing("info" -> "The document has been accepted. However, it has not been enabled.")
                 }
+              }
+            } else
+              Errors.forbidden
+        }
+  }
+
+  def deleteDocument(id: Long, docId: String) = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+        ContentController.getContent(id) {
+          content =>
+
+            if (content isEditableBy user) {
+              Async {
+
+                // Get the list of relations this resource is in and delete them
+                ResourceController.getRelations(docId).map(result => {
+                  val relations = (result \ "relations").as[JsArray].value
+                  relations.foreach(relation => ResourceController.deleteRelation((relation \ "id").as[String]))
+                })
+
+                // Delete this resource
+                ResourceController.deleteResource(docId).map(result => {
+
+                  // Redirect back
+                  val courseId = request.queryString.get("course").map(_(0).toLong)
+                  (
+                    if (courseId.isDefined)
+                      Redirect(routes.CourseContent.viewInCourse(id, courseId.get))
+                    else
+                      Redirect(routes.ContentController.view(id))
+                    ).flashing("info" -> "The document has been deleted.")
+                })
               }
             } else
               Errors.forbidden
