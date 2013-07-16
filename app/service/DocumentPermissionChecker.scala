@@ -145,21 +145,6 @@ class DocumentPermissionChecker(user: User, content: Content, course: Option[Cou
       }
     } else
       false
-
-    // Is it a personal document?
-    if (personalFilter(resource)) // Yes. Allow it
-      true
-    else {
-      // Is the document global
-      if (globalFilter(resource)) // Yes. Allow it if the user is owner
-        content isEditableBy user
-      else { // No. Are we in the context of a course
-        if (course.isDefined) { // Yes. Allow it if the user is a teacher and the doc is a course doc
-          courseFilter(resource) && user.canEdit(course.get)
-        } else // No. Then don't allow it
-          false
-      }
-    }
   }
 
   // Resource getters

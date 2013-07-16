@@ -7,6 +7,8 @@
  */
 $(function() {
 
+    var courseQuery = courseId ? "?course=" + courseId : "";
+
     function getLanguage(resource) {
         if (resource.languages[0]) {
             var langCode = resource.languages[0].length === 3 ? resource.languages[0] : Ayamel.utils.upgradeLangCode(resource.languages[0]);
@@ -30,16 +32,15 @@ $(function() {
     }
 
     function sendPublishRequest(resource) {
-        var courseQuery = courseId ? "?course=" + courseId : "";
         window.location = "/content/" + content.id + "/publish/" + resource.id + courseQuery;
     }
 
     function publish(resource) {
-        console.log("TODO: Publish resource");
+        window.location = "/content/" + content.id + "/accept/" + resource.id + courseQuery;
     }
 
     function deleteDoc(resource) {
-        console.log("TODO: Delete resource");
+        window.location = "/content/" + content.id + "/delete/" + resource.id + courseQuery;
     }
 
     // Load personal caption tracks
@@ -91,7 +92,31 @@ $(function() {
         }
     });
 
-    // TODO: Load publishable annotations. Issue #53
+    // Load publishable caption tracks
+    if (owner) {
+        $.ajax("/ajax/permissionChecker", {
+            type: "post",
+            data: {
+                contentId: content.id,
+                permission: "publish",
+                documentType: "captionTrack"
+            },
+            success: function(data) {
+                getResources(data, function(resources) {
+                    TemplateEngine.render("/assets/templates/publishRow.tmpl.html", {
+                        resources: resources.filter(function(r){return r.publishRequest}),
+                        processRow: function(resource, attach) {
+                            attach.publish.addEventListener("click", publish.bind(null, resource));
+                        }
+                    }, function ($element, attach) {
+                        $("#trackPublishRequests").append($element);
+                    });
+                });
+            }
+        });
+    }
+
+    // Load publishable annotations
     if (owner) {
         $.ajax("/ajax/permissionChecker", {
             type: "post",

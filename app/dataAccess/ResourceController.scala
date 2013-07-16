@@ -120,8 +120,8 @@ object ResourceController {
     WS.url(baseUrl + "relations").post(json).map(_.json)
   }
 
-  def deleteRelation(id: String, relationId: String): Future[JsValue] =
-    WS.url(baseUrl + id + "/relations/" + relationId).delete().map(_.json)
+  def deleteRelation(id: String): Future[JsValue] =
+    WS.url(baseUrl + "relations/" + id).delete().map(_.json)
 
   /**
    * Gets an upload url for a particular resource.
