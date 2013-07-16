@@ -7,10 +7,21 @@
  */
 $(function() {
 
+    function getLanguage(resource) {
+        if (resource.languages[0]) {
+            var langCode = resource.languages[0].length === 3 ? resource.languages[0] : Ayamel.utils.upgradeLangCode(resource.languages[0]);
+            return Ayamel.utils.getLangName(langCode)
+        } else
+            return "English";
+    }
+
     // A resource id -> Resource object function
     function getResources(ids, callback) {
         async.map(ids, function (id, asyncCallback) {
             ResourceLibrary.load(id, function (resource) {
+                resource.language = getLanguage(resource);
+                resource.publishRequest = resource.attributes && resource.attributes.publishStatus === "requested";
+                resource.published = !resource.publishRequest && owner;
                 asyncCallback(null, resource);
             });
         }, function (err, data) {
@@ -18,7 +29,12 @@ $(function() {
         });
     }
 
-    function publishDoc(resource) {
+    function sendPublishRequest(resource) {
+        var courseQuery = courseId ? "?course=" + courseId : "";
+        window.location = "/content/" + content.id + "/publish/" + resource.id + courseQuery;
+    }
+
+    function publish(resource) {
         console.log("TODO: Publish resource");
     }
 
@@ -31,21 +47,18 @@ $(function() {
         type: "post",
         data: {
             contentId: content.id,
-            owner: owner,
-            userId: userId,
             permission: "edit",
             documentType: "captionTrack"
         },
         success: function(data) {
             getResources(data, function(resources) {
-                var data = {
+                TemplateEngine.render("/assets/templates/captionTrackRow.tmpl.html", {
                     resources: resources,
                     processRow: function(resource, attach) {
-                        attach.publish.addEventListener("click", publishDoc.bind(null, resource));
+                        attach.publish && attach.publish.addEventListener("click", sendPublishRequest.bind(null, resource));
                         attach.delete.addEventListener("click", deleteDoc.bind(null, resource));
                     }
-                };
-                TemplateEngine.render("/assets/templates/captionTrackRow.tmpl.html", data, function ($element, attach) {
+                }, function ($element, attach) {
                     $("#personalCaptionsTable").append($element);
                 });
             });
@@ -57,71 +70,100 @@ $(function() {
         type: "post",
         data: {
             contentId: content.id,
-            owner: owner,
-            userId: userId,
             permission: "edit",
             documentType: "annotations"
         },
         success: function(data) {
             getResources(data, function(resources) {
-                var data = {
+                TemplateEngine.render("/assets/templates/annotationRow.tmpl.html", {
                     resources: resources,
                     processRow: function(resource, attach) {
-                        attach.publish.addEventListener("click", publishDoc.bind(null, resource));
+                        attach.publish && attach.publish.addEventListener("click", sendPublishRequest.bind(null, resource));
                         attach.delete.addEventListener("click", deleteDoc.bind(null, resource));
                         attach.edit.addEventListener("click", function() {
-
+                            window.location = "/content/" + content.id + "/annotations?doc=" + resource.id;
                         });
                     }
-                };
-                TemplateEngine.render("/assets/templates/annotationRow.tmpl.html", data, function ($element, attach) {
+                }, function ($element, attach) {
                     $("#personalAnnotationsTable").append($element);
                 });
             });
         }
     });
 
-//    function loadAnnotations(ids, $table, courseId) {
-//        // Turn those IDs into resources
-//        async.map(ids, function (id, asyncCallback) {
-//            ResourceLibrary.load(id, function (resource) {
-//                asyncCallback(null, resource);
-//            });
-//        }, function (err, data) {
-//
-//            // Now populate the table
-//            var $tbody = $table.find("tbody");
-//            data.forEach(function (resource) {
-//                var langCode = resource.languages[0].length === 3 ? resource.languages[0] : Ayamel.utils.upgradeLangCode(resource.languages[0]);
-//                var language = Ayamel.utils.getLangName(langCode);
-//                var published = resource.attributes && resource.attributes.publishStatus;
-//                var html = Mustache.to_html(rowTemplate, {
-//                    name: resource.title,
-//                    language: language,
-//                    contentId: content.id,
-//                    resourceId: resource.id,
-//                    course: !!courseId,
-//                    courseId: courseId,
-//                    owner: owner,
-//                    published: published
-//                });
-//                $tbody.append(html)
-//            });
-//        });
-//    }
+    // TODO: Load publishable annotations. Issue #53
+    if (owner) {
+        $.ajax("/ajax/permissionChecker", {
+            type: "post",
+            data: {
+                contentId: content.id,
+                permission: "publish",
+                documentType: "annotations"
+            },
+            success: function(data) {
+                getResources(data, function(resources) {
+                    TemplateEngine.render("/assets/templates/publishRow.tmpl.html", {
+                        resources: resources.filter(function(r){return r.publishRequest}),
+                        processRow: function(resource, attach) {
+                            attach.publish.addEventListener("click", publish.bind(null, resource));
+                        }
+                    }, function ($element, attach) {
+                        $("#annotationPublishRequests").append($element);
+                    });
+                });
+            }
+        });
+    }
 
-    // Load personal annotations
-//    $.ajax("/ajax/permissionChecker", {
-//        type: "post",
-//        data: {
-//            contentId: content.id,
-//            owner: owner,
-//            userId: userId,
-//            permission: "edit",
-//            documentType: "annotations"
-//        },
-//        success: function(data) {
-//            loadAnnotations(data, $("#personalAnnotationsTable"), 0);
-//        }
-//    });
+    // Load course caption tracks
+    $.ajax("/ajax/permissionChecker", {
+        type: "post",
+        data: {
+            contentId: content.id,
+            courseId: courseId,
+            permission: "edit",
+            documentType: "captionTrack"
+        },
+        success: function(data) {
+            getResources(data, function(resources) {
+                // Load rows into the table
+                TemplateEngine.render("/assets/templates/captionTrackRow.tmpl.html", {
+                    resources: resources,
+                    processRow: function(resource, attach) {
+                        attach.publish && attach.publish.addEventListener("click", sendPublishRequest.bind(null, resource));
+                        attach.delete.addEventListener("click", deleteDoc.bind(null, resource));
+                    }
+                }, function ($element, attach) {
+                    $("#courseCaptionsTable").append($element);
+                });
+            });
+        }
+    });
+
+    // Load course annotations
+    $.ajax("/ajax/permissionChecker", {
+        type: "post",
+        data: {
+            contentId: content.id,
+            courseId: courseId,
+            permission: "edit",
+            documentType: "annotations"
+        },
+        success: function(data) {
+            getResources(data, function(resources) {
+                TemplateEngine.render("/assets/templates/annotationRow.tmpl.html", {
+                    resources: resources,
+                    processRow: function(resource, attach) {
+                        attach.publish && attach.publish.addEventListener("click", sendPublishRequest.bind(null, resource));
+                        attach.delete.addEventListener("click", deleteDoc.bind(null, resource));
+                        attach.edit.addEventListener("click", function() {
+                            window.location = "/content/" + content.id + "/annotations?doc=" + resource.id + "&course=" + courseId;
+                        });
+                    }
+                }, function ($element, attach) {
+                    $("#courseAnnotationsTable").append($element);
+                });
+            });
+        }
+    });
 });

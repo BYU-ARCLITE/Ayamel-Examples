@@ -43,6 +43,8 @@ object PermissionChecker extends Controller {
                   checker.getEnableable
                 else if (permission == 'edit)
                   checker.getEditable
+                else if (permission == 'publish)
+                  checker.getPublishable
                 else
                   Future(Nil)
 
