@@ -11,7 +11,7 @@ import scala.concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
 import models.{User, Content, Course}
 import dataAccess.ResourceController
-import play.api.libs.json.{JsObject, Json}
+import play.api.libs.json.{JsArray, JsObject, Json}
 
 /**
  * Created with IntelliJ IDEA.
@@ -167,6 +167,39 @@ object DocumentManager extends Controller {
                         Redirect(routes.ContentController.view(id))
                       ).flashing("info" -> "The document has been accepted. However, it has not been enabled.")
                 }
+              }
+            } else
+              Errors.forbidden
+        }
+  }
+
+  def deleteDocument(id: Long, docId: String) = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+        ContentController.getContent(id) {
+          content =>
+
+            if (content isEditableBy user) {
+              Async {
+
+                // Get the list of relations this resource is in and delete them
+                ResourceController.getRelations(docId).map(result => {
+                  val relations = (result \ "relations").as[JsArray].value
+                  relations.foreach(relation => ResourceController.deleteRelation((relation \ "id").as[String]))
+                })
+
+                // Delete this resource
+                ResourceController.deleteResource(docId).map(result => {
+
+                  // Redirect back
+                  val courseId = request.queryString.get("course").map(_(0).toLong)
+                  (
+                    if (courseId.isDefined)
+                      Redirect(routes.CourseContent.viewInCourse(id, courseId.get))
+                    else
+                      Redirect(routes.ContentController.view(id))
+                    ).flashing("info" -> "The document has been deleted.")
+                })
               }
             } else
               Errors.forbidden
