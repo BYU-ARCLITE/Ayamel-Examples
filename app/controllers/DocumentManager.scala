@@ -22,40 +22,6 @@ import play.api.libs.json.{JsObject, Json}
  */
 object DocumentManager extends Controller {
 
-//  def addAnnotations(id: Long) = Authentication.authenticatedAction(parse.multipartFormData) {
-//    implicit request =>
-//      implicit user =>
-//        ContentController.getContent(id) {
-//          content =>
-//
-//            val file = request.body.file("file").get
-//            val mime = "application/json"
-//            val title = request.body.dataParts("title")(0)
-//
-//            val languages = List("eng")
-//
-//            Async {
-//              // Upload the file
-//              FileUploader.uploadFile(file.ref.file, FileUploader.uniqueFilename(file.filename), mime).flatMap {
-//                url =>
-//
-//                // Create subtitle (subject) resource
-//                  ResourceHelper.createResourceWithUri(title, "", "annotations", Nil, "text", url, mime, languages).flatMap {
-//                    resource =>
-//                      val subjectId = (resource \ "id").as[String]
-//                      AdditionalDocumentAdder.add(content, subjectId, 'annotations) {
-//                        course =>
-//                          val route =
-//                            if (course.isDefined) routes.CourseContent.viewInCourse(content.id.get, course.get.id.get)
-//                            else routes.ContentController.view(content.id.get)
-//                          Redirect(route).flashing("info" -> "Annotations added")
-//                      }
-//                  }
-//              }
-//            }
-//        }
-//  }
-
   def editAnnotations(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
@@ -160,8 +126,7 @@ object DocumentManager extends Controller {
 
                 // Notify the owner
                   val contentUrl = routes.ContentController.view(id).toString()
-                  val message = "A request has been made to publish a document on your content <a href=\"" + contentUrl +
-                    "\">" + content.name + "</a>."
+                  val message = "A request has been made to publish a document on your content <a href=\"" + contentUrl + "\">" + content.name + "</a>."
                   content.getOwner.sendNotification(message)
 
                   val courseId = request.queryString.get("course").map(_(0).toLong)
