@@ -39,7 +39,7 @@
             if (!window.langsShort) {
                 window.langsShort = [];
                 Object.keys(Ayamel.utils.p1map).forEach(function (key) {
-                    var code = Ayamel.utils.p1map[p1];
+                    var code = Ayamel.utils.p1map[key];
                     window.langsShort.push({
                         name: Ayamel.utils.getLangName(code),
                         code: code
