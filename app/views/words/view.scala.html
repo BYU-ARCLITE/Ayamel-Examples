@@ -7,8 +7,6 @@
     <div class="padded">
         <h1>My Word List</h1>
 
-
-
         @if(wordList.isEmpty) {
             <em>You have no words saved.</em>
         } else {
@@ -16,24 +14,32 @@
                 <h2 class="language">@group._1</h2>
 
                 <div>
-                    <a href="@routes.WordLists.export()?language=@group._1" class="btn btn-blue"><i class="icon-cloud-upload"></i> Export to Quizlet</a>
+                    <button class="btn selectAllButton" data-language="@group._1"><i class="icon-check"></i> Select all</button>
+                    <button class="btn btn-blue exportButton" data-language="@group._1"><i class="icon-cloud-upload"></i> Export Selected to Quizlet</button>
                 </div>
 
                 <div class="inline-block pad-top-med">
                     <table class="table table-bordered table-striped">
                         <thead>
                         <tr>
+                            <th>Export</th>
                             <th>Word</th>
+                            <th>Translation</th>
                             <th>Options</th>
                         </tr>
                         </thead>
                         <tbody>
                         @for(word <- group._2) {
                             <tr>
+                                <td>
+                                    <input type="checkbox" class="exportCheckbox" data-language="@group._1" data-text="@word.word"/>
+                                </td>
                                 <td>@word.word</td>
                                 <td>
-                                    <button class="btn"><i class="icon-exchange"></i> Translate</button>
-                                    <button class="btn btn-magenta"><i class="icon-trash"></i> Delete</button>
+                                    <button class="btn translateButton" data-text="@word.word" data-language="@word.language"><i class="icon-exchange"></i> Translate</button>
+                                </td>
+                                <td>
+                                    <a href="@routes.WordLists.deleteWord(word.id.get)" class="btn btn-magenta"><i class="icon-trash"></i> Delete</a>
                                 </td>
                             </tr>
                         }
@@ -50,6 +56,124 @@
                 var langCode = this.textContent;
                 this.textContent = Ayamel.utils.getLangName(langCode);
             });
+
+            // Create the translator
+            var translator = new TextTranslator();
+            translator.addTranslationEngine(arcliteTranslationEngine, 1);
+            translator.addTranslationEngine(wordReferenceTranslationEngine, 2);
+            translator.addTranslationEngine(googleTranslationEngine, 3);
+
+            // Set up a caching layer
+            var translationCache = {};
+            function translate(language, text, callback) {
+                // Make sure a cache for the language exists
+                if (!translationCache[language])
+                    translationCache[language] = {};
+
+                // Check to see if we have already translated the text. If so pass that in to the callback.
+                // Otherwise invoke the translator
+                if (translationCache[language][text])
+                    callback(translationCache[language][text]);
+                else {
+                    translator.translate(text, language, "en", function(results) {
+                        translationCache[language][text] = results;
+                        callback(results);
+                    });
+                }
+            }
+
+            $(".translateButton").click(function() {
+                var _this = this;
+                if (this.classList.contains("disabled"))
+                    return;
+                this.classList.add("disabled");
+
+                var text = this.dataset.text;
+                var language = Ayamel.utils.downgradeLangCode(this.dataset.language);
+
+                translate(language, text, function(results) {
+                    var html =
+                        '<div class="translationResult noBorder">' +
+                            '<div class="translations">' + results.translations.join(", ") + '</div>' +
+                            '<div class="engine">' + results.engine + '</div>' +
+                        '</div>';
+                    $(_this).after(html).remove();
+                });
+            });
+
+            $(".selectAllButton").click(function() {
+                var language = this.dataset.language;
+                $(".exportCheckbox[data-language="+language+"]").prop("checked", true);
+            });
+
+            // Exporting
+            $(".exportButton").click(function() {
+                var $button = $(this);
+
+                // Collect information
+                var language = Ayamel.utils.downgradeLangCode(this.dataset.language);
+                var title = Ayamel.utils.getLangName(this.dataset.language) + " words from Ayamel";
+                var words = $(".exportCheckbox:checked[data-language=" + this.dataset.language + "]").toArray().map(function (e) {
+                    return e.dataset.text;
+                });
+                var translations = [];
+                var authCode = "";
+
+                // Check that we have words to export
+                if (!words.length)
+                    return;
+
+                function exportWords() {
+                    // Make sure both async action are finished
+                    if (authCode && translations.length) {
+                        var data = new FormData();
+                        data.append("token", authCode);
+                        data.append("title", title);
+                        data.append("lang_terms", language);
+                        data.append("lang_definitions", "en");
+                        for (var i=0; i<words.length; i++) {
+                            data.append("terms[]", words[i]);
+                            data.append("definitions[]", translations[i]);
+                        }
+                        $.ajax("/words/export", {
+                            type: "post",
+                            data: data,
+                            processData: false,
+                            contentType: false,
+                            dataType: "text",
+                            success: function (url) {
+                                $button.after("<div class='alert alert-success pad-top-med'><button type='button' class='close' data-dismiss='alert'>&times;</button> Quizlet set created. <a href='"+url+"'>View it now</a>.</div>")
+                            },
+                            error: function(data) {
+                                console.log(data);
+                            }
+                        });
+                    }
+                }
+
+                // Get Quizlet auth code through a popup window
+                var strWindowFeatures = "menubar=no,location=no,resizable=yes,scrollbars=yes,status=yes,width=600";
+                var popupWindow = window.open("/words/auth", "ayamelQuizletAuth", strWindowFeatures);
+                window.quizletAccessDenied = function() {
+                    popupWindow.close();
+                    console.log("Access to Quizlet was denied");
+                };
+                window.quizletAuthCodeCallback = function(code) {
+                    authCode = code;
+                    popupWindow.close();
+                    exportWords();
+                };
+
+                // Translate all the words
+                async.map(words, function(word, asyncCallback) {
+                    translate(language, word, function(translationResults) {
+                        asyncCallback(null, translationResults.translations.join(", "));
+                    });
+                }, function (err, results) {
+                    translations = results;
+                    exportWords();
+                });
+            })
         });
     </script>
 }

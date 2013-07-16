@@ -1,0 +1,18 @@
+@(success: Boolean, code: String)
+
+<!doctype html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <script type="text/javascript">
+        // Pass the auth code back and close
+        @if(success) {
+            window.opener.quizletAuthCodeCallback("@code");
+        } else {
+            window.opener.quizletAccessDenied();
+        }
+    </script>
+</head>
+<body></body>
+</html>

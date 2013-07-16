@@ -80,9 +80,8 @@ var TextTranslator = (function () {
         }
     };
 
-    TextTranslator.prototype.translate = function translate(text, srcLang, destLang, element) {
+    TextTranslator.prototype.translate = function translate(text, srcLang, destLang, callback) {
         var _this = this;
-        element = element || _this.element;
 
         // The error function. Creates and dispatches a translate error event
         function error() {
@@ -102,6 +101,8 @@ var TextTranslator = (function () {
             event.srcLang = Ayamel.utils.upgradeLangCode(srcLang);
             event.destLang = Ayamel.utils.upgradeLangCode(destLang);
             _this.e.dispatchEvent(event);
+
+            callback && callback(event);
         }
 
         // Recursively go through the translation engines until we either get a translation or hit the end

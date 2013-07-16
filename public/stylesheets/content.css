@@ -359,6 +359,11 @@
     padding-top: 3px;
 }
 
+.translationResult.noBorder {
+    border: none;
+    margin: 0;
+}
+
 .translationResult .sourceText {
     border-radius: 5px 5px 0 0;
     background: #eee;
