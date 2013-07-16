@@ -9,6 +9,8 @@
         var userId = @user.id.get;
     </script>
 
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/addRelatedDocs.js")"></script>
+
     @if(content.contentType == 'video || content.contentType == 'audio) {
         <div id="captionTrackModal" class="modal bigModal hide fade" tabindex="-1" role="dialog" aria-labelledby="captionTrackModalLabel" aria-hidden="true">
             <div class="modal-header">
@@ -24,7 +26,7 @@
                             <ul class="nav nav-pills">
                                 <li><a href="#personalCaptions" data-toggle="pill">Personal</a></li>
 
-                                @if(course.isDefined) {
+                                @if(course.isDefined && user.canEdit(course.get)) {
                                     <li><a href="#courseCaptions" data-toggle="pill">Course</a></li>
                                 }
                             </ul>
@@ -34,11 +36,21 @@
                         <div class="tab-content">
                             <div class="tab-pane" id="personalCaptions">
 
-                                <p>
-                                    Add or edit personal caption tracks with CaptionAider.
-                                </p>
-
+                                <p>Add or edit personal caption tracks with CaptionAider.</p>
                                 <a href="@routes.CaptionAider.view(content.id.get, 0)" class="btn btn-yellow"><i class="icon-desktop"></i> Launch CaptionAider</a>
+
+                                <hr>
+
+                                <p>Caption tracks you can edit:</p>
+                                <table class="table table-bordered" id="personalCaptionsTable">
+                                    <thead>
+                                    <tr>
+                                        <th>Track name</th>
+                                        <th>Options</th>
+                                    </tr>
+                                    </thead>
+                                </table>
+
                             </div>
                             @if(course.isDefined) {
                                 <div class="tab-pane" id="courseCaptions">
@@ -68,7 +80,6 @@
             <div class="modal-footer">
                 <div>
                     <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
-                    <button class="btn btn-blue" id="addCaptionTrackButton">Add</button>
                 </div>
             </div>
         </div>
@@ -150,84 +161,84 @@
     <script type="text/javascript">
         $(function() {
 
-            $('#annotationsModal a[href="#personalAnnotations"]').tab('show');
-//            <a href="{{#pr}}#{{/pr}}{{^pr}}{{publishUrl}}{{/pr}}" class="btn {{#pr}}disabled{{/pr}}">Publish</a>
-            //                            var publishUrl = "/content/" + content.id + "/publish/" + annotation.id +
-//                                (courseId ? "?course=" + courseId : "");
-            var rowTemplate =
-                '<tr>' +
-                    '<td>{{name}} ({{language}})</td>' +
-                    '<td>' +
-                        '<a href="/content/{{contentId}}/annotations?doc={{resourceId}}{{#course}}&courseId={{courseId}}{{/course}}" class="btn"><i class="icon-edit-sign"></i> Edit</a>' +
-                        '{{^owner}}' +
-                            '{{^published}}' +
-                                '&nbsp;<a href="/content/{{contentId}}/publish/{{resourceId}}{{#course}}?courseId={{courseId}}{{/course}}" class="btn"><i class="icon-cloud-upload"></i> Publish</a>' +
-                            '{{/published}}' +
-                            '{{#published}}' +
-                                '&nbsp;<a href="#" class="btn disabled"><i class="icon-cloud-upload"></i> Publish</a>' +
-                            '{{/published}}' +
-                        '{{/owner}}' +
-                    '</td>' +
-                '</tr>';
-            function loadAnnotations(ids, $table, courseId) {
-                // Turn those IDs into resources
-                async.map(ids, function (id, asyncCallback) {
-                    ResourceLibrary.load(id, function (resource) {
-                        asyncCallback(null, resource);
-                    });
-                }, function (err, data) {
-
-                    // Now populate the table
-                    var $tbody = $table.find("tbody");
-                    data.forEach(function (resource) {
-                        var langCode = resource.languages[0].length === 3 ? resource.languages[0] : Ayamel.utils.upgradeLangCode(resource.languages[0]);
-                        var language = Ayamel.utils.getLangName(langCode);
-                        var published = resource.attributes && resource.attributes.publishStatus;
-                        var html = Mustache.to_html(rowTemplate, {
-                            name: resource.title,
-                            language: language,
-                            contentId: content.id,
-                            resourceId: resource.id,
-                            course: !!courseId,
-                            courseId: courseId,
-                            owner: owner,
-                            published: published
-                        });
-                        $tbody.append(html)
-                    });
-                });
-            }
-
-            // Load personal annotations
-            $.ajax("/ajax/permissionChecker", {
-                type: "post",
-                data: {
-                    contentId: content.id,
-                    owner: owner,
-                    userId: userId,
-                    permission: "edit",
-                    documentType: "annotations"
-                },
-                success: function(data) {
-                    loadAnnotations(data, $("#personalAnnotationsTable"), 0);
-                }
-            });
-
-            // Load course annotations
-            if (teacher) {
-                $.ajax("/ajax/permissionChecker", {
-                    type: "post",
-                    data: {
-                        contentId: content.id,
-                        courseId: courseId,
-                        permission: "edit",
-                        documentType: "annotations"
-                    },
-                    success: function(data) {
-                        loadAnnotations(data, $("#courseAnnotationsTable"), 0);
-                    }
-                });
-            }
+//            $('#annotationsModal a[href="#personalAnnotations"]').tab('show');
+////            <a href="{{#pr}}#{{/pr}}{{^pr}}{{publishUrl}}{{/pr}}" class="btn {{#pr}}disabled{{/pr}}">Publish</a>
+//            //                            var publishUrl = "/content/" + content.id + "/publish/" + annotation.id +
+////                                (courseId ? "?course=" + courseId : "");
+//            var rowTemplate =
+//                '<tr>' +
+//                    '<td>{{name}} ({{language}})</td>' +
+//                    '<td>' +
+//                        '<a href="/content/{{contentId}}/annotations?doc={{resourceId}}{{#course}}&courseId={{courseId}}{{/course}}" class="btn"><i class="icon-edit-sign"></i> Edit</a>' +
+//                        '{{^owner}}' +
+//                            '{{^published}}' +
+//                                '&nbsp;<a href="/content/{{contentId}}/publish/{{resourceId}}{{#course}}?courseId={{courseId}}{{/course}}" class="btn"><i class="icon-cloud-upload"></i> Publish</a>' +
+//                            '{{/published}}' +
+//                            '{{#published}}' +
+//                                '&nbsp;<a href="#" class="btn disabled"><i class="icon-cloud-upload"></i> Publish</a>' +
+//                            '{{/published}}' +
+//                        '{{/owner}}' +
+//                    '</td>' +
+//                '</tr>';
+//            function loadAnnotations(ids, $table, courseId) {
+//                // Turn those IDs into resources
+//                async.map(ids, function (id, asyncCallback) {
+//                    ResourceLibrary.load(id, function (resource) {
+//                        asyncCallback(null, resource);
+//                    });
+//                }, function (err, data) {
+//
+//                    // Now populate the table
+//                    var $tbody = $table.find("tbody");
+//                    data.forEach(function (resource) {
+//                        var langCode = resource.languages[0].length === 3 ? resource.languages[0] : Ayamel.utils.upgradeLangCode(resource.languages[0]);
+//                        var language = Ayamel.utils.getLangName(langCode);
+//                        var published = resource.attributes && resource.attributes.publishStatus;
+//                        var html = Mustache.to_html(rowTemplate, {
+//                            name: resource.title,
+//                            language: language,
+//                            contentId: content.id,
+//                            resourceId: resource.id,
+//                            course: !!courseId,
+//                            courseId: courseId,
+//                            owner: owner,
+//                            published: published
+//                        });
+//                        $tbody.append(html)
+//                    });
+//                });
+//            }
+//
+//            // Load personal annotations
+//            $.ajax("/ajax/permissionChecker", {
+//                type: "post",
+//                data: {
+//                    contentId: content.id,
+//                    owner: owner,
+//                    userId: userId,
+//                    permission: "edit",
+//                    documentType: "annotations"
+//                },
+//                success: function(data) {
+//                    loadAnnotations(data, $("#personalAnnotationsTable"), 0);
+//                }
+//            });
+//
+//            // Load course annotations
+//            if (teacher) {
+//                $.ajax("/ajax/permissionChecker", {
+//                    type: "post",
+//                    data: {
+//                        contentId: content.id,
+//                        courseId: courseId,
+//                        permission: "edit",
+//                        documentType: "annotations"
+//                    },
+//                    success: function(data) {
+//                        loadAnnotations(data, $("#courseAnnotationsTable"), 0);
+//                    }
+//                });
+//            }
 
             // TODO: Load publishable annotations. Issue #53
 

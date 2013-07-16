@@ -1,0 +1,9 @@
+<tbody>
+    <tr tmpl-repeat="resources" tmpl-closure="processRow">
+        <td>{{title}}</td>
+        <td>
+            <button class="btn" tmpl-attach="publish"><i class="icon-cloud-upload"></i> Publish</button>
+            <button class="btn btn-magenta" tmpl-attach="delete"><i class="icon-trash"></i> Delete</button>
+        </td>
+    </tr>
+</tbody>
