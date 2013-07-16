@@ -137,6 +137,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .headerDropdown {
+    display: none;
     position: absolute;
     background: #333;
     z-index: 5;
