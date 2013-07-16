@@ -32,10 +32,15 @@ object Quizlet {
       .map(r => (r.json \ "access_token").as[String])
   }
 
-  def createSet(token: String, title: String, terms: List[(String, String)], language: String): Future[String] = {
-    var body = s"title=$title&lang_terms=$language&lang_definitions=en"
+  def createSet(token: String, title: String, terms: List[(String, String)], termLanguage: String,
+                definitionLanguage: String): Future[String] = {
+
+    // Create the form body
+    var body = s"title=$title&lang_terms=$termLanguage&lang_definitions=$definitionLanguage"
     for (term <- terms)
       body += "&terms[]=" + term._1 + "&definitions[]=" + term._2
+
+    // Make the request
     WS.url(createSetUrl)
       .withHeaders("Authorization" -> s"Bearer $token", "Content-Type" -> urlEncoded)
       .post(body).map(r => (r.json \ "url").as[String])
