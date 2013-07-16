@@ -164,6 +164,8 @@ var TranscriptPlayer2 = (function() {
                 set: function(value) {
                     if (!activeId)
                         return;
+                    if (args.noUpdate)
+                        return;
 
                     // Unhighlight inactive cues
                     $(activeCues).removeClass("active");
@@ -189,6 +191,9 @@ var TranscriptPlayer2 = (function() {
             },
             update: {
                 value: function() {
+                    if (args.noUpdate)
+                        return;
+
                     var updateTime = new Date().getTime();
                     updated = false;
 
