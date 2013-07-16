@@ -131,6 +131,22 @@ class DocumentPermissionChecker(user: User, content: Content, course: Option[Cou
     }
   }
 
+  /**
+   * Checks if the user is allowed to edit this particular resource
+   */
+  def canPublish(resource: JsObject): Boolean = {
+    // Only owners/admins can publish
+    if (content isEditableBy user) {
+      // Only allow resources which have been submitted
+      try {
+        (resource \ "attributes" \ "publishStatus").as[String] == "requested"
+      } catch {
+        case _: Throwable => false
+      }
+    } else
+      false
+  }
+
   // Resource getters
 
   def getAll: Future[List[JsObject]] = {
@@ -149,6 +165,7 @@ class DocumentPermissionChecker(user: User, content: Content, course: Option[Cou
   def getViewable: Future[List[JsObject]] = getAll.map(_.filter(canView))
   def getEnableable: Future[List[JsObject]] = getAll.map(_.filter(canEnable))
   def getEditable: Future[List[JsObject]] = getAll.map(_.filter(canEdit))
+  def getPublishable: Future[List[JsObject]] = getAll.map(_.filter(canPublish))
 
 }
 

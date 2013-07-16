@@ -79,16 +79,23 @@ var TemplateEngine = (function() {
                     node.parentNode.appendChild(newNode);
                 }
 
-                // Process each of the repeated nodes
+                // Process each of the repeated nodes. An iteration creates a new attach scope
                 for (i=0; i<iterator.length; i++) {
                     var newData = $.extend($.extend({}, data), iterator[i]);
-                    processNode(nodes[i], newData, attach);
+                    var scope = {};
+                    processNode(nodes[i], newData, attach, scope);
+
+                    // Check to see if there is a closure to do anything with the scope
+                    if (node.attributes["tmpl-closure"]) {
+                        var closure = data[node.attributes["tmpl-closure"].value];
+                        closure(newData, scope);
+                    }
                 }
             }
         }
     }
 
-    function conditional(node, data, attach, value) {
+    function conditional(node, data, attach, value, scope) {
         var attrName = !!value ? "tmpl-if" : "tmpl-not";
         var condition = data[node.attributes[attrName].value];
 
@@ -97,16 +104,16 @@ var TemplateEngine = (function() {
 
         if (!!condition === value) {
             // Allow this node. Keep processing it
-            processNode(node, data, attach);
+            processNode(node, data, attach, scope);
         } else {
             // Not allowed. Remove this node
             node.parentNode.removeChild(node);
         }
     }
 
-    function processNode(node, data, attach) {
+    function processNode(node, data, attach, scope) {
         for (var i=0; i<node.childNodes.length; i++) {
-            recurseNode(node.childNodes[i], data, attach);
+            recurseNode(node.childNodes[i], data, attach, scope);
         }
 
         if (node.attributes["tmpl-attach"]) {
@@ -125,24 +132,27 @@ var TemplateEngine = (function() {
                 }
             }
             node.attributes.removeNamedItem("tmpl-attach");
+
+            // Also attach this node under the specific scope
+            scope[attachName] = node;
         }
 
         replaceAttributes(node, data);
         replaceDataset(node, data);
     }
 
-    function recurseNode(node, data, attach) {
+    function recurseNode(node, data, attach, scope) {
         if (node.nodeType === Node.TEXT_NODE)
             replaceText(node, data);
         else {
             if (node.attributes["tmpl-repeat"])
                 iterate(node, data, attach);
             else if (node.attributes["tmpl-if"])
-                conditional(node, data, attach, true);
+                conditional(node, data, attach, true, scope);
             else if (node.attributes["tmpl-not"])
-                conditional(node, data, attach, false);
+                conditional(node, data, attach, false, scope);
             else {
-                processNode(node, data, attach);
+                processNode(node, data, attach, scope);
             }
         }
     }
@@ -151,7 +161,7 @@ var TemplateEngine = (function() {
         load(url, function(nodes) {
             var attach = {};
             for (var i=0; i<nodes.length; i++) {
-                recurseNode(nodes[i], data, attach);
+                recurseNode(nodes[i], data, attach, {});
             }
             callback(nodes, attach);
         });
