@@ -120,12 +120,17 @@ var VideoRenderer = (function () {
                 var translations = event.translations;
                 var engine = event.engine;
 
+                // Only allow saving words if the user is logged in (not sharing)
+                var wordList = "";
+                if (!document.body.classList.contains("share"))
+                    wordList = '<div class="addToWordList"><button class="btn btn-small"><i class="icon-paste"></i> Add to Word List</button></div>';
+
                 var html =
                     '<div class="translationResult">' +
                         '<div class="sourceText">' + sourceText + '</div>' +
                         '<div class="translations">' + translations.join(", ") + '</div>' +
                         '<div class="engine">' + engine + '</div>' +
-                        '<div class="addToWordList"><button class="btn btn-small"><i class="icon-paste"></i> Add to Word List</button></div>' +
+                        wordList +
                     '</div>';
 
                 var $html = $(html);
