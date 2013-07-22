@@ -43,7 +43,7 @@ var ContentLayoutManager = (function() {
         } else {
             // Generate the headers
             var headers;
-            if (Ayamel.utils.mobile.isMobile) {
+            if (Ayamel.utils.mobile.isMobile || document.body.classList.contains("embed")) {
                 headers = tabNames.map(function (name) {
                     return Mustache.to_html(tabHeaderMobile, {name: name, icon: tabIcons[name]});
                 }).join("");

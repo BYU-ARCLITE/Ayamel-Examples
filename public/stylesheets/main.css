@@ -14,6 +14,7 @@ body {
 
 body.embed {
     background-color: #fff;
+    padding: 0;
 }
 
 .embedHeader {
@@ -43,6 +44,9 @@ body.embed {
 
 .embedHeader h3 {
     margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .embedContainer {
@@ -50,14 +54,24 @@ body.embed {
     height: 600px
 }
 
-.embedContainer.audio {
-    width: 400px;
-    height: 130px;
+.embedContainer.audio1 {
+    width: 520px;
+    height: 130px
 }
 
-.embedContainer.video {
+.embedContainer.audio2 {
+    width: 840px;
+    height: 200px
+}
+
+.embedContainer.video1 {
     width: 800px;
-    height: 422px;
+    height: 515px
+}
+
+.embedContainer.video2 {
+    width: 840px;
+    height: 375px
 }
 
 .embedContainer audio {

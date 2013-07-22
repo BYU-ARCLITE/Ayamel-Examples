@@ -1,5 +1,14 @@
 @(content: models.Content)(implicit request: RequestHeader, user: User)
 
+@embedSize = @{
+    Map(
+        "generic" -> "height: 600px; width: 800px;",
+        "video1" -> "height: 515px; width: 800px;",
+        "video2" -> "height: 375px; width: 840px;",
+        "audio1" -> "height: 130px; width: 520px;",
+        "audio2" -> "height: 200px; width: 840px;"
+    )
+}
 @if(true) {
     <div id="shareModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="shareModalLabel" aria-hidden="true">
         <div class="modal-header">
@@ -40,15 +49,7 @@
             </div>
 
             <h4>Embed Code</h4>
-            @if(content.contentType == 'audio) {
-                <pre>&lt;iframe src="@{routes.ContentController.shareAccess(content.id.get, content.authKey).absoluteURL()}?embed=true" style="border: none; height: 130px; width: 440px;"&gt;&lt;/iframe&gt;</pre>
-            }
-            @if(content.contentType == 'video) {
-                <pre>&lt;iframe src="@{routes.ContentController.shareAccess(content.id.get, content.authKey).absoluteURL()}?embed=true" style="border: none; height: 422px; width: 800px;"&gt;&lt;/iframe&gt;</pre>
-            }
-            @if(content.contentType != 'video && content.contentType != 'audio) {
-                <pre>&lt;iframe src="@{routes.ContentController.shareAccess(content.id.get, content.authKey).absoluteURL()}?embed=true" style="border: none; height: 600px; width: 800px;"&gt;&lt;/iframe&gt;</pre>
-            }
+            <pre>&lt;iframe src="@{routes.ContentController.shareAccess(content.id.get, content.authKey).absoluteURL()}?embed=true" style="border: none; @embedSize(content.embedClass)"&gt;&lt;/iframe&gt;</pre>
 
             <h4>URL</h4>
             <code>@routes.ContentController.shareAccess(content.id.get, content.authKey).absoluteURL()</code>

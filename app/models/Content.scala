@@ -141,6 +141,12 @@ case class Content(id: Pk[Long], name: String, contentType: Symbol, thumbnail: S
 
   def includeTranscriptions: String = settings.get("includeTranscriptions").getOrElse("false")
 
+  def embedClass: String =
+    if (contentType == 'audio || contentType == 'video)
+      contentType.name + {if (level.toInt >= 3 || includeTranscriptions == "true") 2 else 1}
+    else
+      "generic"
+
   def toJson = Json.obj(
     "id" -> id.get,
     "name" -> name,
