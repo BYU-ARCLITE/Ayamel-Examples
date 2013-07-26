@@ -1,3 +1,15 @@
+.superselect {
+    -webkit-transition: 0.4s ease height;
+    -moz-transition: 0.4s ease height;
+    -ms-transition: 0.4s ease height;
+    -o-transition: 0.4s ease height;
+    transition: 0.4s ease height;
+}
+
+.superselect.open {
+    height: 330px;
+}
+
 .superselect > span {
     margin-right: 10px;
     font-style: italic;
@@ -26,7 +38,7 @@
     border-left: 16px solid transparent;
     border-right: 16px solid transparent;
     position: absolute;
-    left: 50%;
+    right: 50px;
     margin-left: -16px;
 }
 

@@ -24,20 +24,25 @@ var TemplateEngine = (function() {
     }
 
     function basicMustache(text, data) {
-        Object.keys(data).forEach(function (key) {
+        var keys = Object.keys(data),
+            i;
 
+        for(i=0; i<keys.length; i++) {
             // Replace {{key}} if the data is a string or a number
-            if (typeof data[key] === "string" || typeof data[key] === "number") {
-                var regex = new RegExp("{{" + key + "}}");
-                text = text.replace("{{" + key + "}}", data[key])
+            if (typeof data[keys[i]] === "string" || typeof data[keys[i]] === "number") {
+                text = text.replace("{{" + keys[i] + "}}", data[keys[i]])
             }
-        });
+        }
         return text;
     }
 
     function replaceText(node, data) {
         var text = node.textContent;
-        node.textContent = basicMustache(text, data);
+
+        // Check if text replacement is even necessary (to speed things up)
+        if (~text.indexOf("{{")) {
+            node.textContent = basicMustache(text, data);
+        }
     }
 
     function replaceAttributes(node, data) {
@@ -45,7 +50,11 @@ var TemplateEngine = (function() {
         for (var i=0; i<node.attributes.length; i++) {
             var attribute = node.attributes[i];
             var text = attribute.value;
-            attribute.value = basicMustache(text, data);
+
+            // Check if text replacement is even necessary (to speed things up)
+            if (~text.indexOf("{{")) {
+                attribute.value = basicMustache(text, data);
+            }
         }
     }
 
@@ -53,15 +62,19 @@ var TemplateEngine = (function() {
         // Do text replacement on attributes as well
         for (var key in node.dataset) {
             var text = node.dataset[key];
-            node.dataset[key] = basicMustache(text, data);
+
+            // Check if text replacement is even necessary (to speed things up)
+            if (~text.indexOf("{{")) {
+                node.dataset[key] = basicMustache(text, data);
+            }
         }
     }
 
     function iterate(node, data, attach) {
-        var repeat = node.attributes["tmpl-repeat"];
-        var iterator = data[repeat.value];
-        var nodes = [node];
-        var i, newNode;
+        var repeat = node.attributes["tmpl-repeat"],
+            iterator = data[repeat.value],
+            nodes = [node],
+            i, newNode, newData, scope;
 
         // Remove the attribute
         node.attributes.removeNamedItem("tmpl-repeat");
@@ -81,8 +94,8 @@ var TemplateEngine = (function() {
 
                 // Process each of the repeated nodes. An iteration creates a new attach scope
                 for (i=0; i<iterator.length; i++) {
-                    var newData = $.extend($.extend({}, data), iterator[i]);
-                    var scope = {};
+                    newData = $.extend($.extend({}, data), iterator[i]);
+                    scope = {};
                     processNode(nodes[i], newData, attach, scope);
 
                     // Check to see if there is a closure to do anything with the scope

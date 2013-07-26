@@ -255,9 +255,15 @@ $(function() {
             keyboardShortcuts[Ayamel.KeyBinder.keyCodes.w] = Timeline.REPEAT;
             Object.keys(keyboardShortcuts).forEach(function(key) {
                 Ayamel.KeyBinder.addKeyBinding(key, function() {
-                    $(toolButtonMap[keyboardShortcuts[key]]).click();
+                    // Only do the shortcut if:
+                    //  1. We aren't in an input
+                    //  2. A modal isn't open
+                    var inputFocused = ["TEXTAREA", "INPUT"].indexOf(document.activeElement.nodeName) > -1;
+                    var modalOpen = $(".modal:visible").length;
+                    if (!inputFocused && !modalOpen)
+                        $(toolButtonMap[keyboardShortcuts[key]]).click();
                 });
-            })
+            });
 
             // AB Repeat Controls
             clearRepeatButton.addEventListener('click',function(){ timeline.clearRepeat(); },false);
