@@ -375,8 +375,15 @@ var VideoRenderer = (function () {
 
                     var loaded = false;
                     function setupTranscriptWithPlayer(args) {
-                        // Make sure that the stuff is defined
-                        if (args.videoPlayer && args.transcriptPlayer && !loaded) {
+                        // Make sure that
+                        //  1. The video player is loaded
+                        //  2. The transcript player is loaded (if it needs to be loaded)
+                        //  3. We haven't already called the callback
+                        var ready = args.videoPlayer &&
+                            (!args.captionTracks.length || args.transcriptPlayer) &&
+                            !loaded;
+
+                        if (ready) {
                             if (args.transcriptPlayer !== "nothing") {
                                 args.videoPlayer.addEventListener("timeupdate", function() {
                                     args.transcriptPlayer.currentTime = args.videoPlayer.currentTime;
