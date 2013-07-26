@@ -385,7 +385,7 @@ var VideoRenderer = (function () {
                             !loaded;
 
                         if (ready) {
-                            if (args.transcriptPlayer !== "nothing") {
+                            if (needsTranscript && args.transcriptPlayer && args.transcriptPlayer !== "nothing") {
                                 args.videoPlayer.addEventListener("timeupdate", function() {
                                     args.transcriptPlayer.currentTime = args.videoPlayer.currentTime;
                                 });
