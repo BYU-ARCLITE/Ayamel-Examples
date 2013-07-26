@@ -45,7 +45,7 @@
                 <div class="control-group">
                     <label class="control-label" for="languages">Languages</label>
                     <div class="controls">
-                        @views.html.content.header.languages("languages", multiple = true, all = true)
+                        @views.html.content.header.languages("languages", multiple = true, all = true, activate = false)
                     </div>
                 </div>
                 <div class="control-group">
@@ -95,13 +95,23 @@
                 $("#metadataForm").submit();
             });
 
-            // Load metadata
-            ResourceLibrary.load("@content.resourceId", function(resource) {
-                $("#title").val(resource.title);
-                $("#description").val(resource.description);
-                $("#keywords").val(resource.keywords);
-                $("#categories").val(resource.categories);
-                $("#languages")[0].setValue(resource.languages);
+            // Load metadata when the modal opens for the first time
+            var languagesLoaded = false;
+            $("#metadataModal").on("show", function() {
+
+                if (!languagesLoaded) {
+                    ResourceLibrary.load("@content.resourceId", function(resource) {
+                        $("#title").val(resource.title);
+                        $("#description").val(resource.description);
+                        $("#keywords").val(resource.keywords);
+                        $("#categories").val(resource.categories);
+        //                $("#languages")[0].setValue(resource.languages);
+                        $("#languages").superselect(function() {
+                            this.setValue(resource.languages);
+                        });
+                    });
+                    languagesLoaded = true;
+                }
             });
         });
     </script>
