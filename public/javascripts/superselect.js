@@ -87,8 +87,8 @@
                 }
 
                 TemplateEngine.render("/assets/templates/superselect.tmpl.html", data, function ($element, attach) {
-                    $select.after(attach.data);
-                    $("body").append(attach.popup);
+                    $select.after([attach.data, attach.popup]);
+//                    $("body").append(attach.popup);
 
                     // Opening/closing the popup
                     $(attach.popup).hide().click(function(e) {
@@ -97,15 +97,19 @@
                     $(attach.button).click(function(e) {
                         e.stopPropagation();
                         var pos = $(this).offset();
-                        $(attach.popup).toggle().offset({top: pos.top + 45, left: pos.left - $(this).width()/2});
+                        $(attach.popup).toggle().offset({top: pos.top + 45, left: (pos.left + $(this).width()) - 280});
+                        attach.data.classList.toggle("open");
                         return false;
                     });
                     window.addEventListener("click", function() {
                         $(attach.popup).hide();
+                        attach.data.classList.remove("open");
                     });
                     document.addEventListener("keyup", function(e) {
-                        if (e.keyCode == 27)
+                        if (e.keyCode == 27) {
                             $(attach.popup).hide();
+                            attach.data.classList.remove("open");
+                        }
                     });
 
 

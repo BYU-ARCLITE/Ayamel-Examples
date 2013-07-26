@@ -30,12 +30,11 @@
                     @defining(java.net.URLEncoder.encode(routes.ContentController.shareAccess(content.id.get, content.authKey).absoluteURL(), "UTF-8")) { encodedUrl =>
                         @defining(java.net.URLEncoder.encode(content.thumbnail, "UTF-8")) { encodedMedia =>
                             @defining(java.net.URLEncoder.encode(content.name, "UTF-8")) { encodedTitle =>
-                                <a data-pin-config="beside" href="//pinterest.com/pin/create/button/?url=@{encodedUrl}&media=@{encodedMedia}&description=@{encodedTitle}" data-pin-do="buttonPin" ><img src="//assets.pinterest.com/images/pidgets/pin_it_button.png" /></a>
+                                <a id="pinterestShare" data-pin-config="beside" href="//pinterest.com/pin/create/button/?url=@{encodedUrl}&media=@{encodedMedia}&description=@{encodedTitle}" data-pin-do="buttonPin" ><img /></a>
                             }
                         }
                     }
                 }
-                <script type="text/javascript" src="//assets.pinterest.com/js/pinit.js"></script>
 
             </div>
 
@@ -63,14 +62,23 @@
             }
 
             function addTwitter() {
-                js=document.createElement("script");
-                js.id="twitter-wjs";
-                js.src="//platform.twitter.com/widgets.js";
+                var js = document.createElement("script");
+                js.id = "twitter-wjs";
+                js.src = "//platform.twitter.com/widgets.js";
                 $("#twitterShare").after(js);
             }
 
             function addPinterest() {
-                // TODO: Load pinterest with modal open
+                var $pinterest = $("#pinterestShare");
+
+                if ($pinterest.length) {
+                    $pinterest.children("img")[0].src = "//assets.pinterest.com/images/pidgets/pin_it_button.png";
+
+                    var js = document.createElement("script");
+                    js.type = "text/javascript";
+                    js.src = "//assets.pinterest.com/js/pinit.js";
+                    $pinterest.after(js)
+                }
             }
 
             $("#shareModal").on("show", function() {
@@ -78,6 +86,7 @@
 
                 addGooglePlus();
                 addTwitter();
+                addPinterest()
             });
         });
     </script>
