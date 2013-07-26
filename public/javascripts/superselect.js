@@ -67,7 +67,7 @@
     }
 
     $.fn.extend({
-        superselect: function() {
+        superselect: function(callback) {
             return this.each(function() {
                 var select = this;
                 var $select = $(this).hide();
@@ -184,6 +184,9 @@
                         var text = this.value.toLowerCase();
                         filter(text);
                     });
+
+                    if (callback)
+                        callback.call(select);
                 });
             });
         }
