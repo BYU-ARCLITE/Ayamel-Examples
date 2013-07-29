@@ -379,7 +379,7 @@ var VideoRenderer = (function () {
                         //  1. The video player is loaded
                         //  2. The transcript player is loaded or you don't need it
                         //  3. We haven't already called the callback
-                        var needsTranscript = (args.captionTracks && args.captionTracks.length && showTranscript(args));
+                        var needsTranscript = (args.transcripts && args.transcripts.length && showTranscript(args));
                         var ready = args.videoPlayer &&
                             (args.transcriptPlayer || !needsTranscript) &&
                             !loaded;

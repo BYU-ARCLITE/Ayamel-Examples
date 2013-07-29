@@ -97,10 +97,14 @@ object ContentController extends Controller {
           val description = data("description")(0)
           val categories = data.get("categories").map(_.toList).getOrElse(Nil)
           val labels = data.get("labels").map(_.toList).getOrElse(Nil)
-          val url = prepareUrl(data("url")(0))
-          val mime = ResourceHelper.getMimeFromUri(url)
           val keywords = labels.mkString(",")
           val languages = data.get("languages").map(_.toList).getOrElse(List("eng"))
+
+          // Get the URL and MIME. Process the URL if it is not YouTube or Brightcove
+          var url = data("url")(0)
+          if (!ResourceHelper.isBrightcove(url) && !ResourceHelper.isYouTube(url))
+            url = prepareUrl(url)
+          val mime = ResourceHelper.getMimeFromUri(url)
 
           // Create the content
           val info = ContentDescriptor(title, description, keywords, categories, url, mime, labels = labels,
