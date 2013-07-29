@@ -2,9 +2,7 @@ package controllers
 
 import play.api.mvc.Controller
 import controllers.authentication.Authentication
-import play.api.Play
-import models.{Course, Content}
-import play.api.Play.current
+import models.Course
 import service.{AdditionalDocumentAdder, FileUploader, ResourceHelper}
 import java.io.ByteArrayInputStream
 import dataAccess.ResourceController
@@ -13,13 +11,14 @@ import ExecutionContext.Implicits.global
 import play.api.libs.json.{JsObject, Json}
 
 /**
- * Created with IntelliJ IDEA.
- * User: camman3d
- * Date: 6/11/13
- * Time: 3:24 PM
- * To change this template use File | Settings | File Templates.
+ * Controller associated with CaptionAider.
  */
 object CaptionAider extends Controller {
+
+  /**
+   * View CaptionAider. You specify the ID of the content and the ID of the course under whose context we will operate.
+   * If there is no course, specify 0 as the ID.
+   */
   def view(id: Long, courseId: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
@@ -30,6 +29,18 @@ object CaptionAider extends Controller {
         }
   }
 
+  /**
+   * Saves a track. To be used as an AJAX call.
+   * Expected parameters:
+   * - contentId: The content ID
+   * - mime: The MIME type
+   * - name: The filename of the track (with extension)
+   * - label: The title of the track (no extension)
+   * - language: The language of the track
+   * - kind: "subtitles" or "captions"
+   * - data: The data to save in the track file
+   * - courseId (optional): The course ID that will own the track. If not specified, the user owns it.
+   */
   def save = Authentication.authenticatedAction(parse.multipartFormData) {
     implicit request =>
       implicit user =>
@@ -58,9 +69,14 @@ object CaptionAider extends Controller {
                   url =>
 
                   // Create subtitle (subject) resource
-                    ResourceHelper.createResourceWithUri(label, "", "", Nil, "text", url, mime, languages, Map("kind" -> kind)).flatMap {
-                      resource =>
-                        val subjectId = (resource \ "id").as[String]
+                    val resource = ResourceHelper.make.resource(Json.obj(
+                      "title" -> label,
+                      "type" -> "text",
+                      "languages" -> languages
+                    ))
+                    ResourceHelper.createResourceWithUri(resource, url, mime, Map("kind" -> kind)).flatMap {
+                      createdResource =>
+                        val subjectId = (createdResource \ "id").as[String]
 
                         AdditionalDocumentAdder.add(content, subjectId, 'captionTrack) {
                           course =>

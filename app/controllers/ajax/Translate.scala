@@ -12,11 +12,7 @@ import play.api.Play
 import Play.current
 
 /**
- * Created with IntelliJ IDEA.
- * User: camman3d
- * Date: 4/13/13
- * Time: 11:00 AM
- * To change this template use File | Settings | File Templates.
+ * AJAX controller for translating
  */
 object Translate extends Controller {
 
@@ -28,7 +24,10 @@ object Translate extends Controller {
     val source = Play.configuration.getString("translation.google.source").get
   }
 
-  // Get the google auth code
+  /**
+   * Authenticates with Google
+   * @return The auth code
+   */
   def authenticateGoogle: Future[String] = {
     val postData = "Email=" + googleTranslate.email + "&Passwd=" + googleTranslate.password + "&service=rs2&source=" +
       googleTranslate.source
@@ -37,6 +36,10 @@ object Translate extends Controller {
       .post(postData).map(r => r.body.lines.find(_.startsWith("Auth=")).get.substring(5))
   }
 
+  /**
+   * Attempts to get the Google auth code from the cache. If not there, it authenticates.
+   * @return The auth code
+   */
   def getGoogleAuth: String = {
     Cache.getAs[String]("googleAuth").getOrElse({
       val code = Await.result(authenticateGoogle, 30 seconds)

@@ -2,7 +2,7 @@ package dataAccess
 
 import play.api.Play
 import Play.current
-import play.api.libs.json.{Json, JsValue}
+import play.api.libs.json.{JsObject, Json, JsValue}
 import play.api.libs.ws.WS
 import concurrent.Future
 import concurrent.ExecutionContext.Implicits.global
@@ -35,23 +35,10 @@ object ResourceController {
   /**
    * Resource creation
    * The API endpoint is: POST resources
-   * @param title The title of the new resource
-   * @param description A written description of the new resource
-   * @param resourceType The resource type of the new resource. View the API documentation for valid values.
+   * @param resource The resource to be created
    * @return The future JSON result
    */
-  def createResource(title: String, description: String, keywords: String, categories: List[String],
-                     resourceType: String, languages: List[String]): Future[JsValue] = {
-    val json = Json.obj(
-      "title" -> title,
-      "description" -> description,
-      "keywords" -> keywords,
-      "categories" -> categories,
-      "type" -> resourceType,
-      "languages" -> languages
-    )
-    WS.url(baseResourceUrl).post(json).map(_.json)
-  }
+  def createResource(resource: JsObject): Future[JsValue] = WS.url(baseResourceUrl).post(resource).map(_.json)
 
   /**
    * Derive as much of a full resource object as possible from a given uri. Note that custom resource providers can be
@@ -108,17 +95,7 @@ object ResourceController {
     WS.url(baseUrl + s"relations?$idKey=$id").get().map(_.json)
   }
 
-  def addRelation(subjectId: String, objectId: String, relationType: String,
-                  attributes: Map[String, String]): Future[JsValue] = {
-
-    val json = Json.obj(
-      "subjectId" -> subjectId,
-      "objectId" -> objectId,
-      "type" -> relationType,
-      "attributes" -> Json.toJson(attributes)
-    )
-    WS.url(baseUrl + "relations").post(json).map(_.json)
-  }
+  def addRelation(relation: JsObject): Future[JsValue] = WS.url(baseUrl + "relations").post(relation).map(_.json)
 
   def deleteRelation(id: String): Future[JsValue] =
     WS.url(baseUrl + "relations/" + id).delete().map(_.json)

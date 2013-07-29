@@ -6,13 +6,14 @@ import play.api.libs.json.{JsObject, JsArray}
 import models.Content
 
 /**
- * Created with IntelliJ IDEA.
- * User: josh
- * Date: 7/1/13
- * Time: 11:38 AM
- * To change this template use File | Settings | File Templates.
+ * Controller for listing out content the user can see. For AJAX calls. These need to be cross-domain so as to work with
+ * the PlayGraph editor.
  */
 object ContentLister extends Controller {
+
+  /**
+   * Lists content the user owns.
+   */
   def mine = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
@@ -24,6 +25,9 @@ object ContentLister extends Controller {
         )
   }
 
+  /**
+   * Lists the courses the user is in and the content under each course.
+   */
   def course = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
@@ -36,6 +40,9 @@ object ContentLister extends Controller {
         )
   }
 
+  /**
+   * Lists the public content
+   */
   def public = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
@@ -47,6 +54,10 @@ object ContentLister extends Controller {
         )
   }
 
+  /**
+   * Returns a particular content
+   * @param id The ID of the content
+   */
   def get(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>

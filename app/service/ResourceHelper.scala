@@ -12,10 +12,59 @@ import dataAccess.ResourceController
  */
 object ResourceHelper {
 
+  /**
+   * Determines if the given URL is to a YouTube video or not
+   * @param uri The URL to check
+   * @return
+   */
   def isYouTube(uri: String): Boolean = uri.startsWith("youtube://") ||
     uri.startsWith("http://www.youtube.com/watch?v=") || uri.startsWith("http://youtu.be/")
 
+  /**
+   * Determines if the given URL is to a brightcove video or not
+   * @param uri The URL to check
+   * @return
+   */
   def isBrightcove(uri: String): Boolean = uri.startsWith("brightcove://")
+
+  /**
+   * Methods for creating resources with basic data
+   */
+  object make {
+    def resource(resource: JsObject = Json.obj()): JsObject = Json.obj(
+      "title" -> "",
+      "description" -> "",
+      "keywords" -> "",
+      "categories" -> List[String](),
+      "languages" -> List("eng"),
+      "type" -> "data"
+    ) ++ resource
+
+    def relation(relation: JsObject = Json.obj()): JsObject = Json.obj(
+      "subjectId" -> "",
+      "objectId" -> "",
+      "type" -> "",
+      "attributes" -> Map[String, String]()
+    ) ++ relation
+
+    def file(file: JsObject = Json.obj()): JsObject = Json.obj(
+      "mime" -> "application/octet-stream",
+      "representation" -> "original",
+      "quality" -> "1",
+      "attributes" -> Map[String, String]()
+    ) ++ file
+  }
+
+  /**
+   * Returns the name of the URL attributes. Either downloadUri or streamUri
+   * @param url The url to check
+   * @return
+   */
+  def getUrlName(url: String): String =
+    if (isYouTube(url) || isBrightcove(url))
+      "streamUri"
+    else
+      "downloadUri"
 
   /**
    * Attempts to retrieve the mime type from the uri. Doesn't deal with the resource library, but this is used by other
@@ -44,34 +93,24 @@ object ResourceHelper {
   }
 
   /**
-   * Creates a new resource and sets a download uri
-   * @param title The title of the new resource
+   * Creates a new resource and sets a download/stream uri
    * @param uri The download uri of the resource
-   * @param description A description of the resource
-   * @param resourceType The type of resource
    * @param mime The mime type of the file at the uri
    * @return The id of the resource in a future
    */
-  def createResourceWithUri(title: String, description: String, keywords: String, categories: List[String],
-                            resourceType: String, uri: String, mime: String, languages: List[String],
-                            fileAttributes: Map[String, String] = Map()): Future[JsValue] = {
+  def createResourceWithUri(resource: JsObject, uri: String, mime: String, fileAttributes: Map[String, String] = Map()): Future[JsValue] = {
 
     // Create the resource
-    ResourceController.createResource(title, description, keywords, categories, resourceType, languages).flatMap(json => {
+    ResourceController.createResource(resource).flatMap(json => {
       val contentUploadUrl = (json \ "content_upload_url").as[String]
 
       // Add information about the file
-      val uriName =
-        if (isYouTube(uri) || isBrightcove(uri)) "streamUri"
-        else "downloadUri"
-      val fileInfo = Json.obj(
-        uriName -> uri,
+      val file = make.file(Json.obj(
+        getUrlName(uri) -> uri,
         "mime" -> mime,
-        "representation" -> "original",
-        "quality" -> "1",
         "attributes" -> fileAttributes
-      )
-      val remoteFiles = Json.obj("remoteFiles" -> Json.arr(fileInfo))
+      ))
+      val remoteFiles = Json.obj("remoteFiles" -> Json.arr(file))
 
       // Save this info and return the updated resource
       ResourceController.setRemoteFiles(contentUploadUrl, remoteFiles).map(_ \ "resource")
@@ -92,14 +131,13 @@ object ResourceHelper {
 
       // Set the new file information
       val mimeType = mime.getOrElse(getMimeFromUri(uri))
-      val fileInfo = Json.obj(
+      val file = make.file(Json.obj(
         "downloadUri" -> uri,
         "mime" -> mimeType,
-        "representation" -> representation,
-        "quality" -> "1"
-      )
+        "representation" -> representation
+      ))
       val files = (resource \ "content" \ "files").as[JsArray].value.toList
-      val newFiles = JsArray(files ::: List(fileInfo))
+      val newFiles = JsArray(files ::: List(file))
 
       // Get an upload url
       ResourceController.requestUploadUrl(id).flatMap(uploadUrlResponse => {
