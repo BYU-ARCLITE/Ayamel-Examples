@@ -3,22 +3,20 @@ package controllers
 import authentication.Authentication
 import play.api.mvc.{RequestHeader, Result, Request, Controller}
 import models._
-import service.{FileUploader, ImageTools, HashTools}
-import scala.Some
-import javax.imageio.ImageIO
+import service.FileUploader
 import scala.concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
 import anorm.NotAssigned
 import play.api.Logger
 
 /**
- * Created with IntelliJ IDEA.
- * User: josh
- * Date: 6/26/13
- * Time: 10:18 AM
- * To change this template use File | Settings | File Templates.
+ * Controller for Administration pages and actions
  */
 object Administration extends Controller {
+
+  /**
+   * Admin dashboard view
+   */
   def admin = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
@@ -27,6 +25,9 @@ object Administration extends Controller {
         }
   }
 
+  /**
+   * Teacher request approval view
+   */
   def teacherApprovalPage = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
@@ -36,6 +37,11 @@ object Administration extends Controller {
         }
   }
 
+  /**
+   * Helper function for finding the teacher request
+   * @param id The ID of the teacher request
+   * @param f The function to execute with the teacher request
+   */
   def getTeacherRequest(id: Long)(f: TeacherRequest => Result)(implicit request: Request[_]) = {
     val teacherRequest = TeacherRequest.findById(id)
     if (teacherRequest.isDefined)
@@ -44,6 +50,10 @@ object Administration extends Controller {
       Errors.notFound
   }
 
+  /**
+   * Approves a teacher request
+   * @param id The ID of the teacher request
+   */
   def approveTeacher(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
@@ -56,6 +66,10 @@ object Administration extends Controller {
         }
   }
 
+  /**
+   * Denies a teacher request
+   * @param id The ID of the teacher request
+   */
   def denyTeacher(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
@@ -69,6 +83,9 @@ object Administration extends Controller {
         }
   }
 
+  /**
+   * User management view
+   */
   def manageUsers = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
@@ -78,6 +95,9 @@ object Administration extends Controller {
         }
   }
 
+  /**
+   * User login information view
+   */
   def logins = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
@@ -87,6 +107,11 @@ object Administration extends Controller {
         }
   }
 
+  /**
+   * Helper function for finding user accounts
+   * @param id The ID of the user account
+   * @param f The function which will be called with the user
+   */
   def getUser(id: Long)(f: User => Result)(implicit request: RequestHeader): Result = {
     val user = User.findById(id)
     if (user.isDefined) {
@@ -99,6 +124,9 @@ object Administration extends Controller {
       Errors.notFound
   }
 
+  /**
+   * Sets the role of the user
+   */
   def setRole() = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
@@ -115,6 +143,9 @@ object Administration extends Controller {
         }
   }
 
+  /**
+   * Sends a notification to a user
+   */
   def sendNotification = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
@@ -131,6 +162,10 @@ object Administration extends Controller {
         }
   }
 
+  /**
+   * Deletes a user
+   * @param id The ID of the user
+   */
   def delete(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
@@ -145,6 +180,9 @@ object Administration extends Controller {
         }
   }
 
+  /**
+   * The course management view
+   */
   def manageCourses = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
@@ -154,6 +192,10 @@ object Administration extends Controller {
         }
   }
 
+  /**
+   * Updates the name and enrollment of the course
+   * @param id The ID of the course
+   */
   def editCourse(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
@@ -161,7 +203,7 @@ object Administration extends Controller {
           Courses.getCourse(id) {
             course =>
 
-              // Update the course
+            // Update the course
               val params = request.body.mapValues(_(0))
               course.copy(name = params("name"), enrollment = Symbol(params("enrollment"))).save
               Redirect(routes.Administration.manageCourses()).flashing("info" -> "Course updated")
@@ -169,6 +211,10 @@ object Administration extends Controller {
         }
   }
 
+  /**
+   * Deletes a course
+   * @param id The ID of the course to delete
+   */
   def deleteCourse(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
@@ -183,6 +229,9 @@ object Administration extends Controller {
         }
   }
 
+  /**
+   * The content management view
+   */
   def manageContent = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
@@ -192,6 +241,9 @@ object Administration extends Controller {
         }
   }
 
+  /**
+   * Updates the settings of multiple content items
+   */
   def batchUpdateContent = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
@@ -208,6 +260,9 @@ object Administration extends Controller {
         }
   }
 
+  /**
+   * The home page content view
+   */
   def homePageContent = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
@@ -216,6 +271,9 @@ object Administration extends Controller {
         }
   }
 
+  /**
+   * Creates new home page content
+   */
   def createHomePageContent = Authentication.authenticatedAction(parse.multipartFormData) {
     implicit request =>
       implicit user =>
@@ -233,9 +291,10 @@ object Administration extends Controller {
           if (data("background").isEmpty) {
             val file = request.body.file("file").get
             Async {
-              FileUploader.uploadFile(file).map { url =>
-                homePageContent.copy(background = url).save
-                Redirect(routes.Administration.homePageContent()).flashing("info" -> "Home page content created")
+              FileUploader.uploadFile(file).map {
+                url =>
+                  homePageContent.copy(background = url).save
+                  Redirect(routes.Administration.homePageContent()).flashing("info" -> "Home page content created")
               }
             }
           } else {
@@ -245,6 +304,10 @@ object Administration extends Controller {
         }
   }
 
+  /**
+   * Toggles a particular home page content
+   * @param id The ID of the home page content
+   */
   def toggleHomePageContent(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
@@ -259,6 +322,10 @@ object Administration extends Controller {
         }
   }
 
+  /**
+   * Deletes a particular home page content
+   * @param id The ID of the home page content
+   */
   def deleteHomePageContent(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
@@ -270,6 +337,9 @@ object Administration extends Controller {
         }
   }
 
+  /**
+   * The feedback view
+   */
   def feedback = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
@@ -279,6 +349,10 @@ object Administration extends Controller {
         }
   }
 
+  /**
+   * Deletes a particular feedback item
+   * @param id The ID of the feedback item
+   */
   def deleteFeedback(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
@@ -289,6 +363,9 @@ object Administration extends Controller {
         }
   }
 
+  /**
+   * The site settings view
+   */
   def siteSettings = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
@@ -298,6 +375,9 @@ object Administration extends Controller {
         }
   }
 
+  /**
+   * Saves and updates the site settings
+   */
   def saveSiteSettings = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
@@ -309,6 +389,10 @@ object Administration extends Controller {
         }
   }
 
+  /**
+   * Proxies in as a different user
+   * @param id The ID of the user to be proxied in as
+   */
   def proxy(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>

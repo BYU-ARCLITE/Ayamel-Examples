@@ -4,7 +4,6 @@ import play.api.mvc.{Action, Controller}
 import play.api.libs.openid.OpenID
 import concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
-import java.net.URLEncoder
 
 /**
  * Controller which handles Google authentication.
@@ -38,7 +37,7 @@ object Google extends Controller {
       Async {
         OpenID.verifiedId.map(userInfo => {
           // Get the user info
-          val username = userInfo.id
+          //          val username = userInfo.id
           val firstName = userInfo.attributes("firstname")
           val lastName = userInfo.attributes("lastname")
           val email = userInfo.attributes("email")

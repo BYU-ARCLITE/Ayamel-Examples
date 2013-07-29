@@ -12,12 +12,15 @@ import play.api.Play
 import Play.current
 
 /**
- * AJAX controller for translating
+ * AJAX controller for translating.
+ * Translating via the ARCLITE dictionaries is done entirely in JS because there are no keys/credentials to keep secret.
  */
 object Translate extends Controller {
 
+  // The word reference API key
   val wordReferenceKey = Play.configuration.getString("translation.wordReference.key").get
 
+  // The Google account credentials
   object googleTranslate {
     val email = Play.configuration.getString("translation.google.email").get
     val password = Play.configuration.getString("translation.google.password").get
@@ -48,24 +51,32 @@ object Translate extends Controller {
     })
   }
 
-  object translationServices {
-
-    def google(src: String, dest: String, text: String): Future[String] = {
-      val auth = getGoogleAuth
-      WS.url("http://translate.google.com/researchapi/translate")
-        .withQueryString("sl" -> src, "tl" -> dest, "q" -> text)
-        .withHeaders("Authorization" -> ("GoogleLogin auth=" + auth)).get().map(_.xml)
-        .map(xmlResponse => (xmlResponse \ "entry" \ "translation").text)
-    }
-  }
-
+  /**
+   * Endpoint for translating via Google
+   * @param src The source language
+   * @param dest The destination language
+   * @param text The text to translate
+   */
   def translateGoogle(src: String, dest: String, text: String) = Action {
     request =>
       Async {
-        translationServices.google(src, dest, text).map(translation => Ok(Json.obj("translation" -> translation)))
+        val auth = getGoogleAuth
+        WS.url("http://translate.google.com/researchapi/translate")
+          .withQueryString("sl" -> src, "tl" -> dest, "q" -> text)
+          .withHeaders("Authorization" -> ("GoogleLogin auth=" + auth)).get().map(_.xml)
+          .map(xmlResponse => {
+            val translation = (xmlResponse \ "entry" \ "translation").text
+            Ok(Json.obj("translation" -> translation))
+          })
       }
   }
 
+  /**
+   * Endpoint for translating via WordReference
+   * @param src The source language
+   * @param dest The destination language
+   * @param text The text to translate
+   */
   def translateWordReference(src: String, dest: String, text: String) = Action {
     request =>
       val url = "http://api.wordreference.com/0.8/" + wordReferenceKey + "/json/" + src + dest + "/" + text

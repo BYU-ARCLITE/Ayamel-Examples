@@ -1,11 +1,10 @@
 package controllers.authentication
 
 import play.api.mvc._
-import models.{AccountLink, User}
+import models.User
 import anorm.NotAssigned
 import controllers.Errors
 import service.TimeTools
-import java.net.{URLDecoder, URLEncoder}
 
 /**
  * This controller does logging out and has a bunch of helpers for dealing with authentication and roles.
@@ -15,6 +14,7 @@ object Authentication extends Controller {
   /**
    * Given a user, logs the user in and sets up the session
    * @param user The user to log
+   * @param path A path where the user will be redirected
    * @return The result. To be called from within an action
    */
   def login(user: User, path: String)(implicit request: RequestHeader): Result = {
@@ -40,13 +40,16 @@ object Authentication extends Controller {
       .flashing("success" -> ("Welcome " + loginUser.displayName + "!"))
   }
 
-
+  /**
+   * Merges a user with the active user
+   * @param user The user account to merge with the active one
+   */
   def merge(user: User)(implicit request: RequestHeader): Result = {
 
     val activeUser = getUserFromRequest()
     if (activeUser.isDefined) {
 
-      if(activeUser.get != user) {
+      if (activeUser.get != user) {
         activeUser.get.merge(user)
         Redirect(controllers.routes.Users.accountSettings()).flashing("success" -> "Account merged.")
       } else
