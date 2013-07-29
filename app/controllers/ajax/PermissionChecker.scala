@@ -14,6 +14,7 @@ import play.api.libs.json.JsArray
  */
 object PermissionChecker extends Controller {
 
+  // Helper for document types
   val documentTypeMap = Map(
     "captionTrack" -> DocumentPermissionChecker.documentTypes.captionTrack,
     "annotations" -> DocumentPermissionChecker.documentTypes.annotations
@@ -35,11 +36,13 @@ object PermissionChecker extends Controller {
         ContentController.getContent(contentId) {
           content =>
 
+            // Collect data
             val permission = Symbol(request.body("permission")(0))
             val course = Course.findById(request.body.get("courseId").map(_(0).toLong).getOrElse(0))
             val documentType = documentTypeMap(request.body("documentType")(0))
             val checker = new DocumentPermissionChecker(user, content, course, documentType)
 
+            // Look at the permission and call the appropriate function
             Async {
               val results =
                 if (permission == 'view)

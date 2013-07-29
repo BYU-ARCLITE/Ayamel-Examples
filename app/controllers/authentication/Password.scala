@@ -6,14 +6,15 @@ import anorm.NotAssigned
 import models.User
 
 /**
- * Created with IntelliJ IDEA.
- * User: camman3d
- * Date: 3/21/13
- * Time: 4:50 PM
- * To change this template use File | Settings | File Templates.
+ * Controller which handles password authentication and account creation
  */
 object Password extends Controller {
 
+  /**
+   * Logs the user in
+   * @param action Login or merge
+   * @param path When logging in, the path where the user will be redirected
+   */
   def login(action: String, path: String = "") = Action(parse.urlFormEncoded) {
     implicit request =>
       val username = request.body("username")(0)
@@ -40,6 +41,10 @@ object Password extends Controller {
       }
   }
 
+  /**
+   * Creates an account for the user
+   * @param path The where the user will be redirected after account creation
+   */
   def createAccount(path: String = "") = Action(parse.urlFormEncoded) {
     implicit request =>
       val username = request.body("username")(0)
