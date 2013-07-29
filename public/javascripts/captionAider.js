@@ -408,7 +408,7 @@ $(function() {
                             data.append("resourceId", textTrack.resourceId || "");
                             data.append("contentId", content.id);
                             $.ajax({
-                                url: "/captionaider/save",
+                                url: "/captionaider/save?course=" + courseId,
                                 data: data,
                                 cache: false,
                                 contentType: false,

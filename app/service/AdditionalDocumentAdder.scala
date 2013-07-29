@@ -5,6 +5,7 @@ import play.api.mvc.{Result, RequestHeader}
 import dataAccess.ResourceController
 import scala.concurrent.{ExecutionContext, Future}
 import ExecutionContext.Implicits.global
+import play.api.libs.json.Json
 
 /**
  * Created with IntelliJ IDEA.
@@ -37,9 +38,13 @@ object AdditionalDocumentAdder {
     ResourceHelper.setAttributes(resourceId, getResourceAttributes(course, content)).flatMap(resource => {
 
       // Create the relation
-      val attributes = getRelationAttributes(docType)
-      val relationType = getRelationType(docType)
-      ResourceController.addRelation(resourceId, content.resourceId, relationType, attributes).map(r => {
+      val relation = Json.obj(
+        "subjectId" -> resourceId,
+        "objectId" -> content.resourceId,
+        "type" -> getRelationType(docType),
+        "attributes" -> getRelationAttributes(docType)
+      )
+      ResourceController.addRelation(relation).map(r => {
 
         // Do something with the result
         action(course)

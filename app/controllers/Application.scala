@@ -3,7 +3,7 @@ package controllers
 import authentication.Authentication
 import play.api.mvc._
 import models._
-import service.EmailTools
+import service.{ResourceHelper, EmailTools}
 import models.Content
 import dataAccess.ResourceController
 import play.api.libs.json.{Json, JsObject}
@@ -29,25 +29,7 @@ object Application extends Controller {
 
   def test = Action {
     implicit request =>
-
-      import concurrent.ExecutionContext.Implicits.global
-      Async {
-        ResourceController.getResource("7bba6dab-95eb-d555-66f1-450bb9a8adc5").map(r => {
-          val resource = r \ "resource"
-
-          val label = "Oogey boogey"
-          val languages = List("asdfasdfasdf")
-          val kind = "Very"
-
-          val updatedFile = (resource \ "content" \ "files")(0).as[JsObject] ++ Json.obj("attributes" -> Json.obj("kind" -> kind))
-          val updatedResource = resource.as[JsObject] ++ Json.obj(
-            "title" -> label,
-            "languages" -> languages,
-            "content" -> Json.obj("files" -> List(updatedFile))
-          )
-          Ok(updatedResource)
-        })
-      }
+      Ok
 
   }
 

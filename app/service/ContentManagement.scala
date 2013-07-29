@@ -5,6 +5,7 @@ import models.{User, Content}
 import anorm.NotAssigned
 import java.io.File
 import ExecutionContext.Implicits.global
+import play.api.libs.json.{JsValue, Json}
 
 
 case class ContentDescriptor(title: String, description: String, keywords: String, categories: List[String],
@@ -47,6 +48,18 @@ object ContentManagement {
     }
   }
 
+  def createResource(info: ContentDescriptor, resourceType: String): Future[JsValue] = {
+    val resource = ResourceHelper.make.resource(Json.obj(
+      "title" -> info.title,
+      "description" -> info.description,
+      "keywords" -> info.keywords,
+      "categories" -> info.categories,
+      "type" -> resourceType,
+      "languages" -> info.languages
+    ))
+    ResourceHelper.createResourceWithUri(resource, info.url, info.mime)
+  }
+
   /**
    * Create a video content object with a corresponding resource object from information.
    * @param info A ContentDescriptor which contains information about the content
@@ -55,8 +68,7 @@ object ContentManagement {
    */
   def createVideo(info: ContentDescriptor, owner: User): Future[Content] = {
     // Create the resource
-    ResourceHelper.createResourceWithUri(info.title, info.description, info.keywords, info.categories, "video",
-      info.url, info.mime, info.languages).map(resource => {
+    createResource(info, "video").map(resource => {
 
       val resourceId = (resource \ "id").as[String]
 
@@ -79,8 +91,7 @@ object ContentManagement {
    */
   def createAudio(info: ContentDescriptor, owner: User): Future[Content] = {
     // Create the resource
-    ResourceHelper.createResourceWithUri(info.title, info.description, info.keywords, info.categories, "audio",
-      info.url, info.mime, info.languages).map(resource => {
+    createResource(info, "audio").map(resource => {
 
       val resourceId = (resource \ "id").as[String]
 
@@ -99,8 +110,7 @@ object ContentManagement {
    */
   def createText(info: ContentDescriptor, owner: User): Future[Content] = {
     // Create the resource
-    ResourceHelper.createResourceWithUri(info.title, info.description, info.keywords, info.categories, "text",
-      info.url, info.mime, info.languages).map(resource => {
+    createResource(info, "text").map(resource => {
 
       val resourceId = (resource \ "id").as[String]
 
@@ -119,8 +129,7 @@ object ContentManagement {
    */
   def createImage(info: ContentDescriptor, owner: User): Future[Content] = {
     // Create the resource
-    ResourceHelper.createResourceWithUri(info.title, info.description, info.keywords, info.categories, "image",
-      info.url, info.mime, info.languages).map(resource => {
+    createResource(info, "image").map(resource => {
 
       val resourceId = (resource \ "id").as[String]
 

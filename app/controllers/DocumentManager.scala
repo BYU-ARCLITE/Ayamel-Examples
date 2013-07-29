@@ -3,8 +3,6 @@ package controllers
 import play.api.mvc.{RequestHeader, Result, Controller}
 import controllers.authentication.Authentication
 import service.{DocumentPermissionChecker, AdditionalDocumentAdder, ResourceHelper, FileUploader}
-import play.api.Play
-import play.api.Play.current
 import java.io.{InputStream, ByteArrayInputStream}
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext
@@ -14,14 +12,13 @@ import dataAccess.ResourceController
 import play.api.libs.json.{JsArray, JsObject, Json}
 
 /**
- * Created with IntelliJ IDEA.
- * User: camman3d
- * Date: 5/8/13
- * Time: 1:01 PM
- * To change this template use File | Settings | File Templates.
+ * Controller that deals with documents (annotation sets and caption tracks)
  */
 object DocumentManager extends Controller {
 
+  /**
+   * Annotation editor view
+   */
   def editAnnotations(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
@@ -31,6 +28,17 @@ object DocumentManager extends Controller {
         }
   }
 
+  /**
+   * Helper function which creates annotations
+   * @param stream The data stream to save in a file
+   * @param filename The filename of the annotation set
+   * @param length The length of the stream
+   * @param mime The MIME type of the file to be saved
+   * @param title The title of the annotation set
+   * @param languages The languages of the annotation set
+   * @param content The content with which the annotations will be associated
+   * @return The result
+   */
   def createAnnotations(stream: InputStream, filename: String, length: Long, mime: String, title: String,
                         languages: List[String], content: Content)(callback: Result)
                        (implicit request: RequestHeader, user: User): Future[Result] = {
@@ -39,8 +47,14 @@ object DocumentManager extends Controller {
     FileUploader.uploadStream(stream, filename, length, mime).flatMap {
       url =>
 
-        // Next create a resource
-        ResourceHelper.createResourceWithUri(title, "", "annotations", Nil, "text", url, mime, languages).flatMap {
+      // Next create a resource
+        val resource = ResourceHelper.make.resource(Json.obj(
+          "title" -> title,
+          "keywords" -> "annotations",
+          "type" -> "text",
+          "languages" -> languages
+        ))
+        ResourceHelper.createResourceWithUri(resource, url, mime).flatMap {
           resource =>
             val subjectId = (resource \ "id").as[String]
 
@@ -53,6 +67,16 @@ object DocumentManager extends Controller {
     }
   }
 
+  /**
+   * Helper function which updates annotations
+   * @param stream The data stream to save
+   * @param filename The filename of the file
+   * @param length The length of the stream
+   * @param mime The MIME type of the file
+   * @param resourceId The ID of the resource that will be updated
+   * @param title The title of the annotation set
+   * @param languages The languages of the annotation set
+   */
   def updateAnnotations(stream: InputStream, filename: String, length: Long, mime: String, resourceId: String,
                         title: String, languages: List[String]) {
     // Update the data
@@ -65,6 +89,10 @@ object DocumentManager extends Controller {
     ))
   }
 
+  /**
+   * AJAX endpoint which saves the annotation set.
+   * @param id The ID of the content with which the annotations will be associated
+   */
   def saveAnnotations(id: Long) = Authentication.authenticatedAction(parse.multipartFormData) {
     implicit request =>
       implicit user =>
@@ -75,7 +103,7 @@ object DocumentManager extends Controller {
             val annotations = data("annotations")
             val stream = new ByteArrayInputStream(annotations.getBytes("UTF-8"))
             val length = annotations.getBytes("UTF-8").size // Don't use string length. Breaks if there are 2-byte characters
-            val mime = "application/json"
+          val mime = "application/json"
             val filename = data.get("filename").getOrElse(FileUploader.uniqueFilename(annotations + ".json"))
             val languages = List(data("language"))
             val resourceId = data("resourceId")
@@ -87,33 +115,31 @@ object DocumentManager extends Controller {
                 // We are uploading a new thing
                 createAnnotations(stream, filename, length, mime, title, languages, content) {
                   Ok
-//                  Redirect(
-//                    if (course.isDefined) routes.CourseContent.viewInCourse(content.id.get, course.get.id.get)
-//                    else routes.ContentController.view(content.id.get)
-//                  ).flashing("info" -> "Annotations updated")
                 }
               } else {
                 // We are updating. Check that we are allowed to do this
                 val checker = new DocumentPermissionChecker(user, content, course, DocumentPermissionChecker.documentTypes.annotations)
-                ResourceController.getResource(resourceId).map { data =>
-                  if (checker.canEdit((data \ "resource").as[JsObject])) {
+                ResourceController.getResource(resourceId).map {
+                  data =>
+                    if (checker.canEdit((data \ "resource").as[JsObject])) {
 
-                    // We are, so create a new annotation set
-                    updateAnnotations(stream, filename, length, mime, resourceId, title, languages)
-                    Ok
-//                    Redirect(
-//                      if (course.isDefined) routes.CourseContent.viewInCourse(content.id.get, course.get.id.get)
-//                      else routes.ContentController.view(content.id.get)
-//                    ).flashing("info" -> "Annotations updated")
-                  } else {
-                    Errors.forbidden
-                  }
+                      // We are, so create a new annotation set
+                      updateAnnotations(stream, filename, length, mime, resourceId, title, languages)
+                      Ok
+                    } else {
+                      Forbidden
+                    }
                 }
               }
             }
         }
   }
 
+  /**
+   * Requests for a document to be published.
+   * @param id The ID of the content
+   * @param docId The ID of the resource to publish
+   */
   def publishDocument(id: Long, docId: String) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
@@ -141,6 +167,11 @@ object DocumentManager extends Controller {
         }
   }
 
+  /**
+   * Accepts a document's publish request
+   * @param id The ID of the content
+   * @param docId The ID of the resource being published
+   */
   def acceptDocument(id: Long, docId: String) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
@@ -173,6 +204,11 @@ object DocumentManager extends Controller {
         }
   }
 
+  /**
+   * Deletes a document
+   * @param id The ID of the content
+   * @param docId The ID of resource being deleted
+   */
   def deleteDocument(id: Long, docId: String) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>

@@ -76,6 +76,11 @@ $(function() {
 
     $("#spinner").hide();
 
+    $("#quit").click(function() {
+        history.back();
+        return false;
+    });
+
     // First load the annotations
     loadManifest(typeMap[content.contentType], function(data) {
 
@@ -128,7 +133,11 @@ $(function() {
                 if (data.filename)
                     formData.append("filename", data.filename);
 
-                $.ajax("/content/" + content.id + "/annotations", {
+                var courseId = getParameterByName("course");
+                if (!courseId)
+                    courseId = 0;
+
+                $.ajax("/content/" + content.id + "/annotations?course=" + courseId, {
                     type: "post",
                     data: formData,
                     cache: false,

@@ -23,7 +23,7 @@ object VideoTools {
   def getTimeCodeFromSeconds(time: Double): String = {
     val seconds = Math.floor((time % 60) * 100) / 100
     val minutes = (Math.floor(time / 60) % 60).toInt
-    val hours = (Math.floor(time / 3600)).toInt
+    val hours = Math.floor(time / 3600).toInt
     s"$hours:$minutes:$seconds"
   }
 

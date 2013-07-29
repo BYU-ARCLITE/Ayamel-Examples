@@ -6,14 +6,24 @@ import models.{ActivityObject, PageContext, ActivityContext, Activity}
 import anorm.NotAssigned
 
 /**
- * Created with IntelliJ IDEA.
- * User: camman3d
- * Date: 4/23/13
- * Time: 3:43 PM
- * To change this template use File | Settings | File Templates.
+ * Used for saving activity stream events
  */
 object ActivitySaver extends Controller {
 
+  /**
+   * The endpoint for saving an activity stream event.
+   * Expected parameters
+   * - pageCategory
+   * - pageAction
+   * - pageId
+   * - generatorType
+   * - generatorId
+   * - generatorItemRef
+   * - objectType
+   * - objectId
+   * - objectItemRef
+   * - verb
+   */
   def save = Authentication.authenticatedAction(parse.urlFormEncoded) {
     request =>
       user =>

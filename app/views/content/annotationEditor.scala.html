@@ -19,10 +19,6 @@
     )
 }
 
-@course = @{
-    request.queryString.get("course").flatMap(s => Course.findById(s(0).toLong))
-}
-
 @main("Ayamel - " + content.name, moreStyles) {
 
     @views.html.content.header.dependencies()
@@ -50,7 +46,7 @@
                 <ul class="nav pull-right">
                     <li id="spinner"><i class="icon-spin icon-spinner icon-large pad-top-high"></i></li>
                     <li><a href="#" id="saveButton"><i class="icon-save"></i> Save</a></li>
-                    <li><a href="@routes.ContentController.view(content.id.get)"><i class="icon-signout"></i> Quit</a></li>
+                    <li><a href="#" id="quit"><i class="icon-signout"></i> Quit</a></li>
                 </ul>
             </div>
         </div>
