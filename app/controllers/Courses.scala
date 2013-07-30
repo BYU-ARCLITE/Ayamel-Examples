@@ -27,6 +27,10 @@ object Courses extends Controller {
       Errors.notFound
   }
 
+  /**
+   * Returns the XML LTI configuration for a particular course
+   * @param id The ID of the course
+   */
   def ltiConfiguration(id: Long) = Action {
     implicit request =>
       getCourse(id) {
@@ -115,6 +119,10 @@ object Courses extends Controller {
         }
   }
 
+  /**
+   * Add the content to a specified course.
+   * @param id The ID of the course
+   */
   def addContent(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
@@ -137,6 +145,10 @@ object Courses extends Controller {
         }
   }
 
+  /**
+   * Makes an announcement in a course
+   * @param id The ID of the course
+   */
   def addAnnouncement(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
@@ -155,6 +167,9 @@ object Courses extends Controller {
         }
   }
 
+  /**
+   * Creates a new course
+   */
   def create = Authentication.authenticatedAction(parse.urlFormEncoded) {
     request =>
       user =>
@@ -164,8 +179,6 @@ object Courses extends Controller {
 
           // Collect info
           val courseName = request.body("courseName")(0)
-//          val startDate = request.body("startDate")(0)
-//          val endDate = request.body("endDate")(0)
           val enrollment = Symbol(request.body("enrollment")(0))
 
           // Create the course
@@ -178,6 +191,9 @@ object Courses extends Controller {
           Errors.forbidden
   }
 
+  /**
+   * The create a new course view
+   */
   def createPage = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
@@ -189,6 +205,9 @@ object Courses extends Controller {
           Errors.forbidden
   }
 
+  /**
+   * Lists all the courses
+   */
   def list = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
@@ -200,6 +219,10 @@ object Courses extends Controller {
         }
   }
 
+  /**
+   * The student join course request page
+   * @param id The ID of the course
+   */
   def courseRequestPage(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
@@ -217,6 +240,10 @@ object Courses extends Controller {
         }
   }
 
+  /**
+   * Submits the student's join course request
+   * @param id The ID of the course
+   */
   def submitCourseRequest(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
@@ -252,6 +279,10 @@ object Courses extends Controller {
         }
   }
 
+  /**
+   * The view where teachers approve student join requests
+   * @param id The ID of the course
+   */
   def approvePage(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
@@ -265,6 +296,11 @@ object Courses extends Controller {
         }
   }
 
+  /**
+   * Approves a certain join request
+   * @param id The ID of the course
+   * @param requestId The ID of the join request
+   */
   def approveRequest(id: Long, requestId: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
@@ -286,6 +322,11 @@ object Courses extends Controller {
         }
   }
 
+  /**
+   * Denies a particular join request
+   * @param id The ID of the course
+   * @param requestId The ID of the join request
+   */
   def denyRequest(id: Long, requestId: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
@@ -306,6 +347,4 @@ object Courses extends Controller {
               Errors.notFound
         }
   }
-
-
 }

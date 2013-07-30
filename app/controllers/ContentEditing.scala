@@ -5,22 +5,20 @@ import controllers.authentication.Authentication
 import play.api.libs.json.{JsString, JsArray, Json}
 import dataAccess.ResourceController
 import models.{User, Course, Content}
-import play.api.Play
 import service.{VideoTools, ResourceHelper, FileUploader, ImageTools}
 import javax.imageio.ImageIO
-import play.api.Play.current
 import scala.concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
 
 /**
- * Created with IntelliJ IDEA.
- * User: camman3d
- * Date: 5/8/13
- * Time: 1:29 PM
- * To change this template use File | Settings | File Templates.
+ * Controller that deals with the editing of content
  */
 object ContentEditing extends Controller {
 
+  /**
+   * Sets the metadata for a particular content object
+   * @param id The ID of the content
+   */
   def setMetadata(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
@@ -97,6 +95,12 @@ object ContentEditing extends Controller {
         }
   }
 
+  /**
+   * Helper function which sets audio/video settings
+   * @param content The content whose settings are being set
+   * @param course If set, then course settings are being set for this course
+   * @param user If set, then personal settings are being set for this user
+   */
   def setAudioVideoSettings(content: Content, course: Option[Course] = None, user: Option[User] = None)(implicit request: Request[Map[String, Seq[String]]]) {
     val prefix = course.map(c => "course_" + c.id.get + ":")
       .getOrElse(user.map(u => "user_" + u.id.get + ":").getOrElse(""))
@@ -111,6 +115,12 @@ object ContentEditing extends Controller {
       .setSetting(prefix + "includeTranscriptions", includeTranscriptions).save
   }
 
+  /**
+   * Helper function which sets image settings
+   * @param content The content whose settings are being set
+   * @param course If set, then course settings are being set for this course
+   * @param user If set, then personal settings are being set for this user
+   */
   def setImageSettings(content: Content, course: Option[Course] = None, user: Option[User] = None)(implicit request: Request[Map[String, Seq[String]]]) {
     val prefix = course.map(c => "course_" + c.id.get + ":")
       .getOrElse(user.map(u => "user_" + u.id.get + ":").getOrElse(""))
@@ -118,6 +128,12 @@ object ContentEditing extends Controller {
     content.setSetting(prefix + "enabledAnnotationDocuments", enabledAnnotationDocuments).save
   }
 
+  /**
+   * Helper function which sets text settings
+   * @param content The content whose settings are being set
+   * @param course If set, then course settings are being set for this course
+   * @param user If set, then personal settings are being set for this user
+   */
   def setTextSettings(content: Content, course: Option[Course] = None, user: Option[User] = None)(implicit request: Request[Map[String, Seq[String]]]) {
     val prefix = course.map(c => "course_" + c.id.get + ":")
       .getOrElse(user.map(u => "user_" + u.id.get + ":").getOrElse(""))
@@ -125,6 +141,10 @@ object ContentEditing extends Controller {
     content.setSetting(prefix + "enabledAnnotationDocuments", enabledAnnotationDocuments).save
   }
 
+  /**
+   * Sets the content's settings
+   * @param id The ID of the content
+   */
   def setSettings(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
@@ -147,6 +167,11 @@ object ContentEditing extends Controller {
         }
   }
 
+  /**
+   * Sets settings for content in the context of a particular course
+   * @param id The ID of the content
+   * @param courseId The ID of the course
+   */
   def setCourseSettings(id: Long, courseId: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
@@ -170,6 +195,10 @@ object ContentEditing extends Controller {
         }
   }
 
+  /**
+   * Sets personal settings for content
+   * @param id The ID of the content
+   */
   def setPersonalSettings(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
@@ -187,6 +216,10 @@ object ContentEditing extends Controller {
         }
   }
 
+  /**
+   * Image editing view
+   * @param id The ID of the content
+   */
   def editImage(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
@@ -202,6 +235,10 @@ object ContentEditing extends Controller {
         }
   }
 
+  /**
+   * Saves the image edits.
+   * @param id The id of the content
+   */
   def saveImageEdits(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
@@ -247,6 +284,10 @@ object ContentEditing extends Controller {
         }
   }
 
+  /**
+   * Sets the thumbnail for content from either a URL or a file
+   * @param id The ID of the content that the thumbnail will be for
+   */
   def changeThumbnail(id: Long) = Authentication.authenticatedAction(parse.multipartFormData) {
     implicit request =>
       implicit user =>
@@ -277,6 +318,11 @@ object ContentEditing extends Controller {
         }
   }
 
+  /**
+   * Creates a thumbnail for content from a particular point in time in a video
+   * @param id The ID of the content
+   * @param time The time in the video which will be used as the thumbnail
+   */
   def createThumbnail(id: Long, time: Double) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
@@ -306,5 +352,4 @@ object ContentEditing extends Controller {
             }
         }
   }
-
 }

@@ -3,36 +3,45 @@ package controllers
 import authentication.Authentication
 import play.api.mvc._
 import models._
-import service.{ResourceHelper, EmailTools}
+import service.EmailTools
 import models.Content
-import dataAccess.ResourceController
-import play.api.libs.json.{Json, JsObject}
 
 object Application extends Controller {
 
+  /**
+   * The landing page. The login screen if the user isn't logged in. The home page if the user is.
+   */
   def index = Action {
     implicit request =>
       val user = Authentication.getUserFromRequest()
       if (user.isDefined)
-        Redirect(controllers.routes.Application.home()).withSession("userId" -> user.get.id.get.toString)
+        Redirect(controllers.routes.Application.home())
       else {
         val path = request.queryString.get("path").map(path => path(0)).getOrElse("")
         Ok(views.html.application.index(path))
       }
   }
 
+  /**
+   * The home page
+   */
   def home = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
         Ok(views.html.application.home())
   }
 
+  /**
+   * A page I use for testing things
+   */
   def test = Action {
     implicit request =>
       Ok
-
   }
 
+  /**
+   * Searches and shows the results
+   */
   def search = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
@@ -45,27 +54,36 @@ object Application extends Controller {
         Ok(views.html.application.search(content, courses))
   }
 
+  /**
+   * The about page
+   */
   def about = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-
         Ok(views.html.application.about())
   }
 
+  /**
+   * The Terms of Use page
+   */
   def terms = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-
         Ok(views.html.application.terms())
   }
 
+  /**
+   * The Privacy Policy page
+   */
   def policy = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-
         Ok(views.html.application.policy())
   }
 
+  /**
+   * Saves feedback submissions (bug reports, suggestions, ratings)
+   */
   def saveFeedback = Authentication.authenticatedAction(parse.urlFormEncoded) {
     request =>
       user =>
@@ -83,6 +101,9 @@ object Application extends Controller {
         Ok
   }
 
+  /**
+   * Saves feedback submitted on an error
+   */
   def saveErrorFeedback = Authentication.authenticatedAction(parse.urlFormEncoded) {
     request =>
       user =>
@@ -93,5 +114,4 @@ object Application extends Controller {
         EmailTools.sendAdminNotificationEmail("notifications.notifyOn.errorReport", (errorCode, description, userId))
         Ok
   }
-
 }

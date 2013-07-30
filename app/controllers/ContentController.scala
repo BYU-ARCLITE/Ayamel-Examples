@@ -4,15 +4,12 @@ import authentication.Authentication
 import play.api.mvc.{Action, Result, Request, Controller}
 import service._
 import models.{User, Content}
-import play.api.Play
-import Play.current
 import scala.concurrent.{Future, ExecutionContext}
 import ExecutionContext.Implicits.global
 import anorm.NotAssigned
 import service.ContentDescriptor
 import dataAccess.{GoogleFormScripts, PlayGraph, ResourceController}
 import java.net.{URLDecoder, URI, URL}
-import play.api.libs.ws.WS
 
 /**
  * The controller for dealing with content.
@@ -30,6 +27,10 @@ object ContentController extends Controller {
       Errors.notFound
   }
 
+  /**
+   * Returns a content object as JSON
+   * @param id the ID of the content
+   */
   def getAsJson(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
@@ -42,7 +43,6 @@ object ContentController extends Controller {
               Ok(content.toJson)
             else
               Forbidden
-
         }
   }
 
@@ -69,7 +69,12 @@ object ContentController extends Controller {
         }
   }
 
-  def prepareUrl(url: String): String = {
+  /**
+   * Takes a URL and processes it, encoding it if necessary while preserving the query string
+   * @param url The URL to process
+   * @return The processed URL
+   */
+  def processUrl(url: String): String = {
 
     // Check to see if we need to encode (we will if the decoded is the same as the encoded)
     if (URLDecoder.decode(url, "utf-8") == url) {
@@ -103,7 +108,7 @@ object ContentController extends Controller {
           // Get the URL and MIME. Process the URL if it is not YouTube or Brightcove
           var url = data("url")(0)
           if (!ResourceHelper.isBrightcove(url) && !ResourceHelper.isYouTube(url))
-            url = prepareUrl(url)
+            url = processUrl(url)
           val mime = ResourceHelper.getMimeFromUri(url)
 
           // Create the content
@@ -302,7 +307,7 @@ object ContentController extends Controller {
         getContent(id) {
           content =>
 
-            // Check for playlists
+          // Check for playlists
             if (content.contentType == 'playlist) {
               Redirect(routes.Playlists.about(id))
             } else if (content.contentType == 'questions) {
@@ -338,7 +343,10 @@ object ContentController extends Controller {
         }
   }
 
-
+  /**
+   * Takes the stats and prepares an Excel file with them in it, then offers the file for download
+   * @param id The ID of the content for which the stats are being downloaded
+   */
   def downloadStats(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
@@ -359,7 +367,10 @@ object ContentController extends Controller {
         }
   }
 
-
+  /**
+   * Deletes the stats pertaining to a certain content object
+   * @param id The ID of the content object
+   */
   def clearStats(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
@@ -375,7 +386,12 @@ object ContentController extends Controller {
         }
   }
 
-
+  /**
+   * When content is shared, this is the endpoint that viewers come to. No authentication is necessary to view the
+   * content if its share settings are set appropriately.
+   * @param id The ID of the content
+   * @param authKey The content's access key
+   */
   def shareAccess(id: Long, authKey: String) = Action {
     implicit request =>
       getContent(id) {
@@ -431,6 +447,4 @@ object ContentController extends Controller {
         val content = Content.listPublic
         Ok(views.html.content.public(content))
   }
-
-
 }

@@ -12,11 +12,7 @@ import models.ContentListing
 import dataAccess.ResourceController
 
 /**
- * Created with IntelliJ IDEA.
- * User: camman3d
- * Date: 5/8/13
- * Time: 1:32 PM
- * To change this template use File | Settings | File Templates.
+ * A controller which deals with content in the context of a course
  */
 object CourseContent extends Controller {
 
@@ -63,6 +59,10 @@ object CourseContent extends Controller {
         }
   }
 
+  /**
+   * Takes the course stats and prepares an Excel file with them in it, then offers the file for download
+   * @param id The ID of the content for which the stats are being downloaded
+   */
   def downloadStatsInCourse(id: Long, courseId: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
@@ -87,6 +87,10 @@ object CourseContent extends Controller {
         }
   }
 
+  /**
+   * Deletes the course stats pertaining to a certain content object
+   * @param id The ID of the content object
+   */
   def clearStatsInCourse(id: Long, courseId: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
@@ -130,6 +134,10 @@ object CourseContent extends Controller {
         }
   }
 
+  /**
+   * Adds a particular content object to a course
+   * @param id The ID of the content
+   */
   def addToCourse(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
@@ -152,6 +160,11 @@ object CourseContent extends Controller {
         }
   }
 
+  /**
+   * Removes a particular content object from a course
+   * @param id The ID of the content
+   * @param courseId The ID of the course
+   */
   def removeFromCourse(id: Long, courseId: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
@@ -169,5 +182,4 @@ object CourseContent extends Controller {
             }
         }
   }
-
 }
