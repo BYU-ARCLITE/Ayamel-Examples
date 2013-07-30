@@ -6,14 +6,14 @@ import dataAccess.GoogleFormScripts
 import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
- * Created with IntelliJ IDEA.
- * User: josh
- * Date: 7/5/13
- * Time: 10:40 AM
- * To change this template use File | Settings | File Templates.
+ * Controller dealing with question sets
  */
 object QuestionSets extends Controller {
 
+  /**
+   * The about page. View information/description of the question set
+   * @param id The ID of the question set
+   */
   def about(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
@@ -33,6 +33,10 @@ object QuestionSets extends Controller {
         }
   }
 
+  /**
+   * Take, or fill out, the question set.
+   * @param id The ID of the question set
+   */
   def take(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
@@ -52,6 +56,11 @@ object QuestionSets extends Controller {
         }
   }
 
+  /**
+   * When a user is taking a question set, we need to know what index their response will be so we can grade it.
+   * This finds that index and returns it. For AJAX calls.
+   * @param id The ID of the question set
+   */
   def getIndex(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
@@ -74,6 +83,11 @@ object QuestionSets extends Controller {
         }
   }
 
+  /**
+   * This grades a response to a question set.
+   * @param id The ID of the question set
+   * @param index The response index
+   */
   def grade(id: Long, index: Int) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
@@ -101,6 +115,11 @@ object QuestionSets extends Controller {
         }
   }
 
+  /**
+   * This grades a response to a question set. For AJAX calls
+   * @param id The ID of the question set
+   * @param index The response index
+   */
   def gradeAjax(id: Long, index: Int) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
