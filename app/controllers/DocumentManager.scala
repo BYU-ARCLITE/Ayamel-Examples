@@ -52,9 +52,11 @@ object DocumentManager extends Controller {
           "title" -> title,
           "keywords" -> "annotations",
           "type" -> "text",
-          "languages" -> languages
+          "languages" -> Json.obj(
+            "iso639_3" -> languages
+          )
         ))
-        ResourceHelper.createResourceWithUri(resource, url, mime).flatMap {
+        ResourceHelper.createResourceWithUri(resource, url, length, mime).flatMap {
           resource =>
             val subjectId = (resource \ "id").as[String]
 
@@ -85,7 +87,9 @@ object DocumentManager extends Controller {
     // Update the resource
     ResourceController.updateResource(resourceId, Json.obj(
       "title" -> title,
-      "languages" -> languages
+      "languages" -> Json.obj(
+        "iso639_3" -> languages
+      )
     ))
   }
 

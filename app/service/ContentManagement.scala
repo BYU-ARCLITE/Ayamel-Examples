@@ -8,8 +8,8 @@ import ExecutionContext.Implicits.global
 import play.api.libs.json.{JsValue, Json}
 
 
-case class ContentDescriptor(title: String, description: String, keywords: String, categories: List[String],
-                             url: String, mime: String, thumbnail: Option[String] = None, labels: List[String] = Nil,
+case class ContentDescriptor(title: String, description: String, keywords: String, url: String, bytes: Long,
+                             mime: String, thumbnail: Option[String] = None, labels: List[String] = Nil,
                              languages: List[String])
 
 /**
@@ -53,11 +53,12 @@ object ContentManagement {
       "title" -> info.title,
       "description" -> info.description,
       "keywords" -> info.keywords,
-      "categories" -> info.categories,
       "type" -> resourceType,
-      "languages" -> info.languages
+      "languages" -> Json.obj(
+        "iso639_3" -> info.languages
+      )
     ))
-    ResourceHelper.createResourceWithUri(resource, info.url, info.mime)
+    ResourceHelper.createResourceWithUri(resource, info.url, info.bytes, info.mime)
   }
 
   /**
@@ -110,7 +111,7 @@ object ContentManagement {
    */
   def createText(info: ContentDescriptor, owner: User): Future[Content] = {
     // Create the resource
-    createResource(info, "text").map(resource => {
+    createResource(info, "document").map(resource => {
 
       val resourceId = (resource \ "id").as[String]
 

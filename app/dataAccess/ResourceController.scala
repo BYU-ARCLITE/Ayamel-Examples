@@ -14,8 +14,10 @@ import concurrent.ExecutionContext.Implicits.global
  */
 object ResourceController {
 
-  // The base endpoint of the resource library api
+  // The resource library
   val baseUrl = Play.configuration.getString("resourceLibrary.baseUrl").get
+  val clientId = Play.configuration.getString("resourceLibrary.clientId").get
+  val apiKey = Play.configuration.getString("resourceLibrary.apiKey").get
   val baseResourceUrl = Play.configuration.getString("resourceLibrary.baseUrl").get + "resources"
 
   /**
@@ -37,7 +39,7 @@ object ResourceController {
    * @param resource The resource to be created
    * @return The future JSON result
    */
-  def createResource(resource: JsObject): Future[JsValue] = WS.url(baseResourceUrl).post(resource).map(_.json)
+  def createResource(resource: JsObject): Future[JsValue] = WS.url(baseResourceUrl + s"?_key=$apiKey").post(resource).map(_.json)
 
   /**
    * Derive as much of a full resource object as possible from a given uri. Note that custom resource providers can be
@@ -64,7 +66,7 @@ object ResourceController {
    * @return The future JSON result
    */
   def updateResource(id: String, resource: JsValue): Future[JsValue] =
-    WS.url(baseResourceUrl + "/" + id).put(resource).map(_.json)
+    WS.url(baseResourceUrl + "/" + id + s"?_key=$apiKey").put(resource).map(_.json)
 
   /**
    * Deletes a resource
@@ -81,7 +83,7 @@ object ResourceController {
    * @param remoteFiles The JSON object describing the remote files
    * @return The future JSON result
    */
-  def setRemoteFiles(url: String, remoteFiles: JsValue): Future[JsValue] = WS.url(url).post(remoteFiles).map(_.json)
+  def setRemoteFiles(url: String, remoteFiles: JsValue): Future[JsValue] = WS.url(url + s"?_key=$apiKey").post(remoteFiles).map(_.json)
 
   /**
    * Get resource relations
