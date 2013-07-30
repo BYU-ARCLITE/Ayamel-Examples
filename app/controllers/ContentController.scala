@@ -10,6 +10,7 @@ import anorm.NotAssigned
 import service.ContentDescriptor
 import dataAccess.{GoogleFormScripts, PlayGraph, ResourceController}
 import java.net.{URLDecoder, URI, URL}
+import play.api.libs.ws.WS
 
 /**
  * The controller for dealing with content.
@@ -100,7 +101,7 @@ object ContentController extends Controller {
           val contentType = Symbol(data("contentType")(0))
           val title = data("title")(0)
           val description = data("description")(0)
-          val categories = data.get("categories").map(_.toList).getOrElse(Nil)
+//          val categories = data.get("categories").map(_.toList).getOrElse(Nil)
           val labels = data.get("labels").map(_.toList).getOrElse(Nil)
           val keywords = labels.mkString(",")
           val languages = data.get("languages").map(_.toList).getOrElse(List("eng"))
@@ -112,11 +113,13 @@ object ContentController extends Controller {
           val mime = ResourceHelper.getMimeFromUri(url)
 
           // Create the content
-          val info = ContentDescriptor(title, description, keywords, categories, url, mime, labels = labels,
-            languages = languages)
           Async {
-            ContentManagement.createContent(info, user, contentType).map(content => {
-              Redirect(routes.ContentController.view(content.id.get)).flashing("success" -> "Content added")
+            WS.url(url).get().map(_.header("Content-Length").get.toLong).flatMap(bytes => {
+              val info = ContentDescriptor(title, description, keywords, url, bytes, mime, labels = labels,
+                languages = languages)
+              ContentManagement.createContent(info, user, contentType).map(content => {
+                Redirect(routes.ContentController.view(content.id.get)).flashing("success" -> "Content added")
+              })
             })
           }
         }
@@ -146,17 +149,19 @@ object ContentController extends Controller {
               val contentType = Symbol(parts(3))
               val labels = parts(4).split(",").toList
               val languages = parts(5).split(",").toList
-              val categories = Nil
+//              val categories = Nil
               val keywords = labels.mkString(",")
               val mime = ResourceHelper.getMimeFromUri(url)
 
-              val info = ContentDescriptor(title, description, keywords, categories, url, mime, labels = labels,
-                languages = languages)
-              ContentManagement.createContent(info, user, contentType).map(content => {
-                count += 1
-                if (count == data.size) {
-                  user.sendNotification("Your batch file upload has finished.")
-                }
+              WS.url(url).get().map(_.header("Content-Length").get.toLong).flatMap(bytes => {
+                val info = ContentDescriptor(title, description, keywords, url, bytes, mime, labels = labels,
+                  languages = languages)
+                ContentManagement.createContent(info, user, contentType).map(content => {
+                  count += 1
+                  if (count == data.size) {
+                    user.sendNotification("Your batch file upload has finished.")
+                  }
+                })
               })
             })
           }
@@ -180,7 +185,7 @@ object ContentController extends Controller {
           val contentType = Symbol(data("contentType")(0))
           val title = data("title")(0)
           val description = data("description")(0)
-          val categories = data.get("categories").map(_.toList).getOrElse(Nil)
+//          val categories = data.get("categories").map(_.toList).getOrElse(Nil)
           val labels = data.get("labels").map(_.toList).getOrElse(Nil)
           val keywords = labels.mkString(",")
           val languages = data.get("languages").map(_.toList).getOrElse(List("eng"))
@@ -192,7 +197,7 @@ object ContentController extends Controller {
               url =>
 
               // Create the content
-                val info = ContentDescriptor(title, description, keywords, categories, url, file.contentType.get,
+                val info = ContentDescriptor(title, description, keywords, url, file.ref.file.length(), file.contentType.get,
                   labels = labels, languages = languages)
                 ContentManagement.createContent(info, user, contentType).map {
                   content =>

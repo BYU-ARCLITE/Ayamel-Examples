@@ -249,8 +249,8 @@ var VideoRenderer = (function () {
         Ayamel.prioritizedPlugins.video = ["html5", "flash", "brightcove", "youtube"];
         Ayamel.prioritizedPlugins.audio = ["html5"];
 
-        // Make sure the element will be contained on the page
-        if (args.screenAdaption && args.screenAdaption.fit) {
+        // Make sure the element will be contained on the page if it's a video
+        if (args.content.contentType === "video" && args.screenAdaption && args.screenAdaption.fit) {
             ScreenAdapter.containByHeight(args.layout.$player, Ayamel.aspectRatios.hdVideo, args.screenAdaption.padding);
         }
 

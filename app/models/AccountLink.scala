@@ -44,6 +44,11 @@ case class AccountLink(id: Pk[Long], userIds: Set[Long], primaryAccount: Long) e
   // |______|______|______|______|______|______|______|______|______|
   //
 
+  /**
+   * Adds a user to this account link
+   * @param user The user to add
+   * @return The updated account link
+   */
   def addUser(user: User): AccountLink = copy(userIds = userIds + user.id.get)
 
   //       _____      _   _
@@ -57,6 +62,9 @@ case class AccountLink(id: Pk[Long], userIds: Set[Long], primaryAccount: Long) e
   // |______|______|______|______|______|______|______|______|______|
   //
 
+  /**
+   * A caching mechanism to reduce the number of DB calls made
+   */
   object cache {
     var users: Option[Set[User]] = None
 
@@ -67,11 +75,15 @@ case class AccountLink(id: Pk[Long], userIds: Set[Long], primaryAccount: Long) e
     }
   }
 
+  /**
+   * @return All the users associated with this account link
+   */
   def getUsers: Set[User] = cache.getUsers
 
+  /**
+   * @return The primary user of this account link
+   */
   def getPrimaryUser: User = cache.getUsers.find(_.id.get == primaryAccount).get
-
-
 
 }
 

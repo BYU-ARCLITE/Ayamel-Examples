@@ -10,8 +10,8 @@ $(function() {
     var courseQuery = courseId ? "?course=" + courseId : "";
 
     function getLanguage(resource) {
-        if (resource.languages[0]) {
-            var langCode = resource.languages[0].length === 3 ? resource.languages[0] : Ayamel.utils.upgradeLangCode(resource.languages[0]);
+        if (resource.languages.iso639_3 && resource.languages.iso639_3[0]) {
+            var langCode = resource.languages.iso639_3[0].length === 3 ? resource.languages.iso639_3[0] : Ayamel.utils.upgradeLangCode(resource.languages.iso639_3[0]);
             return Ayamel.utils.getLangName(langCode)
         } else
             return "English";

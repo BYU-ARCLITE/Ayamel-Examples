@@ -5,6 +5,7 @@ import concurrent.{ExecutionContext, Future}
 import play.api.libs.MimeTypes
 import ExecutionContext.Implicits.global
 import dataAccess.ResourceController
+import play.api.libs.ws.WS
 
 /**
  * This builds upon the Resource API wrapper in ResourceController by providing functions which do some level of data
@@ -35,8 +36,9 @@ object ResourceHelper {
       "title" -> "",
       "description" -> "",
       "keywords" -> "",
-      "categories" -> List[String](),
-      "languages" -> List("eng"),
+      "languages" -> Json.obj(
+        "iso639_3" -> List("eng")
+      ),
       "type" -> "data"
     ) ++ resource
 
@@ -48,9 +50,10 @@ object ResourceHelper {
     ) ++ relation
 
     def file(file: JsObject = Json.obj()): JsObject = Json.obj(
-      "mime" -> "application/octet-stream",
+      "mimeType" -> "application/octet-stream",
       "representation" -> "original",
-      "quality" -> "1",
+      "quality" -> 1,
+      "bytes" -> 0,
       "attributes" -> Map[String, String]()
     ) ++ file
   }
@@ -98,16 +101,17 @@ object ResourceHelper {
    * @param mime The mime type of the file at the uri
    * @return The id of the resource in a future
    */
-  def createResourceWithUri(resource: JsObject, uri: String, mime: String, fileAttributes: Map[String, String] = Map()): Future[JsValue] = {
+  def createResourceWithUri(resource: JsObject, uri: String, bytes: Long, mime: String, fileAttributes: Map[String, String] = Map()): Future[JsValue] = {
 
     // Create the resource
     ResourceController.createResource(resource).flatMap(json => {
-      val contentUploadUrl = (json \ "content_upload_url").as[String]
+      val contentUploadUrl = (json \ "contentUploadUrl").as[String]
 
       // Add information about the file
       val file = make.file(Json.obj(
         getUrlName(uri) -> uri,
-        "mime" -> mime,
+        "mimeType" -> mime,
+        "bytes" -> bytes,
         "attributes" -> fileAttributes
       ))
       val remoteFiles = Json.obj("remoteFiles" -> Json.arr(file))
@@ -124,7 +128,7 @@ object ResourceHelper {
    * @param mime The mime type of the new file
    * @param representation How the file represents the resource
    */
-  def addRemoteFile(id: String, uri: String, mime: Option[String] = None, representation: String = "original"): Future[JsValue] = {
+  def addRemoteFile(id: String, uri: String, bytes: Long, mime: Option[String] = None, representation: String = "original"): Future[JsValue] = {
     // Get the resource
     ResourceController.getResource(id).flatMap(resourceResponse => {
       val resource = resourceResponse \ "resource"
@@ -133,7 +137,8 @@ object ResourceHelper {
       val mimeType = mime.getOrElse(getMimeFromUri(uri))
       val file = make.file(Json.obj(
         "downloadUri" -> uri,
-        "mime" -> mimeType,
+        "mimeType" -> mimeType,
+        "bytes" -> bytes,
         "representation" -> representation
       ))
       val files = (resource \ "content" \ "files").as[JsArray].value.toList
@@ -141,7 +146,7 @@ object ResourceHelper {
 
       // Get an upload url
       ResourceController.requestUploadUrl(id).flatMap(uploadUrlResponse => {
-        val uploadUrl = (uploadUrlResponse \ "content_upload_url").as[String]
+        val uploadUrl = (uploadUrlResponse \ "contentUploadUrl").as[String]
 
         // Set the new files
         val obj = Json.obj("remoteFiles" -> newFiles)
@@ -157,7 +162,9 @@ object ResourceHelper {
    * @param mime The mime type of the thumbnail
    */
   def addThumbnail(id: String, thumbnailUri: String, mime: Option[String] = None): Future[JsValue] =
-    addRemoteFile(id, thumbnailUri, mime, "summary")
+    WS.url(thumbnailUri).get().map(_.header("Content-Length").get.toLong).flatMap(bytes =>
+      addRemoteFile(id, thumbnailUri, bytes, mime, "summary")
+    )
 
   def updateDownloadUri(id: String, uri: String): Future[JsValue] = {
     ResourceController.getResource(id).flatMap { json =>
@@ -172,7 +179,7 @@ object ResourceHelper {
 
       // Save the updated files
       ResourceController.requestUploadUrl(id).flatMap { uploadUrlResponse =>
-        val uploadUrl = (uploadUrlResponse \ "content_upload_url").as[String]
+        val uploadUrl = (uploadUrlResponse \ "contentUploadUrl").as[String]
 
         // Set the new files
         val obj = Json.obj("remoteFiles" -> newFiles)

@@ -107,7 +107,7 @@
                         $("#categories").val(resource.categories);
         //                $("#languages")[0].setValue(resource.languages);
                         $("#languages").superselect(function() {
-                            this.setValue(resource.languages);
+                            this.setValue(resource.languages.iso639_3);
                         });
                     });
                     languagesLoaded = true;

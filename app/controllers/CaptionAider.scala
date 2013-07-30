@@ -72,9 +72,11 @@ object CaptionAider extends Controller {
                     val resource = ResourceHelper.make.resource(Json.obj(
                       "title" -> label,
                       "type" -> "text",
-                      "languages" -> languages
+                      "languages" -> Json.obj(
+                        "iso639_3" -> languages
+                      )
                     ))
-                    ResourceHelper.createResourceWithUri(resource, url, mime, Map("kind" -> kind)).flatMap {
+                    ResourceHelper.createResourceWithUri(resource, url, data.getBytes.length, mime, Map("kind" -> kind)).flatMap {
                       createdResource =>
                         val subjectId = (createdResource \ "id").as[String]
 
@@ -96,7 +98,9 @@ object CaptionAider extends Controller {
                     val updatedFile = (resource \ "content" \ "files")(0).as[JsObject] ++ Json.obj("attributes" -> Json.obj("kind" -> kind))
                     val updatedResource = resource.as[JsObject] ++ Json.obj(
                       "title" -> label,
-                      "languages" -> languages,
+                      "languages" -> Json.obj(
+                        "iso639_3" -> languages
+                      ),
                       "content" -> Json.obj("files" -> List(updatedFile))
                     )
                     ResourceController.updateResource(resourceId, updatedResource)
