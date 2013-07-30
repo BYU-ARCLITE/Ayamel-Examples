@@ -2,7 +2,7 @@ package dataAccess
 
 import play.api.Play
 import Play.current
-import play.api.libs.json.{JsObject, Json, JsValue}
+import play.api.libs.json.{JsObject, JsValue}
 import play.api.libs.ws.WS
 import concurrent.Future
 import concurrent.ExecutionContext.Implicits.global
@@ -17,7 +17,6 @@ object ResourceController {
   // The base endpoint of the resource library api
   val baseUrl = Play.configuration.getString("resourceLibrary.baseUrl").get
   val baseResourceUrl = Play.configuration.getString("resourceLibrary.baseUrl").get + "resources"
-//  val baseUrl = "http://localhost:9005/api/v1/resources"
 
   /**
    * List resources
@@ -70,7 +69,7 @@ object ResourceController {
   /**
    * Deletes a resource
    * The API endpoint is: DELETE resources/[id]
-   * @param id The ID of the resouce to delete
+   * @param id The ID of the resource to delete
    * @return The future JSON result
    */
   def deleteResource(id: String): Future[JsValue] = WS.url(baseResourceUrl + "/" + id).delete().map(_.json)
@@ -95,8 +94,18 @@ object ResourceController {
     WS.url(baseUrl + s"relations?$idKey=$id").get().map(_.json)
   }
 
+  /**
+   * Creates a relation
+   * @param relation The relation to create
+   * @return The future JSON result
+   */
   def addRelation(relation: JsObject): Future[JsValue] = WS.url(baseUrl + "relations").post(relation).map(_.json)
 
+  /**
+   * Deletes a relation
+   * @param id The ID of the relation to delete
+   * @return The future JSON result
+   */
   def deleteRelation(id: String): Future[JsValue] =
     WS.url(baseUrl + "relations/" + id).delete().map(_.json)
 
