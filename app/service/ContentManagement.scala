@@ -74,7 +74,7 @@ object ContentManagement {
       val resourceId = (resource \ "id").as[String]
 
       // Set a thumbnail in the resource
-      if (info.thumbnail.isDefined)
+      if (info.thumbnail.isDefined && !info.thumbnail.get.isEmpty)
         ResourceHelper.addThumbnail(resourceId, info.thumbnail.get)
 
       // Create the content and set the user and the owner

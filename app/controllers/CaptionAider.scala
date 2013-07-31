@@ -71,12 +71,13 @@ object CaptionAider extends Controller {
                   // Create subtitle (subject) resource
                     val resource = ResourceHelper.make.resource(Json.obj(
                       "title" -> label,
+                      "keywords" -> kind,
                       "type" -> "text",
                       "languages" -> Json.obj(
                         "iso639_3" -> languages
                       )
                     ))
-                    ResourceHelper.createResourceWithUri(resource, url, data.getBytes.length, mime, Map("kind" -> kind)).flatMap {
+                    ResourceHelper.createResourceWithUri(resource, url, data.getBytes.length, mime).flatMap {
                       createdResource =>
                         val subjectId = (createdResource \ "id").as[String]
 

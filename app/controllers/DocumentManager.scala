@@ -151,22 +151,25 @@ object DocumentManager extends Controller {
           content =>
 
             Async {
-              ResourceHelper.setAttributes(docId, Map("publishStatus" -> "requested")).map {
-                json =>
+              ResourceController.getResource(docId).flatMap(response => {
+                val clientUserId = (response \ "resource" \ "clientUser" \ "id").as[String]
+                ResourceHelper.setClientUser(docId, Map("id" -> (clientUserId + ":request"))).map {
+                  json =>
 
-                // Notify the owner
-                  val contentUrl = routes.ContentController.view(id).toString()
-                  val message = "A request has been made to publish a document on your content <a href=\"" + contentUrl + "\">" + content.name + "</a>."
-                  content.getOwner.sendNotification(message)
+                  // Notify the owner
+                    val contentUrl = routes.ContentController.view(id).toString()
+                    val message = "A request has been made to publish a document on your content <a href=\"" + contentUrl + "\">" + content.name + "</a>."
+                    content.getOwner.sendNotification(message)
 
-                  val courseId = request.queryString.get("course").map(_(0).toLong)
-                  (
-                    if (courseId.isDefined)
-                      Redirect(routes.CourseContent.viewInCourse(id, courseId.get))
-                    else
-                      Redirect(routes.ContentController.view(id))
-                    ).flashing("info" -> "A publish request has been made.")
-              }
+                    val courseId = request.queryString.get("course").map(_(0).toLong)
+                    (
+                      if (courseId.isDefined)
+                        Redirect(routes.CourseContent.viewInCourse(id, courseId.get))
+                      else
+                        Redirect(routes.ContentController.view(id))
+                      ).flashing("info" -> "A publish request has been made.")
+                }
+              })
             }
         }
   }
@@ -186,12 +189,12 @@ object DocumentManager extends Controller {
               Async {
 
                 // Accept the document by removing the publishRequested attribute and removing attributes on the relation
-                val attributes = Map(
-                  "publishStatus" -> "accepted",
-                  "ayamel_ownerType" -> "",
-                  "ayamel_ownerId" -> ""
-                )
-                ResourceHelper.setAttributes(docId, attributes).map {
+//                val attributes = Map(
+//                  "publishStatus" -> "accepted",
+//                  "ayamel_ownerType" -> "",
+//                  "ayamel_ownerId" -> ""
+//                )
+                ResourceHelper.setClientUser(docId, Map("id" -> null)).map {
                   json =>
 
                     val courseId = request.queryString.get("course").map(_(0).toLong)
