@@ -86,7 +86,7 @@ $(function() {
 
         // Load metadata from the resource
         var title = !!data.resource ? data.resource.title : "Untitled";
-        var language = !!data.resource ? data.resource.languages[0] : "eng";
+        var language = !!data.resource ? data.resource.languages.iso639_3[0] : "eng";
         $("#title").val(title);
         $("#language").val(language);
 

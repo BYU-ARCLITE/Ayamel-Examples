@@ -8,21 +8,10 @@ import ExecutionContext.Implicits.global
 import play.api.libs.json.Json
 
 /**
- * Created with IntelliJ IDEA.
- * User: camman3d
- * Date: 4/29/13
- * Time: 10:32 AM
- * To change this template use File | Settings | File Templates.
+ * This utility assists with adding resources as annotation or caption track documents to other resources
  */
 object AdditionalDocumentAdder {
 
-  /*
-   * Content
-   * Additional Document Resource Id
-   * Type
-   * User
-   * Course
-   */
 
   def add(content: Content, resourceId: String, docType: Symbol)(action: Option[Course] => Result)(implicit request: RequestHeader, user: User): Future[Result] = {
 
@@ -35,14 +24,14 @@ object AdditionalDocumentAdder {
     content.setSetting(settingName, (resourceId :: enabledDocuments).mkString(",")).save
 
     // Set the attributes on the resource
-    ResourceHelper.setAttributes(resourceId, getResourceAttributes(course, content)).flatMap(resource => {
+//    ResourceHelper.setAttributes(resourceId, getClientUser(course, content)).flatMap(resource => {
+    ResourceHelper.setClientUser(resourceId, getClientUser(course, content)).flatMap(resource => {
 
       // Create the relation
       val relation = Json.obj(
         "subjectId" -> resourceId,
         "objectId" -> content.resourceId,
-        "type" -> getRelationType(docType),
-        "attributes" -> getRelationAttributes(docType)
+        "type" -> getRelationType(docType)
       )
       ResourceController.addRelation(relation).map(r => {
 
@@ -54,28 +43,28 @@ object AdditionalDocumentAdder {
 
   private def getRelationType(docType: Symbol): String = {
     if (docType == 'captionTrack)
-      "transcriptOf"
+      "transcript_of"
     else if (docType == 'annotations)
       "references"
     else
       "unknown"
   }
 
-  private def getResourceAttributes(course: Option[Course], content: Content)(implicit user: User): Map[String, String] = {
+  private def getClientUser(course: Option[Course], content: Content)(implicit user: User): Map[String, String] = {
     if (course.isDefined)
-      Map("ayamel_ownerType" -> "course", "ayamel_ownerId" -> course.get.id.get.toString)
+      Map("id" -> ("course:" + course.get.id.get))
     else if (content isEditableBy user)
       Map()
     else
-      Map("ayamel_ownerType" -> "user", "ayamel_ownerId" -> user.id.get.toString)
+      Map("id" -> ("user:" + user.id.get))
   }
 
-  private def getRelationAttributes(docType: Symbol): Map[String, String] = {
-    if (docType == 'annotations)
-      Map("type" -> "annotations")
-    else
-      Map()
-  }
+//  private def getRelationAttributes(docType: Symbol): Map[String, String] = {
+//    if (docType == 'annotations)
+//      Map("type" -> "annotations")
+//    else
+//      Map()
+//  }
 
   private def getSettingName(docType: Symbol, prefix: String): String = {
     if (docType == 'captionTrack)

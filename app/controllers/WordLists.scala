@@ -1,23 +1,21 @@
 package controllers
 
-import play.api.mvc.{Action, Controller}
+import play.api.mvc.Controller
 import controllers.authentication.Authentication
 import service.HashTools
 import dataAccess.Quizlet
-import play.api.Logger
 import scala.concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
 import models.WordListEntry
 
 /**
- * Created with IntelliJ IDEA.
- * User: josh
- * Date: 7/12/13
- * Time: 4:35 PM
- * To change this template use File | Settings | File Templates.
+ * Controller dealing with word lists
  */
 object WordLists extends Controller {
 
+  /**
+   * Adds a word (or text) to a word list. For AJAX calls
+   */
   def add = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
@@ -25,6 +23,9 @@ object WordLists extends Controller {
         Ok
   }
 
+  /**
+   * View the user's word list
+   */
   def view = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
@@ -32,6 +33,10 @@ object WordLists extends Controller {
         Ok(views.html.words.view(wordList))
   }
 
+  /**
+   * Delete a word from the word list
+   * @param id The ID of the word list entry
+   */
   def deleteWord(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
@@ -39,6 +44,9 @@ object WordLists extends Controller {
         Redirect(routes.WordLists.view()).flashing("info" -> "Word deleted.")
   }
 
+  /**
+   * Exports the word list to quizlet
+   */
   def export = Authentication.authenticatedAction(parse.multipartFormData) {
     implicit request =>
       user =>
@@ -53,6 +61,9 @@ object WordLists extends Controller {
         }
   }
 
+  /**
+   * Starts the oauth authorization process with Quizlet
+   */
   def authorize = Authentication.authenticatedAction() {
     implicit request =>
       user =>
@@ -66,12 +77,15 @@ object WordLists extends Controller {
         Redirect("https://quizlet.com/authorize/", data)
   }
 
+  /**
+   * Finished the oauth authorization process with Quizlet
+   */
   def authorizeCallback = Authentication.authenticatedAction() {
     implicit request =>
       user =>
       // Check for an error
         if (request.queryString.contains("error")) {
-          Ok(views.html.words.authCode(false, ""))
+          Ok(views.html.words.authCode(success = false, ""))
         } else {
 
           // Check the state
@@ -83,7 +97,7 @@ object WordLists extends Controller {
 
             // Get the access token from the code
             Quizlet.getAuthToken(code).map(token => {
-              Ok(views.html.words.authCode(true, token))
+              Ok(views.html.words.authCode(success = true, token))
             })
           }
         }

@@ -189,11 +189,11 @@
 
                 // Show the metadata
                ResourceLibrary.load(content.resourceId, function(resource) {
-                    $("#metadataCategories").text(resource.categories.join(", "))
+//                    $("#metadataCategories").text(resource.categories.join(", "))
                     $("#metadataDescription").text(resource.description);
 
                     var $metadataLanguages = $("#metadataLanguages");
-                    resource.languages.forEach(function (langCode) {
+                    resource.languages.iso639_3.forEach(function (langCode) {
                         langCode = langCode.length === 2 ? Ayamel.utils.upgradeLangCode(langCode) : langCode;
                         var language = Ayamel.utils.getLangName(langCode);
                         $metadataLanguages.append('<em class="pad-left-high">' + language + '</em>');

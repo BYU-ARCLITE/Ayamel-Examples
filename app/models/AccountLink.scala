@@ -5,17 +5,16 @@ import dataAccess.sqlTraits.{SQLSelectable, SQLDeletable, SQLSavable}
 import anorm.SqlParser._
 
 /**
- * Created with IntelliJ IDEA.
- * AccountLink: camman3d
- * Date: 3/28/13
- * Time: 10:00 AM
- * To change this template use File | Settings | File Templates.
+ * Account Links are used to merge account
+ * @param id The ID used in the DB
+ * @param userIds The list of User IDs that are merged
+ * @param primaryAccount The ID of the User that is to be the primary account
  */
 case class AccountLink(id: Pk[Long], userIds: Set[Long], primaryAccount: Long) extends SQLSavable with SQLDeletable {
 
   /**
-   * Saves the user to the DB
-   * @return The possibly updated user
+   * Saves the account link to the DB
+   * @return The possibly updated account link
    */
   def save: AccountLink = {
     if (id.isDefined) {
@@ -28,7 +27,7 @@ case class AccountLink(id: Pk[Long], userIds: Set[Long], primaryAccount: Long) e
   }
 
   /**
-   * Deletes the user from the DB
+   * Deletes the account link from the DB
    */
   def delete() {
     delete(AccountLink.tableName, id)
@@ -45,6 +44,11 @@ case class AccountLink(id: Pk[Long], userIds: Set[Long], primaryAccount: Long) e
   // |______|______|______|______|______|______|______|______|______|
   //
 
+  /**
+   * Adds a user to this account link
+   * @param user The user to add
+   * @return The updated account link
+   */
   def addUser(user: User): AccountLink = copy(userIds = userIds + user.id.get)
 
   //       _____      _   _
@@ -58,6 +62,9 @@ case class AccountLink(id: Pk[Long], userIds: Set[Long], primaryAccount: Long) e
   // |______|______|______|______|______|______|______|______|______|
   //
 
+  /**
+   * A caching mechanism to reduce the number of DB calls made
+   */
   object cache {
     var users: Option[Set[User]] = None
 
@@ -68,11 +75,15 @@ case class AccountLink(id: Pk[Long], userIds: Set[Long], primaryAccount: Long) e
     }
   }
 
+  /**
+   * @return All the users associated with this account link
+   */
   def getUsers: Set[User] = cache.getUsers
 
+  /**
+   * @return The primary user of this account link
+   */
   def getPrimaryUser: User = cache.getUsers.find(_.id.get == primaryAccount).get
-
-
 
 }
 

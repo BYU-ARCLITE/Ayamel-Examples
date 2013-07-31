@@ -97,7 +97,7 @@ var ContentSettings = (function() {
             options: function(context, content) {
                 // Get the document name and language from the ID
                 return content.enableableCaptionTracks.map(function (resource) {
-                    var langCode = resource.languages[0].length === 3 ? resource.languages[0] : Ayamel.utils.upgradeLangCode(resource.languages[0]);
+                    var langCode = resource.languages.iso639_3[0].length === 3 ? resource.languages.iso639_3[0] : Ayamel.utils.upgradeLangCode(resource.languages.iso639_3[0]);
                     var language = Ayamel.utils.getLangName(langCode);
                     return {
                         text: resource.title + " (" + language + ")",
@@ -119,7 +119,7 @@ var ContentSettings = (function() {
             options: function(context, content) {
                 // Get the document name and language from the ID
                 return content.enableableAnnotationDocuments.map(function (resource) {
-                    var langCode = resource.languages[0].length === 3 ? resource.languages[0] : Ayamel.utils.upgradeLangCode(resource.languages[0]);
+                    var langCode = resource.languages.iso639_3[0].length === 3 ? resource.languages.iso639_3[0] : Ayamel.utils.upgradeLangCode(resource.languages.iso639_3[0]);
                     var language = Ayamel.utils.getLangName(langCode);
                     return {
                         text: resource.title + " (" + language + ")",

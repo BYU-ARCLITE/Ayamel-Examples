@@ -1,77 +1,87 @@
 package controllers
 
 import authentication.Authentication
-import play.api.mvc.{RequestHeader, Result, Request, Controller}
+import play.api.mvc.Controller
 import models._
 import service.{FileUploader, ImageTools, HashTools}
 import scala.Some
 import javax.imageio.ImageIO
 import scala.concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
-import anorm.NotAssigned
-import play.api.Logger
 
 /**
- * Created with IntelliJ IDEA.
- * User: camman3d
- * Date: 3/27/13
- * Time: 10:52 AM
- * To change this template use File | Settings | File Templates.
+ * Controller dealing with users
  */
 object Users extends Controller {
 
+  /**
+   * View notifications
+   */
   def notifications = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
         Ok(views.html.users.notifications())
   }
 
+  /**
+   * Marks a notification as read
+   * @param id The ID of the notification
+   */
   def markNotification(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
 
-        // Make sure the notification exists
+      // Make sure the notification exists
         val notification = Notification.findById(id)
         if (notification.isDefined) {
           // Make sure the notification belongs to the user
           if (user.getNotifications.contains(notification.get)) {
             notification.get.copy(messageRead = true).save
-            Redirect(routes.Users.notifications())flashing("info" -> "Notification marked as read.")
+            Redirect(routes.Users.notifications()) flashing ("info" -> "Notification marked as read.")
           } else
             Errors.forbidden
         } else
           Errors.notFound
   }
 
+  /**
+   * Deletes a notification
+   * @param id The ID of the notification
+   */
   def deleteNotification(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
 
-        // Make sure the notification exists
+      // Make sure the notification exists
         val notification = Notification.findById(id)
         if (notification.isDefined) {
           // Make sure the notification belongs to the user
           if (user.getNotifications.contains(notification.get)) {
             notification.get.delete()
-            Redirect(routes.Users.notifications())flashing("info" -> "Notification deleted.")
+            Redirect(routes.Users.notifications()) flashing ("info" -> "Notification deleted.")
           } else
             Errors.forbidden
         } else
           Errors.notFound
   }
 
+  /**
+   * The account settings view
+   */
   def accountSettings = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-
         Ok(views.html.users.accountSettings())
   }
 
+  /**
+   * Saves the user account information
+   */
   def saveSettings = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
 
-        // Change the user information
+      // Change the user information
         val name = request.body("name")(0)
         val email = request.body("email")(0)
         user.copy(name = Some(name), email = Some(email)).save
@@ -79,6 +89,9 @@ object Users extends Controller {
         Redirect(routes.Users.accountSettings()).flashing("info" -> "Personal information updated.")
   }
 
+  /**
+   * Changes the user's password
+   */
   def changePassword = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
@@ -94,30 +107,37 @@ object Users extends Controller {
           Redirect(routes.Users.accountSettings()).flashing("alert" -> "Passwords don't match.")
   }
 
+  /**
+   * Updates the user's profile picture
+   */
   def uploadProfilePicture = Authentication.authenticatedAction(parse.multipartFormData) {
     implicit request =>
       implicit user =>
 
-        // Load the image from the file and make it into a thumbnail
+      // Load the image from the file and make it into a thumbnail
         val file = request.body.file("file").get
         val image = ImageTools.makeThumbnail(ImageIO.read(file.ref.file))
 
         // Upload the file
         Async {
-          FileUploader.uploadImage(image, file.filename).map { url =>
+          FileUploader.uploadImage(image, file.filename).map {
+            url =>
 
             // Save the user info about the profile picture
-            user.copy(picture = Some(url)).save
-            Redirect(routes.Users.accountSettings()).flashing("info" -> "Profile picture updated")
+              user.copy(picture = Some(url)).save
+              Redirect(routes.Users.accountSettings()).flashing("info" -> "Profile picture updated")
           }
         }
   }
 
+  /**
+   * The teacher request page.
+   */
   def teacherRequestPage = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
 
-        // Check that the user is a student (not guest, teacher, or admin)
+      // Check that the user is a student (not guest, teacher, or admin)
         Authentication.enforceRole(User.roles.student) {
 
           // Check to see if the user has already submitted a request
@@ -129,11 +149,14 @@ object Users extends Controller {
         }
   }
 
+  /**
+   * Creates and submits a teacher request for the active user
+   */
   def submitTeacherRequest = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
 
-        // Check that the user is a student (not guest, teacher, or admin)
+      // Check that the user is a student (not guest, teacher, or admin)
         Authentication.enforceRole(User.roles.student) {
 
           // Check to see if the user has already submitted a request
@@ -159,5 +182,4 @@ object Users extends Controller {
             Ok(views.html.users.teacherRequest.status())
         }
   }
-
 }

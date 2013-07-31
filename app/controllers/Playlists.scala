@@ -5,14 +5,14 @@ import controllers.authentication.Authentication
 import dataAccess.{ResourceController, PlayGraph}
 
 /**
- * Created with IntelliJ IDEA.
- * User: josh
- * Date: 7/2/13
- * Time: 10:45 AM
- * To change this template use File | Settings | File Templates.
+ * Controller dealing with playlists (playgraphs)
  */
 object Playlists extends Controller {
 
+  /**
+   * The about page. View information/description of the playlist
+   * @param id The ID of the playlist
+   */
   def about(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
@@ -33,6 +33,10 @@ object Playlists extends Controller {
         }
   }
 
+  /**
+   * View (play) a particular playlist
+   * @param id The ID of the playlist
+   */
   def view(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
@@ -52,5 +56,4 @@ object Playlists extends Controller {
             }
         }
   }
-
 }

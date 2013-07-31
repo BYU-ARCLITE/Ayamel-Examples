@@ -12,14 +12,13 @@ import models.Scoring
 import anorm.NotAssigned
 
 /**
- * Created with IntelliJ IDEA.
- * User: josh
- * Date: 7/5/13
- * Time: 11:00 AM
- * To change this template use File | Settings | File Templates.
+ * Question sets are just Forms in Google Drive.
+ * To interact with the forms, there are three Google Scripts which Ayamel uses to create, count responses, and grade
+ * these forms. This object is an interface to these scripts.
  */
 object GoogleFormScripts {
 
+  // The script URLs loaded from the config file
   val createFormScript = Play.configuration.getString("exercises.createFormScript").get
   val getResponseIndexScript = Play.configuration.getString("exercises.getResponseIndexScript").get
   val gradeFormScript = Play.configuration.getString("exercises.gradeFormScript").get
@@ -76,6 +75,4 @@ object GoogleFormScripts {
       val results = (json \ "results").as[List[Double]]
       Scoring(NotAssigned, score, possible, results, 0, 0)
     })
-
-
 }
