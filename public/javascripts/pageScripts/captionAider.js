@@ -415,19 +415,22 @@ $(function() {
                 });
                 ractive.on('buttonpress',function(event, which){
                     if(which !== 'save'){ return; }
-                    var tracks = this.get("tracksToSave"),
+                    var tracks,// = this.get("tracksToSave"),
                         destination = this.get("saveDestination"),
                         exportedTracks;
 
                     $("#saveTrackModal").modal("hide");
-                    if(!tracks.length) { return; }
+                    //hack until Ractive handles multiselect properly
+                    tracks = [].filter.call(document.querySelector("#saveTrackModal select").options,function(opt){
+                        return opt.selected;
+                    }).map(function(opt){ return opt.value; });
+                    if(!(tracks && tracks.length)) { return; }
 
                     exportedTracks = timeline.exportTracks(tracks);
 
                     if (destination === "server") {
                         // Saving to the server. Provide all the information and data and let it handle everything
                         Object.keys(exportedTracks).forEach(function(key) {
-<<<<<<< HEAD:public/javascripts/pageScripts/captionAider.js
                             var textTrack = timeline.getTrack(tracks[key]).textTrack
                                 fObj = exportedTracks[key],
                                 data = new FormData();
