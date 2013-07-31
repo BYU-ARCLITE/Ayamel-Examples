@@ -44,8 +44,10 @@ object ContentEditing extends Controller {
                 "title" -> title,
                 "description" -> description,
                 "keywords" -> keywords,
-                "categories" -> JsArray(categories.map(c => JsString(c))),
-                "languages" -> languages
+//                "categories" -> JsArray(categories.map(c => JsString(c))),
+                "languages" -> Json.obj(
+                  "iso639_3" -> languages
+                )
               )
 
               // Save the metadata

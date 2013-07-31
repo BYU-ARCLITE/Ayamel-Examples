@@ -10,8 +10,8 @@ $(function() {
     var courseQuery = courseId ? "?course=" + courseId : "";
 
     function getLanguage(resource) {
-        if (resource.languages[0]) {
-            var langCode = resource.languages[0].length === 3 ? resource.languages[0] : Ayamel.utils.upgradeLangCode(resource.languages[0]);
+        if (resource.languages.iso639_3 && resource.languages.iso639_3[0]) {
+            var langCode = resource.languages.iso639_3[0].length === 3 ? resource.languages.iso639_3[0] : Ayamel.utils.upgradeLangCode(resource.languages.iso639_3[0]);
             return Ayamel.utils.getLangName(langCode)
         } else
             return "English";
@@ -22,8 +22,10 @@ $(function() {
         async.map(ids, function (id, asyncCallback) {
             ResourceLibrary.load(id, function (resource) {
                 resource.language = getLanguage(resource);
-                resource.publishRequest = resource.attributes && resource.attributes.publishStatus === "requested";
-                resource.published = !resource.publishRequest && owner;
+//                resource.publishRequest = resource.attributes && resource.attributes.publishStatus === "requested";
+//                resource.published = !resource.publishRequest && owner;
+                resource.publishRequest = resource.clientUser && resource.clientUser.id && resource.clientUser.id.indexOf("request") > -1;
+                resource.published = !(resource.clientUser && resource.clientUser.id);
                 asyncCallback(null, resource);
             });
         }, function (err, data) {

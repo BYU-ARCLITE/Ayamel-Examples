@@ -3,7 +3,7 @@ package dataAccess
 import service.joshmonson.oauth.{OAuthRequest, OAuthKey}
 import play.api.Play
 import play.api.Play.current
-import play.api.libs.json.{Json, JsString, JsValue}
+import play.api.libs.json.{Json, JsValue}
 import scala.concurrent.{ExecutionContext, Future}
 import play.api.libs.ws.WS
 import java.net.URLEncoder
@@ -15,38 +15,38 @@ import ExecutionContext.Implicits.global
  */
 object PlayGraph {
 
-//    val host = "http://localhost:9001/"
+  // Playgraph keys loaded from the config file
   val host = Play.configuration.getString("playgraph.host").get
-
-//    private val authorKey = OAuthKey(
-//      "o0vouu51k3ufsrms0avipdn1e",
-//      "gt7ksedniu1t5lgvrie8uh2pqa",
-//      "", ""
-//    )
-
   val authorKey = OAuthKey(
     Play.configuration.getString("playgraph.author.key").get,
     Play.configuration.getString("playgraph.author.secret").get,
     "", ""
   )
-
-//  val playerKey = OAuthKey(
-//    "caqehbk929smfstfgk6u9o1s8f",
-//    "nffupsom73ra6p0d3ub3fgc0oe",
-//    "", ""
-//  )
-
   val playerKey = OAuthKey(
     Play.configuration.getString("playgraph.player.key").get,
     Play.configuration.getString("playgraph.player.secret").get,
     "", ""
   )
 
+  // We use this string several places, so we'll pull it out
   private val urlEncodedContentType = "application/x-www-form-urlencoded"
 
+  /**
+   * Encodes a string map as URL parameters
+   * @param data The map data to encode
+   * @return The data as URL encoded parameters
+   */
   private def urlEncode(data: Map[String, String]): String =
     data.map(d => d._1 + "=" + URLEncoder.encode(d._2, "UTF-8")).mkString("&")
 
+  /**
+   * Given OAuth credentials and information, this generates the appropriate Authorization header
+   * @param key The key to be used in signing
+   * @param path The request path
+   * @param method The request method
+   * @param postBody The contents to sign
+   * @return The authorization header
+   */
   private def sign(key: OAuthKey, path: String, method: String, postBody: Map[String, String] = Map()): String = {
     val urlEncodedContent = if (method == "POST") urlEncode(postBody) else ""
     val contentTypeHeader = if (method == "POST") Some(urlEncodedContentType) else None
@@ -267,7 +267,7 @@ object PlayGraph {
         val postBody = Map(
           "contentId" -> contentId.toString,
           "contentType" -> contentType,
-          "transitions" -> transitions.map(t => Json.obj("targetId"->t._1,"rule"->t._2)).mkString("[",",","]"),
+          "transitions" -> transitions.map(t => Json.obj("targetId" -> t._1, "rule" -> t._2)).mkString("[", ",", "]"),
           "labels" -> labels.mkString(","),
           "settings" -> settings
         )
@@ -307,7 +307,7 @@ object PlayGraph {
         val postBody = Map(
           "contentId" -> contentId.map(_.toString),
           "contentType" -> contentType,
-          "transitions" -> transitions.map(_.map(t => Json.obj("targetId"->t._1,"rule"->t._2)).mkString("[",",","]")),
+          "transitions" -> transitions.map(_.map(t => Json.obj("targetId" -> t._1, "rule" -> t._2)).mkString("[", ",", "]")),
           "labels" -> labels.map(_.mkString(",")),
           "settings" -> settings
         ).filter(_._2.isDefined).mapValues(_.get)

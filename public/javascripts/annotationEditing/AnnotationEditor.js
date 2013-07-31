@@ -525,7 +525,7 @@ var AnnotationEditor = (function() {
                 $select.append("<option value='" + code + "'>" + name + "</option>");
             });
             if (args.resource) {
-                $select.val(args.resource.languages[0]);
+                $select.val(args.resource.languages.iso639_3[0]);
             }
 
             this.$element.find("#saveAnnotations").click(function (event) {

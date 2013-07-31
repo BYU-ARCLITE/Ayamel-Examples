@@ -3,27 +3,28 @@ package controllers
 import play.api.mvc.{Action, Controller}
 import controllers.authentication.Authentication
 import models.{HelpPage, User}
-import play.api.Play
-import Play.current
 import dataAccess.ResourceController
 import anorm.NotAssigned
 
 /**
- * Created with IntelliJ IDEA.
- * User: camman3d
- * Date: 5/7/13
- * Time: 4:44 PM
- * To change this template use File | Settings | File Templates.
+ * Controller dealing with help pages
  */
 object HelpPages extends Controller {
 
+  /**
+   * Table of contents view
+   */
   def tableOfContents = Action {
     implicit request =>
       implicit val user = request.session.get("userId").flatMap(id => User.findById(id.toLong))
-        val pages = HelpPage.list.groupBy(_.category)
-        Ok(views.html.help.toc(pages))
+      val pages = HelpPage.list.groupBy(_.category)
+      Ok(views.html.help.toc(pages))
   }
 
+  /**
+   * View a particular help page
+   * @param id The ID of the help page
+   */
   def view(id: Long) = Action {
     implicit request =>
       implicit val user = request.session.get("userId").flatMap(id => User.findById(id.toLong))
@@ -34,6 +35,10 @@ object HelpPages extends Controller {
         Errors.notFound
   }
 
+  /**
+   * Edit a particular help page
+   * @param id The ID of the help page
+   */
   def edit(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
@@ -44,6 +49,10 @@ object HelpPages extends Controller {
         }
   }
 
+  /**
+   * Delete a particular help page
+   * @param id The ID of the help page
+   */
   def delete(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
@@ -54,6 +63,10 @@ object HelpPages extends Controller {
         }
   }
 
+  /**
+   * Save/update a particular help page
+   * @param id The ID of the help page
+   */
   def save(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>

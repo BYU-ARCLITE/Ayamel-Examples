@@ -5,7 +5,6 @@ import play.api.mvc._
 import models.{AddCourseRequest, User, Content, Course}
 import service.{TimeTools, LMSAuth}
 import anorm.NotAssigned
-import play.core.parsers.FormUrlEncodedParser
 
 /**
  * This controller manages all the pages relating to courses, including authentication.
@@ -36,13 +35,21 @@ object Courses extends Controller {
       getCourse(id) {
         course =>
           val xml = <cartridge_basiclti_link xmlns="http://www.imsglobal.org/xsd/imslticc_v1p0" xmlns:blti="http://www.imsglobal.org/xsd/imsbasiclti_v1p0" xmlns:lticm="http://www.imsglobal.org/xsd/imslticm_v1p0" xmlns:lticp="http://www.imsglobal.org/xsd/imslticp_v1p0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.imsglobal.org/xsd/imslticc_v1p0 http://www.imsglobal.org/xsd/lti/ltiv1p0/imslticc_v1p0.xsd http://www.imsglobal.org/xsd/imsbasiclti_v1p0 http://www.imsglobal.org/xsd/lti/ltiv1p0/imsbasiclti_v1p0.xsd http://www.imsglobal.org/xsd/imslticm_v1p0 http://www.imsglobal.org/xsd/lti/ltiv1p0/imslticm_v1p0.xsd http://www.imsglobal.org/xsd/imslticp_v1p0 http://www.imsglobal.org/xsd/lti/ltiv1p0/imslticp_v1p0.xsd">
-            <blti:title>{course.name} on Ayamel</blti:title>
+            <blti:title>
+              {course.name}
+              on Ayamel</blti:title>
             <blti:description>
-              This provides access to the course "{course.name}" on Ayamel where students are able to watch videos,
+              This provides access to the course "
+              {course.name}
+              " on Ayamel where students are able to watch videos,
               look at images, and listen to audio to learn languages.
             </blti:description>
-            <blti:icon>{routes.Assets.at("images/lti/icon.png")}</blti:icon>
-            <blti:launch_url>{routes.Courses.ltiAuth(course.id.get).absoluteURL()}</blti:launch_url>
+            <blti:icon>
+              {routes.Assets.at("images/lti/icon.png")}
+            </blti:icon>
+            <blti:launch_url>
+              {routes.Courses.ltiAuth(course.id.get).absoluteURL()}
+            </blti:launch_url>
             <blti:extensions platform="canvas.instructure.com">
               <lticm:property name="tool_id">Ayamel</lticm:property>
               <lticm:property name="privacy_level">public</lticm:property>
@@ -229,7 +236,7 @@ object Courses extends Controller {
         getCourse(id) {
           course =>
 
-            // Guests cannot request courses
+          // Guests cannot request courses
             Authentication.enforceNotRole(User.roles.guest) {
               val findRequest = AddCourseRequest.listByCourse(course).find(req => req.userId == user.id.get)
               if (findRequest.isDefined)
@@ -250,7 +257,7 @@ object Courses extends Controller {
         getCourse(id) {
           course =>
 
-            // Make sure it's not a guest
+          // Make sure it's not a guest
             Authentication.enforceNotRole(User.roles.guest) {
 
               // Check to see what kind of enrollment the course is
@@ -261,14 +268,18 @@ object Courses extends Controller {
 
                 // Notify the teachers
                 val notificationMessage = "A student has requested to join your course \"" + course.name + "\"."
-                course.getTeachers.foreach { _.sendNotification(notificationMessage)}
+                course.getTeachers.foreach {
+                  _.sendNotification(notificationMessage)
+                }
 
                 Ok(views.html.courses.pending(course))
               } else if (course.enrollment == 'open) {
 
                 // Notify the teachers
                 val notificationMessage = "A student has joined your course \"" + course.name + "\"."
-                course.getTeachers.foreach { _.sendNotification(notificationMessage)}
+                course.getTeachers.foreach {
+                  _.sendNotification(notificationMessage)
+                }
 
                 user.enroll(course, teacher = false)
                 Redirect(routes.Courses.view(course.id.get))
@@ -307,12 +318,12 @@ object Courses extends Controller {
         getCourse(id) {
           course =>
 
-            // Get the request
+          // Get the request
             val courseRequest = AddCourseRequest.findById(requestId)
             if (courseRequest.isDefined) {
 
               // Make sure the user is allowed to approve
-              if(user.canApprove(courseRequest.get, course)) {
+              if (user.canApprove(courseRequest.get, course)) {
                 courseRequest.get.approve()
                 Redirect(routes.Courses.approvePage(course.id.get)).flashing("info" -> "Course request approved")
               } else
@@ -333,12 +344,12 @@ object Courses extends Controller {
         getCourse(id) {
           course =>
 
-            // Get the request
+          // Get the request
             val courseRequest = AddCourseRequest.findById(requestId)
             if (courseRequest.isDefined) {
 
               // Make sure the user is allowed to approve
-              if(user.canApprove(courseRequest.get, course)) {
+              if (user.canApprove(courseRequest.get, course)) {
                 courseRequest.get.deny()
                 Redirect(routes.Courses.approvePage(course.id.get)).flashing("info" -> "Course request denied")
               } else
