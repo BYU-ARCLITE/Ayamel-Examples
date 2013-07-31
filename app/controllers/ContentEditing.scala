@@ -354,4 +354,21 @@ object ContentEditing extends Controller {
             }
         }
   }
+
+  def setMediaSource(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
+    implicit request =>
+      implicit user =>
+        ContentController.getContent(id) {
+          content =>
+            if (content isEditableBy user) {
+              val url = request.body("url")(0)
+              Async {
+                ResourceHelper.updateDownloadUri(content.resourceId, url).map(json =>
+                  Redirect(routes.ContentController.view(id)).flashing("info" -> "Media source updated")
+                )
+              }
+            } else
+              Errors.forbidden
+        }
+  }
 }
