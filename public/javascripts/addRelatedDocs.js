@@ -42,7 +42,8 @@ $(function() {
     }
 
     function deleteDoc(resource) {
-        window.location = "/content/" + content.id + "/delete/" + resource.id + courseQuery;
+        if(confirm("Are you sure you want to delete?"))
+            window.location = "/content/" + content.id + "/delete/" + resource.id + courseQuery;
     }
 
     // Load personal caption tracks

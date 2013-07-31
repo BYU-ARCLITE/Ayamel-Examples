@@ -328,4 +328,41 @@
             });
         });
     </script>
+
+
+
+
+
+    @*
+     * ==========================================================================================================
+     *                                          Change source Modal
+     * ==========================================================================================================
+     *@
+
+    <div id="changeSourceModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="changeSourceModalLabel" aria-hidden="true">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3 id="changeSourceModalLabel">Change Media Source</h3>
+        </div>
+        <div class="modal-body">
+            <p>Please enter the new URL of the media:</p>
+
+            <form class="form-horizontal" method="post" action="@routes.ContentEditing.setMediaSource(content.id.get)">
+                <div class="control-group">
+                    <label class="control-label" for="sourceUrl">URL</label>
+                    <div class="controls">
+                        <input type="text" id="sourceUrl" name="url" placeholder="URL">
+                    </div>
+                </div>
+                <div class="control-group">
+                    <div class="controls">
+                        <input type="submit" class="btn btn-blue" value="Save">
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+        </div>
+    </div>
 }
