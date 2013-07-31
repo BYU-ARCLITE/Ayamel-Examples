@@ -162,7 +162,7 @@ object ResourceHelper {
    * @param mime The mime type of the thumbnail
    */
   def addThumbnail(id: String, thumbnailUri: String, mime: Option[String] = None): Future[JsValue] =
-    WS.url(thumbnailUri).get().map(_.header("Content-Length").get.toLong).flatMap(bytes =>
+    WS.url(thumbnailUri).head().map(_.header("Content-Length").get.toLong).flatMap(bytes =>
       addRemoteFile(id, thumbnailUri, bytes, mime, "summary")
     )
 
@@ -188,15 +188,31 @@ object ResourceHelper {
     }
   }
 
-  def setAttributes(id: String, attributes: Map[String, String]): Future[JsValue] = {
-    ResourceController.getResource(id).flatMap { json =>
-      val resource = json \ "resource"
-      val newAttributes = Json.toJson(attributes).as[JsObject]
-      val attrs = Json.obj(
-        "attributes" -> ((resource \ "attributes").asOpt[JsObject].getOrElse(Json.obj()) ++ newAttributes)
-      )
-      val updatedResource = resource.as[JsObject] ++ attrs
-      ResourceController.updateResource(id, updatedResource)
-    }
+//  def setAttributes(id: String, attributes: Map[String, String]): Future[JsValue] = {
+//    ResourceController.getResource(id).flatMap { json =>
+//      val resource = json \ "resource"
+//      val newAttributes = Json.toJson(attributes).as[JsObject]
+//      val attrs = Json.obj(
+//        "attributes" -> ((resource \ "attributes").asOpt[JsObject].getOrElse(Json.obj()) ++ newAttributes)
+//      )
+//      val updatedResource = resource.as[JsObject] ++ attrs
+//      ResourceController.updateResource(id, updatedResource)
+//    }
+//  }
+
+  def setClientUser(id: String, data: Map[String, String]): Future[JsValue] = {
+    val json = Json.obj(
+      "clientUser" -> Json.toJson(data)
+    )
+    ResourceController.updateResource(id, json)
+//    ResourceController.getResource(id).flatMap { json =>
+//      val resource = json \ "resource"
+//      val newData = Json.toJson(data).as[JsObject]
+//      val clientUser = Json.obj(
+//        "clientUser" -> ((resource \ "clientUser").asOpt[JsObject].getOrElse(Json.obj()) ++ newData)
+//      )
+//      val updatedResource = resource.as[JsObject] ++ clientUser
+//      ResourceController.updateResource(id, updatedResource)
+//    }
   }
 }

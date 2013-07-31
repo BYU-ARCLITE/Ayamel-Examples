@@ -114,7 +114,7 @@ object ContentController extends Controller {
 
           // Create the content
           Async {
-            WS.url(url).get().map(_.header("Content-Length").get.toLong).flatMap(bytes => {
+            WS.url(url).head().map(_.header("Content-Length").get.toLong).flatMap(bytes => {
               val info = ContentDescriptor(title, description, keywords, url, bytes, mime, labels = labels,
                 languages = languages)
               ContentManagement.createContent(info, user, contentType).map(content => {
@@ -153,7 +153,7 @@ object ContentController extends Controller {
               val keywords = labels.mkString(",")
               val mime = ResourceHelper.getMimeFromUri(url)
 
-              WS.url(url).get().map(_.header("Content-Length").get.toLong).flatMap(bytes => {
+              WS.url(url).head().map(_.header("Content-Length").get.toLong).flatMap(bytes => {
                 val info = ContentDescriptor(title, description, keywords, url, bytes, mime, labels = labels,
                   languages = languages)
                 ContentManagement.createContent(info, user, contentType).map(content => {

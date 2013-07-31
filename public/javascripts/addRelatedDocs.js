@@ -22,8 +22,10 @@ $(function() {
         async.map(ids, function (id, asyncCallback) {
             ResourceLibrary.load(id, function (resource) {
                 resource.language = getLanguage(resource);
-                resource.publishRequest = resource.attributes && resource.attributes.publishStatus === "requested";
-                resource.published = !resource.publishRequest && owner;
+//                resource.publishRequest = resource.attributes && resource.attributes.publishStatus === "requested";
+//                resource.published = !resource.publishRequest && owner;
+                resource.publishRequest = resource.clientUser && resource.clientUser.id && resource.clientUser.id.indexOf("request") > -1;
+                resource.published = !(resource.clientUser && resource.clientUser.id);
                 asyncCallback(null, resource);
             });
         }, function (err, data) {

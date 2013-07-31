@@ -23,47 +23,29 @@ class DocumentPermissionChecker(user: User, content: Content, course: Option[Cou
 
   // Filters
 
-  def personalFilter(resource: JsObject): Boolean = {
-    (resource \ "attributes").asOpt[JsObject].exists(attributes => {
-      (attributes \ "ayamel_ownerType").asOpt[String].exists(_ == "user") &&
-        (attributes \ "ayamel_ownerId").asOpt[String].exists(_.toLong == user.id.get)
-    })
-  }
+  // A document resource is personal if clientUser.id = "user:ID"
+  def personalFilter(resource: JsObject): Boolean =
+    try {
+      val id = (resource \ "clientUser" \ "id").as[String]
+      id.startsWith("user") && id.split(":")(1).toLong == user.id.get
+    } catch {
+      case _: Throwable => false
+    }
 
-  def courseFilter(resource: JsObject): Boolean = {
-    (resource \ "attributes").asOpt[JsObject].exists(attributes => {
-      (attributes \ "ayamel_ownerType").asOpt[String].exists(_ == "course") &&
-        (attributes \ "ayamel_ownerId").asOpt[String].exists(_.toLong == course.get.id.get)
-    })
-  }
+  def courseFilter(resource: JsObject): Boolean =
+    try {
+      val id = (resource \ "clientUser" \ "id").as[String]
+      id.startsWith("course") && id.split(":")(1).toLong == course.get.id.get
+    } catch {
+      case _: Throwable => false
+    }
 
-  def globalFilter(resource: JsObject): Boolean = {
-    (resource \ "attributes").asOpt[JsObject].map(attributes =>
-      (attributes \ "ayamel_ownerType").asOpt[String].map(_.isEmpty).getOrElse(true)
-    ).getOrElse(true)
-  }
-
-  // List-ers
-
-  /**
-   * If the user can edit the content (owner or admin) then their documents are the global ones.
-   * Otherwise get the
-   */
-//  def getPersonal(resources: List[JsObject]): List[JsObject] = {
-//    if (content isEditableBy user)
-//      getGlobal(resources)
-//    else
-//      resources.filter(personalFilter)
-//  }
-//
-//  def getCourse(resources: List[JsObject]): List[JsObject] = {
-//    if (course.isDefined)
-//      resources.filter(courseFilter)
-//    else
-//      Nil
-//  }
-//
-//  def getGlobal(resources: List[JsObject]): List[JsObject] = resources.filter(globalFilter)
+  def globalFilter(resource: JsObject): Boolean =
+    try {
+      (resource \ "clientUser" \ "id").asOpt[String].isEmpty
+    } catch {
+      case _: Throwable => true
+    }
 
   // Permission checkers
 
@@ -132,14 +114,14 @@ class DocumentPermissionChecker(user: User, content: Content, course: Option[Cou
   }
 
   /**
-   * Checks if the user is allowed to edit this particular resource
+   * Checks if the user is allowed to publish this particular resource
    */
   def canPublish(resource: JsObject): Boolean = {
     // Only owners/admins can publish
     if (content isEditableBy user) {
       // Only allow resources which have been submitted
       try {
-        (resource \ "attributes" \ "publishStatus").as[String] == "requested"
+        (resource \ "clientUser" \ "id").as[String].endsWith("request")
       } catch {
         case _: Throwable => false
       }
@@ -172,12 +154,9 @@ class DocumentPermissionChecker(user: User, content: Content, course: Option[Cou
 object DocumentPermissionChecker {
   object documentTypes {
 
-    val captionTrack = DocumentType("CaptionTracks", r => (r \ "type").as[String] == "transcriptOf", "subjectId")
+    val captionTrack = DocumentType("CaptionTracks", r => (r \ "type").as[String] == "transcript_of", "subjectId")
 
-    val annotations = DocumentType("AnnotationDocuments", r => {
-      (r \ "type").as[String] == "references" &&
-        (r \ "attributes").asOpt[JsObject].exists(attrs => (attrs \ "type").asOpt[String].exists(_ == "annotations"))
-    }, "subjectId")
+    val annotations = DocumentType("AnnotationDocuments", r => (r \ "type").as[String] == "references", "subjectId")
   }
 }
 
