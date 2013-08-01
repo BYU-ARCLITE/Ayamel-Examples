@@ -76,12 +76,13 @@ var PopupBrowser = (function() {
         "course": function($container) {
             ajax("ajax/content/course", function(data) {
                 $container.html("");
-                Object.keys(data).forEach(function(courseName) {
-                    $container.append("<h1>" + courseName + "</h1><div id='content_" + courseName+"'></div>");
+                Object.keys(data).forEach(function(courseName, index) {
+                    var id = "courseContent" + index;
+                    $container.append("<h1>" + courseName + "</h1><div id='" + id + "'></div>");
                     var labels = [].concat.apply([], data[courseName].map(function(d){return d.labels;}));
                     ContentItemRenderer.renderAll({
                         content: data[courseName],
-                        $holder: $container.find("#content_" + courseName),
+                        $holder: $container.find("#" + id),
                         format: "table",
                         sizing: true,
                         sorting: true,
@@ -118,6 +119,14 @@ var PopupBrowser = (function() {
         var $selectButton = $modal.find("#popupBrowserSelectButton");
         $("body").append($modal);
 
+        // Prevent pill events from spilling into the modal
+        $modal.find(".modal-body")
+            .on("show", function(e) {
+                e.stopPropagation();
+            }).on("shown", function(e) {
+                e.stopPropagation();
+            });
+
         // Set up the pills
         $modal.find(".nav-pills a").click(function (e) {
             e.preventDefault();
@@ -131,6 +140,13 @@ var PopupBrowser = (function() {
         $modal.on("show", function () {
             apply = false;
             $selectButton.addClass("disabled");
+        });
+        $modal.on("shown", function() {
+            // Enable the first tab
+            var $pill = $modal.find(".nav-pills li:first-child a");
+            $pill.tab("show");
+            var m = loadingMechanisms[$pill.attr("data-load")];
+            m.call(null, $($pill.attr("href")));
         });
 
 

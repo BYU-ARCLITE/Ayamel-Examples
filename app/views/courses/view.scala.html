@@ -13,6 +13,13 @@
 
 @main("Ayamel - " + course.name, moreStyles) {
 
+    <script type="text/javascript">
+        var courseId = @course.id.get;
+    </script>
+
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/PopupBrowser.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/viewCourse.js")"></script>
+
     <div class="courseBackground">
         <div class="courseTitle">
             <h1>@course.name</h1>
@@ -42,6 +49,23 @@
     <div class="padded">
         <div class="row-fluid">
             <div class="span8">
+                @if(user.role != User.roles.guest) {
+                    <div class="pull-right">
+                        @if(user canEdit course) {
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-inverse dropdown-toggle" data-toggle="dropdown">
+                                    <i class="icon-plus"></i> Add content <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a id="browseContent" href="#">Browse</a></li>
+                                    <li><a id="addByLabel" href="#">Add by label</a></li>
+                                </ul>
+                            </div>
+                        } else {
+                            <a href="#addContentModal" role="button" class="btn btn-inverse" data-toggle="modal"><i class="icon-plus"></i> Add my content</a>
+                        }
+                    </div>
+                }
                 <div id="courseContent"></div>
                 <script type="text/javascript">
                     $(function() {
@@ -61,19 +85,13 @@
             </div>
             <div class="span4">
                 <h3><i class="icon-bullhorn"></i> Announcements</h3>
+                <a href="#announcementModal" role="button" class="btn btn-blue" data-toggle="modal"><i class="icon-comment"></i> Make an announcement</a>
 
                 @for(announcement <- course.getSortedAnnouncements) {
                     @courses.announcement(announcement)
                 }
             </div>
         </div>
-
-        @if(user.role != User.roles.guest) {
-            <hr>
-
-            <a href="#addContentModal" role="button" class="btn btn-blue" data-toggle="modal"><i class="icon-plus"></i> Add content</a>
-            <a href="#announcementModal" role="button" class="btn btn-blue" data-toggle="modal"><i class="icon-comment"></i> Make an announcement</a>
-        }
     </div>
 
     @views.html.courses.helpers.lmsInfo(user, course)
@@ -83,12 +101,5 @@
 
     @views.html.courses.helpers.addContent(user, course)
 
-    <script type="text/javascript">
-        $(function() {
-            $(".face, .contentEntry").tooltip({
-                placement: "bottom"
-            });
-        });
-    </script>
 
 }
