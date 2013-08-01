@@ -88,18 +88,24 @@
                                 </ul>
                             </li>
 
-                            @if(course.isDefined && user.canEdit(course.get)) {
-                                <li class="dropdown">
-                                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">
-                                        <i class="icon-book"></i> Course <b class="caret"></b>
-                                    </a>
-                                    <ul class="dropdown-menu">
-                                        <li><a href="#lmsModal" data-toggle="modal"><i class="icon-briefcase"></i> Add to LMS</a></li>
-                                        <li><a href="@routes.CourseContent.statsInCourse(content.id.get, course.get.id.get)"><i class="icon-bar-chart"></i> View course stats</a></li>
+                            @if(course.isDefined) {
+                                @if(user.canEdit(course.get)) {
+                                    <li class="dropdown">
+                                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                                            <i class="icon-book"></i> Course <b class="caret"></b>
+                                        </a>
+                                        <ul class="dropdown-menu">
+                                            <li><a href="#lmsModal" data-toggle="modal"><i class="icon-briefcase"></i> Add to LMS</a></li>
+                                            <li><a href="@routes.CourseContent.statsInCourse(content.id.get, course.get.id.get)"><i class="icon-bar-chart"></i> View course stats</a></li>
+                                            <li><a href="@routes.CourseContent.removeFromCourse(content.id.get, course.get.id.get)"><i class="icon-remove"></i> Remove from course</a></li>
+                                        </ul>
+                                        @views.html.content.header.LTISettings(content, course.get)
+                                    </li>
+                                } else {
+                                    @if(content.isEditableBy(user)) {
                                         <li><a href="@routes.CourseContent.removeFromCourse(content.id.get, course.get.id.get)"><i class="icon-remove"></i> Remove from course</a></li>
-                                    </ul>
-                                    @views.html.content.header.LTISettings(content, course.get)
-                                </li>
+                                    }
+                                }
                             } else {
                                 @if(user.canCreateCourse) {
                                     <li><a href="#addToCourseModal" data-toggle="modal"><i class="icon-book"></i> Add to Course</a></li>
