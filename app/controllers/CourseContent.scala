@@ -174,7 +174,7 @@ object CourseContent extends Controller {
               course =>
 
                 // Make user the user is allowed to do this
-                if (user canEdit course) {
+                if (user.canEdit(course) || content.isEditableBy(user)) {
                   ContentListing.listByContent(content).find(_.courseId == courseId).map(_.delete())
                   Redirect(routes.Courses.view(courseId)).flashing("info" -> "Content removed")
                 } else
