@@ -27,7 +27,7 @@
                     <div class="control-group">
                         <label class="control-label" for="addContent">Content to add:</label>
                         <div class="controls">
-                            <select id="addContent" name="addContent">
+                            <select id="addContent" name="addContent" multiple="multiple">
                                 @for(contentObj <- availableContent) {
                                     <option value="@contentObj.id.get">@contentObj.name (@contentObj.contentType.name)</option>
                                 }
