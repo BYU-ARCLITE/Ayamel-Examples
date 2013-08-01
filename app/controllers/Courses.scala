@@ -358,4 +358,25 @@ object Courses extends Controller {
               Errors.notFound
         }
   }
+
+  /**
+   * Teachers can share a link with student which, when visited, will cause the user to join the course.
+   * This has an authenticated action so if the user doesn't have an account, as I imagine most students won't, they
+   * will be redirected to the login page where they can create an account or login via a service and then be taken to
+   * this join page.
+   * @param id The ID of the course to join
+   */
+  def joinLink(id: Long, key: String) = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+        getCourse(id) {
+          course =>
+            if (key == course.lmsKey) {
+              user.enroll(course)
+              Redirect(routes.Courses.view(id)).flashing("info" -> ("Welcome to the course \"" + course.name + "\"."))
+            } else {
+              Unauthorized("Invalid key")
+            }
+        }
+  }
 }

@@ -355,6 +355,10 @@ object ContentEditing extends Controller {
         }
   }
 
+  /**
+   * Sets the downloadUri of the primary resource associated with the content
+   * @param id The ID of the content
+   */
   def setMediaSource(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
