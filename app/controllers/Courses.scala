@@ -127,7 +127,7 @@ object Courses extends Controller {
   }
 
   /**
-   * Add the content to a specified course.
+   * Add the content(s) to a specified course.
    * @param id The ID of the course
    */
   def addContent(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
@@ -140,13 +140,10 @@ object Courses extends Controller {
             if (user canAddContentTo course) {
 
               // Add the content to the course
-              val contentId = request.body("addContent")(0).toLong
-              val content = Content.findById(contentId)
-              if (content.isDefined) {
-                course.addContent(content.get)
-                Redirect(routes.Courses.view(id)).flashing("success" -> "Content added to course.")
-              } else
-                Errors.notFound
+              request.body("addContent").foreach(id => {
+                Content.findById(id.toLong).foreach(content => course.addContent(content))
+              })
+              Redirect(routes.Courses.view(id)).flashing("success" -> "Content added to course.")
             } else
               Errors.forbidden
         }
