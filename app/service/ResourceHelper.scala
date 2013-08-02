@@ -156,13 +156,25 @@ object ResourceHelper {
   }
 
   /**
+   * Attempts to get the size of a URL-designated resource via HEAD
+   * @param url The URL to get the size of
+   * @return The future size (in bytes)
+   */
+  def getUrlSize(url: String): Future[Long] = {
+    if (isBrightcove(url) || isYouTube(url))
+      Future(0)
+    else
+      WS.url(url).head().map(_.header("Content-Length").get.toLong)
+  }
+
+  /**
    * Adds a thumbnail to the resource
    * @param id The id of the resource
    * @param thumbnailUri The url of the thumbnail
    * @param mime The mime type of the thumbnail
    */
   def addThumbnail(id: String, thumbnailUri: String, mime: Option[String] = None): Future[JsValue] =
-    WS.url(thumbnailUri).head().map(_.header("Content-Length").get.toLong).flatMap(bytes =>
+    getUrlSize(thumbnailUri).flatMap(bytes =>
       addRemoteFile(id, thumbnailUri, bytes, mime, "summary")
     )
 

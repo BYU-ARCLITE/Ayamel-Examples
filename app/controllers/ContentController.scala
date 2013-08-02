@@ -110,11 +110,12 @@ object ContentController extends Controller {
           var url = data("url")(0)
           if (!ResourceHelper.isBrightcove(url) && !ResourceHelper.isYouTube(url))
             url = processUrl(url)
+
           val mime = ResourceHelper.getMimeFromUri(url)
 
           // Create the content
           Async {
-            WS.url(url).head().map(_.header("Content-Length").get.toLong).flatMap(bytes => {
+            ResourceHelper.getUrlSize(url).flatMap(bytes => {
               val info = ContentDescriptor(title, description, keywords, url, bytes, mime, labels = labels,
                 languages = languages)
               ContentManagement.createContent(info, user, contentType).map(content => {
@@ -153,7 +154,7 @@ object ContentController extends Controller {
               val keywords = labels.mkString(",")
               val mime = ResourceHelper.getMimeFromUri(url)
 
-              WS.url(url).head().map(_.header("Content-Length").get.toLong).flatMap(bytes => {
+              ResourceHelper.getUrlSize(url).flatMap(bytes => {
                 val info = ContentDescriptor(title, description, keywords, url, bytes, mime, labels = labels,
                   languages = languages)
                 ContentManagement.createContent(info, user, contentType).map(content => {
