@@ -1,7 +1,8 @@
 $(function() {
     "use strict";
 
-    var langList = Object.keys(Ayamel.utils.p1map).map(function (p1) {
+    var captionEditor,
+		langList = Object.keys(Ayamel.utils.p1map).map(function (p1) {
             var code = Ayamel.utils.p1map[p1];
             return {code: code, name: Ayamel.utils.getLangName(code)};
         }),
