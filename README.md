@@ -8,6 +8,13 @@ This is the Ayamel site developed by the ARCLITE Lab at Brigham Young University
     - <a href="#configure-mysql">Configure MySQL</a>
     - <a href="#configure-resource-library-api">Configure Resource Library API</a>
     - <a href="#configure-file-upload-source">Configure file upload source</a>
+    - <a href="#configure-media-settings">Configure media settings</a>
+    - <a href="#configure-ffmpeg">Configure ffmpeg</a>
+    - <a href="#configure-playgraph">Configure PlayGraph</a>
+    - <a href="#configure-translation-keys">Configure translation keys</a>
+    - <a href="#configure-smtp">Configure SMTP</a>
+    - <a href="#configure-google-scripts">Configure Google sScripts</a>
+    - <a href="#configure-quizlet">Configure Quizlet</a>
  - <a href="#running">Running</a>
     - <a href="#development-server">Development Server</a>
     - <a href="#production-server">Production Server</a>
@@ -134,6 +141,8 @@ For each script:
  * Under "Who has access to the app:" select "Anyone, even anonymous"
  * Click "Deploy"
  * Copy the URL and enter it in the configuration file.
+
+Your configuration will look something like:
 
     exercises.createFormScript="https://script.google.com/macros/s/1234567890abcdefghijklmnopqrstuvwxyz/exec"
     exercises.getResponseIndexScript="https://script.google.com/macros/s/1234567890abcdefghijklmnopqrstuvwxyz/exec"
