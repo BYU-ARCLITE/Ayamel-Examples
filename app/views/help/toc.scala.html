@@ -1,4 +1,4 @@
-@(pages: Map[String, List[HelpPage]])(implicit request: RequestHeader, user: Option[User])
+@(pages: Map[String, List[HelpPage]], resourceLibraryUrl: String)(implicit request: RequestHeader, user: Option[User])
 
 @template(title: String)(content: Html)(r: RequestHeader, u: Option[User]) = @{
     if(user.isDefined)
@@ -9,6 +9,7 @@
 
 @template("Ayamel - Help Pages") {
 
+    @views.html.content.header.dependencies()
     <link rel="stylesheet" href="@routes.Assets.at("stylesheets/help.css")"/>
 
     <div class="padded">
@@ -16,10 +17,16 @@
         <h1>Help and Tutorial Pages</h1>
 
         <p>
-            Understanding how Ayamel works can be difficult. We know. For that reason we are working hard on creating a
-            series of tutorials in order to help you do what you need to do. However, it is a work in progress and many
-            are not ready yet.
+            Understanding how Ayamel works can be difficult. We know. For that reason we created a series of tutorials
+            in order to help you do what you need to do.
         </p>
+
+        <div class="row-fluid">
+            <div class="span8 offset2">
+                <div id="gettingStarted"></div>
+            </div>
+        </div>
+        <hr>
 
         @if(user.isDefined && user.get.role == User.roles.admin) {
             <a href="@routes.HelpPages.edit(0)" class="btn btn-yellow pad-bottom-med"><i class="icon-plus"></i> Create a new help page</a>
@@ -56,6 +63,17 @@
                     $helpPages.removeClass("active");
                     $helpPages.filter("div[data-name=\"" + $(this).attr("data-target") + "\"]").addClass("active");
                 });
+
+                // The getting started video
+                var gettingStartedId = @{Setting.findByName("help.gettingStartedContent").get.value};
+                ResourceLibrary.setBaseUrl("@resourceLibraryUrl");
+                if (gettingStartedId) {
+                    ContentRenderer.render({
+                        content: gettingStartedId,
+                        holder: $("#gettingStarted"),
+                        annotate: true
+                    });
+                }
             });
         </script>
 
