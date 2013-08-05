@@ -32,9 +32,11 @@ Create a database named `ayamel` on your MySQL server. In `conf/application.conf
     
 ### Configure Resource Library API
 
-You need to specify the base URL to the Ayamel Resource Library API. The default one is:
+You need to specify the base URL and credentials to the Ayamel Resource Library API.
 
-    resourceLibrary.baseUrl="http://ayamel.americancouncils.org/api/v1/resources"
+    resourceLibrary.baseUrl="http://api.ayamel.org/api/v1/"
+    resourceLibrary.clientId=""
+    resourceLibrary.apiKey=""
     
 ### Configure file upload source
 
@@ -61,6 +63,14 @@ Also, note that if you use S3 then you must set up your bucket with CORS support
 </CORSConfiguration>
 ```
 
+### Configure media settings
+
+You can set default media settings, which include the maximum dimensions for an image and video thumbnail time. Right now, the video thumbnail time setting actually doesn't do anything.
+
+    media.image.maxWidth=1500
+    media.image.maxHeight=1500
+    media.video.thumbnailTime=10
+
 ### Configure ffmpeg
 
 The computer that is running Ayamel must also have ffmpeg installed and available. You must define the location of the
@@ -74,7 +84,7 @@ or
 
 ### Configure PlayGraph
 
-This uses PlayGraph. So you need to have both an authoring key and a playback key. Then set the following configuration entries:
+This uses PlayGraph. So you need to have both an authoring key and a playback key. Go to http://playgraph.byu.edu/ to create an account and keys. Then set the following configuration entries:
 
     playgraph.host="http://playgraph.byu.edu/"
     playgraph.author.key="author key goes here"
@@ -98,6 +108,45 @@ unique name that describes the app. For the BYU instance of Ayamel, this name is
     translation.google.email="someemail@gmail.com"
     translation.google.password="your password here"
     translation.google.source="arclite-ayamel-1"
+
+### Configure SMTP
+
+You will need to configure an email account with SMTP settings in order to send emails. The settings will vary based on your provider. For a Google account, it would be:
+
+    smtp.host="smtp.gmail.com"
+    smtp.port=465
+    smtp.name="Ayamel Admin"
+    smtp.address="my_email@gmail.com"
+    smtp.password="my_password"
+
+### Configure Google Scripts
+
+You will need to create and authorize Google Scripts for [question sets](https://github.com/BYU-ARCLITE/Ayamel-Examples/wiki/Question%20Sets). The scripts are located under the `scripts` folder.
+
+For each script:
+ * Create a script at https://script.google.com/
+ * Copy the content of the file to the newly created Google Script.
+ * Click Run once then click Authorize.
+ * Then publish it. Click "Publish" > "Deploy as web app..."
+ * Enter anything in the version box and click "Save New Version"
+ * Under "Execute the app as:" make sure "me" is selected.
+ * Under "Who has access to the app:" select "Anyone, even anonymous"
+ * Click "Deploy"
+ * Copy the URL and enter it in the configuration file.
+
+    exercises.createFormScript="https://script.google.com/macros/s/1234567890abcdefghijklmnopqrstuvwxyz/exec"
+    exercises.getResponseIndexScript="https://script.google.com/macros/s/1234567890abcdefghijklmnopqrstuvwxyz/exec"
+    exercises.gradeFormScript="https://script.google.com/macros/s/1234567890abcdefghijklmnopqrstuvwxyz/exec"
+
+### Configure Quizlet
+
+Quizlet is used when exporting word lists. You will need to go to https://quizlet.com/api/2.0/docs/ and sign up for a developer key.
+Once that is done you can enter the information in the configuration file. This information will include the client ID, the secret key, and an auth value.
+The auth value is your client ID and key separated by a colon and base64-encoded. You can go to https://quizlet.com/api/2.0/docs/authorization_code_flow and under **Step 2** it will say what yours is.
+
+    quizlet.clientId=""
+    quizlet.secretKey=""
+    quizlet.auth=""
 
 ## Running
 
