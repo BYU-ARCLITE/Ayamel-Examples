@@ -5,7 +5,7 @@
 # ~~~~~
 # The secret key is used to secure cryptographics functions.
 # If you deploy your application to several instances be sure to use the same key!
-application.secret="<EhysDI^FEo>tA2O]FJfTJ0RyXY[8kaeKlOGngI^M22wQRpyeOHriyZ`LY6FdQ/A"
+application.secret="RandomApplicationSecretGoesHere"
 
 # The application languages
 # ~~~~~
@@ -56,7 +56,10 @@ logger.play=INFO
 # Logger provided to your application:
 logger.application=DEBUG
 
-resourceLibrary.baseUrl="http://ayamel.americancouncils.org/api/v1/"
+# Resource Library information
+resourceLibrary.baseUrl="http://api.ayamel.org/api/v1/"
+resourceLibrary.clientId=""
+resourceLibrary.apiKey=""
 
 # Upload engine settings
 uploadEngine="s3"
@@ -101,3 +104,4 @@ exercises.gradeFormScript="https://script.google.com/macros/s/1234567890abcdefgh
 # Settings for exporting to Quizlet
 quizlet.clientId=""
 quizlet.secretKey=""
+quizlet.auth=""
