@@ -1,9 +1,5 @@
 /**
- * Created with IntelliJ IDEA.
- * User: camman3d
- * Date: 4/19/13
- * Time: 11:52 AM
- * To change this template use File | Settings | File Templates.
+ * An annotation manifest is basically a container for annotations.
  */
 var AnnotationManifest = (function() {
     var AnnotationManifest = function AnnotationManifest(target, annotations) {

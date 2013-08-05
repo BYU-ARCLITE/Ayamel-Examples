@@ -18,7 +18,7 @@ object HelpPages extends Controller {
     implicit request =>
       implicit val user = request.session.get("userId").flatMap(id => User.findById(id.toLong))
       val pages = HelpPage.list.groupBy(_.category)
-      Ok(views.html.help.toc(pages))
+      Ok(views.html.help.toc(pages, ResourceController.baseUrl))
   }
 
   /**

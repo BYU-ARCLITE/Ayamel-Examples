@@ -1,9 +1,6 @@
 /**
- * Created with IntelliJ IDEA.
- * User: camman3d
- * Date: 4/19/13
- * Time: 11:13 AM
- * To change this template use File | Settings | File Templates.
+ * Given a JSON structure of an AnnotationManifest, this creates it anew with the proper classes so that their method
+ * are available.
  */
 var AnnotationLoader = (function(){
 
