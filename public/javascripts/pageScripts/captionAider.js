@@ -415,16 +415,12 @@ $(function() {
                 });
                 ractive.on('buttonpress',function(event, which){
                     if(which !== 'save'){ return; }
-                    var tracks,// = this.get("tracksToSave"),
+                    var tracks = this.get("tracksToSave"),
                         destination = this.get("saveDestination"),
                         exportedTracks;
 
                     $("#saveTrackModal").modal("hide");
-                    //hack until Ractive handles multiselect properly
-                    tracks = [].filter.call(document.querySelector("#saveTrackModal select").options,function(opt){
-                        return opt.selected;
-                    }).map(function(opt){ return opt.value; });
-                    if(!(tracks && tracks.length)) { return; }
+                    if(!tracks.length) { return; }
 
                     exportedTracks = timeline.exportTracks(tracks);
 
