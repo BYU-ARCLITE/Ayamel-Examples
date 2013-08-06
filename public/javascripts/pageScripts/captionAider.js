@@ -2,7 +2,7 @@ $(function() {
     "use strict";
 
     var captionEditor,
-		langList = Object.keys(Ayamel.utils.p1map).map(function (p1) {
+        langList = Object.keys(Ayamel.utils.p1map).map(function (p1) {
             var code = Ayamel.utils.p1map[p1];
             return {code: code, name: Ayamel.utils.getLangName(code)};
         }),
@@ -427,6 +427,7 @@ $(function() {
                     if (destination === "server") {
                         // Saving to the server. Provide all the information and data and let it handle everything
                         Object.keys(exportedTracks).forEach(function(key) {
+<<<<<<< HEAD:public/javascripts/pageScripts/captionAider.js
                             var textTrack = timeline.getTrack(tracks[key]).textTrack
                                 fObj = exportedTracks[key],
                                 data = new FormData();

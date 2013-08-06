@@ -65,7 +65,7 @@ object CaptionAider extends Controller {
               if (resourceId.isEmpty) {
                 // Create a new resource
                 // Upload the data
-                FileUploader.uploadFile(file, FileUploader.uniqueFilename(name), mime).flatMap {
+                FileUploader.uploadFile(file, name, mime).flatMap {
                   url =>
 
                   // Create subtitle (subject) resource
@@ -113,7 +113,7 @@ object CaptionAider extends Controller {
                     val filename = url.substring(url.lastIndexOf("/") + 1)
 
                     // Replace the file
-                    FileUploader.uploadFile(file, FileUploader.uniqueFilename(name), mime).map {
+                    FileUploader.uploadFile(file, name, mime).map {
                       url =>
                         Ok(resourceId)
                     }
