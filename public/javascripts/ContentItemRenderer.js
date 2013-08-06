@@ -52,6 +52,8 @@ var ContentItemRenderer = (function() {
         conditions: {
             captions: function (content, courseId) {
                 return function () {
+                    if (contentTemplates.conditions.isTimedMedia(content)() && contentTemplates.helpers.level(content, courseId) < 2)
+                        return false;
                     if (courseId)
                         return content.settings["course_" + courseId + ":enabledCaptionTracks"];
                     return content.settings.enabledCaptionTracks;
@@ -59,6 +61,8 @@ var ContentItemRenderer = (function() {
             },
             annotations: function (content, courseId) {
                 return function () {
+                    if (contentTemplates.conditions.isTimedMedia(content)() && contentTemplates.helpers.level(content, courseId) < 4)
+                        return false;
                     if (courseId)
                         return content.settings["course_" + courseId + ":enabledAnnotationDocuments"];
                     return content.settings.enabledAnnotationDocuments;
@@ -67,6 +71,16 @@ var ContentItemRenderer = (function() {
             isVideo: function (content) {
                 return function () {
                     return content.contentType === "video";
+                };
+            },
+            isAudio: function (content) {
+                return function () {
+                    return content.contentType === "audio";
+                };
+            },
+            isTimedMedia: function (content) {
+                return function () {
+                    return contentTemplates.conditions.isVideo(content)() || contentTemplates.conditions.isAudio(content)();
                 };
             }
         },
