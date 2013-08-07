@@ -82,7 +82,7 @@ var AnnotationTextEditor = (function() {
         } else {
             // Render the transcripts in a transcript player
             loadTracks(args.content, function(tracks) {
-                var transcriptPlayer = new TranscriptPlayer2({
+                var transcriptPlayer = new TranscriptPlayer({
                     $holder: args.$holder,
                     captionTracks: tracks,
                     filter: function(cue, $cue) {

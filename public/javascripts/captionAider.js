@@ -98,15 +98,15 @@ $(function() {
             });
             timeline.on('move', function(){
                 renderer.rebuildCaptions(false);
-                transcript.update();
+//                transcript.update();
             });
             timeline.on('resizer', function(){
                 renderer.rebuildCaptions(false);
-                transcript.update();
+//                transcript.update();
             });
             timeline.on('resizel', function(){
                 renderer.rebuildCaptions(false);
-                transcript.update();
+//                transcript.update();
             });
             timeline.on('addtrack',function(track){
                 if (timeline.trackIndices[track.textTrack.label] === undefined) {
@@ -149,7 +149,7 @@ $(function() {
             });
             timeline.on("activeChange", function() {
                 renderer.rebuildCaptions(false);
-                transcript.update();
+//                transcript.update();
             });
 
 //            timeline.on('unpaste',function(segs) {
@@ -434,6 +434,7 @@ $(function() {
                             function(){ alert("Error Saving; please try again."); }
                         );
                     }
+                    transcript.update();
                     $("#saveTrackModal").modal("hide");
                 } else {
                     alert("Please select a track.");
