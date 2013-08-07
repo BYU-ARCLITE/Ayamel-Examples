@@ -1,11 +1,13 @@
 package service
 
-import play.api.libs.json.{JsObject, JsValue, JsArray, Json}
+import play.api.libs.json._
 import concurrent.{ExecutionContext, Future}
 import play.api.libs.MimeTypes
 import ExecutionContext.Implicits.global
 import dataAccess.ResourceController
 import play.api.libs.ws.WS
+import play.api.libs.json.JsArray
+import play.api.libs.json.JsObject
 
 /**
  * This builds upon the Resource API wrapper in ResourceController by providing functions which do some level of data
@@ -178,13 +180,22 @@ object ResourceHelper {
       addRemoteFile(id, thumbnailUri, bytes, mime, "summary")
     )
 
-  def updateDownloadUri(id: String, uri: String): Future[JsValue] = {
+  val nuller = Json.obj(
+    "streamUri" -> JsNull,
+    "downloadUri" -> JsNull
+  )
+
+  def updateFileUri(id: String, uri: String): Future[JsValue] = {
     ResourceController.getResource(id).flatMap { json =>
       // Update the files
       val files = json \ "resource" \ "content" \ "files"
       val newFiles = files.as[JsArray].value.map(file => {
         if ((file \ "representation").as[String] == "original")
-          file.as[JsObject] ++ Json.obj("downloadUri" -> uri)
+          file.as[JsObject] ++ nuller ++ Json.obj(
+            getUrlName(uri) -> uri,
+            "mime" -> getMimeFromUri(uri),
+            "mimeType" -> getMimeFromUri(uri)
+          )
         else
           file
       })
