@@ -275,7 +275,7 @@ object ContentEditing extends Controller {
                         url =>
 
                         // Update the resource
-                          ResourceHelper.updateDownloadUri(content.resourceId, url).map {
+                          ResourceHelper.updateFileUri(content.resourceId, url).map {
                             resource => {
                               val course = AdditionalDocumentAdder.getCourse()
                               val route = if (course.isDefined) routes.CourseContent.viewInCourse(content.id.get, course.get.id.get)
@@ -374,7 +374,7 @@ object ContentEditing extends Controller {
             if (content isEditableBy user) {
               val url = request.body("url")(0)
               Async {
-                ResourceHelper.updateDownloadUri(content.resourceId, url).map(json =>
+                ResourceHelper.updateFileUri(content.resourceId, url).map(json =>
                   Redirect(routes.ContentController.view(id)).flashing("info" -> "Media source updated")
                 )
               }

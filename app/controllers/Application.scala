@@ -5,6 +5,7 @@ import play.api.mvc._
 import models._
 import service.EmailTools
 import models.Content
+import play.api.libs.json.{JsNull, Json}
 
 object Application extends Controller {
 
@@ -36,7 +37,19 @@ object Application extends Controller {
    */
   def test = Action {
     implicit request =>
-      Ok
+      val json1 = Json.obj(
+        "attr1" -> "Something"
+      )
+
+      val nuller = Json.obj(
+        "attr1" -> JsNull,
+        "attr2" -> JsNull
+      )
+
+      val json2 = Json.obj(
+        "attr2" -> "Something else"
+      )
+      Ok(json1 ++ nuller ++ json2)
   }
 
   /**
