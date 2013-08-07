@@ -84,7 +84,7 @@ object AdditionalDocumentAdder {
       "user_" + user.id.get + ":"
   }
 
-  private def getCourse()(implicit request: RequestHeader): Option[Course] =
+  def getCourse()(implicit request: RequestHeader): Option[Course] =
     request.queryString.get("course").flatMap(id => Course.findById(id(0).toLong))
 
 }
