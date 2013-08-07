@@ -5,7 +5,7 @@
  * Time: 8:21 AM
  * To change this template use File | Settings | File Templates.
  */
-var TranscriptPlayer2 = (function() {
+var TranscriptPlayer = (function() {
 
     var templateUrl = "/assets/templates/transcriptPlayer.tmpl.html";
 
@@ -45,7 +45,7 @@ var TranscriptPlayer2 = (function() {
         return (track.hash = "" + new Date().getTime() + ("" + trackHashCounter++));
     }
 
-    function TranscriptPlayer2(args) {
+    function TranscriptPlayer(args) {
 
         var _this = this;
         var activeId = "";
@@ -191,15 +191,15 @@ var TranscriptPlayer2 = (function() {
             },
             update: {
                 value: function() {
-                    if (args.noUpdate)
-                        return;
-
-                    var updateTime = new Date().getTime();
-                    updated = false;
-
-                    if (updateTime >= lastUpdate + updateFrequency) {
-                        updated = true;
-                        lastUpdate = updateTime;
+//                    if (args.noUpdate)
+//                        return;
+//
+//                    var updateTime = new Date().getTime();
+//                    updated = false;
+//
+//                    if (updateTime >= lastUpdate + updateFrequency) {
+//                        updated = true;
+//                        lastUpdate = updateTime;
 
                         // Remember where the scroll top was
                         var $transcript = $("#transcript_" + activeId);
@@ -207,18 +207,18 @@ var TranscriptPlayer2 = (function() {
                         render(function() {
                             $("#transcript_" + activeId).scrollTop(scrollTop);
                         });
-                    } else {
-                        // Try again in twice the frequency
-                        window.setTimeout(function() {
-                            if (!updated) {
-                                _this.update();
-                            }
-                        }, updateFrequency * 2);
-                    }
+//                    } else {
+//                        // Try again in twice the frequency
+//                        window.setTimeout(function() {
+//                            if (!updated) {
+//                                _this.update();
+//                            }
+//                        }, updateFrequency * 2);
+//                    }
                 }
             }
         });
     }
 
-    return TranscriptPlayer2;
+    return TranscriptPlayer;
 })();
