@@ -18,4 +18,6 @@ design
 .settings/
 /public/Ayamel.js
 /public/TimedText
+/public/EditorWidgets
+/public/subtitle-timeline-editor
 /conf/application.conf
