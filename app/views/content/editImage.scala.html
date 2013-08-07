@@ -8,34 +8,27 @@
 
 @main("Ayamel - " + content.name, moreStyles) {
 
-    @*<script type="text/javascript" src="@routes.Assets.at("javascripts/old/SimpleAnnotator.js")"></script>*@
+    @views.html.content.header.dependencies()
 
-    <script src="@routes.Assets.at("Ayamel.js/js/async.js")" type="text/javascript"></script>
-    <script src="@routes.Assets.at("Ayamel.js/js/Resource.js")" type="text/javascript"></script>
-
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/BoxDrawingCanvas.js")"></script>
-
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/contentRendering/ContentLayoutManager.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/contentRendering/ContentRenderer.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/contentRendering/TranscriptDisplay.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/contentRendering/ImageRenderer.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/contentRendering/TextRenderer.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/contentRendering/VideoRenderer.js")"></script>
-
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/annotating/ImageAnnotation.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/annotating/TextAnnotation.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/annotating/AnnotationManifest.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/annotating/ImageAnnotator.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/annotating/TextAnnotator.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/annotating/AnnotationLoader.js")"></script>
-
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/contentRendering/ContentRenderer.js")"></script>
     <script type="text/javascript" src="@routes.Assets.at("javascripts/ImageEditor.js")"></script>
 
     <div class="padded">
 
+        @if(course.isDefined) {
+            <ul class="breadcrumb">
+                <li><a href="@routes.Courses.view(course.get.id.get)">@course.get.name</a> <span class="divider">/</span></li>
+                <li><a href="@routes.CourseContent.viewInCourse(content.id.get, course.get.id.get)">@content.name</a> <span class="divider">/</span></li>
+                <li class="active">Edit image</li>
+            </ul>
+        } else {
+            <ul class="breadcrumb">
+                <li><a href="@routes.ContentController.view(content.id.get)">@content.name</a> <span class="divider">/</span></li>
+                <li class="active">Edit image</li>
+            </ul>
+        }
+
         <h1>Edit Image</h1>
-        <form class="form-horizontal" method="post" action="@routes.ContentEditing.saveImageEdits(content.id.get)">
+        <form class="form-horizontal" method="post" action="@routes.ContentEditing.saveImageEdits(content.id.get)?course=@course.map(_.id.get).getOrElse(0)">
 
             <h2>Crop</h2>
             <button id="resetCrop" class="btn btn-yellow pad-bottom-med"><i class="icon-refresh"></i> Reset Crop</button>
@@ -44,7 +37,7 @@
             <script type="text/javascript">
                 $(function() {
                     // Set up the environment
-                    ContentRenderer.setResourceLibraryUrl("@resourceLibraryUrl");
+                    ResourceLibrary.setBaseUrl("@resourceLibraryUrl");
 
                     // Render the content
                     var content = @Html(content.toJson.toString());

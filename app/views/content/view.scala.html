@@ -124,6 +124,9 @@
                                         <li><a href="#visibilityModal" data-toggle="modal"><i class="icon-eye-open"></i> Set visibility</a></li>
                                         <li class="divider"></li>
                                         <li><a href="#changeSourceModal" data-toggle="modal"><i class="icon-link"></i> Set media source</a></li>
+                                        @if(content.contentType == 'image) {
+                                            <li><a href="@routes.ContentEditing.editImage(content.id.get)?course=@course.map(_.id.get).getOrElse(0)"><i class="icon-crop"></i> Edit image</a></li>
+                                        }
                                         <li class="divider"></li>
                                         <li><a href="@routes.ContentController.stats(content.id.get)"><i class="icon-bar-chart"></i> View stats</a></li>
                                         <li><a href="#deleteModal" data-toggle="modal"><i class="icon-trash"></i> Delete</a></li>

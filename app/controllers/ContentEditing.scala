@@ -5,10 +5,12 @@ import controllers.authentication.Authentication
 import play.api.libs.json.{JsString, JsArray, Json}
 import dataAccess.ResourceController
 import models.{User, Course, Content}
-import service.{VideoTools, ResourceHelper, FileUploader, ImageTools}
+import service._
 import javax.imageio.ImageIO
 import scala.concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
+import play.api.libs.json.JsArray
+import scala.Some
 
 /**
  * Controller that deals with the editing of content
@@ -229,7 +231,8 @@ object ContentEditing extends Controller {
           content =>
             if (content isEditableBy user) {
               if (content.contentType == 'image) {
-                Ok(views.html.content.editImage(content, ResourceController.baseUrl))
+                val course = AdditionalDocumentAdder.getCourse()
+                Ok(views.html.content.editImage(content, ResourceController.baseUrl, course))
               } else
                 Errors.forbidden
             } else
@@ -273,8 +276,12 @@ object ContentEditing extends Controller {
 
                         // Update the resource
                           ResourceHelper.updateDownloadUri(content.resourceId, url).map {
-                            resource =>
-                              Redirect(routes.ContentController.view(content.id.get)).flashing("info" -> "Image updated")
+                            resource => {
+                              val course = AdditionalDocumentAdder.getCourse()
+                              val route = if (course.isDefined) routes.CourseContent.viewInCourse(content.id.get, course.get.id.get)
+                                else routes.ContentController.view(content.id.get)
+                              Redirect(route).flashing("info" -> "Image updated")
+                            }
                           }
                       }
                   }
