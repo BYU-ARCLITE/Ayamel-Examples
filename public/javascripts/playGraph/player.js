@@ -1,9 +1,5 @@
 /**
- * Created with IntelliJ IDEA.
- * User: josh
- * Date: 7/2/13
- * Time: 12:01 PM
- * To change this template use File | Settings | File Templates.
+ * For usage please see https://github.com/BYU-ARCLITE/Ayamel-Examples/wiki/Playgraph
  */
 var PlayGraphPlayer = (function() {
 
