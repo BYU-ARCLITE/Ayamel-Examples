@@ -390,14 +390,15 @@ $(function() {
             $("#saveTrackButton").click(function() {
                 var tracks = $("#tracksToSave").val(),
                     destination = $("input[name=saveDestination]:checked").val(),
-                    key, data, textTrack;
+                    data;
                 if (tracks && tracks.length) {
                     var exportedTracks = timeline.exportTracks(tracks);
                     if (destination === "ayamel") {
 
                         // Saving to the server. Provide all the information and data and let it handle everything
-                        for (key in exportedTracks) {
-                            textTrack = timeline.getTrack(tracks[key]).textTrack;
+//                        for (key in exportedTracks) {
+                        Object.keys(exportedTracks).forEach(function (key) {
+                            var textTrack = timeline.getTrack(tracks[key]).textTrack;
                             data = new FormData();
                             data.append("mime", exportedTracks[key].mime);
                             data.append("name", exportedTracks[key].name);
@@ -414,13 +415,15 @@ $(function() {
                                 contentType: false,
                                 processData: false,
                                 type: "post",
+                                dataType: "text",
                                 success: function (data) {
                                     alert("Saved Successfully");
                                     commandStack.saved = true;
+                                    textTrack.resourceId = data;
                                     timeline.render();
                                 }
                             });
-                        }
+                        });
                     } else {
 
                         // Use one of the editor widget saving mechanisms

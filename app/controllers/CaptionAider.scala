@@ -83,7 +83,7 @@ object CaptionAider extends Controller {
 
                         AdditionalDocumentAdder.add(content, subjectId, 'captionTrack) {
                           course =>
-                            Ok
+                            Ok(subjectId)
                         }
                     }
                 }
@@ -113,7 +113,7 @@ object CaptionAider extends Controller {
                     // Replace the file
                     FileUploader.uploadStream(stream, filename, data.getBytes.length, mime).map {
                       url =>
-                        Ok
+                        Ok(resourceId)
                     }
                 }
               }
