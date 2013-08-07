@@ -1,5 +1,6 @@
 /*
  * Fixes the lack of styling on file input fields
+ * See https://github.com/BYU-ARCLITE/Ayamel-Examples/wiki/Improving-forms
  */
 $(function() {
     var template = '<button class="btn">Choose File</button> <span>No file chosen</span>';

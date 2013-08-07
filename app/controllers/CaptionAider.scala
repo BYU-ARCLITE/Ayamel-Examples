@@ -72,7 +72,7 @@ object CaptionAider extends Controller {
                     val resource = ResourceHelper.make.resource(Json.obj(
                       "title" -> label,
                       "keywords" -> kind,
-                      "type" -> "text",
+                      "type" -> "data",
                       "languages" -> Json.obj(
                         "iso639_3" -> languages
                       )
