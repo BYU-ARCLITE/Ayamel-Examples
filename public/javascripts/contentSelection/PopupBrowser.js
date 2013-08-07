@@ -1,9 +1,5 @@
 /**
- * Created with IntelliJ IDEA.
- * User: josh
- * Date: 7/1/13
- * Time: 9:34 AM
- * To change this template use File | Settings | File Templates.
+ * For usage see: https://github.com/BYU-ARCLITE/Ayamel-Examples/wiki/Content-selection
  */
 var PopupBrowser = (function() {
 

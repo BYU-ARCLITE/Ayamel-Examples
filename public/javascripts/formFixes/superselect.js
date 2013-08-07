@@ -1,3 +1,6 @@
+/**
+ * For usage, see https://github.com/BYU-ARCLITE/Ayamel-Examples/wiki/Improving-forms
+ */
 (function() {
     function FakeOption(args) {
         var _this = this;

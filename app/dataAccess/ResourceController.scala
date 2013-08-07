@@ -95,7 +95,7 @@ object ResourceController {
    * @param id The ID of the resource to delete
    * @return The future JSON result
    */
-  def deleteResource(id: String): Future[JsValue] = WS.url(baseResourceUrl + "/" + id).delete().map(r => {
+  def deleteResource(id: String): Future[JsValue] = WS.url(baseResourceUrl + "/" + id + s"?_key=$apiKey").delete().map(r => {
 //    Logger.debug("Resource Controller: delete")
 //    Logger.debug(r.json.toString())
     r.json
@@ -134,7 +134,7 @@ object ResourceController {
    * @param relation The relation to create
    * @return The future JSON result
    */
-  def addRelation(relation: JsObject): Future[JsValue] = WS.url(baseUrl + "relations").post(relation).map(r => {
+  def addRelation(relation: JsObject): Future[JsValue] = WS.url(baseUrl + s"relations?_key=$apiKey").post(relation).map(r => {
 //    Logger.debug("Resource Controller: add relation")
 //    Logger.debug(r.json.toString())
     r.json
@@ -146,7 +146,7 @@ object ResourceController {
    * @return The future JSON result
    */
   def deleteRelation(id: String): Future[JsValue] =
-    WS.url(baseUrl + "relations/" + id).delete().map(r => {
+    WS.url(baseUrl + "relations/" + id + s"?_key=$apiKey").delete().map(r => {
 //      Logger.debug("Resource Controller: delete relation")
 //      Logger.debug(r.json.toString())
       r.json
@@ -159,7 +159,7 @@ object ResourceController {
    * @return The future JSON result
    */
   def requestUploadUrl(id: String): Future[JsValue] =
-    WS.url(baseResourceUrl + "/" + id + "/request-upload-url").get().map(r => {
+    WS.url(baseResourceUrl + "/" + id + s"/request-upload-url?_key=$apiKey").get().map(r => {
 //      Logger.debug("Resource Controller: request upload url")
 //      Logger.debug(r.json.toString())
       r.json

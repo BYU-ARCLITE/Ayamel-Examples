@@ -1,9 +1,5 @@
 /**
- * Created with IntelliJ IDEA.
- * User: camman3d
- * Date: 4/24/13
- * Time: 5:37 PM
- * To change this template use File | Settings | File Templates.
+ * For usage, see https://github.com/BYU-ARCLITE/Ayamel-Examples/wiki/Improving-forms
  */
 $(function() {
     $("input[type='labels']").each(function () {
