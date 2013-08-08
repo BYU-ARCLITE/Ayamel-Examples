@@ -1,23 +1,33 @@
 $(function() {
     "use strict";
 
-    var captionEditor,
+    var captionEditor, Dialog,
         langList = Object.keys(Ayamel.utils.p1map).map(function (p1) {
             var code = Ayamel.utils.p1map[p1];
             return {code: code, name: Ayamel.utils.getLangName(code)};
-        }),
-        dialogTemplate = '<div class="modal-header">\
+        }).sort(function(a,b){ return a.name.localeCompare(b.name); });
+
+    Dialog = Ractive.extend({
+        template: '<div class="modal-header">\
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>\
             <h3>{{dialogTitle}}</h3>\
         </div>\
-        <div class="modal-body">{{>dialogBody}}\</div>\
+        <div class="modal-body">{{>dialogBody}}</div>\
         <div class="modal-footer">\
             {{#buttons}}\
             <button class="btn btn-blue" proxy-tap="buttonpress:{{.event}}">{{.label}}</button>\
             {{/buttons}}\
             <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>\
-        </div>';
-
+        </div>',
+        init: function(opts){
+            var actions = opts.actions;
+            this.on('buttonpress',function(event,which){
+                if(typeof actions[which] !== 'function'){ return; }
+                actions[which].call(this,event);
+            });
+        }
+    });
+    
     Ractive.partials.trackKindSelect = '<div class="control-group">\
         <label class="control-label">Kind</label>\
         <div class="controls">\
@@ -277,32 +287,32 @@ $(function() {
                         </div>\
                         {{>trackLangSelect}}\
                     </form>';
-                ractive = new Ractive({
+                ractive = new Dialog({
                     el: document.getElementById('newTrackModal'),
-                    template: dialogTemplate,
                     data: {
                         dialogTitle: "Create a new track",
                         languages: langList,
                         buttons: [{event:"create",label:"Create"}]
                     },
-                    partials:{ dialogBody: template }
-                });
-                ractive.on('buttonpress',function(event,which){
-                    if(which !== 'create'){ return; }
-                    var kind = this.get("trackKind"),
-                        name = this.get('trackName') || "Untitled",
-                        language = this.get("trackLang"),
-                        mime = this.get('trackMime'),
-                        track = new TextTrack(kind, name, language);
+                    partials:{ dialogBody: template },
+                    actions: {
+                        create: function(event){
+                            var kind = this.get("trackKind"),
+                                name = this.get('trackName') || "Untitled",
+                                language = this.get("trackLang"),
+                                mime = this.get('trackMime'),
+                                track = new TextTrack(kind, name, language);
 
-                    $('#newTrackModal').modal('hide');
-                    track.mode = "showing";
-                    track.readyState = TextTrack.LOADED;
-                    timeline.addTextTrack(track, mime);
-                    updateSpacing();
+                            $('#newTrackModal').modal('hide');
+                            track.mode = "showing";
+                            track.readyState = TextTrack.LOADED;
+                            timeline.addTextTrack(track, mime);
+                            updateSpacing();
 
-                    // Clear the form
-                    this.set('trackName',"");
+                            // Clear the form
+                            this.set('trackName',"");
+                        }
+                    }
                 });
             }());
 
@@ -328,20 +338,34 @@ $(function() {
                             {{>trackLangSelect}}\
                         </div>\
                     </form>',
-                    ractive = new Ractive({
+                    ractive = new Dialog({
                         el: document.getElementById("editTrackModal"),
-                        template: dialogTemplate,
                         data: {
                             dialogTitle: "Edit tracks",
                             languages: langList,
                             buttons: [{event:"save",label:"Save"}]
                         },
-                        partials: { dialogBody: template }
+                        partials: { dialogBody: template },
+                        actions: {
+                            save: function(event){
+                                timeline.alterTextTrack(
+                                    ractive.data.trackToEdit,
+                                    ractive.data.trackKind,
+                                    ractive.data.trackLang,
+                                    ractive.data.trackName,
+                                    true);
+
+                                $("#editTrackModal").modal("hide");
+                                return false;
+                            }
+                        }
                     });
 
                 $("#editTrackModal").on("show", function() {
-                    ractive.set("trackList",timeline.trackNames.slice());
-                    ractive.set("trackToEdit","");
+                    ractive.set({
+                        trackList: timeline.trackNames.slice(),
+                        trackToEdit: ""
+                    });
                 });
 
                 ractive.observe("trackToEdit",function(trackName){
@@ -353,19 +377,6 @@ $(function() {
                         trackKind: track.kind,
                         trackLang: track.language
                     });
-                });
-
-                ractive.on('buttonpress',function(event,which){
-                    if(which !== 'save'){ return; }
-                    timeline.alterTextTrack(
-                        ractive.data.trackToEdit,
-                        ractive.data.trackKind,
-                        ractive.data.trackLang,
-                        ractive.data.trackName,
-                        true);
-
-                    $("#editTrackModal").modal("hide");
-                    return false;
                 });
             }());
 
@@ -398,9 +409,8 @@ $(function() {
                             </div>\
                         </div>\
                     </form>';
-                ractive = new Ractive({
+                ractive = new Dialog({
                     el: document.getElementById('saveTrackModal'),
-                    template: dialogTemplate,
                     data: {
                         dialogTitle: "Save Tracks",
                         saveDestinations: Object.keys(targets).map(function(key){
@@ -411,65 +421,68 @@ $(function() {
                         }), saveDestination: "server",
                         buttons: [{event:"save",label:"Save"}]
                     },
-                    partials: { dialogBody: template }
-                });
-                ractive.on('buttonpress',function(event, which){
-                    if(which !== 'save'){ return; }
-                    var tracks = this.get("tracksToSave"),
-                        destination = this.get("saveDestination"),
-                        exportedTracks;
+                    partials: { dialogBody: template },
+                    actions: {
+                        save: function(event){
+                            var tracks = this.get("tracksToSave"),
+                                destination = this.get("saveDestination"),
+                                exportedTracks;
 
-                    $("#saveTrackModal").modal("hide");
-                    if(!tracks.length) { return; }
+                            $("#saveTrackModal").modal("hide");
+                            if(!tracks.length) { return; }
 
-                    exportedTracks = timeline.exportTracks(tracks);
+                            exportedTracks = timeline.exportTracks(tracks);
 
-                    if (destination === "server") {
-                        // Saving to the server. Provide all the information and data and let it handle everything
-                        Object.keys(exportedTracks).forEach(function(key) {
-                            var textTrack = timeline.getTrack(tracks[key]).textTrack
-                                fObj = exportedTracks[key],
-                                data = new FormData();
-					        data.append("file", new Blob([fObj.data],{type:fObj.mime}), fObj.name);
-                            data.append("label", textTrack.label);
-                            data.append("language", textTrack.language);
-                            data.append("kind", textTrack.kind);
-                            data.append("resourceId", textTrack.resourceId || "");
-                            data.append("contentId", content.id);
-                            $.ajax({
-                                url: "/captionaider/save?course=" + courseId,
-                                data: data,
-                                cache: false,
-                                contentType: false,
-                                processData: false,
-                                type: "post",
-                                dataType: "text",
-                                success: function (data) {
-                                    commandStack.setFileSaved(textTrack.label);
-                                    textTrack.resourceId = data; //HACK!
-                                    timeline.render();
-                                }
-                            });
-                        });
-                    } else {
-                        // Use one of the editor widget saving mechanisms
-                        EditorWidgets.Save(
-                            exportedTracks, destination,
-                            function(){
-                                [].forEach.call(tracks,function(name){
-                                    commandStack.setFileSaved(name);
+                            if (destination === "server") {
+                                // Saving to the server. Provide all the information and data and let it handle everything
+                                Object.keys(exportedTracks).forEach(function(key) {
+                                    var textTrack = timeline.getTrack(tracks[key]).textTrack,
+                                        fObj = exportedTracks[key],
+                                        data = new FormData();
+                                    data.append("file", new Blob([fObj.data],{type:fObj.mime}), fObj.name);
+                                    data.append("label", textTrack.label);
+                                    data.append("language", textTrack.language);
+                                    data.append("kind", textTrack.kind);
+                                    data.append("resourceId", textTrack.resourceId || "");
+                                    data.append("contentId", content.id);
+                                    $.ajax({
+                                        url: "/captionaider/save?course=" + courseId,
+                                        data: data,
+                                        cache: false,
+                                        contentType: false,
+                                        processData: false,
+                                        type: "post",
+                                        dataType: "text",
+                                        success: function (data) {
+                                            commandStack.setFileSaved(textTrack.label);
+                                            textTrack.resourceId = data;
+                                            timeline.render();
+                                        }
+                                    });
                                 });
-                                timeline.render();
-                            },
-                            function(){ alert("Error Saving; please try again."); }
-                        );
+                            } else {
+                                // Use one of the editor widget saving mechanisms
+                                EditorWidgets.Save(
+                                    exportedTracks, destination,
+                                    function(){
+                                        [].forEach.call(tracks,function(name){
+                                            commandStack.setFileSaved(name);
+                                        });
+                                        timeline.render();
+                                    },
+                                    function(){ alert("Error Saving; please try again."); }
+                                );
+                            }
+                        }
                     }
                 });
 
                 // Saving modal opening
                 $("#saveTrackModal").on("show", function () {
-                    ractive.set("trackList", timeline.trackNames.slice());
-                    ractive.set("tracksToSave","");
+                    ractive.set({
+                        trackList: timeline.trackNames.slice(),
+                        tracksToSave: ""
+                    });
                 });
             }());
 
@@ -488,37 +501,37 @@ $(function() {
                             </div>\
                         </div>\
                     </form>';
-                ractive = new Ractive({
+                ractive = new Dialog({
                     el: document.getElementById('loadTrackModal'),
-                    template: dialogTemplate,
                     data: {
                         dialogTitle: "Load Track",
                         languages: langList,
                         sources: Object.keys(sources).map(function(key){ return {name: key, label: sources[key].label}; }),
                         buttons: [{event:"load",label:"Load"}]
                     },
-                    partials: { dialogBody: template }
-                });
-                ractive.on('buttonpress',function(event,which){
-                    if(which !== 'load'){ return; }
-                    var kind = this.get('trackKind');
-                    var language = this.get('trackLang');
-                    var where = this.get('loadSource');
-                    EditorWidgets.LocalFile(where,/.*\.(vtt|srt|ass|ttml)/,function(fileObj){
-                        TextTrack.parse({
-                            content: fileObj.data,
-                            mime: fileObj.mime,
-                            kind: kind,
-                            label: fileObj.name,
-                            lang: language,
-                            success: function(track, mime) {
-                                track.mode = "showing";
-                                timeline.addTextTrack(track, mime, true);
-                                updateSpacing();
-                            }
-                        });
-                    });
-                    $("#loadTrackModal").modal("hide");
+                    partials: { dialogBody: template },
+                    actions: {
+                        load: function(event){
+                            var kind = this.get('trackKind');
+                            var language = this.get('trackLang');
+                            var where = this.get('loadSource');
+                            EditorWidgets.LocalFile(where,/.*\.(vtt|srt|ass|ttml)/,function(fileObj){
+                                TextTrack.parse({
+                                    content: fileObj.data,
+                                    mime: fileObj.mime,
+                                    kind: kind,
+                                    label: fileObj.name,
+                                    lang: language,
+                                    success: function(track, mime) {
+                                        track.mode = "showing";
+                                        timeline.addTextTrack(track, mime, true);
+                                        updateSpacing();
+                                    }
+                                });
+                            });
+                            $("#loadTrackModal").modal("hide");
+                        }
+                    }
                 });
             }());
         }
