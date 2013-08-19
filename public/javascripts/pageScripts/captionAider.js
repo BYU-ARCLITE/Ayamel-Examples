@@ -395,15 +395,13 @@ $(function() {
                     var exportedTracks = timeline.exportTracks(tracks);
                     if (destination === "ayamel") {
 
-                        // Saving to the server. Provide all the information and data and let it handle everything
-//                        for (key in exportedTracks) {
-                        Object.keys(exportedTracks).forEach(function (key) {
-                            var textTrack = timeline.getTrack(tracks[key]).textTrack;
-                            data = new FormData();
-                            data.append("mime", exportedTracks[key].mime);
-                            data.append("name", exportedTracks[key].name);
+                        // Saving to the server.
+                        Object.keys(exportedTracks).forEach(function(key) {
+                            var textTrack = timeline.getTrack(tracks[key]).textTrack,
+                                fObj = exportedTracks[key],
+                                data = new FormData();
+                            data.append("file", new Blob([fObj.data],{type:fObj.mime}), fObj.name);
                             data.append("label", textTrack.label);
-                            data.append("data", exportedTracks[key].data);
                             data.append("language", textTrack.language);
                             data.append("kind", textTrack.kind);
                             data.append("resourceId", textTrack.resourceId || "");
@@ -417,9 +415,8 @@ $(function() {
                                 type: "post",
                                 dataType: "text",
                                 success: function (data) {
-                                    alert("Saved Successfully");
-                                    commandStack.saved = true;
-                                    textTrack.resourceId = data;
+                                    commandStack.setFileSaved(textTrack.label);
+                                    textTrack.resourceId = data; //HACK!
                                     timeline.render();
                                 }
                             });
