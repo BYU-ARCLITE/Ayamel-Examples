@@ -27,7 +27,7 @@ $(function() {
             });
         }
     });
-    
+
     Ractive.partials.trackKindSelect = '<div class="control-group">\
         <label class="control-label">Kind</label>\
         <div class="controls">\
@@ -43,7 +43,7 @@ $(function() {
     Ractive.partials.trackLangSelect = '<div class="control-group">\
         <label class="control-label">Language</label>\
         <div class="controls">\
-            <select value="{{trackLang}}">\
+            <select data-id="lang" data-text="Select Language" value="{{trackLang}}">\
             <option value="zxx" selected>No Linguistic Content</option>\
             {{#languages}}<option value="{{.code}}">{{.name}}</option>{{/languages}}\
             </select>\
@@ -314,6 +314,7 @@ $(function() {
                         }
                     }
                 });
+                $(ractive.find('select[data-id="lang"]')).superselect();
             }());
 
             //Edit Track
@@ -360,7 +361,7 @@ $(function() {
                             }
                         }
                     });
-
+                $(ractive.find('select[data-id="lang"]')).superselect();
                 $("#editTrackModal").on("show", function() {
                     ractive.set({
                         trackList: timeline.trackNames.slice(),
@@ -476,7 +477,7 @@ $(function() {
                         }
                     }
                 });
-
+                $(ractive.find('select[data-id="lang"]')).superselect();
                 // Saving modal opening
                 $("#saveTrackModal").on("show", function () {
                     ractive.set({
@@ -533,6 +534,7 @@ $(function() {
                         }
                     }
                 });
+                $(ractive.find('select[data-id="lang"]')).superselect();
             }());
         }
     });
