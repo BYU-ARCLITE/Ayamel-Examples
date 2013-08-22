@@ -180,16 +180,7 @@ $(function() {
                 updateSpacing();
             });
 
-            timeline.on('removetrack',function(){
-                updateSpacing();
-            });
-
-            //timeline.on("cuechange", function(event) {
-            //    transcript.update();
-            //});
-
-            Ayamel.KeyBinder.addKeyBinding(Ayamel.KeyBinder.keyCodes['|'], timeline.breakPoint.bind(timeline));
-            Ayamel.KeyBinder.addKeyBinding(Ayamel.KeyBinder.keyCodes['\\'], function(){timeline.breakPoint(true);},true);
+            timeline.on('removetrack', updateSpacing);
 
             automove.addEventListener("click", function() {
                 if(automove.classList.contains('active')){
@@ -207,57 +198,45 @@ $(function() {
             document.getElementById("undoButton").addEventListener('click',function(){ timeline.commandStack.undo(); },false);
             document.getElementById("redoButton").addEventListener('click',function(){ timeline.commandStack.redo(); },false);
 
-            // Tool buttons
-            var toolButtonMap = {};
-            toolButtonMap[Timeline.CREATE] = document.getElementById("addCueToolButton");
-            toolButtonMap[Timeline.SELECT] = document.getElementById("selectToolButton");
-            toolButtonMap[Timeline.DELETE] = document.getElementById("deleteToolButton");
-            toolButtonMap[Timeline.MOVE]   = document.getElementById("moveToolButton");
-            toolButtonMap[Timeline.SPLIT]  = document.getElementById("splitToolButton");
-            toolButtonMap[Timeline.SCROLL] = document.getElementById("scrollToolButton");
-            toolButtonMap[Timeline.ORDER]  = document.getElementById("reorderToolButton");
-            toolButtonMap[Timeline.SHIFT]  = document.getElementById("timeShiftToolButton");
-            toolButtonMap[Timeline.REPEAT] = document.getElementById("repeatToolButton");
-            function setTool(tool){
-                timeline.currentTool = +tool;
-            }
-            Object.keys(toolButtonMap).forEach(function(tool) {
-                toolButtonMap[tool].addEventListener("click", setTool.bind(null, tool), false);
-            });
+            function setTool(tool){ timeline.currentTool = tool; }
 
-            /*
-             * Set up keyboard shortcuts
-             * a - Add
-             * s - Select
-             * d - Delete
-             * v - Move
-             * q - Split
-             * r - Scroll
-             * e - Reorder
-             * f - Time shift
-             * w - Set repeat tool
-             */
-            var keyboardShortcuts = {};
-            keyboardShortcuts[Ayamel.KeyBinder.keyCodes.a] = Timeline.CREATE;
-            keyboardShortcuts[Ayamel.KeyBinder.keyCodes.s] = Timeline.SELECT;
-            keyboardShortcuts[Ayamel.KeyBinder.keyCodes.d] = Timeline.DELETE;
-            keyboardShortcuts[Ayamel.KeyBinder.keyCodes.v] = Timeline.MOVE;
-            keyboardShortcuts[Ayamel.KeyBinder.keyCodes.q] = Timeline.SPLIT;
-            keyboardShortcuts[Ayamel.KeyBinder.keyCodes.r] = Timeline.SCROLL;
-            keyboardShortcuts[Ayamel.KeyBinder.keyCodes.e] = Timeline.ORDER;
-            keyboardShortcuts[Ayamel.KeyBinder.keyCodes.f] = Timeline.SHIFT;
-            keyboardShortcuts[Ayamel.KeyBinder.keyCodes.w] = Timeline.REPEAT;
-            Object.keys(keyboardShortcuts).forEach(function(key) {
-                Ayamel.KeyBinder.addKeyBinding(key, function() {
+            [   // Tool buttons
+                [Timeline.CREATE,document.getElementById("addCueToolButton")],
+                [Timeline.SELECT,document.getElementById("selectToolButton")],
+                [Timeline.DELETE,document.getElementById("deleteToolButton")],
+                [Timeline.MOVE,document.getElementById("moveToolButton")],
+                [Timeline.SPLIT,document.getElementById("splitToolButton")],
+                [Timeline.SCROLL,document.getElementById("scrollToolButton")],
+                [Timeline.ORDER,document.getElementById("reorderToolButton")],
+                [Timeline.SHIFT,document.getElementById("timeShiftToolButton")],
+                [Timeline.REPEAT,document.getElementById("repeatToolButton")]
+            ].forEach(function(pair){ pair[1].addEventListener("click", setTool.bind(null, pair[0]), false); });
+
+            [   //Set up keyboard shortcuts
+                [Ayamel.KeyBinder.keyCodes.a,Timeline.CREATE],  //a - Add
+                [Ayamel.KeyBinder.keyCodes.s,Timeline.SELEC],   //s - Select
+                [Ayamel.KeyBinder.keyCodes.d,Timeline.DELETE],  //d - Delete
+                [Ayamel.KeyBinder.keyCodes.v,Timeline.MOVE],    //v - Move
+                [Ayamel.KeyBinder.keyCodes.q,Timeline.SPLIT],   //q - Split
+                [Ayamel.KeyBinder.keyCodes.r,Timeline.SCROLL],  //r - Scroll
+                [Ayamel.KeyBinder.keyCodes.e,Timeline.ORDER],   //e - Reorder
+                [Ayamel.KeyBinder.keyCodes.f,Timeline.SHIFT],   //f - Time shift
+                [Ayamel.KeyBinder.keyCodes.w,Timeline.REPEAT]   //w - Set repeat tool
+            ].forEach(function(pair) {
+                var tool = pair[1];
+                Ayamel.KeyBinder.addKeyBinding(pair[0], function() {
                     // Only do the shortcut if:
                     //  1. We aren't in an input
                     //  2. A modal isn't open
-                    var inputFocused = ["TEXTAREA", "INPUT"].indexOf(document.activeElement.nodeName) > -1;
-                    var modalOpen = $(".modal:visible").length;
-                    if (!inputFocused && !modalOpen)
-                        $(toolButtonMap[keyboardShortcuts[key]]).click();
+                    var inputFocused = ["TEXTAREA", "INPUT"].indexOf(document.activeElement.nodeName) > -1,
+                        modalOpen = $(".modal:visible").length;
+                    if (!inputFocused && !modalOpen){ setTool(tool); }
                 });
             });
+
+            // Autocue controls
+            Ayamel.KeyBinder.addKeyBinding(Ayamel.KeyBinder.keyCodes['|'], timeline.breakPoint.bind(timeline),true);
+            Ayamel.KeyBinder.addKeyBinding(Ayamel.KeyBinder.keyCodes['\\'], timeline.breakPoint.bind(timeline,true),true);
 
             // AB Repeat Controls
             clearRepeatButton.addEventListener('click',function(){ timeline.clearRepeat(); },false);
