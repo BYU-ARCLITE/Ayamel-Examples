@@ -45,7 +45,7 @@
                                 <div id="personalCaptionsTable"></div>
 
                             </div>
-                            @if(course.isDefined) {
+                            @if(course.isDefined && user.canEdit(course.get)) {
                                 <div class="tab-pane" id="courseCaptions">
                                     <p>Add or edit course-visible caption tracks with CaptionAider.</p>
                                     <a href="@routes.CaptionAider.view(content.id.get, course.get.id.get)" class="btn btn-magenta"><i class="icon-desktop"></i> Launch CaptionAider</a>
