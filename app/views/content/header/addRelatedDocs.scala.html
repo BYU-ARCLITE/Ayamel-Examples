@@ -42,16 +42,7 @@
                                 <hr>
 
                                 <p>Caption tracks you can edit:</p>
-                                <table class="table table-bordered" id="personalCaptionsTable">
-                                    <thead>
-                                    <tr>
-                                        <th>Track name</th>
-                                        <th>Language</th>
-                                        <th>Options</th>
-                                        <th>Publish</th>
-                                    </tr>
-                                    </thead>
-                                </table>
+                                <div id="personalCaptionsTable"></div>
 
                             </div>
                             @if(course.isDefined) {
@@ -62,39 +53,20 @@
                                     <hr>
 
                                     <p>Caption tracks you can edit:</p>
-                                    <table class="table table-bordered" id="courseCaptionsTable">
-                                        <thead>
-                                        <tr>
-                                            <th>Track name</th>
-                                            <th>Language</th>
-                                            <th>Options</th>
-                                            <th>Publish</th>
-                                        </tr>
-                                        </thead>
-                                    </table>
-                                    </div>
+                                    <div id="courseCaptionsTable"></div>
+                                </div>
                             }
                         </div>
                     </div>
 
                     <div class="span6">
                         <h4>Publish caption tracks</h4>
-
                         <p>
                             <strong>A note on publishing:</strong> When you press the <em>publish</em> button a request is sent to
                             the content owner. If he or she accepts your caption track, then you lose ownership of it. So don't
                             request for your caption tracks to be publish until you are entirely finished editing them.
                         </p>
-
-                        <table id="trackPublishRequests" class="table table-bordered">
-                            <thead>
-                            <tr>
-                                <th>Track name</th>
-                                <th>Language</th>
-                                <th>Options</th>
-                            </tr>
-                            </thead>
-                        </table>
+                        <div id="trackPublishRequests"></div>
                     </div>
                 </div>
             </div>
@@ -138,33 +110,13 @@
 
                             <p>Add or edit personal annotations sets.</p>
                             <a class="btn btn-yellow" href="@routes.DocumentManager.editAnnotations(content.id.get)"><i class="icon-file-text"></i> Create a new Annotation Set</a>
-
-                            <table id="personalAnnotationsTable" class="table table-bordered pad-top-high">
-                                <thead>
-                                <tr>
-                                    <th>Track name</th>
-                                    <th>Language</th>
-                                    <th>Options</th>
-                                    <th>Publish</th>
-                                </tr>
-                                </thead>
-                            </table>
+                            <div id="personalAnnotationsTable"></div>
                         </div>
                         @if(course.isDefined && user.canEdit(course.get)) {
                             <div class="tab-pane" id="courseAnnotations">
                                 <p>Add or edit course-visible annotations sets.</p>
                                 <a class="btn btn-magenta" href="@{routes.DocumentManager.editAnnotations(content.id.get)}?course=@course.get.id.get"><i class="icon-file-text"></i> Create a new Annotation Set</a>
-
-                                <table id="courseAnnotationsTable" class="table table-bordered pad-top-high">
-                                    <thead>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Language</th>
-                                        <th>Options</th>
-                                        <th>Publish</th>
-                                    </tr>
-                                    </thead>
-                                </table>
+                                <div id="courseAnnotationsTable"></div>
                             </div>
                         }
                     </div>
@@ -172,22 +124,12 @@
 
                 <div class="span6">
                     <h4>Publish Annotation Sets</h4>
-
                     <p>
                         <strong>A note on publishing:</strong> When you press the <em>publish</em> button a request is sent to
                         the content owner. If he or she accepts your annotation set, then you lose ownership of it. So don't
                         request for your annotations to be publish until you are entirely finished editing them.
                     </p>
-
-                    <table id="annotationPublishRequests" class="table table-bordered">
-                        <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Language</th>
-                            <th>Options</th>
-                        </tr>
-                        </thead>
-                    </table>
+                    <div id="annotationPublishRequests"></div>
                 </div>
             </div>
         </div>
