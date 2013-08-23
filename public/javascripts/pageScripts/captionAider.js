@@ -3,10 +3,12 @@ $(function() {
 
     var captionEditor, Dialog,
         langList = Object.keys(Ayamel.utils.p1map).map(function (p1) {
-            var code = Ayamel.utils.p1map[p1];
-            return {code: code, name: Ayamel.utils.getLangName(code)};
-        }).sort(function(a,b){ return a.name.localeCompare(b.name); });
-
+			var code = Ayamel.utils.p1map[p1];
+            return {value: code, text: Ayamel.utils.getLangName(code)};
+        }).sort(function(a,b){ return a.text.localeCompare(b.text); });
+	
+	langList.unshift({value:'zxx',text:'No Linguistic Content'});
+	
     Dialog = Ractive.extend({
         template: '<div class="modal-header">\
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>\
@@ -43,10 +45,7 @@ $(function() {
     Ractive.partials.trackLangSelect = '<div class="control-group">\
         <label class="control-label">Language</label>\
         <div class="controls">\
-            <select data-id="lang" data-text="Select Language" value="{{trackLang}}">\
-            <option value="zxx" selected>No Linguistic Content</option>\
-            {{#languages}}<option value="{{.code}}">{{.name}}</option>{{/languages}}\
-            </select>\
+            <rv-superselect icon="icon-globe" text="Select Language" selection="{{trackLang}}" open="{{selectOpen}}" multiple="false" options="{{languages}}">\
         </div>\
     </div>';
 
@@ -271,9 +270,14 @@ $(function() {
                     data: {
                         dialogTitle: "Create a new track",
                         languages: langList,
+						trackLang: "zxx",
+						trackKind: "subtitles",
+						trackName: "",
+						trackMime: "text/vtt",
                         buttons: [{event:"create",label:"Create"}]
                     },
                     partials:{ dialogBody: template },
+					components:{ superselect: EditorWidgets.SuperSelect },
                     actions: {
                         create: function(event){
                             var kind = this.get("trackKind"),
@@ -289,11 +293,13 @@ $(function() {
                             updateSpacing();
 
                             // Clear the form
-                            this.set('trackName',"");
+                            this.set({
+								trackName: "",
+								selectOpen: false
+							});
                         }
                     }
                 });
-                $(ractive.find('select[data-id="lang"]')).superselect();
             }());
 
             //Edit Track
@@ -323,9 +329,13 @@ $(function() {
                         data: {
                             dialogTitle: "Edit tracks",
                             languages: langList,
+							trackLang: "zxx",
+							trackKind: "subtitles",
+							trackName: "",
                             buttons: [{event:"save",label:"Save"}]
                         },
                         partials: { dialogBody: template },
+						components:{ superselect: EditorWidgets.SuperSelect },
                         actions: {
                             save: function(event){
                                 timeline.alterTextTrack(
@@ -336,11 +346,11 @@ $(function() {
                                     true);
 
                                 $("#editTrackModal").modal("hide");
+								this.set({selectOpen: false});
                                 return false;
                             }
                         }
                     });
-                $(ractive.find('select[data-id="lang"]')).superselect();
                 $("#editTrackModal").on("show", function() {
                     ractive.set({
                         trackList: timeline.trackNames.slice(),
@@ -402,6 +412,7 @@ $(function() {
                         buttons: [{event:"save",label:"Save"}]
                     },
                     partials: { dialogBody: template },
+					components:{ superselect: EditorWidgets.SuperSelect },
                     actions: {
                         save: function(event){
                             var tracks = this.get("tracksToSave"),
@@ -409,6 +420,7 @@ $(function() {
                                 exportedTracks;
 
                             $("#saveTrackModal").modal("hide");
+							this.set({selectOpen: false});
                             if(!tracks.length) { return; }
 
                             exportedTracks = timeline.exportTracks(tracks);
@@ -456,7 +468,6 @@ $(function() {
                         }
                     }
                 });
-                $(ractive.find('select[data-id="lang"]')).superselect();
                 // Saving modal opening
                 $("#saveTrackModal").on("show", function () {
                     ractive.set({
@@ -486,10 +497,13 @@ $(function() {
                     data: {
                         dialogTitle: "Load Track",
                         languages: langList,
+						trackLang: "zxx",
+						trackKind: "subtitles",
                         sources: Object.keys(sources).map(function(key){ return {name: key, label: sources[key].label}; }),
                         buttons: [{event:"load",label:"Load"}]
                     },
                     partials: { dialogBody: template },
+					components:{ superselect: EditorWidgets.SuperSelect },
                     actions: {
                         load: function(event){
                             var kind = this.get('trackKind');
@@ -510,10 +524,10 @@ $(function() {
                                 });
                             });
                             $("#loadTrackModal").modal("hide");
+							this.set({selectOpen: false});
                         }
                     }
                 });
-                $(ractive.find('select[data-id="lang"]')).superselect();
             }());
         }
     });

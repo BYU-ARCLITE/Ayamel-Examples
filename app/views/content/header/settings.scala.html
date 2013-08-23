@@ -44,9 +44,7 @@
                 </div>
                 <div class="control-group">
                     <label class="control-label" for="languages">Languages</label>
-                    <div class="controls">
-                        @views.html.content.header.languages("languages", multiple = true, all = true, activate = false)
-                    </div>
+                    <div class="controls" id="langLocation"></div>
                 </div>
                 <div class="control-group">
                     <label class="control-label" for="categories">Categories</label>
@@ -98,16 +96,28 @@
             // Load metadata when the modal opens for the first time
             var languagesLoaded = false;
             $("#metadataModal").on("show", function() {
+                var langList = Object.keys(Ayamel.utils.p1map).map(function (p1) {
+                        var code = Ayamel.utils.p1map[p1];
+                        return {value: code, text: Ayamel.utils.getLangName(code)};
+                    }).sort(function(a,b){ return a.text.localeCompare(b.text); });
+
+                langList.unshift({value:'zxx',text:'No Linguistic Content'});
 
                 if (!languagesLoaded) {
                     ResourceLibrary.load("@content.resourceId", function(resource) {
                         $("#title").val(resource.title);
                         $("#description").val(resource.description);
                         $("#keywords").val(resource.keywords);
-//                        $("#categories").val(resource.categories);
-        //                $("#languages")[0].setValue(resource.languages);
-                        $("#languages").superselect(function() {
-                            this.setValue(resource.languages.iso639_3);
+                        new EditorWidgets.SuperSelect({
+                            el: "langLocation",
+                            data:{
+                                id: 'languages',
+                                selection: resource.languages.iso639_3,
+                                icon: 'icon-globe',
+                                text: 'Select Language',
+                                multiple: false,
+                                options: langList
+                            }
                         });
                     });
                     languagesLoaded = true;

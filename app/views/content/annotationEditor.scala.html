@@ -72,9 +72,7 @@
                     </div>
                     <div class="control-group">
                         <label class="control-label" for="language">Language</label>
-                        <div class="controls">
-                            @views.html.content.header.languages("language", multiple = false, all = true)
-                        </div>
+                        <div class="controls" id="langLocation"></div>
                     </div>
                 </div>
             </div>
@@ -85,4 +83,28 @@
         </div>
 
     </div>
+
+    <script type="text/javascript">
+        $(function() {
+
+            var langList = Object.keys(Ayamel.utils.p1map).map(function (p1) {
+                    var code = Ayamel.utils.p1map[p1];
+                    return {value: code, text: Ayamel.utils.getLangName(code)};
+                }).sort(function(a,b){ return a.text.localeCompare(b.text); });
+
+            langList.unshift({value:'zxx',text:'No Linguistic Content'});
+
+            new EditorWidgets.SuperSelect({
+                el: "langLocation",
+                data:{
+                    id: 'languages',
+                    selection: 'zxx',
+                    icon: 'icon-globe',
+                    text: 'Select Language',
+                    multiple: false,
+                    options: langList
+                }
+            });
+        });
+    </script>
 }
