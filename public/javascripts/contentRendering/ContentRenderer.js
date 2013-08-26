@@ -51,9 +51,13 @@ var ContentRenderer = (function () {
                 // Now turn those IDs into resources then into annotation manifests
                 async.map(data, function (id, asyncCallback) {
                     ResourceLibrary.load(id, function (resource) {
-
+                        var url = resource.content.files[0].downloadUri,
+                            idx = url.indexOf('?');
+                        if(idx === -1){ url += "?"; }
+                        else if(idx !== url.length-1){ url += '&nocache='; }
+                        url += Date.now().toString(36);
                         // Now get the actual annotation manifest
-                        $.ajax(resource.content.files[0].downloadUri, {
+                        $.ajax(url, {
                             dataType: "json",
                             success: function(data) {
                                 AnnotationLoader.load(data, function(manifest) {
@@ -105,19 +109,16 @@ var ContentRenderer = (function () {
     }
 
     return {
-
         findFile: findFile,
         getTranscripts: getTranscripts,
         getAnnotations: getAnnotations,
-
         render: function (args) {
             args.coursePrefix = args.coursePrefix || "";
-
             if (typeof args.content == "object") {
                 renderContent(args);
             }
             if (typeof args.content == "number") {
-                $.ajax("/content/" + args.content + "/json", {
+                $.ajax("/content/" + args.content + "/json?"+Date.now().toString(36), {
                     dataType: "json",
                     success: function (data) {
                         args.content = data;

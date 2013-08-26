@@ -33,7 +33,7 @@ var QuestionSetRenderer = (function() {
         function checkIndex(callback) {
             if (index === -1) {
                 $loader.show();
-                $.ajax("/questions/" + args.content.id + "/getIndex", {
+                $.ajax("/questions/" + args.content.id + "/getIndex?" + Date.now().toString(36), {
                     success: function(data) {
                         index = +data;
                         $loader.hide();
@@ -55,7 +55,7 @@ var QuestionSetRenderer = (function() {
                 event.index = index;
                 $element[0].dispatchEvent(event);
             } else {
-                window.location = "/questions/" + args.content.id + "/grade/" + index;
+                window.location = "/questions/" + args.content.id + "/grade/" + index + "?" + Date.now().toString(36);
             }
         });
 

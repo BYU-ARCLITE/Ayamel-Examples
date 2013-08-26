@@ -23,11 +23,17 @@ var TextRenderer = (function(){
 
             // Load all important information
             var file = ContentRenderer.findFile(args.resource, function (file) {
-                return file.representation === "original";
+                return file.representation.substring(0,8) === "original";
             });
 
             // Load annotations
             ContentRenderer.getAnnotations(args, function (manifests) {
+                var url = file.downloadUri,
+                    idx = url.indexOf('?');
+                if(idx === -1){ url += "?"; }
+                else if(idx !== url.length-1){ url += '&nocache='; }
+                url += Date.now().toString(36);
+
                 args.manifests = manifests;
 
                 // Create the layout
