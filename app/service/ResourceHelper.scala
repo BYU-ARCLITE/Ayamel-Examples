@@ -1,5 +1,6 @@
 package service
 
+import play.api.Logger
 import play.api.libs.json._
 import concurrent.{ExecutionContext, Future}
 import play.api.libs.MimeTypes
@@ -117,6 +118,8 @@ object ResourceHelper {
         "attributes" -> fileAttributes
       ))
       val remoteFiles = Json.obj("remoteFiles" -> Json.arr(file))
+      Logger.debug("Resource Helper: create with URI")
+      Logger.debug(remoteFiles.toString())
 
       // Save this info and return the updated resource
       ResourceController.setRemoteFiles(contentUploadUrl, remoteFiles).map(_ \ "resource")

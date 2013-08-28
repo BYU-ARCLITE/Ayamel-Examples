@@ -31,8 +31,8 @@ object ResourceController {
   def list(limit: Int = 50, offset: Int = 0, descending: Boolean = true): Future[JsValue] = {
     val order = if (descending) -1 else 1
     WS.url(baseResourceUrl + "?limit=" + limit + "&order=" + order + "&skip=" + offset).get().map(r => {
-//      Logger.debug("Resource Controller: list")
-//      Logger.debug(r.json.toString())
+      Logger.debug("Resource Controller: list")
+      Logger.debug(r.json.toString())
       r.json
     })
   }
@@ -44,8 +44,8 @@ object ResourceController {
    * @return The future JSON result
    */
   def createResource(resource: JsObject): Future[JsValue] = WS.url(baseResourceUrl + s"?_key=$apiKey").post(resource).map(r => {
-//    Logger.debug("Resource Controller: create")
-//    Logger.debug(r.json.toString())
+    Logger.debug("Resource Controller: create")
+    Logger.debug(r.json.toString())
     r.json
   })
 
@@ -57,8 +57,8 @@ object ResourceController {
    * @return The future JSON results
    */
   def scan(uri: String): Future[JsValue] = WS.url(baseResourceUrl + "/scan?uri=" + uri).get().map(r => {
-//    Logger.debug("Resource Controller: scan")
-//    Logger.debug(r.json.toString())
+    Logger.debug("Resource Controller: scan")
+    Logger.debug(r.json.toString())
     r.json
   })
 
@@ -69,8 +69,8 @@ object ResourceController {
    * @return The future JSON result
    */
   def getResource(id: String): Future[JsValue] = WS.url(baseResourceUrl + "/" + id).get().map(r => {
-//    Logger.debug("Resource Controller: get")
-//    Logger.debug(r.json.toString())
+    Logger.debug("Resource Controller: get")
+    Logger.debug(r.json.toString())
     r.json
   })
 
@@ -83,9 +83,9 @@ object ResourceController {
    */
   def updateResource(id: String, resource: JsValue): Future[JsValue] =
     WS.url(baseResourceUrl + "/" + id + s"?_key=$apiKey").put(resource).map(r => {
-//      Logger.debug("Resource Controller: update")
-//      Logger.debug(resource.toString())
-//      Logger.debug(r.json.toString())
+      Logger.debug("Resource Controller: update")
+      Logger.debug(resource.toString())
+      Logger.debug(r.json.toString())
       r.json
     })
 
@@ -96,8 +96,8 @@ object ResourceController {
    * @return The future JSON result
    */
   def deleteResource(id: String): Future[JsValue] = WS.url(baseResourceUrl + "/" + id + s"?_key=$apiKey").delete().map(r => {
-//    Logger.debug("Resource Controller: delete")
-//    Logger.debug(r.json.toString())
+    Logger.debug("Resource Controller: delete")
+    Logger.debug(r.json.toString())
     r.json
   })
 
@@ -109,8 +109,8 @@ object ResourceController {
    * @return The future JSON result
    */
   def setRemoteFiles(url: String, remoteFiles: JsValue): Future[JsValue] = WS.url(url + s"?_key=$apiKey").post(remoteFiles).map(r => {
-//    Logger.debug("Resource Controller: set remote files")
-//    Logger.debug(r.json.toString())
+    Logger.debug("Resource Controller: set remote files")
+    Logger.debug(r.json.toString())
     r.json
   })
 
@@ -123,8 +123,8 @@ object ResourceController {
   def getRelations(id: String, relationType: Symbol = 'id) = {
     val idKey = if (relationType == 'subject) "subjectId" else if (relationType == 'object) "objectId" else "id"
     WS.url(baseUrl + s"relations?$idKey=$id").get().map(r => {
-//      Logger.debug("Resource Controller: get relations")
-//      Logger.debug(r.json.toString())
+      Logger.debug("Resource Controller: get relations")
+      Logger.debug(r.json.toString())
       r.json
     })
   }
@@ -135,8 +135,8 @@ object ResourceController {
    * @return The future JSON result
    */
   def addRelation(relation: JsObject): Future[JsValue] = WS.url(baseUrl + s"relations?_key=$apiKey").post(relation).map(r => {
-//    Logger.debug("Resource Controller: add relation")
-//    Logger.debug(r.json.toString())
+    Logger.debug("Resource Controller: add relation")
+    Logger.debug(r.json.toString())
     r.json
   })
 
@@ -147,8 +147,8 @@ object ResourceController {
    */
   def deleteRelation(id: String): Future[JsValue] =
     WS.url(baseUrl + "relations/" + id + s"?_key=$apiKey").delete().map(r => {
-//      Logger.debug("Resource Controller: delete relation")
-//      Logger.debug(r.json.toString())
+      Logger.debug("Resource Controller: delete relation")
+      Logger.debug(r.json.toString())
       r.json
     })
 
@@ -160,8 +160,8 @@ object ResourceController {
    */
   def requestUploadUrl(id: String): Future[JsValue] =
     WS.url(baseResourceUrl + "/" + id + s"/request-upload-url?_key=$apiKey").get().map(r => {
-//      Logger.debug("Resource Controller: request upload url")
-//      Logger.debug(r.json.toString())
+      Logger.debug("Resource Controller: request upload url")
+      Logger.debug(r.json.toString())
       r.json
     })
 
