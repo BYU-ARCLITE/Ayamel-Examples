@@ -206,8 +206,8 @@ $(function() {
             //Bind the toolbar buttons
 
             // Undo/redo buttons
-            document.getElementById("undoButton").addEventListener('click',function(){ timeline.cstack.undo(); },false);
-            document.getElementById("redoButton").addEventListener('click',function(){ timeline.cstack.redo(); },false);
+            document.getElementById("undoButton").addEventListener('click',function(){ timeline.commandStack.undo(); },false);
+            document.getElementById("redoButton").addEventListener('click',function(){ timeline.commandStack.redo(); },false);
 
             // Font size buttons
             document.getElementById('plusFontButton').addEventListener('click',function(){ renderer.fontSizeRatio += 0.005; },false);
