@@ -3,12 +3,12 @@ $(function() {
 
     var captionEditor, Dialog,
         langList = Object.keys(Ayamel.utils.p1map).map(function (p1) {
-			var code = Ayamel.utils.p1map[p1];
+            var code = Ayamel.utils.p1map[p1];
             return {value: code, text: Ayamel.utils.getLangName(code)};
         }).sort(function(a,b){ return a.text.localeCompare(b.text); });
-	
-	langList.unshift({value:'zxx',text:'No Linguistic Content'});
-	
+
+    langList.unshift({value:'zxx',text:'No Linguistic Content'});
+
     Dialog = Ractive.extend({
         template: '<div class="modal-header">\
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>\
@@ -270,14 +270,14 @@ $(function() {
                     data: {
                         dialogTitle: "Create a new track",
                         languages: langList,
-						trackLang: "zxx",
-						trackKind: "subtitles",
-						trackName: "",
-						trackMime: "text/vtt",
+                        trackLang: "zxx",
+                        trackKind: "subtitles",
+                        trackName: "",
+                        trackMime: "text/vtt",
                         buttons: [{event:"create",label:"Create"}]
                     },
                     partials:{ dialogBody: template },
-					components:{ superselect: EditorWidgets.SuperSelect },
+                    components:{ superselect: EditorWidgets.SuperSelect },
                     actions: {
                         create: function(event){
                             var kind = this.get("trackKind"),
@@ -294,9 +294,9 @@ $(function() {
 
                             // Clear the form
                             this.set({
-								trackName: "",
-								selectOpen: false
-							});
+                                trackName: "",
+                                selectOpen: false
+                            });
                         }
                     }
                 });
@@ -329,13 +329,13 @@ $(function() {
                         data: {
                             dialogTitle: "Edit tracks",
                             languages: langList,
-							trackLang: "zxx",
-							trackKind: "subtitles",
-							trackName: "",
+                            trackLang: "zxx",
+                            trackKind: "subtitles",
+                            trackName: "",
                             buttons: [{event:"save",label:"Save"}]
                         },
                         partials: { dialogBody: template },
-						components:{ superselect: EditorWidgets.SuperSelect },
+                        components:{ superselect: EditorWidgets.SuperSelect },
                         actions: {
                             save: function(event){
                                 timeline.alterTextTrack(
@@ -346,7 +346,7 @@ $(function() {
                                     true);
 
                                 $("#editTrackModal").modal("hide");
-								this.set({selectOpen: false});
+                                this.set({selectOpen: false});
                                 return false;
                             }
                         }
@@ -412,7 +412,7 @@ $(function() {
                         buttons: [{event:"save",label:"Save"}]
                     },
                     partials: { dialogBody: template },
-					components:{ superselect: EditorWidgets.SuperSelect },
+                    components:{ superselect: EditorWidgets.SuperSelect },
                     actions: {
                         save: function(event){
                             var tracks = this.get("tracksToSave"),
@@ -420,47 +420,50 @@ $(function() {
                                 exportedTracks;
 
                             $("#saveTrackModal").modal("hide");
-							this.set({selectOpen: false});
+                            this.set({selectOpen: false});
                             if(!tracks.length) { return; }
 
-                            exportedTracks = timeline.exportTracks(tracks);
-
                             if (destination === "server") {
-                                // Saving to the server. Provide all the information and data and let it handle everything
-                                Object.keys(exportedTracks).forEach(function(key) {
-                                    var textTrack = timeline.getTrack(tracks[key]).textTrack,
-                                        fObj = exportedTracks[key],
-                                        data = new FormData();
+                                //Save to the server; don't bother to re-send already saved tracks
+                                exportedTracks = timeline.exportTracks(tracks.filter(function(trackName){
+                                    return !commandStack.isFileSaved(trackName);
+                                }));
+                                $.when.apply($,Object.keys(exportedTracks).map(function(key){
+                                    var data = new FormData(), fObj = exportedTracks[key]
+                                        textTrack = timeline.getTrack(tracks[key]).textTrack;
                                     data.append("file", new Blob([fObj.data],{type:fObj.mime}), fObj.name);
                                     data.append("label", textTrack.label);
                                     data.append("language", textTrack.language);
                                     data.append("kind", textTrack.kind);
                                     data.append("resourceId", textTrack.resourceId || "");
                                     data.append("contentId", content.id);
-                                    $.ajax({
+                                    return $.ajax({
                                         url: "/captionaider/save?course=" + courseId,
                                         data: data,
                                         cache: false,
                                         contentType: false,
                                         processData: false,
                                         type: "post",
-                                        dataType: "text",
-                                        success: function (data) {
-                                            commandStack.setFileSaved(textTrack.label);
-                                            textTrack.resourceId = data;
-                                            timeline.render();
-                                        }
+                                        dataType: "text"
+                                    }).then(function(data){
+                                        commandStack.setFileSaved(textTrack.label);
+                                        textTrack.resourceId = data;
+                                    },function(xhr, status, error){
+                                        alert("Error occurred while saving "+textTrack.label+":\n"+status)
                                     });
+                                })).then(function(){
+                                    timeline.render();
+                                    alert("Saved Successfully");
                                 });
                             } else {
                                 // Use one of the editor widget saving mechanisms
+                                exportedTracks = timeline.exportTracks(tracks);
                                 EditorWidgets.Save(
                                     exportedTracks, destination,
                                     function(){
-                                        [].forEach.call(tracks,function(name){
-                                            commandStack.setFileSaved(name);
-                                        });
+                                        tracks.forEach(commandStack.setFileSaved.bind(commandStack));
                                         timeline.render();
+                                        alert("Saved Successfully");
                                     },
                                     function(){ alert("Error Saving; please try again."); }
                                 );
@@ -497,13 +500,13 @@ $(function() {
                     data: {
                         dialogTitle: "Load Track",
                         languages: langList,
-						trackLang: "zxx",
-						trackKind: "subtitles",
+                        trackLang: "zxx",
+                        trackKind: "subtitles",
                         sources: Object.keys(sources).map(function(key){ return {name: key, label: sources[key].label}; }),
                         buttons: [{event:"load",label:"Load"}]
                     },
                     partials: { dialogBody: template },
-					components:{ superselect: EditorWidgets.SuperSelect },
+                    components:{ superselect: EditorWidgets.SuperSelect },
                     actions: {
                         load: function(event){
                             var kind = this.get('trackKind');
@@ -524,7 +527,7 @@ $(function() {
                                 });
                             });
                             $("#loadTrackModal").modal("hide");
-							this.set({selectOpen: false});
+                            this.set({selectOpen: false});
                         }
                     }
                 });
