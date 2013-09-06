@@ -429,7 +429,7 @@ $(function() {
                                     return !commandStack.isFileSaved(trackName);
                                 }));
                                 $.when.apply($,Object.keys(exportedTracks).map(function(key){
-                                    var data = new FormData(), fObj = exportedTracks[key]
+                                    var data = new FormData(), fObj = exportedTracks[key],
                                         textTrack = timeline.getTrack(tracks[key]).textTrack;
                                     data.append("file", new Blob([fObj.data],{type:fObj.mime}), fObj.name);
                                     data.append("label", textTrack.label);
