@@ -290,6 +290,7 @@ $(function() {
                             track.mode = "showing";
                             track.readyState = TextTrack.LOADED;
                             timeline.addTextTrack(track, mime);
+                            timeline.commandStack.setFileUnsaved(name);
                             updateSpacing();
 
                             // Clear the form
@@ -522,7 +523,7 @@ $(function() {
                                     success: function(track, mime) {
                                         track.mode = "showing";
                                         timeline.addTextTrack(track, mime, true);
-							            that.commandStack.setFileUnsaved(fileObj.name);
+                                        timeline.commandStack.setFileUnsaved(fileObj.name);
                                         updateSpacing();
                                     }
                                 });
