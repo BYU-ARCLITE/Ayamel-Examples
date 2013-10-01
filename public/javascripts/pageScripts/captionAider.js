@@ -522,6 +522,7 @@ $(function() {
                                     success: function(track, mime) {
                                         track.mode = "showing";
                                         timeline.addTextTrack(track, mime, true);
+							            that.commandStack.setFileUnsaved(fileObj.name);
                                         updateSpacing();
                                     }
                                 });
