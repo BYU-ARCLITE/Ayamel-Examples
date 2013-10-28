@@ -32,66 +32,58 @@ var VideoRenderer = (function () {
     }
 
     function createLayout(args) {
-
         var panes;
-        var layout;
 
         switch (getLevel(args)) {
-            case 1:
-                layout = ContentLayoutManager.onePanel($(args.holder));
-                break;
-            case 2:
-                if (showTranscript(args)) {
-                    panes = ContentLayoutManager.twoPanel($(args.holder), ["Transcript"]);
-                    layout = {
-                        $player: panes.$player,
-                        $transcript: panes.$Transcript
-                    };
-                } else {
-                    layout = ContentLayoutManager.onePanel($(args.holder));
-                }
-                break;
-            case 3:
-                if (showTranscript(args)) {
-                    panes = ContentLayoutManager.twoPanel($(args.holder), ["Transcript", "Definitions"]);
-                    layout = {
-                        $player: panes.$player,
-                        $definitions: panes.Definitions.$content,
-                        $definitionsTab: panes.Definitions.$tab,
-                        $transcript: panes.Transcript.$content
-                    };
-                } else {
-                    panes = ContentLayoutManager.twoPanel($(args.holder), ["Definitions"]);
-                    layout = {
-                        $player: panes.$player,
-                        $definitions: panes.$Definitions
-                    };
-                }
-                break;
-            case 4:
-                if (showTranscript(args)) {
-                    panes = ContentLayoutManager.twoPanel($(args.holder), ["Transcript", "Definitions", "Annotations"]);
-                    layout = {
-                        $player: panes.$player,
-                        $definitions: panes.Definitions.$content,
-                        $definitionsTab: panes.Definitions.$tab,
-                        $annotations: panes.Annotations.$content,
-                        $annotationsTab: panes.Annotations.$tab,
-                        $transcript: panes.Transcript.$content
-                    };
-                } else {
-                    panes = ContentLayoutManager.twoPanel($(args.holder), ["Definitions", "Annotations"]);
-                    layout = {
-                        $player: panes.$player,
-                        $definitions: panes.Definitions.$content,
-                        $definitionsTab: panes.Definitions.$tab,
-                        $annotations: panes.Annotations.$content,
-                        $annotationsTab: panes.Annotations.$tab
-                    };
-                }
+		default:
+		case 1:
+			return ContentLayoutManager.onePanel($(args.holder));
+		case 2:
+			if (showTranscript(args)) {
+				panes = ContentLayoutManager.twoPanel($(args.holder), ["Transcript"]);
+				return {
+					$player: panes.$player,
+					$transcript: panes.$Transcript
+				};
+			}
+			return ContentLayoutManager.onePanel($(args.holder));
+		case 3:
+			if (showTranscript(args)) {
+				panes = ContentLayoutManager.twoPanel($(args.holder), ["Transcript", "Definitions"]);
+				return {
+					$player: panes.$player,
+					$definitions: panes.Definitions.$content,
+					$definitionsTab: panes.Definitions.$tab,
+					$transcript: panes.Transcript.$content
+				};
+			}
+			panes = ContentLayoutManager.twoPanel($(args.holder), ["Definitions"]);
+			return {
+				$player: panes.$player,
+				$definitions: panes.$Definitions
+			};
+		case 4:
+		case 5:
+			if (showTranscript(args)) {
+				panes = ContentLayoutManager.twoPanel($(args.holder), ["Transcript", "Definitions", "Annotations"]);
+				return {
+					$player: panes.$player,
+					$definitions: panes.Definitions.$content,
+					$definitionsTab: panes.Definitions.$tab,
+					$annotations: panes.Annotations.$content,
+					$annotationsTab: panes.Annotations.$tab,
+					$transcript: panes.Transcript.$content
+				};
+			}
+			panes = ContentLayoutManager.twoPanel($(args.holder), ["Definitions", "Annotations"]);
+			return {
+				$player: panes.$player,
+				$definitions: panes.Definitions.$content,
+				$definitionsTab: panes.Definitions.$tab,
+				$annotations: panes.Annotations.$content,
+				$annotationsTab: panes.Annotations.$tab
+			};
         }
-
-        return layout;
     }
 
     function createTranslator(args) {
