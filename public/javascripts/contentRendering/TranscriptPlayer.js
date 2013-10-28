@@ -29,11 +29,11 @@ var TranscriptPlayer = (function() {
                 </div>\
                 <div>\
                     {{#transcripts:ti}}\
-                    {{#(ti === activeId)}}\
+                    {{#(ti === activeIndex)}}\
                     <div class="transcriptContent">\
                         {{#.cues:ci}}\
-						<div class="{{(currentTime > .startTime && currentTime < .endTime)?"transcriptCue active":"active"}} {{direction(.text)}}" on-tap="cueclick:{{ti}},{{ci}}" data-cueindex="{{ci}}">{{.text}}</div>\
-						{{/.cues}}\
+                        <div class="{{(currentTime > .startTime && currentTime < .endTime)?"transcriptCue active":"active"}} {{direction(.text)}}" on-tap="cueclick:{{ti}},{{ci}}" data-cueindex="{{ci}}">{{.text}}</div>\
+                        {{/.cues}}\
                     </div>\
                     {{/filter_expr}}\
                     {{/transcripts}}\
@@ -41,6 +41,7 @@ var TranscriptPlayer = (function() {
             </div>',
             data: {
                 currentTime: 0,
+                activeIndex: 0,
                 transcripts: tracks,
                 allowsync: args.syncButton || false,
                 sync: args.syncButton || false,
