@@ -332,10 +332,9 @@ var VideoRenderer = (function () {
             });
 
             // Cue clicking
-            transcriptPlayer.addEventListener("cueClick", function(event) {
-                var id = event.cue.track.cues.indexOf(event.cue);
-                args.videoPlayer.currentTime = event.cue.startTime;
-                ActivityStreams.predefined.transcriptCueClick(event.track.resourceId, id);
+            transcriptPlayer.addEventListener("cueclick", function(event) {
+                args.videoPlayer.currentTime = event.detail.cue.startTime;
+                ActivityStreams.predefined.transcriptCueClick(event.detail.track.resourceId, event.detail.cue.id);
             });
 
 
