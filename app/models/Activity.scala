@@ -6,6 +6,7 @@ import anorm.SqlParser._
 import service.TimeTools
 import play.api.db.DB
 import play.api.Play.current
+import play.api.Logger
 
 /**
  * The Activity model is based of the activity stream specification found here:
@@ -75,11 +76,11 @@ case class Activity(id: Pk[Long], actor: Long, verb: String, activityContext: Ac
     def getUser = {
       if (user.isEmpty)
         user = User.findById(actor)
-      user.get
+      user
     }
   }
 
-  def getUser: User = cache.getUser
+  def getUser: Option[User] = cache.getUser
 
 }
 

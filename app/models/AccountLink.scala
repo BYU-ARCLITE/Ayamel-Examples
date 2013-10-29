@@ -71,7 +71,7 @@ case class AccountLink(id: Pk[Long], userIds: Set[Long], primaryAccount: Long) e
     def getUsers = {
       if (users.isEmpty)
         users = Some(userIds.map(id => User.findById(id).get))
-      users.get
+      users.getOrElse(Set.empty[User])
     }
   }
 

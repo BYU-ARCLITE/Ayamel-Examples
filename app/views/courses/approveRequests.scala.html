@@ -13,16 +13,21 @@
                 <th>Reason</th>
                 <th>Actions</th>
             </tr>
+            @{ /* TODO: Fix, if user is empty then notify a system admin */ }
             @for(addRequest <- course.getRequests) {
-                <tr>
-                    <td>@addRequest.getUser.displayName</td>
-                    <td>@addRequest.getUser.email.getOrElse("None")</td>
-                    <td>@addRequest.message</td>
-                    <td>
-                        <a href="@routes.Courses.approveRequest(course.id.get, addRequest.id.get)" class="btn btn-blue">Approve</a>
-                        <a href="@routes.Courses.denyRequest(course.id.get, addRequest.id.get)" class="btn btn-magenta">Deny</a>
-                    </td>
-                </tr>
+                @defining(addRequest.getUser){ user =>
+                    @if(!user.isEmpty) {
+                        <tr>
+                            <td>@user.get.displayName</td>
+                            <td>@user.get.email.getOrElse("None")</td>
+                            <td>@addRequest.message</td>
+                            <td>
+                                <a href="@routes.Courses.approveRequest(course.id.get, addRequest.id.get)" class="btn btn-blue">Approve</a>
+                                <a href="@routes.Courses.denyRequest(course.id.get, addRequest.id.get)" class="btn btn-magenta">Deny</a>
+                            </td>
+                        </tr>
+                    }
+                }
             }
         </table>
 

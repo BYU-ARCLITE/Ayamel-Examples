@@ -57,7 +57,7 @@ case class Announcement(id: Pk[Long], courseId: Long, userId: Long, timeMade: St
     def getUser = {
       if (user.isEmpty)
         user = User.findById(userId)
-      user.get
+      user
     }
   }
 
@@ -65,7 +65,7 @@ case class Announcement(id: Pk[Long], courseId: Long, userId: Long, timeMade: St
    * Gets the user that made this announcement
    * @return The announcer
    */
-  def getUser: User = cache.getUser
+  def getUser: Option[User] = cache.getUser
 }
 
 object Announcement extends SQLSelectable[Announcement] {

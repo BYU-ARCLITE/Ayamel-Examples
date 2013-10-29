@@ -47,12 +47,12 @@ case class TeacherRequest(id: Pk[Long], userId: Long, reason: String) extends SQ
   //
 
   def approve() {
-    getUser.copy(role = User.roles.teacher).save.sendNotification("Your request for teacher status has been approved.")
+    getUser.foreach(_.copy(role = User.roles.teacher).save.sendNotification("Your request for teacher status has been approved."))
     delete()
   }
 
   def deny() {
-    getUser.sendNotification("Sorry, but your request for teacher status has been denied.")
+    getUser.foreach(_.sendNotification("Sorry, but your request for teacher status has been denied."))
     delete()
   }
 
@@ -73,7 +73,7 @@ case class TeacherRequest(id: Pk[Long], userId: Long, reason: String) extends SQ
     def getUser = {
       if (user.isEmpty)
         user = User.findById(userId)
-      user.get
+      user
     }
   }
 
@@ -81,7 +81,7 @@ case class TeacherRequest(id: Pk[Long], userId: Long, reason: String) extends SQ
    * Returns the user make this request
    * @return The user
    */
-  def getUser: User = cache.getUser
+  def getUser: Option[User] = cache.getUser
 
 }
 

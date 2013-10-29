@@ -79,15 +79,20 @@
                     </tr>
                 </thead>
                 <tbody>
+                    @{ /* TODO: Fix, if user is empty then notify a system admin */ }
                     @for(translation <- content.translations(coursePrefix)) {
-                        <tr>
-                            <td>@translation.getUser.displayName</td>
-                            <td>@translation.activityObject.itemRef</td>
-                            <td>@translation.activityContext.generatorContext.objectType</td>
-                            <td class="resourceName">@translation.activityContext.generatorContext.id</td>
-                            <td>@translation.activityContext.generatorContext.itemRef</td>
-                            <td>@service.TimeTools.prettyTime(translation.published)</td>
-                        </tr>
+                        @defining(translation.getUser){ user =>
+                            @if(!user.isEmpty) {
+                                <tr>
+                                    <td>@user.get.displayName</td>
+                                    <td>@translation.activityObject.itemRef</td>
+                                    <td>@translation.activityContext.generatorContext.objectType</td>
+                                    <td class="resourceName">@translation.activityContext.generatorContext.id</td>
+                                    <td>@translation.activityContext.generatorContext.itemRef</td>
+                                    <td>@service.TimeTools.prettyTime(translation.published)</td>
+                                </tr>
+                            }
+                        }
                     }
                 </tbody>
             </table>
@@ -105,13 +110,18 @@
                     </tr>
                 </thead>
                 <tbody>
+                    @{ /* TODO: Fix, if user is empty then notify a system admin */ }
                     @for(annotations <- content.annotations(coursePrefix)) {
-                        <tr>
-                            <td>@annotations.getUser.displayName</td>
-                            <td>@annotations.activityObject.itemRef</td>
-                            <td class="resourceName">@annotations.activityObject.id</td>
-                            <td>@service.TimeTools.prettyTime(annotations.published)</td>
-                        </tr>
+                        @defining(annotations.getUser){ user =>
+                            @if(!user.isEmpty) {
+                                <tr>
+                                    <td>@user.get.displayName</td>
+                                    <td>@annotations.activityObject.itemRef</td>
+                                    <td class="resourceName">@annotations.activityObject.id</td>
+                                    <td>@service.TimeTools.prettyTime(annotations.published)</td>
+                                </tr>
+                            }
+                        }
                     }
                 </tbody>
             </table>
@@ -129,13 +139,18 @@
                     </tr>
                 </thead>
                 <tbody>
+                    @{ /* TODO: Fix, if user is empty then notify a system admin */ }
                     @for(cueClick <- content.cueClicks(coursePrefix)) {
-                        <tr>
-                            <td>@cueClick.getUser.displayName</td>
-                            <td class="resourceName">@cueClick.activityContext.generatorContext.id</td>
-                            <td>@cueClick.activityContext.generatorContext.itemRef</td>
-                            <td>@service.TimeTools.prettyTime(cueClick.published)</td>
-                        </tr>
+                        @defining(cueClick.getUser){ user =>
+                            @if(!user.isEmpty) {
+                                <tr>
+                                    <td>@user.get.displayName</td>
+                                    <td class="resourceName">@cueClick.activityContext.generatorContext.id</td>
+                                    <td>@cueClick.activityContext.generatorContext.itemRef</td>
+                                    <td>@service.TimeTools.prettyTime(cueClick.published)</td>
+                                </tr>
+                            }
+                        }
                     }
                 </tbody>
             </table>

@@ -44,17 +44,15 @@ case class AddCourseRequest (id:Pk [Long], userId:Long, courseId:Long, message: 
 
   def approve() {
     // Notify the user and add him to the course
-    val user = getUser
     val course = getCourse
-    user.enroll(course).sendNotification("You have been added to the course \"" + course.name + "\".")
+    getUser.foreach(_.enroll(course).sendNotification("You have been added to the course \"" + course.name + "\"."))
     delete()
   }
 
   def deny() {
     // Notify the user
-    val user = getUser
     val course = getCourse
-    user.sendNotification("You have been denied access to the course \"" + course.name + "\".")
+    getUser.foreach(_.sendNotification("You have been denied access to the course \"" + course.name + "\"."))
     delete()
   }
 
@@ -75,7 +73,7 @@ case class AddCourseRequest (id:Pk [Long], userId:Long, courseId:Long, message: 
     def getUser = {
       if (user.isEmpty)
         user = User.findById(userId)
-      user.get
+      user
     }
 
     var course: Option[Course] = None
@@ -87,7 +85,7 @@ case class AddCourseRequest (id:Pk [Long], userId:Long, courseId:Long, message: 
     }
   }
 
-  def getUser: User = cache.getUser
+  def getUser: Option[User] = cache.getUser
 
   def getCourse: Course = cache.getCourse
 }
