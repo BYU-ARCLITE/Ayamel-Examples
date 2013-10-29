@@ -310,6 +310,7 @@ $(function() {
                             <label class="control-label">Which Track</label>\
                             <div class="controls">\
                                 <select value="{{trackToEdit}}">\
+                                <option value="">---Please Select a Track---</option>\
                                 {{#trackList}}<option value="{{.}}">{{.}}</option>{{/trackList}}\
                                 </select>\
                             </div>\
