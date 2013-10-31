@@ -17,6 +17,13 @@ import play.api.libs.json.JsObject
 object ResourceHelper {
 
   /**
+   * Determines if the given URL is a standard HTTP or HTTPS url or not
+   * @param uri The URL to check
+   * @return
+   */
+  def isHTTP(uri: String): Boolean = uri.startsWith("http://") || uri.startsWith("https://")
+
+  /**
    * Determines if the given URL is to a YouTube video or not
    * @param uri The URL to check
    * @return
@@ -30,6 +37,13 @@ object ResourceHelper {
    * @return
    */
   def isBrightcove(uri: String): Boolean = uri.startsWith("brightcove://")
+
+  /**
+   * Determines if the given URL is valid or not
+   * @param uri The URL to check
+   * @return
+   */
+  def isValidUrl(uri: String): Boolean = isHTTP(uri) || isYouTube(uri) || isBrightcove(uri)
 
   /**
    * Methods for creating resources with basic data
@@ -67,10 +81,7 @@ object ResourceHelper {
    * @return
    */
   def getUrlName(url: String): String =
-    if (isYouTube(url) || isBrightcove(url))
-      "streamUri"
-    else
-      "downloadUri"
+    if (isHTTP(url)) "downloadUri" else "streamUri"
 
   /**
    * Attempts to retrieve the mime type from the uri. Doesn't deal with the resource library, but this is used by other
@@ -166,10 +177,10 @@ object ResourceHelper {
    * @return The future size (in bytes)
    */
   def getUrlSize(url: String): Future[Long] = {
-    if (isBrightcove(url) || isYouTube(url))
-      Future(0)
+    if (isHTTP(url))
+      WS.url(url).head().map(_.header("Content-Length").getOrElse("0").toLong)
     else
-      WS.url(url).head().map(_.header("Content-Length").get.toLong)
+      Future(0)
   }
 
   /**

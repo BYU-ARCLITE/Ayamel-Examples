@@ -55,18 +55,14 @@ object ContentController extends Controller {
       implicit user =>
       // Guests cannot create content
         Authentication.enforceNotRole(User.roles.guest) {
-          if (page == "url")
-            Ok(views.html.content.create.url())
-          else if (page == "batch")
-            Ok(views.html.content.create.batchUrl())
-          else if (page == "resource")
-            Ok(views.html.content.create.resource())
-          else if (page == "playlist")
-            Ok(views.html.content.create.playlist())
-          else if (page == "questions")
-            Ok(views.html.content.create.questionSet())
-          else
-            Ok(views.html.content.create.file())
+          page match {
+            case "url" => Ok(views.html.content.create.url())
+            case "batch" => Ok(views.html.content.create.batchUrl())
+            case "resource" => Ok(views.html.content.create.resource())
+            case "playlist" => Ok(views.html.content.create.playlist())
+            case "questions" => Ok(views.html.content.create.questionSet())
+            case _ => Ok(views.html.content.create.file())
+          }
         }
   }
 
@@ -107,22 +103,24 @@ object ContentController extends Controller {
           val languages = data.get("languages").map(_.toList).getOrElse(List("eng"))
 
           // Get the URL and MIME. Process the URL if it is not YouTube or Brightcove
-          var url = data("url")(0)
-          if (!ResourceHelper.isBrightcove(url) && !ResourceHelper.isYouTube(url))
-            url = processUrl(url)
+          val raw_url = data("url")(0)
+          val url = if (ResourceHelper.isHTTP(raw_url)) processUrl(raw_url) else raw_url
 
-          val mime = ResourceHelper.getMimeFromUri(url)
+          if (ResourceHelper.isValidUrl(url)) {
+            val mime = ResourceHelper.getMimeFromUri(url)
 
-          // Create the content
-          Async {
-            ResourceHelper.getUrlSize(url).flatMap(bytes => {
-              val info = ContentDescriptor(title, description, keywords, url, bytes, mime, labels = labels,
-                languages = languages)
-              ContentManagement.createContent(info, user, contentType).map(content => {
-                Redirect(routes.ContentController.view(content.id.get)).flashing("success" -> "Content added")
+            // Create the content
+            Async {
+              ResourceHelper.getUrlSize(url).flatMap(bytes => {
+                val info = ContentDescriptor(title, description, keywords, url, bytes, mime, labels = labels,
+                  languages = languages)
+                ContentManagement.createContent(info, user, contentType).map(content => {
+                  Redirect(routes.ContentController.view(content.id.get)).flashing("success" -> "Content added")
+                })
               })
-            })
-          }
+            }
+          } else
+            Redirect(routes.ContentController.createPage("url")).flashing("error" -> "The given URL is invalid.")
         }
   }
 
