@@ -90,9 +90,6 @@ var VideoRenderer = (function () {
         if (getLevel(args) >= 3) {
             // Create the translator
             var translator = new TextTranslator();
-            translator.addTranslationEngine(arcliteTranslationEngine, 1);
-            translator.addTranslationEngine(wordReferenceTranslationEngine, 2);
-            translator.addTranslationEngine(googleTranslationEngine, 3);
 
             // Add translation listeners
             // Translation started

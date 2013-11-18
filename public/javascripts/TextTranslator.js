@@ -5,24 +5,7 @@ var TextTranslator = (function () {
      * The text translator object
      * @constructor
      */
-    function TextTranslator() {
-        this.translationEngines = [];
-//        this.eventListeners = [];
-        this.e = document.createElement("div");
-    }
-
-    /**
-     * This adds a translation engine to the
-     * @param translationEngine A TranslationEngine object
-     * @param priority An integer denoting the priority level. The lower the level the sooner it will be used.
-     */
-    TextTranslator.prototype.addTranslationEngine = function addTranslationEngine(translationEngine, priority) {
-        // Add the new translation engine
-        this.translationEngines.push([translationEngine, priority]);
-
-        // Sort the list by priority
-        this.translationEngines.sort(function (a, b) { return a[1] > b[1]; });
-    };
+    function TextTranslator(){ this.e = document.createElement("div"); }
 
     /**
      * This takes a DOM element and sets it up so selecting text will invoke the translator.
@@ -31,6 +14,7 @@ var TextTranslator = (function () {
      * @param destLang
      * @param eventData
      */
+    //TODO: Integrate with the generic text manipulation widget so we don't have to attach ad-hoc like this
     TextTranslator.prototype.attach = function attach(DOMNode, srcLang, destLang, eventData) {
         var _this = this;
 
@@ -82,45 +66,27 @@ var TextTranslator = (function () {
 
     TextTranslator.prototype.translate = function translate(text, srcLang, destLang, callback) {
         var _this = this;
-
-        // The error function. Creates and dispatches a translate error event
-        function error() {
-            var event = document.createEvent("HTMLEvents");
-            event.initEvent("translateError", true, true);
-            event.text = text;
-            _this.e.dispatchEvent(event);
-        }
-
-        // The success function. Creates and dispatches a translate success event
-        function success(results, engine) {
-            var event = document.createEvent("HTMLEvents");
-            event.initEvent("translateSuccess", true, true);
-            event.text = text;
-            event.translations = results;
-            event.engine = engine;
-            event.srcLang = Ayamel.utils.upgradeLangCode(srcLang);
-            event.destLang = Ayamel.utils.upgradeLangCode(destLang);
-            _this.e.dispatchEvent(event);
-
-            callback && callback(event);
-        }
-
-        // Recursively go through the translation engines until we either get a translation or hit the end
-        function callEngine(index) {
-            if (index >= _this.translationEngines.length) {
-                error();
-            } else {
-                _this.translationEngines[index][0].service(text, srcLang, destLang, function (results, engine) {
-                    // This engine successfully translated. Display the results
-                    success(results, engine);
-                }, function () {
-                    // This engine failed, so call the next one
-                    callEngine(index + 1);
-                });
+        //TODO: Use CustomEvent
+        $.ajax("http://sartre3.byu.edu:9010/api/v1/lookup?srcLang=" + srcLang + "&destLang=" + destLang + "&word=" + encodeURIComponent(text), {
+            dataType: "json",
+            success: function success(data) {
+                var event = document.createEvent("HTMLEvents");
+                event.initEvent("translateSuccess", true, true);
+                event.text = text;
+                event.translations = data.entries;
+                event.engine = data.source;
+                event.srcLang = Ayamel.utils.upgradeLangCode(srcLang);
+                event.destLang = Ayamel.utils.upgradeLangCode(destLang);
+                _this.e.dispatchEvent(event);
+                callback && callback(event);
+            },
+            error: function() {
+                var event = document.createEvent("HTMLEvents");
+                event.initEvent("translateError", true, true);
+                event.text = text;
+                _this.e.dispatchEvent(event);
             }
-        }
-
-        callEngine(0);
+        });
     };
 
     TextTranslator.prototype.addEventListener = function(event, callback) {

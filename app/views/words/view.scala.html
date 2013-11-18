@@ -59,10 +59,7 @@
 
             // Create the translator
             var translator = new TextTranslator();
-            translator.addTranslationEngine(arcliteTranslationEngine, 1);
-            translator.addTranslationEngine(wordReferenceTranslationEngine, 2);
-            translator.addTranslationEngine(googleTranslationEngine, 3);
-
+          
             // Set up a caching layer
             var translationCache = {};
             function translate(language, text, callback) {

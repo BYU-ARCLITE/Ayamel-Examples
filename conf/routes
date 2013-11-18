@@ -157,8 +157,6 @@ GET     /help/:id/delete                    controllers.HelpPages.delete(id: Lon
 
 # Ajax utilities
 POST    /ajax/util/detectMime                               controllers.ajax.Util.detectMime
-GET     /ajax/translate/google/:src/:dest/:text             controllers.ajax.Translate.translateGoogle(src: String, dest: String, text: String)
-GET     /ajax/translate/wordReference/:src/:dest/:text      controllers.ajax.Translate.translateWordReference(src: String, dest: String, text: String)
 POST    /ajax/activity                                      controllers.ajax.ActivitySaver.save
 POST    /ajax/permissionChecker                             controllers.ajax.PermissionChecker.check
 GET     /ajax/content/mine                                  controllers.ajax.ContentLister.mine

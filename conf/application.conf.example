@@ -80,15 +80,6 @@ playgraph.author.secret=""
 playgraph.player.key=""
 playgraph.player.secret=""
 
-# Translation configuration
-# WordReference
-translation.wordReference.key=""
-
-# Google Translate
-translation.google.email=""
-translation.google.password=""
-translation.google.source=""
-
 # SMTP (email) settings
 smtp.host="smtp.gmail.com"
 smtp.port=465

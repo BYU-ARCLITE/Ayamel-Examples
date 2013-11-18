@@ -100,23 +100,6 @@ This uses PlayGraph. So you need to have both an authoring key and a playback ke
     playgraph.player.key="player key goes here"
     playgraph.player.secret="player secret goes here"
 
-### Configure translation keys
-
-Ayamel supports text translations using WordReference and Google Translate. To use these services you must specify the
-right authentication credentials in the configuration file.
-
-For WordReference, enter the API key:
-
-    translation.wordReference.key="word reference key goes here"
-
-For Google Translate, this uses the research version (which will cease by the end of the year, so modifications will be
-needed). So you need to specify the email account that has access the the API, the password of that account, and a
-unique name that describes the app. For the BYU instance of Ayamel, this name is `arclite-ayamel-1`.
-
-    translation.google.email="someemail@gmail.com"
-    translation.google.password="your password here"
-    translation.google.source="arclite-ayamel-1"
-
 ### Configure SMTP
 
 You will need to configure an email account with SMTP settings in order to send emails. The settings will vary based on your provider. For a Google account, it would be:
