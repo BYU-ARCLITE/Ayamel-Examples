@@ -114,19 +114,20 @@ object Users extends Controller {
     implicit request =>
       implicit user =>
 
-      // Load the image from the file and make it into a thumbnail
-        val file = request.body.file("file").get
-        val image = ImageTools.makeThumbnail(ImageIO.read(file.ref.file))
+        // Load the image from the file and make it into a thumbnail
+        request.body.file("file").map { picture =>
+          val image = ImageTools.makeThumbnail(ImageIO.read(picture.ref.file))
 
-        // Upload the file
-        Async {
-          FileUploader.uploadImage(image, file.filename).map {
-            url =>
-
-            // Save the user info about the profile picture
+          // Upload the file
+          Async {
+            FileUploader.uploadImage(image, picture.filename).map { url =>
+              // Save the user info about the profile picture
               user.copy(picture = Some(url)).save
               Redirect(routes.Users.accountSettings()).flashing("info" -> "Profile picture updated")
+            }
           }
+        }.getOrElse {
+          Redirect(routes.Users.accountSettings()).flashing("error" -> "Missing file")
         }
   }
 

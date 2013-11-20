@@ -186,6 +186,9 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
    * Merges the provided user into this one.
    * @param user The user to merge
    */
+  //TODO: Figure out how to properly deal with unchecked gets
+  //They will only fail if data is corrupted, and it's not immediately clear
+  //what should be done in those cases
   def merge(user: User) {
     val newRole = math.max(role, user.role)
 
@@ -211,7 +214,7 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
 
       // Transfer ownership from the other user's primary account to this one
       consolidateOwnership(
-        user.getAccountLink.map(_.getPrimaryUser).getOrElse(user)
+        user.getAccountLink.get.getPrimaryUser.get
       )
 
       // Merge the non-merged user into the other
@@ -223,8 +226,8 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
     } else if(id1 != -1 && id2 != -1) { // Case 3
 
       // Transfer ownership from this user's primary account to the other user's primary account
-      getAccountLink.get.getPrimaryUser.consolidateOwnership(
-        user.getAccountLink.get.getPrimaryUser
+      getAccountLink.get.getPrimaryUser.get.consolidateOwnership(
+        user.getAccountLink.get.getPrimaryUser.get
       )
 
       // Move all accounts on the other user to this one
@@ -236,9 +239,6 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
       }
       accountLink2.delete()
     }
-
-
-
   }
 
   //       _____      _   _

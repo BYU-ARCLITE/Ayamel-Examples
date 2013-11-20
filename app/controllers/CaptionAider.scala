@@ -48,25 +48,25 @@ object CaptionAider extends Controller {
         ContentController.getContent(contentId) {
           content =>
 
-            val params = request.body.dataParts.mapValues(_(0))
-            val label = params("label")
-            val languages = List(params("language"))
-            val kind = params("kind")
+            request.body.file("file").map { tmpFile =>
+              val params = request.body.dataParts.mapValues(_(0))
+              val label = params("label")
+              val languages = List(params("language"))
+              val kind = params("kind")
 
-            // We need to determine if this file has already been saved
-            val resourceId = params("resourceId")
-            Async {
-              val tmpFile = request.body.file("file").get
+              // We need to determine if this file has already been saved
+              val resourceId = params("resourceId")
+              
               val name = FileUploader.uniqueFilename(tmpFile.filename)
               val mime = tmpFile.contentType.getOrElse("text/plain")
               val file = tmpFile.ref.file
               val size = file.length()
               
-              if (resourceId.isEmpty) {
-                // Create a new resource
-                // Upload the data
-                FileUploader.uploadFile(file, name, mime).flatMap {
-                  url =>
+              Async {
+                if (resourceId.isEmpty) {
+                  // Create a new resource
+                  // Upload the data
+                  FileUploader.uploadFile(file, name, mime).flatMap { url =>
 
                   // Create subtitle (subject) resource
                     val resource = ResourceHelper.make.resource(Json.obj(
@@ -81,17 +81,15 @@ object CaptionAider extends Controller {
                       createdResource =>
                         val subjectId = (createdResource \ "id").as[String]
                         AdditionalDocumentAdder.add(content, subjectId, 'captionTrack) {
-                          course =>
-                            Ok(subjectId)
+                          course => Ok(subjectId)
                         }
                     }
-                }
+                  }
 
-              } else {
-                // Figure out which file we are replacing
-                // First get the resource
-                ResourceController.getResource(resourceId).flatMap {
-                  json =>
+                } else {
+                  // Figure out which file we are replacing
+                  // First get the resource
+                  ResourceController.getResource(resourceId).flatMap { json =>
                     val resource = json \ "resource"
 
                     // Handle updating the information.
@@ -114,11 +112,13 @@ object CaptionAider extends Controller {
 
                     // Replace the file
                     FileUploader.uploadFile(file, name, mime).map {
-                      url =>
-                        Ok(resourceId)
+                      url => Ok(resourceId)
                     }
+                  }
                 }
               }
+            }.getOrElse {
+              BadRequest
             }
         }
     }

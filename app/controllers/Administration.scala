@@ -109,7 +109,7 @@ object Administration extends Controller {
   def getUser(id: Long)(f: User => Result)(implicit request: RequestHeader): Result = {
     User.findById(id).map {
       user =>
-        f(user.getAccountLink.map(_.getPrimaryUser).getOrElse(user))
+        f(user.getAccountLink.flatMap(_.getPrimaryUser).getOrElse(user))
     }.getOrElse(Errors.notFound)
   }
 
@@ -239,12 +239,13 @@ object Administration extends Controller {
         Authentication.enforceRole(User.roles.admin) {
 
           val params = request.body.mapValues(_(0))
-          val content = params("ids").split(",").filterNot(_.isEmpty).map(id => Content.findById(id.toLong).get)
-
-          // Update the content
           val shareability = params("shareability").toInt
           val visibility = params("visibility").toInt
-          content.foreach(_.copy(shareability = shareability, visibility = visibility).save)
+          
+          params("ids").split(",").foreach {
+            case id if !id.isEmpty =>
+              Content.findById(id.toLong).foreach(_.copy(shareability = shareability, visibility = visibility).save)
+          }
           Redirect(routes.Administration.manageContent()).flashing("info" -> "Contents updated")
         }
   }
@@ -277,14 +278,17 @@ object Administration extends Controller {
             data("background"),
             active = false
           )
+          //TODO: Find some way to reduce duplication here
           if (data("background").isEmpty) {
-            val file = request.body.file("file").get
-            Async {
-              FileUploader.uploadFile(file).map {
-                url =>
+            request.body.file("file").map { file =>
+              Async {
+                FileUploader.uploadFile(file).map { url =>
                   homePageContent.copy(background = url).save
                   Redirect(routes.Administration.homePageContent()).flashing("info" -> "Home page content created")
+                }
               }
+            }.getOrElse {
+              Redirect(routes.Administration.homePageContent()).flashing("info" -> "Home page content created")
             }
           } else {
             homePageContent.save
@@ -302,12 +306,16 @@ object Administration extends Controller {
       implicit user =>
         Authentication.enforceRole(User.roles.admin) {
 
-          val homePageContent = HomePageContent.findById(id).get
-          homePageContent.copy(active = !homePageContent.active).save
-          val message =
-            if (homePageContent.active) "no longer active."
-            else "now active."
-          Redirect(routes.Administration.homePageContent()).flashing("info" -> ("Home page content is " + message))
+          HomePageContent.findById(id).map {
+            homePageContent =>
+              homePageContent.copy(active = !homePageContent.active).save
+              val message =
+                if (homePageContent.active) "no longer active."
+                else "now active."
+              Redirect(routes.Administration.homePageContent()).flashing("info" -> ("Home page content is " + message))
+          }.getOrElse {
+            Errors.notFound
+          }
         }
   }
 
@@ -320,9 +328,13 @@ object Administration extends Controller {
       implicit user =>
         Authentication.enforceRole(User.roles.admin) {
 
-          val homePageContent = HomePageContent.findById(id).get
-          homePageContent.delete()
-          Redirect(routes.Administration.homePageContent()).flashing("info" -> "Home page content deleted")
+          HomePageContent.findById(id).map {
+            homePageContent =>
+              homePageContent.delete()
+              Redirect(routes.Administration.homePageContent()).flashing("info" -> "Home page content deleted")
+          }.getOrElse {
+            Errors.notFound
+          }
         }
   }
 
@@ -333,7 +345,6 @@ object Administration extends Controller {
     implicit request =>
       implicit user =>
         Authentication.enforceRole(User.roles.admin) {
-
           Ok(views.html.admin.feedback(Feedback.list))
         }
   }
@@ -346,8 +357,7 @@ object Administration extends Controller {
     implicit request =>
       implicit user =>
         Authentication.enforceRole(User.roles.admin) {
-
-          Feedback.findById(id).get.delete()
+          Feedback.findById(id).foreach(_.delete())
           Redirect(routes.Administration.feedback()).flashing("info" -> "Feedback deleted")
         }
   }
@@ -359,7 +369,6 @@ object Administration extends Controller {
     implicit request =>
       implicit user =>
         Authentication.enforceRole(User.roles.admin) {
-
           Ok(views.html.admin.settings(Setting.list))
         }
   }
@@ -371,7 +380,6 @@ object Administration extends Controller {
     implicit request =>
       implicit user =>
         Authentication.enforceRole(User.roles.admin) {
-
           request.body.mapValues(_(0)).foreach(data => Setting.findByName(data._1).get.copy(value = data._2).save)
           request.body.mapValues(_(0)).foreach(data => Logger.debug(data._1 + ": " + data._2))
           Redirect(routes.Administration.siteSettings()).flashing("info" -> "Settings updated")
@@ -387,9 +395,14 @@ object Administration extends Controller {
       implicit user =>
         Authentication.enforceRole(User.roles.admin) {
 
-          val proxyUser = User.findById(id).get
-          Redirect(routes.Application.home()).withSession("userId" -> id.toString)
-            .flashing("info" -> ("You are now using the site as " + proxyUser.displayName + ". To end proxy you must log out then back in with your normal account."))
+          User.findById(id) match {
+          case Some(proxyUser) =>
+            Redirect(routes.Application.home()).withSession("userId" -> id.toString)
+              .flashing("info" -> ("You are now using the site as " + proxyUser.displayName + ". To end proxy you must log out then back in with your normal account."))
+          case _ =>
+            Redirect(routes.Application.home())
+              .flashing("info" -> ("Requested Proxy User Not Found"))
+          }
         }
   }
 }

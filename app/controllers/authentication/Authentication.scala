@@ -21,8 +21,9 @@ object Authentication extends Controller {
 
     // Check if the user's account is merged. If it is, then login with the primary account, if this one isn't it
     val accountLink = user.getAccountLink
-    var loginUser = if (accountLink.isDefined && user.id.get != accountLink.get.primaryAccount)
-        User.findById(accountLink.get.primaryAccount).get
+    val loginUser =
+      if (accountLink.isDefined && user.id.get != accountLink.get.primaryAccount)
+        User.findById(accountLink.get.primaryAccount).getOrElse(user)
       else user
 
     // Log the user in
@@ -43,15 +44,15 @@ object Authentication extends Controller {
    * @param user The user account to merge with the active one
    */
   def merge(user: User)(implicit request: RequestHeader): Result = {
-    getUserFromRequest().map( activeUser =>
+    getUserFromRequest().map { activeUser =>
       if (activeUser != user) {
         activeUser.merge(user)
         Redirect(controllers.routes.Users.accountSettings()).flashing("success" -> "Account merged.")
       } else
         Redirect(controllers.routes.Users.accountSettings()).flashing("alert" -> "You cannot merge an account with itself")
-    ).getOrElse(
+    }.getOrElse {
       Redirect(controllers.routes.Application.index()).flashing("alert" -> "You are not logged in")
-    )
+    }
   }
 
   /**

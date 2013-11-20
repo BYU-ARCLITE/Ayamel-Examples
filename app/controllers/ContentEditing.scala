@@ -342,23 +342,25 @@ object ContentEditing extends Controller {
             Async {
 
               // Get the video resource from the content
-              ResourceController.getResource(content.resourceId).flatMap {
-                json =>
-                  val resource = json \ "resource"
+              ResourceController.getResource(content.resourceId).map { json =>
+                val resource = json \ "resource"
 
-                  // Get the video file
-                  val videoUrl = ((resource \ "content" \ "files").as[JsArray].value.find(file =>
-                    (file \ "mime").as[String].startsWith("video")
-                  ).get \ "downloadUri").as[String]
-
-                  // Generate the thumbnail for that video
-                  VideoTools.generateThumbnail(videoUrl, time).map {
-                    thumbnailUrl =>
-
-                    // Save it and be done
+                // Get the video file
+                (resource \ "content" \ "files").as[JsArray].value.find { file =>
+                  (file \ "mime").as[String].startsWith("video")
+                }.map { videoObject =>
+                  val videoUrl = (videoObject \ "downloadUri").as[String]
+                  Async {
+                    // Generate the thumbnail for that video
+                    VideoTools.generateThumbnail(videoUrl, time).map { thumbnailUrl =>
+                      // Save it and be done
                       content.copy(thumbnail = thumbnailUrl).save
                       Redirect(routes.ContentController.view(id)).flashing("info" -> "Thumbnail updated")
+                    }
                   }
+                }.getOrElse {
+                  Redirect(routes.ContentController.view(id)).flashing("error" -> "No video file found")
+                }
               }
             }
         }

@@ -70,7 +70,7 @@ case class AccountLink(id: Pk[Long], userIds: Set[Long], primaryAccount: Long) e
 
     def getUsers = {
       if (users.isEmpty)
-        users = Some(userIds.map(id => User.findById(id).get))
+        users = Some(userIds.map(id => User.findById(id)).collect { case Some(user) => user })
       users.getOrElse(Set.empty[User])
     }
   }
@@ -83,7 +83,7 @@ case class AccountLink(id: Pk[Long], userIds: Set[Long], primaryAccount: Long) e
   /**
    * @return The primary user of this account link
    */
-  def getPrimaryUser: User = cache.getUsers.find(_.id.get == primaryAccount).get
+  def getPrimaryUser: Option[User] = cache.getUsers.find(_.id.get == primaryAccount)
 
 }
 

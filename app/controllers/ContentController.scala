@@ -185,20 +185,22 @@ object ContentController extends Controller {
           val keywords = labels.mkString(",")
           val languages = data.get("languages").map(_.toList).getOrElse(List("eng"))
 
-          Async {
-            // Upload the file
-            val file = request.body.file("file").get
-            FileUploader.normalizeAndUploadFile(file).flatMap {
-              url =>
+          
+          // Upload the file
+          request.body.file("file").map { file =>
+            Async {
+              FileUploader.normalizeAndUploadFile(file).flatMap { url =>
 
-              // Create the content
+                // Create the content
                 val info = ContentDescriptor(title, description, keywords, url, file.ref.file.length(), file.contentType.get,
                   labels = labels, languages = languages)
-                ContentManagement.createContent(info, user, contentType).map {
-                  content =>
-                    Redirect(routes.ContentController.view(content.id.get)).flashing("success" -> "Content added")
+                ContentManagement.createContent(info, user, contentType).map { content =>
+                  Redirect(routes.ContentController.view(content.id.get)).flashing("success" -> "Content added")
                 }
+              }
             }
+          }.getOrElse {
+            Redirect(routes.ContentController.createPage("file")).flashing("error" -> "Missing file")
           }
         }
   }
