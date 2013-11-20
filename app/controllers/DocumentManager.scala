@@ -159,15 +159,14 @@ object DocumentManager extends Controller {
                   // Notify the owner
                     val contentUrl = routes.ContentController.view(id).toString()
                     val message = "A request has been made to publish a document on your content <a href=\"" + contentUrl + "\">" + content.name + "</a>."
-                    content.getOwner.sendNotification(message)
+                    content.getOwner.foreach(_.sendNotification(message))
 
-                    val courseId = request.queryString.get("course").map(_(0).toLong)
-                    (
-                      if (courseId.isDefined)
-                        Redirect(routes.CourseContent.viewInCourse(id, courseId.get))
-                      else
-                        Redirect(routes.ContentController.view(id))
-                      ).flashing("info" -> "A publish request has been made.")
+                    (request.queryString.get("course").map(_(0).toLong) match {
+                    case Some(courseId) =>
+                      Redirect(routes.CourseContent.viewInCourse(id, courseId))
+                    case _ =>
+                      Redirect(routes.ContentController.view(id))
+                    }).flashing("info" -> "A publish request has been made.")
                 }
               })
             }

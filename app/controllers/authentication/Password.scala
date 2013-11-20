@@ -54,8 +54,7 @@ object Password extends Controller {
       val email = request.body("email")(0)
 
       // Check the username isn't taken
-      val existingUser = User.findByUsername('password, username)
-      if (existingUser.isEmpty) {
+      if (User.findByUsername('password, username).isEmpty) {
 
         // Check the passwords match
         if (password1 == password2) {

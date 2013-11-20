@@ -174,10 +174,10 @@ case class Content(id: Pk[Long], name: String, contentType: Symbol, thumbnail: S
       activity.get
     }
 
-    def getOwner: User = {
+    def getOwner: Option[User] = {
       if (owner.isEmpty)
         owner = User.findById(ContentOwnership.findByContent(cacheTarget).userId)
-      owner.get
+      owner
     }
 
     def getScorings: List[Scoring] = {

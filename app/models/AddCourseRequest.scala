@@ -44,15 +44,17 @@ case class AddCourseRequest (id:Pk [Long], userId:Long, courseId:Long, message: 
 
   def approve() {
     // Notify the user and add him to the course
-    val course = getCourse
-    getUser.foreach(_.enroll(course).sendNotification("You have been added to the course \"" + course.name + "\"."))
+    getCourse.foreach( course => 
+      getUser.foreach(_.enroll(course).sendNotification("You have been added to the course \"" + course.name + "\"."))
+    )
     delete()
   }
 
   def deny() {
     // Notify the user
-    val course = getCourse
-    getUser.foreach(_.sendNotification("You have been denied access to the course \"" + course.name + "\"."))
+    getCourse.foreach( course => 
+      getUser.foreach(_.sendNotification("You have been denied access to the course \"" + course.name + "\"."))
+    )
     delete()
   }
 
@@ -81,13 +83,13 @@ case class AddCourseRequest (id:Pk [Long], userId:Long, courseId:Long, message: 
     def getCourse = {
       if (course.isEmpty)
         course = Course.findById(courseId)
-      course.get
+      course
     }
   }
 
   def getUser: Option[User] = cache.getUser
 
-  def getCourse: Course = cache.getCourse
+  def getCourse: Option[Course] = cache.getCourse
 }
 
 object AddCourseRequest extends SQLSelectable[AddCourseRequest] {
