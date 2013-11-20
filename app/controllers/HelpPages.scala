@@ -28,11 +28,9 @@ object HelpPages extends Controller {
   def view(id: Long) = Action {
     implicit request =>
       implicit val user = request.session.get("userId").flatMap(id => User.findById(id.toLong))
-      val helpPage = HelpPage.findById(id)
-      if (helpPage.isDefined) {
-        Ok(views.html.help.view(helpPage.get, ResourceController.baseUrl))
-      } else
-        Errors.notFound
+      HelpPage.findById(id).map( helpPage =>
+        Ok(views.html.help.view(helpPage, ResourceController.baseUrl))
+      ).getOrElse(Errors.notFound)
   }
 
   /**

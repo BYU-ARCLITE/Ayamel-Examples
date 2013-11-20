@@ -19,11 +19,7 @@ object Courses extends Controller {
    * @return A result
    */
   def getCourse(id: Long)(f: Course => Result)(implicit request: Request[_]): Result = {
-    val course = Course.findById(id)
-    if (course.isDefined)
-      f(course.get)
-    else
-      Errors.notFound
+    Course.findById(id).map( course => f(course) ).getOrElse(Errors.notFound)
   }
 
   /**
@@ -69,12 +65,14 @@ object Courses extends Controller {
     implicit request =>
       getCourse(id) {
         course =>
-          val user = LMSAuth.ltiAuth(course)
-          if (user.isDefined) {
-            user.get.copy(lastLogin = TimeTools.now()).save
-            Redirect(routes.Courses.view(id)).withSession("userId" -> user.get.id.get.toString)
-          } else
+          LMSAuth.ltiAuth(course) match {
+          case Some(user) => {
+              user.copy(lastLogin = TimeTools.now()).save
+              Redirect(routes.Courses.view(id)).withSession("userId" -> user.id.get.toString)
+            }
+          case _ =>
             Errors.forbidden
+          }
       }
   }
 
@@ -85,11 +83,12 @@ object Courses extends Controller {
     implicit request =>
       getCourse(id) {
         course =>
-          val user = LMSAuth.keyAuth(course)
-          if (user.isDefined)
-            Redirect(routes.Courses.view(id)).withSession("userId" -> user.get.id.get.toString)
-          else
+          LMSAuth.keyAuth(course) match {
+          case Some(user) =>
+            Redirect(routes.Courses.view(id)).withSession("userId" -> user.id.get.toString)
+          case _ =>
             Errors.forbidden
+          }
       }
   }
 
@@ -235,11 +234,10 @@ object Courses extends Controller {
 
           // Guests cannot request courses
             Authentication.enforceNotRole(User.roles.guest) {
-              val findRequest = AddCourseRequest.listByCourse(course).find(req => req.userId == user.id.get)
-              if (findRequest.isDefined)
-                Ok(views.html.courses.pending(course))
-              else
-                Ok(views.html.courses.request(course))
+              AddCourseRequest.listByCourse(course).find(req => req.userId == user.id.get) match {
+              case Some(_) => Ok(views.html.courses.pending(course))
+              case _ => Ok(views.html.courses.request(course))
+              }
             }
         }
   }
@@ -314,19 +312,18 @@ object Courses extends Controller {
       implicit user =>
         getCourse(id) {
           course =>
-
-          // Get the request
-            val courseRequest = AddCourseRequest.findById(requestId)
-            if (courseRequest.isDefined) {
-
+            // Get the request
+            AddCourseRequest.findById(requestId) match {
+            case Some(courseRequest) =>
               // Make sure the user is allowed to approve
-              if (user.canApprove(courseRequest.get, course)) {
-                courseRequest.get.approve()
+              if (user.canApprove(courseRequest, course)) {
+                courseRequest.approve()
                 Redirect(routes.Courses.approvePage(course.id.get)).flashing("info" -> "Course request approved")
               } else
                 Errors.forbidden
-            } else
+            case _ =>
               Errors.notFound
+            }
         }
   }
 
@@ -340,19 +337,18 @@ object Courses extends Controller {
       implicit user =>
         getCourse(id) {
           course =>
-
-          // Get the request
-            val courseRequest = AddCourseRequest.findById(requestId)
-            if (courseRequest.isDefined) {
-
+            // Get the request
+            AddCourseRequest.findById(requestId) match {
+            case Some(courseRequest) =>
               // Make sure the user is allowed to approve
-              if (user.canApprove(courseRequest.get, course)) {
-                courseRequest.get.deny()
+              if (user.canApprove(courseRequest, course)) {
+                courseRequest.deny()
                 Redirect(routes.Courses.approvePage(course.id.get)).flashing("info" -> "Course request denied")
               } else
                 Errors.forbidden
-            } else
+            case _ =>
               Errors.notFound
+            }
         }
   }
 

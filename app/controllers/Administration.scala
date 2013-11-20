@@ -43,11 +43,7 @@ object Administration extends Controller {
    * @param f The function to execute with the teacher request
    */
   def getTeacherRequest(id: Long)(f: TeacherRequest => Result)(implicit request: Request[_]) = {
-    val teacherRequest = TeacherRequest.findById(id)
-    if (teacherRequest.isDefined)
-      f(teacherRequest.get)
-    else
-      Errors.notFound
+    TeacherRequest.findById(id).map( tr => f(tr) ).getOrElse(Errors.notFound)
   }
 
   /**
@@ -90,8 +86,7 @@ object Administration extends Controller {
     implicit request =>
       implicit user =>
         Authentication.enforceRole(User.roles.admin) {
-          val users = User.list
-          Ok(views.html.admin.users(users))
+          Ok(views.html.admin.users(User.list))
         }
   }
 
@@ -102,8 +97,7 @@ object Administration extends Controller {
     implicit request =>
       implicit user =>
         Authentication.enforceRole(User.roles.admin) {
-          val users = User.list
-          Ok(views.html.admin.logins(users))
+          Ok(views.html.admin.logins(User.list))
         }
   }
 
@@ -113,15 +107,10 @@ object Administration extends Controller {
    * @param f The function which will be called with the user
    */
   def getUser(id: Long)(f: User => Result)(implicit request: RequestHeader): Result = {
-    val user = User.findById(id)
-    if (user.isDefined) {
-      val accountLink = user.get.getAccountLink
-      if (accountLink.isDefined)
-        f(accountLink.get.getPrimaryUser)
-      else
-        f(user.get)
-    } else
-      Errors.notFound
+    User.findById(id).map {
+      user =>
+        f(user.getAccountLink.map(_.getPrimaryUser).getOrElse(user))
+    }.getOrElse(Errors.notFound)
   }
 
   /**

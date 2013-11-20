@@ -25,16 +25,18 @@ object CourseContent extends Controller {
         content =>
           Courses.getCourse(courseId) {
             course =>
-              val user = LMSAuth.ltiAuth(course)
-              if (user.isDefined) {
+              LMSAuth.ltiAuth(course) match {
+              case Some(user) => {
                 // Get the custom parameters
                 val query = FormUrlEncodedParser.parse(request.body, request.charset.getOrElse("utf-8"))
                   .filterKeys(_.startsWith("custom")).map(d => (d._1.substring(7), d._2))
-                user.get.copy(lastLogin = TimeTools.now()).save
+                user.copy(lastLogin = TimeTools.now()).save
                 Redirect(routes.CourseContent.viewInCourse(id, courseId).toString(), query)
-                  .withSession("userId" -> user.get.id.get.toString)
-              } else
+                  .withSession("userId" -> user.id.get.toString)
+              }
+              case _ =>
                 Errors.forbidden
+              }
           }
       }
   }

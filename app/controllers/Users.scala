@@ -31,17 +31,17 @@ object Users extends Controller {
     implicit request =>
       implicit user =>
 
-      // Make sure the notification exists
-        val notification = Notification.findById(id)
-        if (notification.isDefined) {
+        Notification.findById(id) match {
+        case Some(notification) =>
           // Make sure the notification belongs to the user
-          if (user.getNotifications.contains(notification.get)) {
-            notification.get.copy(messageRead = true).save
+          if (user.getNotifications.contains(notification)) {
+            notification.copy(messageRead = true).save
             Redirect(routes.Users.notifications()) flashing ("info" -> "Notification marked as read.")
           } else
             Errors.forbidden
-        } else
+        case _ =>
           Errors.notFound
+        }
   }
 
   /**
@@ -52,17 +52,17 @@ object Users extends Controller {
     implicit request =>
       implicit user =>
 
-      // Make sure the notification exists
-        val notification = Notification.findById(id)
-        if (notification.isDefined) {
+        Notification.findById(id) match {
+        case Some(notification) =>
           // Make sure the notification belongs to the user
-          if (user.getNotifications.contains(notification.get)) {
-            notification.get.delete()
+          if (user.getNotifications.contains(notification)) {
+            notification.delete()
             Redirect(routes.Users.notifications()) flashing ("info" -> "Notification deleted.")
           } else
             Errors.forbidden
-        } else
+        case _ =>
           Errors.notFound
+        }
   }
 
   /**
@@ -141,11 +141,11 @@ object Users extends Controller {
         Authentication.enforceRole(User.roles.student) {
 
           // Check to see if the user has already submitted a request
-          val teacherRequest = TeacherRequest.findByUser(user)
-          if (teacherRequest.isDefined)
+          if(TeacherRequest.findByUser(user).isDefined)
             Ok(views.html.users.teacherRequest.status())
           else
             Ok(views.html.users.teacherRequest.requestForm())
+            
         }
   }
 

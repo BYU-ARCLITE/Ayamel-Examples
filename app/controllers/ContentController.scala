@@ -21,11 +21,7 @@ object ContentController extends Controller {
    * Action mix-in to get the content from the request
    */
   def getContent(id: Long)(f: Content => Result)(implicit request: Request[_]) = {
-    val content = Content.findById(id)
-    if (content.isDefined) {
-      f(content.get)
-    } else
-      Errors.notFound
+    Content.findById(id).map( content => f(content) ).getOrElse(Errors.notFound)
   }
 
   /**

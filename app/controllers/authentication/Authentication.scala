@@ -20,12 +20,10 @@ object Authentication extends Controller {
   def login(user: User, path: String)(implicit request: RequestHeader): Result = {
 
     // Check if the user's account is merged. If it is, then login with the primary account, if this one isn't it
-    var loginUser = user
     val accountLink = user.getAccountLink
-    if (accountLink.isDefined) {
-      if (user.id.get != accountLink.get.primaryAccount)
-        loginUser = User.findById(accountLink.get.primaryAccount).get
-    }
+    var loginUser = if (accountLink.isDefined && user.id.get != accountLink.get.primaryAccount)
+        User.findById(accountLink.get.primaryAccount).get
+      else user
 
     // Log the user in
     loginUser.copy(lastLogin = TimeTools.now()).save
@@ -45,17 +43,15 @@ object Authentication extends Controller {
    * @param user The user account to merge with the active one
    */
   def merge(user: User)(implicit request: RequestHeader): Result = {
-
-    val activeUser = getUserFromRequest()
-    if (activeUser.isDefined) {
-
-      if (activeUser.get != user) {
-        activeUser.get.merge(user)
+    getUserFromRequest().map( activeUser =>
+      if (activeUser != user) {
+        activeUser.merge(user)
         Redirect(controllers.routes.Users.accountSettings()).flashing("success" -> "Account merged.")
       } else
         Redirect(controllers.routes.Users.accountSettings()).flashing("alert" -> "You cannot merge an account with itself")
-    } else
+    ).getOrElse(
       Redirect(controllers.routes.Application.index()).flashing("alert" -> "You are not logged in")
+    )
   }
 
   /**
@@ -106,11 +102,7 @@ object Authentication extends Controller {
   }
 
   def getUserFromRequest()(implicit request: RequestHeader): Option[User] = {
-    val userId = request.session.get("userId")
-    if (userId.isDefined)
-      User.findById(userId.get.toLong)
-    else
-      None
+    request.session.get("userId").flatMap( userId => User.findById(userId.toLong) )
   }
 
   /**
@@ -120,13 +112,10 @@ object Authentication extends Controller {
    */
   def authenticatedAction[A](parser: BodyParser[A] = BodyParsers.parse.anyContent)(f: Request[A] => User => Result) = Action(parser) {
     implicit request =>
-      val user = getUserFromRequest()
-      if (user.isDefined) {
-        f(request)(user.get)
-      } else {
+      getUserFromRequest().map( user => f(request)(user) ).getOrElse(
         Redirect(controllers.routes.Application.index().toString(), Map("path" -> List(request.path)))
           .flashing("alert" -> "You are not logged in")
-      }
+      )
   }
 
 }

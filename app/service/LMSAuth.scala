@@ -20,13 +20,13 @@ object LMSAuth {
     // Check that the user information was provided. If not, then give a guest account
     if (userInfo._2.isDefined) {
       val id = course.id.get + "." + userInfo._2.get
-      val user = User.findByAuthInfo(id, 'ltiAuth)
-      if (user.isDefined)
-        user.get
-      else
+      User.findByAuthInfo(id, 'ltiAuth) match {
+      case Some(user) => user
+      case _ =>
 //        User(NotAssigned, id, 'ltiAuth, "user" + id, userInfo._1, userInfo._3, User.roles.student, userInfo._4).save // This one load the picture from LTI
         User(NotAssigned, id, 'ltiAuth, "user" + id, userInfo._1, userInfo._3, User.roles.student).save
           .enroll(course, teacher = false)
+      }
     } else
       getGuestAccount(course)
   }
@@ -82,10 +82,10 @@ object LMSAuth {
    * @return The guest account
    */
   def getGuestAccount(course: Course): User = {
-    val user = User.findByAuthInfo(course.id.get.toString, 'keyAuth)
-    if (user.isDefined)
-      user.get
-    else
+    User.findByAuthInfo(course.id.get.toString, 'keyAuth) match {
+    case Some(user) => user
+    case _ =>
       User(NotAssigned, course.id.get.toString, 'keyAuth, "guest", Some("Guest"), role = User.roles.guest).save.enroll(course, teacher = false)
+    }
   }
 }

@@ -61,14 +61,13 @@ object ContentLister extends Controller {
   def get(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        val content = Content.findById(id)
-        val origin = request.headers.get("Origin").getOrElse("*")
-        if (content.isDefined)
-          Ok(content.get.toJson).withHeaders(
-            "Access-Control-Allow-Origin" -> origin,
-            "Access-Control-Allow-Credentials" -> "true"
-          )
-        else
-          Forbidden
+        Content.findById(id).map {
+		  content =>
+            val origin = request.headers.get("Origin").getOrElse("*")
+            Ok(content.toJson).withHeaders(
+              "Access-Control-Allow-Origin" -> origin,
+              "Access-Control-Allow-Credentials" -> "true"
+            )
+        }.getOrElse(Forbidden)
   }
 }

@@ -277,9 +277,11 @@ object ContentEditing extends Controller {
                         // Update the resource
                           ResourceHelper.updateFileUri(content.resourceId, url).map {
                             resource => {
-                              val course = AdditionalDocumentAdder.getCourse()
-                              val route = if (course.isDefined) routes.CourseContent.viewInCourse(content.id.get, course.get.id.get)
-                                else routes.ContentController.view(content.id.get)
+                              val maybeCourse = AdditionalDocumentAdder.getCourse()
+                              val route = maybeCourse match {
+                                case Some(course) => routes.CourseContent.viewInCourse(content.id.get, course.id.get)
+                                case _ => routes.ContentController.view(content.id.get)
+                              }
                               Redirect(route).flashing("info" -> "Image updated")
                             }
                           }
