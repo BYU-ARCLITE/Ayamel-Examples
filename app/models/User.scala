@@ -54,23 +54,25 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
     CourseMembership.listByUser(this).foreach(_.delete())
 
     // Delete the user's announcements
-    Announcement.list.filter(_.userId == id.get).foreach(_.delete())
+    Announcement.listByUser(this).foreach(_.delete())
 
     // Delete the user's notifications
     Notification.listByUser(this).foreach(_.delete())
+	
+	// Delete the user's activities
+	Activity.listByUser(this).foreach(_.delete())
 
     // Delete add course requests
-    AddCourseRequest.list.filter(_.userId == id.get).foreach(_.delete())
+    AddCourseRequest.listByUser(this).foreach(_.delete())
 
     // Delete teacher request
-    TeacherRequest.findByUser(this).map(_.delete())
+    TeacherRequest.findByUser(this).foreach(_.delete())
 
     // Delete all linked accounts
-    getAccountLink.map {
-      accountLink =>
-        if (accountLink.primaryAccount == id.get) {
-          accountLink.userIds.filterNot(_ == id.get).foreach(uid => delete(User.tableName, Id(uid)))
-        }
+    getAccountLink.map { accountLink =>
+      if (accountLink.primaryAccount == id.get) {
+        accountLink.userIds.filterNot(_ == id.get).foreach(uid => delete(User.tableName, Id(uid)))
+      }
     }
     delete(User.tableName, id)
   }

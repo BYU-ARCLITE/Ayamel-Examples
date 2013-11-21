@@ -99,8 +99,8 @@ object Announcement extends SQLSelectable[Announcement] {
     Announcement(NotAssigned, course.id.get, user.id.get, TimeTools.now(), content).save
 
   /**
-   * Gets all users in the DB
-   * @return The list of users
+   * Gets all announcements in the DB
+   * @return The list of announcements
    */
   def list: List[Announcement] = list(Announcement.tableName, simple)
 
@@ -113,6 +113,17 @@ object Announcement extends SQLSelectable[Announcement] {
     DB.withConnection {
       implicit connection =>
         anorm.SQL("select * from " + tableName + " where courseId = {id}").on('id -> course.id).as(simple *)
+    }
+
+  /**
+   * Lists all announcements made by a certain user
+   * @param user The user for which the announcements will be listed.
+   * @return The list of announcements
+   */
+  def listByUser(user: User): List[Announcement] =
+    DB.withConnection {
+      implicit connection =>
+        anorm.SQL("select * from " + tableName + " where userId = {id}").on('id -> user.id).as(simple *)
     }
 
   /**

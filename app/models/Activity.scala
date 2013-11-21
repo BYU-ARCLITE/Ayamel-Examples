@@ -140,4 +140,15 @@ object Activity extends SQLSelectable[Activity] {
           .on('pageCategory -> category, 'pageAction -> ("%" + action), 'pageId -> id)
           .as(simple *)
     }
+	
+  /**
+   * Lists a user's activities
+   * @param user The user who executed the activity
+   * @return The list of activities
+   */
+  def listByUser(user: User): List[Activity] =
+    DB.withConnection {
+      implicit connection =>
+        anorm.SQL("select * from " + tableName + " where actor = {id}").on('id -> user.id).as(simple *)
+    }
 }

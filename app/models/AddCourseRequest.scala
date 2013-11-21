@@ -120,6 +120,12 @@ object AddCourseRequest extends SQLSelectable[AddCourseRequest] {
   def listByCourse (course: Course): List[AddCourseRequest] =
     DB.withConnection {
       implicit connection =>
-        anorm.SQL("select * from " + tableName + " where courseId = {id}").on('id -> course.id.get).as(simple *)
+        anorm.SQL("select * from " + tableName + " where courseId = {id}").on('id -> course.id).as(simple *)
+    }
+	
+  def listByUser (user: User): List[AddCourseRequest] =
+    DB.withConnection {
+      implicit connection =>
+        anorm.SQL("select * from " + tableName + " where userId = {id}").on('id -> user.id).as(simple *)
     }
 }
