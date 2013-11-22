@@ -56,12 +56,12 @@ object CaptionAider extends Controller {
 
               // We need to determine if this file has already been saved
               val resourceId = params("resourceId")
-              
+
               val name = FileUploader.uniqueFilename(tmpFile.filename)
               val mime = tmpFile.contentType.getOrElse("text/plain")
               val file = tmpFile.ref.file
               val size = file.length()
-              
+
               Async {
                 if (resourceId.isEmpty) {
                   // Create a new resource
@@ -77,43 +77,46 @@ object CaptionAider extends Controller {
                         "iso639_3" -> languages
                       )
                     ))
-                    ResourceHelper.createResourceWithUri(resource, url, size, mime).flatMap {
-                      createdResource =>
-                        val subjectId = (createdResource \ "id").as[String]
+                    ResourceHelper.createResourceWithUri(resource, url, size, mime).flatMap { createdResource =>
+                      createdResource.map { json =>
+                        val subjectId = (json \ "id").as[String]
                         AdditionalDocumentAdder.add(content, subjectId, 'captionTrack) {
                           course => Ok(subjectId)
                         }
+                      }.get //Should have a redirect to a page explaining the error
                     }
                   }
 
                 } else {
                   // Figure out which file we are replacing
                   // First get the resource
-                  ResourceController.getResource(resourceId).flatMap { json =>
-                    val resource = json \ "resource"
+                  ResourceController.getResource(resourceId).flatMap { response =>
+                    response.map { json =>
+                      val resource = json \ "resource"
 
-                    // Handle updating the information.
-                    val updatedFile = (resource \ "content" \ "files")(0).as[JsObject] ++ Json.obj(
-                        "bytes" -> size,
-                        "attributes" -> Json.obj("kind" -> kind)
-                    )
-                    val updatedResource = resource.as[JsObject] ++ Json.obj(
-                      "title" -> label,
-                      "languages" -> Json.obj(
-                        "iso639_3" -> languages
-                      ),
-                      "content" -> Json.obj("files" -> List(updatedFile))
-                    )
-                    ResourceController.updateResource(resourceId, updatedResource)
+                      // Handle updating the information.
+                      val updatedFile = (resource \ "content" \ "files")(0).as[JsObject] ++ Json.obj(
+                          "bytes" -> size,
+                          "attributes" -> Json.obj("kind" -> kind)
+                      )
+                      val updatedResource = resource.as[JsObject] ++ Json.obj(
+                        "title" -> label,
+                        "languages" -> Json.obj(
+                          "iso639_3" -> languages
+                        ),
+                        "content" -> Json.obj("files" -> List(updatedFile))
+                      )
+                      ResourceController.updateResource(resourceId, updatedResource)
 
-                    // Now find the file
-                    val url = ((resource \ "content" \ "files")(0) \ "downloadUri").as[String]
-                    val filename = url.substring(url.lastIndexOf("/") + 1)
+                      // Now find the file
+                      val url = ((resource \ "content" \ "files")(0) \ "downloadUri").as[String]
+                      val filename = url.substring(url.lastIndexOf("/") + 1)
 
-                    // Replace the file
-                    FileUploader.uploadFile(file, name, mime).map {
-                      url => Ok(resourceId)
-                    }
+                      // Replace the file
+                      FileUploader.uploadFile(file, name, mime).map {
+                        url => Ok(resourceId)
+                      }
+                    }.get //Should have a redirect with an explanation of the error
                   }
                 }
               }

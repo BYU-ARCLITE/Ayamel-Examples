@@ -3,7 +3,8 @@ package service
 import models.{Course, User, Content}
 import play.api.libs.json.{JsArray, JsObject}
 import dataAccess.ResourceController
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent._
+import scala.concurrent.duration._
 import ExecutionContext.Implicits.global
 
 /**
@@ -133,15 +134,24 @@ class DocumentPermissionChecker(user: User, content: Content, course: Option[Cou
 
   def getAll: Future[List[JsObject]] = {
     // Get the relations
-    ResourceController.getRelations(content.resourceId).flatMap(json => {
-      val relations = (json \ "relations").as[JsArray].value.toList.map(_.as[JsObject])
-      val resources = relations.filter(documentType.filter).map(
-        relation => ResourceController.getResource((relation \ documentType.relation).as[String])
-          .map(json => (json \ "resource").as[JsObject])
-      )
-
-      Future.sequence(resources)
-    })
+    ResourceController.getRelations(content.resourceId).flatMap { response =>
+      response match {
+        case Some(json) => {
+          val relations = (json \ "relations").as[JsArray].value.toList.map(_.as[JsObject])
+          future {
+            relations.filter(documentType.filter).map { relation =>
+              Await.result(
+                ResourceController.getResource((relation \ documentType.relation).as[String])
+                  .map(_.map(json => (json \ "resource").as[JsObject])),
+                Duration.Inf
+              )
+            }.collect { case Some(json) => json }
+          }
+        }
+        case None =>
+          Future(List.empty[JsObject])
+      }
+    }
   }
 
   def getViewable: Future[List[JsObject]] = getAll.map(_.filter(canView))

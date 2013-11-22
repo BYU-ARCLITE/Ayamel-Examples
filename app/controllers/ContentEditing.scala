@@ -7,7 +7,7 @@ import dataAccess.ResourceController
 import models.{User, Course, Content}
 import service._
 import javax.imageio.ImageIO
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 import ExecutionContext.Implicits.global
 import play.api.libs.json.JsArray
 import scala.Some
@@ -247,51 +247,46 @@ object ContentEditing extends Controller {
   def saveImageEdits(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
-        ContentController.getContent(id) {
-          content =>
-            if (content isEditableBy user) {
-              if (content.contentType == 'image) {
+        ContentController.getContent(id) {  content =>
+          if ((content isEditableBy user) && (content.contentType == 'image)) {
 
-                // Get the rotation and crop info
-                val rotation = request.body("rotation")(0).toInt
-                val cropTop = request.body("cropTop")(0).toDouble
-                val cropLeft = request.body("cropLeft")(0).toDouble
-                val cropBottom = request.body("cropBottom")(0).toDouble
-                val cropRight = request.body("cropRight")(0).toDouble
+            // Get the rotation and crop info
+            val rotation = request.body("rotation")(0).toInt
+            val cropTop = request.body("cropTop")(0).toDouble
+            val cropLeft = request.body("cropLeft")(0).toDouble
+            val cropBottom = request.body("cropBottom")(0).toDouble
+            val cropRight = request.body("cropRight")(0).toDouble
+            val redirect = Redirect(AdditionalDocumentAdder.getCourse() match {
+              case Some(course) => routes.CourseContent.viewInCourse(content.id.get, course.id.get)
+              case _ => routes.ContentController.view(content.id.get)
+            })
 
-                // Load the image
-                Async {
-                  ImageTools.loadImageFromContent(content).flatMap {
-                    image =>
+            // Load the image
+            Async {
+              ImageTools.loadImageFromContent(content).flatMap { opt =>
+                opt.map { image =>
 
-                    // Make the changes to the image
-                      val newImage = ImageTools.crop(
-                        if (rotation > 0) ImageTools.rotate(image, rotation) else image,
-                        cropTop, cropLeft, cropBottom, cropRight
-                      )
+                // Make the changes to the image
+                  val newImage = ImageTools.crop(
+                    if (rotation > 0) ImageTools.rotate(image, rotation) else image,
+                    cropTop, cropLeft, cropBottom, cropRight
+                  )
 
-                      // Save the new image
-                      FileUploader.uploadImage(newImage, FileUploader.uniqueFilename(content.resourceId + ".jpg")).flatMap {
-                        url =>
+                  // Save the new image
+                  FileUploader.uploadImage(newImage, FileUploader.uniqueFilename(content.resourceId + ".jpg")).flatMap { url =>
 
-                        // Update the resource
-                          ResourceHelper.updateFileUri(content.resourceId, url).map {
-                            resource => {
-                              val maybeCourse = AdditionalDocumentAdder.getCourse()
-                              val route = maybeCourse match {
-                                case Some(course) => routes.CourseContent.viewInCourse(content.id.get, course.id.get)
-                                case _ => routes.ContentController.view(content.id.get)
-                              }
-                              Redirect(route).flashing("info" -> "Image updated")
-                            }
-                          }
-                      }
+                    // Update the resource
+                    ResourceHelper.updateFileUri(content.resourceId, url).map { resource =>
+                      redirect.flashing("info" -> "Image updated")
+                    }
                   }
+                }.getOrElse {
+                  Future(redirect.flashing("error" -> "Couldn't load image"))
                 }
-              } else
-                Errors.forbidden
-            } else
-              Errors.forbidden
+              }
+            }
+          } else
+            Errors.forbidden
         }
   }
 
@@ -339,27 +334,32 @@ object ContentEditing extends Controller {
       implicit user =>
         ContentController.getContent(id) {
           content =>
+            val redirect = Redirect(routes.ContentController.view(id))
+
             Async {
-
               // Get the video resource from the content
-              ResourceController.getResource(content.resourceId).map { json =>
-                val resource = json \ "resource"
+              ResourceController.getResource(content.resourceId).map { response =>
+                response.map { json =>
+                  val resource = json \ "resource"
 
-                // Get the video file
-                (resource \ "content" \ "files").as[JsArray].value.find { file =>
-                  (file \ "mime").as[String].startsWith("video")
-                }.map { videoObject =>
-                  val videoUrl = (videoObject \ "downloadUri").as[String]
-                  Async {
-                    // Generate the thumbnail for that video
-                    VideoTools.generateThumbnail(videoUrl, time).map { thumbnailUrl =>
-                      // Save it and be done
-                      content.copy(thumbnail = thumbnailUrl).save
-                      Redirect(routes.ContentController.view(id)).flashing("info" -> "Thumbnail updated")
+                  // Get the video file
+                  (resource \ "content" \ "files").as[JsArray].value.find { file =>
+                    (file \ "mime").as[String].startsWith("video")
+                  }.map { videoObject =>
+                    val videoUrl = (videoObject \ "downloadUri").as[String]
+                    Async {
+                      // Generate the thumbnail for that video
+                      VideoTools.generateThumbnail(videoUrl, time).map { thumbnailUrl =>
+                        // Save it and be done
+                        content.copy(thumbnail = thumbnailUrl).save
+                        redirect.flashing("info" -> "Thumbnail updated")
+                      }
                     }
+                  }.getOrElse {
+                    redirect.flashing("error" -> "No video file found")
                   }
                 }.getOrElse {
-                  Redirect(routes.ContentController.view(id)).flashing("error" -> "No video file found")
+                  redirect.flashing("error" -> "Could not access video.")
                 }
               }
             }

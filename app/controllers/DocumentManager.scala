@@ -56,15 +56,15 @@ object DocumentManager extends Controller {
             "iso639_3" -> languages
           )
         ))
-        ResourceHelper.createResourceWithUri(resource, url, length, mime).flatMap {
-          resource =>
-            val subjectId = (resource \ "id").as[String]
+        ResourceHelper.createResourceWithUri(resource, url, length, mime).flatMap { resource =>
+          resource.map { json =>
+            val subjectId = (json \ "id").as[String]
 
             // Add a relation
             AdditionalDocumentAdder.add(content, subjectId, 'annotations) {
-              course =>
-                callback
+              course => callback
             }
+          }.get //Should have a redirect with an explanation of the error
         }
     }
   }
@@ -107,7 +107,7 @@ object DocumentManager extends Controller {
             val annotations = data("annotations")
             val stream = new ByteArrayInputStream(annotations.getBytes("UTF-8"))
             val length = annotations.getBytes("UTF-8").size // Don't use string length. Breaks if there are 2-byte characters
-          val mime = "application/json"
+            val mime = "application/json"
             val filename = data.get("filename").getOrElse(FileUploader.uniqueFilename(annotations + ".json"))
             val languages = List(data("language"))
             val resourceId = data("resourceId")
@@ -123,9 +123,9 @@ object DocumentManager extends Controller {
               } else {
                 // We are updating. Check that we are allowed to do this
                 val checker = new DocumentPermissionChecker(user, content, course, DocumentPermissionChecker.documentTypes.annotations)
-                ResourceController.getResource(resourceId).map {
-                  data =>
-                    if (checker.canEdit((data \ "resource").as[JsObject])) {
+                ResourceController.getResource(resourceId).map { data =>
+                  data.map { json =>
+                    if (checker.canEdit((json \ "resource").as[JsObject])) {
 
                       // We are, so create a new annotation set
                       updateAnnotations(stream, filename, length, mime, resourceId, title, languages)
@@ -133,6 +133,7 @@ object DocumentManager extends Controller {
                     } else {
                       Forbidden
                     }
+                  }.get //Should have a redirect with a message about the error
                 }
               }
             }
@@ -149,26 +150,37 @@ object DocumentManager extends Controller {
       implicit user =>
         ContentController.getContent(id) {
           content =>
+            val redirect = request.queryString.get("course").map(_(0).toLong) match {
+              case Some(courseId) =>
+                Redirect(routes.CourseContent.viewInCourse(id, courseId))
+              case _ =>
+                Redirect(routes.ContentController.view(id))
+            }
 
             Async {
-              ResourceController.getResource(docId).flatMap(response => {
-                val clientUserId = (response \ "resource" \ "clientUser" \ "id").as[String]
-                ResourceHelper.setClientUser(docId, Map("id" -> (clientUserId + ":request"))).map {
-                  json =>
+              ResourceController.getResource(docId).flatMap { response =>
+                response match {
+                  case Some(json) => {
+                    val clientUserId = (json \ "resource" \ "clientUser" \ "id").as[String]
+                    ResourceHelper.setClientUser(docId, Map("id" -> (clientUserId + ":request"))).map { response =>
+                      response.map { json =>
 
-                  // Notify the owner
-                    val contentUrl = routes.ContentController.view(id).toString()
-                    val message = "A request has been made to publish a document on your content <a href=\"" + contentUrl + "\">" + content.name + "</a>."
-                    content.getOwner.foreach(_.sendNotification(message))
-
-                    (request.queryString.get("course").map(_(0).toLong) match {
-                    case Some(courseId) =>
-                      Redirect(routes.CourseContent.viewInCourse(id, courseId))
-                    case _ =>
-                      Redirect(routes.ContentController.view(id))
-                    }).flashing("info" -> "A publish request has been made.")
+                        // Notify the owner
+                        val contentUrl = routes.ContentController.view(id).toString()
+                        val message = "A request has been made to publish a document on your content <a href=\"" + contentUrl + "\">" + content.name + "</a>."
+                        content.getOwner.foreach(_.sendNotification(message))
+                        redirect.flashing("info" -> "A publish request has been made.")
+                      }.getOrElse {
+                        redirect.flashing("error" -> "Publish request failed.")
+                      }
+                    }
+                  }
+                  case None =>
+                    Future(
+                      redirect.flashing("error" -> "Could not access document.")
+                    )
                 }
-              })
+              }
             }
         }
   }
@@ -225,10 +237,12 @@ object DocumentManager extends Controller {
               Async {
 
                 // Get the list of relations this resource is in and delete them
-                ResourceController.getRelations(docId).map(result => {
-                  val relations = (result \ "relations").as[JsArray].value
-                  relations.foreach(relation => ResourceController.deleteRelation((relation \ "id").as[String]))
-                })
+                ResourceController.getRelations(docId).map { result =>
+                  result.foreach { json =>
+                    val relations = (json \ "relations").as[JsArray].value
+                    relations.foreach(relation => ResourceController.deleteRelation((relation \ "id").as[String]))
+                  }
+                }
 
                 // Delete this resource
                 ResourceController.deleteResource(docId).map(result => {

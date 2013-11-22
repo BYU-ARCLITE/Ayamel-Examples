@@ -24,7 +24,7 @@ object ContentManagement {
    * @param contentType The type of content
    * @return The content object in a future
    */
-  def createContent(info: ContentDescriptor, owner: User, contentType: Symbol): Future[Content] = {
+  def createContent(info: ContentDescriptor, owner: User, contentType: Symbol): Future[Option[Content]] = {
     contentType match {
       case 'audio => createAudio(info, owner)
       case 'image => {
@@ -48,7 +48,7 @@ object ContentManagement {
     }
   }
 
-  def createResource(info: ContentDescriptor, resourceType: String): Future[JsValue] = {
+  def createResource(info: ContentDescriptor, resourceType: String): Future[Option[JsValue]] = {
     val resource = ResourceHelper.make.resource(Json.obj(
       "title" -> info.title,
       "description" -> info.description,
@@ -67,21 +67,22 @@ object ContentManagement {
    * @param owner The user who is to own the video
    * @return The content object in a future
    */
-  def createVideo(info: ContentDescriptor, owner: User): Future[Content] = {
+  def createVideo(info: ContentDescriptor, owner: User): Future[Option[Content]] = {
     // Create the resource
-    createResource(info, "video").map(resource => {
+    createResource(info, "video").map { resource =>
+      resource.map { json =>
+        val resourceId = (json \ "id").as[String]
 
-      val resourceId = (resource \ "id").as[String]
+        // Set a thumbnail in the resource
+        if (info.thumbnail.isDefined && !info.thumbnail.get.isEmpty)
+          ResourceHelper.addThumbnail(resourceId, info.thumbnail.get)
 
-      // Set a thumbnail in the resource
-      if (info.thumbnail.isDefined && !info.thumbnail.get.isEmpty)
-        ResourceHelper.addThumbnail(resourceId, info.thumbnail.get)
-
-      // Create the content and set the user and the owner
-      val content = Content(NotAssigned, info.title, 'video, info.thumbnail.getOrElse(""), resourceId, labels = info.labels).save
-      owner.addContent(content)
-      content
-    })
+        // Create the content and set the user and the owner
+        val content = Content(NotAssigned, info.title, 'video, info.thumbnail.getOrElse(""), resourceId, labels = info.labels).save
+        owner.addContent(content)
+        content
+      }
+    }
   }
 
   /**
@@ -90,17 +91,18 @@ object ContentManagement {
    * @param owner The user who is to own the audio
    * @return The content object in a future
    */
-  def createAudio(info: ContentDescriptor, owner: User): Future[Content] = {
+  def createAudio(info: ContentDescriptor, owner: User): Future[Option[Content]] = {
     // Create the resource
-    createResource(info, "audio").map(resource => {
+    createResource(info, "audio").map { resource =>
+      resource.map { json =>
+        val resourceId = (json \ "id").as[String]
 
-      val resourceId = (resource \ "id").as[String]
-
-      // Create the content and set the user and the owner
-      val content = Content(NotAssigned, info.title, 'audio, info.thumbnail.getOrElse(""), resourceId, labels = info.labels).save
-      owner.addContent(content)
-      content
-    })
+        // Create the content and set the user and the owner
+        val content = Content(NotAssigned, info.title, 'audio, info.thumbnail.getOrElse(""), resourceId, labels = info.labels).save
+        owner.addContent(content)
+        content
+      }
+    }
   }
 
   /**
@@ -109,17 +111,18 @@ object ContentManagement {
    * @param owner The user who is to own the audio
    * @return The content object in a future
    */
-  def createText(info: ContentDescriptor, owner: User): Future[Content] = {
+  def createText(info: ContentDescriptor, owner: User): Future[Option[Content]] = {
     // Create the resource
-    createResource(info, "document").map(resource => {
+    createResource(info, "document").map { resource =>
+      resource.map { json =>
+        val resourceId = (json \ "id").as[String]
 
-      val resourceId = (resource \ "id").as[String]
-
-      // Create the content and set the user and the owner
-      val content = Content(NotAssigned, info.title, 'text, info.thumbnail.getOrElse(""), resourceId, labels = info.labels).save
-      owner.addContent(content)
-      content
-    })
+        // Create the content and set the user and the owner
+        val content = Content(NotAssigned, info.title, 'text, info.thumbnail.getOrElse(""), resourceId, labels = info.labels).save
+        owner.addContent(content)
+        content
+      }
+    }
   }
 
   /**
@@ -128,22 +131,23 @@ object ContentManagement {
    * @param owner The user who is to own the image
    * @return The content object in a future
    */
-  def createImage(info: ContentDescriptor, owner: User): Future[Content] = {
+  def createImage(info: ContentDescriptor, owner: User): Future[Option[Content]] = {
     // Create the resource
-    createResource(info, "image").map(resource => {
+    createResource(info, "image").map { resource =>
+      resource.map { json =>
+        val resourceId = (json \ "id").as[String]
 
-      val resourceId = (resource \ "id").as[String]
+        // Set a thumbnail in the resource
+        info.thumbnail.foreach( thumbnail =>
+          ResourceHelper.addThumbnail(resourceId, thumbnail)
+        )
 
-      // Set a thumbnail in the resource
-      info.thumbnail.foreach( thumbnail =>
-        ResourceHelper.addThumbnail(resourceId, thumbnail)
-      )
-      
-      // Create the content and set the user and the owner
-      val content = Content(NotAssigned, info.title, 'image, info.thumbnail.getOrElse(""), resourceId, labels = info.labels).save
-      owner.addContent(content)
-      content
-    })
+        // Create the content and set the user and the owner
+        val content = Content(NotAssigned, info.title, 'image, info.thumbnail.getOrElse(""), resourceId, labels = info.labels).save
+        owner.addContent(content)
+        content
+      }
+    }
   }
 
 }

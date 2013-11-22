@@ -92,16 +92,18 @@ object ImageTools {
     newImage
   }
 
-  def loadImageFromContent(content: Content): Future[BufferedImage] = {
+  def loadImageFromContent(content: Content): Future[Option[BufferedImage]] = {
     // Load the resource
-    ResourceController.getResource(content.resourceId).map(json => {
-      // Look at the files to find the one that has the URL we want
-      val files = json \ "resource" \ "content" \ "files"
-      val file = files.as[JsArray].value.find(obj => (obj \ "representation").as[String] == "original").get
+    ResourceController.getResource(content.resourceId).map { response =>
+      response.map { json =>
+        // Look at the files to find the one that has the URL we want
+        val files = json \ "resource" \ "content" \ "files"
+        val file = files.as[JsArray].value.find(obj => (obj \ "representation").as[String] == "original").get
 
-      // Load the image from the URL
-      val url = new URL((file \ "downloadUri").as[String])
-      ImageIO.read(url)
-    })
+        // Load the image from the URL
+        val url = new URL((file \ "downloadUri").as[String])
+        ImageIO.read(url)
+      }
+    }
   }
 }

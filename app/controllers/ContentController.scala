@@ -107,13 +107,17 @@ object ContentController extends Controller {
 
             // Create the content
             Async {
-              ResourceHelper.getUrlSize(url).flatMap(bytes => {
+              ResourceHelper.getUrlSize(url).flatMap { bytes =>
                 val info = ContentDescriptor(title, description, keywords, url, bytes, mime, labels = labels,
                   languages = languages)
-                ContentManagement.createContent(info, user, contentType).map(content => {
-                  Redirect(routes.ContentController.view(content.id.get)).flashing("success" -> "Content added")
-                })
-              })
+                ContentManagement.createContent(info, user, contentType).map { opt =>
+                  opt.map { content =>
+                    Redirect(routes.ContentController.view(content.id.get)).flashing("success" -> "Content added")
+                  }.getOrElse {
+                    Redirect(routes.ContentController.createPage("url")).flashing("error" -> "Failed to create content.")
+                  }
+                }
+              }
             }
           } else
             Redirect(routes.ContentController.createPage("url")).flashing("error" -> "The given URL is invalid.")
@@ -185,7 +189,7 @@ object ContentController extends Controller {
           val keywords = labels.mkString(",")
           val languages = data.get("languages").map(_.toList).getOrElse(List("eng"))
 
-          
+
           // Upload the file
           request.body.file("file").map { file =>
             Async {
@@ -194,13 +198,20 @@ object ContentController extends Controller {
                 // Create the content
                 val info = ContentDescriptor(title, description, keywords, url, file.ref.file.length(), file.contentType.get,
                   labels = labels, languages = languages)
-                ContentManagement.createContent(info, user, contentType).map { content =>
-                  Redirect(routes.ContentController.view(content.id.get)).flashing("success" -> "Content added")
+                ContentManagement.createContent(info, user, contentType).map { opt =>
+                  opt.map { content =>
+                    Redirect(routes.ContentController.view(content.id.get))
+                      .flashing("success" -> "Content added")
+                  }.getOrElse {
+                    Redirect(routes.ContentController.createPage("file"))
+                      .flashing("error" -> "Failed to create content")
+                  }
                 }
               }
             }
           }.getOrElse {
-            Redirect(routes.ContentController.createPage("file")).flashing("error" -> "Missing file")
+            Redirect(routes.ContentController.createPage("file"))
+              .flashing("error" -> "Missing file")
           }
         }
   }
@@ -218,8 +229,8 @@ object ContentController extends Controller {
           // Create from resource
           val resourceId = request.body("resourceId")(0)
           Async {
-            ResourceController.getResource(resourceId).map {
-              json =>
+            ResourceController.getResource(resourceId).map { response =>
+              response.map { json =>
                 val code = (json \ "response" \ "code").as[Int]
                 if (code == 200) {
                   val title = (json \ "resource" \ "title").as[String]
@@ -228,8 +239,14 @@ object ContentController extends Controller {
                   user.addContent(content)
 
                   Redirect(routes.ContentController.view(content.id.get))
+                    .flashing("success" -> "Content added.")
                 } else
-                  Redirect(routes.ContentController.createPage("resource")).flashing("error" -> "That resource doesn't exist")
+                  Redirect(routes.ContentController.createPage("resource"))
+                    .flashing("error" -> "That resource doesn't exist")
+              }.getOrElse {
+                Redirect(routes.ContentController.createPage("resource"))
+                  .flashing("error" -> "Couldn't access resource")
+              }
             }
           }
         }
