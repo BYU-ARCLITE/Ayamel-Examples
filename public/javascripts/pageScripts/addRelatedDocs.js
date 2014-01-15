@@ -10,12 +10,13 @@ $(function() {
     var courseQuery = courseId ? "?course=" + courseId : "",
         captionsTemplate = '<table class="table table-bordered">\
             <thead><tr>\
-                <th>Track name</th><th>Language</th><th>Options</th><th>Publish</th>\
+                <th>Track name</th><th>Language</th><th>Download</th><th>Options</th><th>Publish</th>\
             </tr></thead>\
             <tbody>\
-                {{#resources}}<tr>\
+                {{#resources:i}}<tr>\
                     <td>{{.title}}</td>\
                     <td>{{.language}}</td>\
+                    <td>{{#.content.files}}<a href="{{.downloadUri}}" download="{{title}}">{{.mime}}&nbsp;</a>{{/.content.files}}</td>\
                     <td>\
                         <button class="btn btn-magenta" proxy-tap="delete:{{.id}}"><i class="icon-trash"></i> Delete</button>\
                     </td>\
@@ -31,12 +32,13 @@ $(function() {
         </table>',
         annotationsTemplate = '<table class="table table-bordered pad-top-high">\
             <thead><tr>\
-                <th>Track name</th><th>Language</th><th>Options</th><th>Publish</th>\
+                <th>Track name</th><th>Language</th><th>Download</th><th>Options</th><th>Publish</th>\
             </tr></thead>\
             <tbody>\
                 {{#resources}}<tr>\
                     <td>{{.title}}</td>\
                     <td>{{.language}}</td>\
+                    <td>{{#.content.files}}<a href="{{.downloadUri}}" download="{{title}}">{{.mime}}&nbsp;</a>{{/.content.files}}</td>\
                     <td>\
                         <button class="btn btn-blue" proxy-tap="edit:{{.id}}"><i class="icon-edit-sign"></i> Edit</button>\
                         <button class="btn btn-magenta" proxy-tap="delete:{{.id}}"><i class="icon-trash"></i> Delete</button>\
