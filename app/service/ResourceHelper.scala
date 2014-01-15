@@ -114,28 +114,24 @@ object ResourceHelper {
   def createResourceWithUri(resource: JsObject, uri: String, bytes: Long, mime: String, fileAttributes: Map[String, String] = Map()): Future[Option[JsValue]] = {
 
     // Create the resource
-    ResourceController.createResource(resource).flatMap { response =>
-      response match {
-        case Some(json) => {
-          val contentUploadUrl = (json \ "contentUploadUrl").as[String]
-
-          // Add information about the file
-          val file = make.file(Json.obj(
-            getUrlName(uri) -> uri,
-            "mimeType" -> mime,
-            "bytes" -> bytes,
-            "attributes" -> fileAttributes
-          ))
-          val remoteFiles = Json.obj("remoteFiles" -> Json.arr(file))
-          Logger.debug("Resource Helper: create with URI")
-          Logger.debug(remoteFiles.toString())
-
-          // Save this info and return the updated resource
-          ResourceController.setRemoteFiles(contentUploadUrl, remoteFiles).map(_.map(_ \ "resource"))
-        }
-        case None =>
-          Future(None)
+    ResourceController.createResource(resource).flatMap {
+      case Some(json) => {
+        val contentUploadUrl = (json \ "contentUploadUrl").as[String]
+        // Add information about the file
+        val file = make.file(Json.obj(
+          getUrlName(uri) -> uri,
+          "mimeType" -> mime,
+          "bytes" -> bytes,
+          "attributes" -> fileAttributes
+        ))
+        val remoteFiles = Json.obj("remoteFiles" -> Json.arr(file))
+        Logger.debug("Resource Helper: create with URI")
+        Logger.debug(remoteFiles.toString())
+        // Save this info and return the updated resource
+        ResourceController.setRemoteFiles(contentUploadUrl, remoteFiles).map(_.map(_ \ "resource"))
       }
+      case None =>
+        Future(None)
     }
   }
 
@@ -148,40 +144,35 @@ object ResourceHelper {
    */
   def addRemoteFile(id: String, uri: String, bytes: Long, mime: Option[String] = None, representation: String = "original"): Future[Option[JsValue]] = {
     // Get the resource
-    ResourceController.getResource(id).flatMap { response =>
-      response match {
-        case Some(json) => {
-          val resource = json \ "resource"
+    ResourceController.getResource(id).flatMap {
+      case Some(json) => {
+        val resource = json \ "resource"
 
-          // Set the new file information
-          val mimeType = mime.getOrElse(getMimeFromUri(uri))
-          val file = make.file(Json.obj(
-            "downloadUri" -> uri,
-            "mimeType" -> mimeType,
-            "bytes" -> bytes,
-            "representation" -> representation
-          ))
-          val files = (resource \ "content" \ "files").as[JsArray].value.toList
-          val newFiles = JsArray(files ::: List(file))
+        // Set the new file information
+        val mimeType = mime.getOrElse(getMimeFromUri(uri))
+        val file = make.file(Json.obj(
+          "downloadUri" -> uri,
+          "mimeType" -> mimeType,
+          "bytes" -> bytes,
+          "representation" -> representation
+        ))
+        val files = (resource \ "content" \ "files").as[JsArray].value.toList
+        val newFiles = JsArray(files ::: List(file))
 
-          // Get an upload url
-          ResourceController.requestUploadUrl(id).flatMap { uploadUrlResponse =>
-            uploadUrlResponse match {
-              case Some(json) => {
-                val uploadUrl = (json \ "contentUploadUrl").as[String]
-
-                // Set the new files
-                val obj = Json.obj("remoteFiles" -> newFiles)
-                ResourceController.setRemoteFiles(uploadUrl, obj).map(_.map(_ \ "resource"))
-              }
-              case None =>
-                Future(None)
-            }
+        // Get an upload url
+        ResourceController.requestUploadUrl(id).flatMap {
+          case Some(json) => {
+            val uploadUrl = (json \ "contentUploadUrl").as[String]
+            // Set the new files
+            val obj = Json.obj("remoteFiles" -> newFiles)
+            ResourceController.setRemoteFiles(uploadUrl, obj).map(_.map(_ \ "resource"))
           }
+          case None =>
+            Future(None)
         }
-        case None =>
-          Future(None)
       }
+      case None =>
+        Future(None)
     }
   }
 
