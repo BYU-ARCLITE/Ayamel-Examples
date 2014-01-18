@@ -160,18 +160,19 @@
 
     <script type="text/javascript">
         $(function() {
-
-            var resourceLibraryUrl = "@resourceLibraryUrl";
-
-            $(".resourceName").each(function () {
-                var $this = $(this);
-                var id = $this.text();
-                if (id) {
-                    ResourceLibrary.load(id, function (resource) {
-                        $this.text(resource.title);
-                    });
-                }
+            var elList = [].filter.call(document.querySelectorAll('.resourceName'),function(el){
+                var id = el.textContent;
+                return id && id !== "unknown";
             });
+            ResourceLibrary.setBaseUrl("@resourceLibraryUrl");
+            function getResourceNames(){
+                if(elList.length === 0){ return; }
+                var el = elList.pop();
+                ResourceLibrary.load(el.textContent, function (resource) {
+                    el.textContent = resource.title;
+                    getResourceNames();
+                });
+            }
         });
     </script>
 }
