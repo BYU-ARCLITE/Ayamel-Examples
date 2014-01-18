@@ -26,7 +26,11 @@
 
 @main("Ayamel - Content stats", moreStyles) {
 
-    <script src="@routes.Assets.at("Ayamel.js/js/Resource.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.at("Ayamel.js/js/Resource.js")"></script>
+	<script>
+	ResourceLibrary.setBaseUrl("@resourceLibraryUrl");
+	</script>
+    <script src="@routes.Assets.at("javascripts/pageScripts/stats.js")"></script>
 
     <div class="padded">
 
@@ -157,22 +161,4 @@
         }
 
     </div>
-
-    <script type="text/javascript">
-        $(function() {
-            var elList = [].filter.call(document.querySelectorAll('.resourceName'),function(el){
-                var id = el.textContent;
-                return id && id !== "unknown";
-            });
-            ResourceLibrary.setBaseUrl("@resourceLibraryUrl");
-            function getResourceNames(){
-                if(elList.length === 0){ return; }
-                var el = elList.pop();
-                ResourceLibrary.load(el.textContent, function (resource) {
-                    el.textContent = resource.title;
-                    getResourceNames();
-                });
-            }
-        });
-    </script>
 }
