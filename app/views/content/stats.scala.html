@@ -87,12 +87,12 @@
                     @for(translation <- content.translations(coursePrefix)) {
                         @defining(translation.getUser){ user =>
                             @if(!user.isEmpty) {
-                                <tr>
+                                <tr class="translationRecord">
                                     <td>@user.get.displayName</td>
                                     <td>@translation.activityObject.itemRef</td>
                                     <td>@translation.activityContext.generatorContext.objectType</td>
                                     <td class="resourceName">@translation.activityContext.generatorContext.id</td>
-                                    <td>@translation.activityContext.generatorContext.itemRef</td>
+                                    <td class="cueNumber">@translation.activityContext.generatorContext.itemRef</td>
                                     <td>@service.TimeTools.prettyTime(translation.published)</td>
                                 </tr>
                             }
@@ -118,7 +118,7 @@
                     @for(annotations <- content.annotations(coursePrefix)) {
                         @defining(annotations.getUser){ user =>
                             @if(!user.isEmpty) {
-                                <tr>
+                                <tr class="annotationRecord">
                                     <td>@user.get.displayName</td>
                                     <td>@annotations.activityObject.itemRef</td>
                                     <td class="resourceName">@annotations.activityObject.id</td>
@@ -147,10 +147,10 @@
                     @for(cueClick <- content.cueClicks(coursePrefix)) {
                         @defining(cueClick.getUser){ user =>
                             @if(!user.isEmpty) {
-                                <tr>
+                                <tr class="clickRecord">
                                     <td>@user.get.displayName</td>
                                     <td class="resourceName">@cueClick.activityContext.generatorContext.id</td>
-                                    <td>@cueClick.activityContext.generatorContext.itemRef</td>
+                                    <td class="cueNumber">@cueClick.activityContext.generatorContext.itemRef</td>
                                     <td>@service.TimeTools.prettyTime(cueClick.published)</td>
                                 </tr>
                             }

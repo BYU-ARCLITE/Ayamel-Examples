@@ -1,15 +1,28 @@
 $(function() {
-	var elList = [].filter.call(document.querySelectorAll('.resourceName'),function(el){
-		var id = el.textContent;
-		return id && id !== "unknown";
-	});
-	function getResourceNames(){
-		if(elList.length === 0){ return; }
-		var el = elList.pop();
-		ResourceLibrary.load(el.textContent, function (resource) {
-			el.textContent = resource.title;
-			getResourceNames();
+	function getCueData(list){
+		list.forEach(function(rel){
+			var tel = rel.querySelector('.resourceName'),
+				tid = tel.textContent;
+			if(!tid || tid === "unknown"){ return; }
+			ResourceLibrary.load(tid, function (resource) {
+				var cel = rel.querySelector('.cueNumber'),
+					cid = cel.textContent;
+				tel.textContent = resource.title;
+				//get the track and extract the cue
+				//cel.textContent = cue.text
+			});
 		});
 	}
-	getResourceNames();
+	function getAnnData(list){
+		list.forEach(function(el){
+			var id = el.textContent;
+			if(!id || id === "unknown"){ return; }
+			ResourceLibrary.load(id, function (resource) {
+				el.textContent = resource.title;
+			});
+		});
+	}
+	getCueData([].slice.call(document.querySelectorAll('.translationRecord')));
+	getAnnData([].slice.call(document.querySelectorAll('.annotationRecord .resourceName')));
+	getCueData([].slice.call(document.querySelectorAll('.clickRecord')));
 });
