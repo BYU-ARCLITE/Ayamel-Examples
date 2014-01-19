@@ -1,15 +1,32 @@
 $(function() {
+	var fcache = {};
 	function getCueData(list){
 		list.forEach(function(rel){
 			var tel = rel.querySelector('.resourceName'),
 				tid = tel.textContent;
 			if(!tid || tid === "unknown"){ return; }
 			ResourceLibrary.load(tid, function (resource) {
-				var cel = rel.querySelector('.cueNumber'),
-					cid = cel.textContent;
+				var url = resource.content.files[0].downloadUri,
+					promise;
 				tel.textContent = resource.title;
-				//get the track and extract the cue
-				//cel.textContent = cue.text
+				if(!fcache.hasOwnProperty(url)){
+					promise = $.Deferred();
+					TextTrack.get({
+						kind: 'subtitles',
+						lang: resource.languages.iso639_3[0],
+						label: resource.title,
+						url: url,
+						success: function(track, mime){ promise.resolve(track); }
+					});
+					fcache[url] = promise;
+				}else{
+					promise = fcache[url];
+				}
+				promise.then(function(track){
+					var ctext = rel.querySelector('.cueText'),
+						cid = rel.querySelector('.cueNumber').textContent;
+					ctext.textContent = track.cues.getCueById(cid).text;
+				});
 			});
 		});
 	}
