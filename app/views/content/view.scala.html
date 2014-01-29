@@ -133,6 +133,12 @@
                                     </ul>
                                     @views.html.content.header.settings(content, resourceLibraryUrl)
                                 </li>
+								<li class="dropdown">
+                                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                                        <i class="icon-pencil"></i> Download <b class="caret"></b>
+                                    </a>
+                                    <ul class="dropdown-menu" id="downloadMenu"></ul>
+                                </li>
                             }
 
                             <li><a href="#configurationModal" data-toggle="modal"><i class="icon-cogs"></i> Configuration</a></li>
@@ -198,19 +204,29 @@
                 });
 
                 // Show the metadata
-               ResourceLibrary.load(content.resourceId, function(resource) {
+				ResourceLibrary.load(content.resourceId, function(resource) {
+					var $metadataLanguages, $downloadMenu;
 //                    $("#metadataCategories").text(resource.categories.join(", "))
-                    $("#metadataDescription").text(resource.description);
+                    document.getElementById("metadataDescription").textContent = resource.description;
 
-                    var $metadataLanguages = $("#metadataLanguages");
+                    $metadataLanguages = $("#metadataLanguages");
                     resource.languages.iso639_3.forEach(function (langCode) {
                         langCode = langCode.length === 2 ? Ayamel.utils.upgradeLangCode(langCode) : langCode;
                         var language = Ayamel.utils.getLangName(langCode);
                         $metadataLanguages.append('<em class="pad-left-high">' + language + '</em>');
                     });
-
+					
                     $("#metadataLabels").append(resource.keywords.split(",").filter(function(w){return !!w;}).map(function(w){return "<span class='label label-info pad-left-med'>" + w + "</span>";}))
-               })
+					
+					
+					$downloadMenu = $("#downloadMenu");
+					if($downloadMenu.length === 0){
+						$downloadMenu.append('<li>No downloads available</li>'); 
+					}
+					resource.content.files.forEach(function(fobj){
+						if(fobj.downloadUri){ $downloadMenu.append('<li><a href="'+fobj.downloadUri+'" target="_blank">'+fobj.respresentation+': '+fobj.mime+' ('+(fobj.bytes/1024)+'KB)</a></li>'); }
+					});
+				})
             });
         </script>
     </div>
