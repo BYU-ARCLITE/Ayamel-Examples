@@ -1,7 +1,7 @@
 package controllers
 
 import authentication.Authentication
-import play.api.mvc.{Action, Result, Request, Controller}
+import play.api.mvc.{Action, Result, Request, Controller, SimpleResult, ResponseHeader}
 import service._
 import models.{User, Content}
 import scala.concurrent.{Future, ExecutionContext}
@@ -11,6 +11,7 @@ import service.ContentDescriptor
 import dataAccess.{GoogleFormScripts, PlayGraph, ResourceController}
 import java.net.{URLDecoder, URI, URL}
 import play.api.libs.ws.WS
+import play.api.libs.iteratee.Enumerator
 
 /**
  * The controller for dealing with content.
@@ -375,12 +376,12 @@ object ContentController extends Controller {
           // Only owners can view stats
             if (content isEditableBy user) {
               val activity = content.getActivity("")
-              Async {
-                ExcelWriter.writeActivity(activity).map {
-                  url =>
-                    Redirect(url)
-                }
-              }
+              val byteStream = ExcelWriter.writeActivity(activity)
+              val output = Enumerator.fromStream(byteStream)
+              SimpleResult(
+                header = ResponseHeader(200),
+                body = output
+              ).withHeaders("Content-Type" -> "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
             } else
               Errors.forbidden
         }

@@ -1,6 +1,6 @@
 package controllers
 
-import play.api.mvc.{Action, Controller}
+import play.api.mvc.{Action, Controller, SimpleResult, ResponseHeader}
 import service.{TimeTools, MobileDetection, ExcelWriter, LMSAuth}
 import play.core.parsers.FormUrlEncodedParser
 import controllers.authentication.Authentication
@@ -10,6 +10,7 @@ import scala.concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
 import models.ContentListing
 import dataAccess.ResourceController
+import play.api.libs.iteratee.Enumerator
 
 /**
  * A controller which deals with content in the context of a course
@@ -77,12 +78,12 @@ object CourseContent extends Controller {
                 if (user canEdit course) {
                   val coursePrefix = "course_" + course.id.get + ":"
                   val activity = content.getActivity(coursePrefix)
-                  Async {
-                    ExcelWriter.writeActivity(activity).map {
-                      url =>
-                        Redirect(url)
-                    }
-                  }
+                  val byteStream = ExcelWriter.writeActivity(activity)
+                  val output = Enumerator.fromStream(byteStream)
+                  SimpleResult(
+                    header = ResponseHeader(200),
+                    body = output
+                  ).withHeaders("Content-Type" -> "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
                 } else
                   Errors.forbidden
             }
