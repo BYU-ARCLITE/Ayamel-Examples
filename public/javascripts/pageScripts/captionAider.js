@@ -520,9 +520,10 @@ $(function() {
 								//fill it with user input in the future
 								TextTrack.parse({
 									content: fileObj.data,
+									fname: fileObj.name,
 									mime: fileObj.mime,
 									kind: kind,
-									//label: fileObj.name,
+									//label:
 									lang: language,
 									success: function(track, mime) {
 										track.mode = "showing";
