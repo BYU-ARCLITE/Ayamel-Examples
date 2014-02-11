@@ -107,7 +107,7 @@ var VideoRenderer = (function () {
 						Ayamel.utils.downgradeLangCode(detail.srcLang) +
 						Ayamel.utils.downgradeLangCode(detail.destLang) +
 						'/' + detail.text + '" target="wordreference">' +
-						detail.text + 'at WordReference.com</a> © WordReference.com';
+						detail.text + ' at WordReference.com</a> © WordReference.com';
 				} else {
 					return engine;
 				}
