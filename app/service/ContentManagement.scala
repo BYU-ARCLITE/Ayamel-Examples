@@ -3,7 +3,9 @@ package service
 import concurrent.{ExecutionContext, Future}
 import models.{User, Content}
 import anorm.NotAssigned
+import javax.imageio.ImageIO
 import java.io.File
+import java.net.URL
 import ExecutionContext.Implicits.global
 import play.api.libs.json.{JsValue, Json}
 
@@ -29,17 +31,17 @@ object ContentManagement {
       case 'audio => createAudio(info, owner)
       case 'image => {
         // Create a thumbnail
-        ImageTools.generateThumbnail(info.url).flatMap(thumbnail => {
-          val imageInfo = info.copy(thumbnail = Some(thumbnail))
+        ImageTools.generateThumbnail(info.url).flatMap { thumbnail =>
+          val imageInfo = info.copy(thumbnail = thumbnail)
           createImage(imageInfo, owner)
-        })
+        }
       }
       case 'video => {
         // Create a thumbnail
-        VideoTools.generateThumbnail(info.url).flatMap(thumbnail => {
-          val videoInfo = info.copy(thumbnail = Some(thumbnail))
+        VideoTools.generateThumbnail(info.url).flatMap { thumbnail =>
+          val videoInfo = info.copy(thumbnail = thumbnail)
           createVideo(videoInfo, owner)
-        })
+        }
       }
       case 'text => {
         createText(info, owner)

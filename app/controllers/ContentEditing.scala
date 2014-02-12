@@ -6,6 +6,8 @@ import play.api.libs.json.{JsString, JsArray, Json}
 import dataAccess.ResourceController
 import models.{User, Course, Content}
 import service._
+import java.net.URL
+import java.io.IOException
 import javax.imageio.ImageIO
 import scala.concurrent.{ExecutionContext, Future}
 import ExecutionContext.Implicits.global
@@ -297,30 +299,33 @@ object ContentEditing extends Controller {
   def changeThumbnail(id: Long) = Authentication.authenticatedAction(parse.multipartFormData) {
     implicit request =>
       implicit user =>
-        ContentController.getContent(id) {
-          content =>
+        ContentController.getContent(id) { content =>
 
-            val file = request.body.file("file").get
-            val url = request.body.dataParts("url")(0)
+          val file = request.body.file("file")
+          val url = request.body.dataParts("url")(0)
+          val redirect = Redirect(routes.ContentController.view(id))
 
-            Async {
-              if (url.isEmpty) {
-
-                val image = ImageIO.read(file.ref.file)
-                val thumbnail = ImageTools.makeThumbnail(image)
-                FileUploader.uploadImage(thumbnail, FileUploader.uniqueFilename("thumbnail.jpg")).map {
-                  thumbnailUrl =>
+          try {
+            (if (url.isEmpty) {
+              file.map { filepart =>
+                ImageTools.generateThumbnail(filepart.ref.file)
+              }
+            } else {
+              Some(ImageTools.generateThumbnail(url))
+            }) match {
+              case Some(fut) => Async {
+                fut.map {
+                  case Some(thumbnailUrl) =>
                     content.copy(thumbnail = thumbnailUrl).save
-                    Redirect(routes.ContentController.view(content.id.get)).flashing("info" -> "Thumbnail changed")
-                }
-              } else {
-                ImageTools.generateThumbnail(url).map {
-                  thumbnailUrl =>
-                    content.copy(thumbnail = thumbnailUrl).save
-                    Redirect(routes.ContentController.view(content.id.get)).flashing("info" -> "Thumbnail changed")
+                    redirect.flashing("info" -> "Thumbnail changed")
+                  case None => redirect.flashing("error" -> "Unknown error while attempting to create thumbnail")
                 }
               }
+              case None => redirect.flashing("error" -> "No file provided")
             }
+          } catch {
+            case _: IOException => redirect.flashing("error" -> "Error reading image file")
+          }
         }
   }
 
@@ -332,37 +337,45 @@ object ContentEditing extends Controller {
   def createThumbnail(id: Long, time: Double) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        ContentController.getContent(id) {
-          content =>
-            val redirect = Redirect(routes.ContentController.view(id))
+        ContentController.getContent(id) { content =>
+          val redirect = Redirect(routes.ContentController.view(id))
 
-            Async {
-              // Get the video resource from the content
-              ResourceController.getResource(content.resourceId).map { response =>
-                response.map { json =>
-                  val resource = json \ "resource"
-
-                  // Get the video file
-                  (resource \ "content" \ "files").as[JsArray].value.find { file =>
-                    (file \ "mime").as[String].startsWith("video")
-                  }.map { videoObject =>
-                    val videoUrl = (videoObject \ "downloadUri").as[String]
-                    Async {
-                      // Generate the thumbnail for that video
-                      VideoTools.generateThumbnail(videoUrl, time).map { thumbnailUrl =>
-                        // Save it and be done
-                        content.copy(thumbnail = thumbnailUrl).save
-                        redirect.flashing("info" -> "Thumbnail updated")
+          Async {
+            // Get the video resource from the content
+            ResourceController.getResource(content.resourceId).map { response =>
+              response.map { json =>
+                // Get the video file
+                (json \ "resource" \ "content" \ "files") match {
+                  case arr:JsArray =>
+                    arr.value.find { file =>
+                      (file \ "mime") match {
+                        case str:JsString => str.value.startsWith("video")
+                        case _ => false
                       }
+                    }.map { videoObject =>
+                      (videoObject \ "downloadUri") match {
+                        case videoUrl:JsString => Async {
+                          // Generate the thumbnail for that video
+                          VideoTools.generateThumbnail(videoUrl.value, time).map {
+                            case Some(thumbnailUrl) =>
+                              // Save it and be done
+                              content.copy(thumbnail = thumbnailUrl).save
+                              redirect.flashing("info" -> "Thumbnail updated")
+                            case None => redirect.flashing("error" -> "Could not generate thumbnail")
+                          }
+                        }
+                        case _ => redirect.flashing("error" -> "Cannot access raw video")
+                      }
+                    }.getOrElse {
+                      redirect.flashing("error" -> "No video file found")
                     }
-                  }.getOrElse {
-                    redirect.flashing("error" -> "No video file found")
-                  }
-                }.getOrElse {
-                  redirect.flashing("error" -> "Could not access video.")
+                  case _ => redirect.flashing("error" -> "No files found")
                 }
+              }.getOrElse {
+                redirect.flashing("error" -> "Could not access video.")
               }
             }
+          }
         }
   }
 

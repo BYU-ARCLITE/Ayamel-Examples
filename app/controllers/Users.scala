@@ -113,21 +113,22 @@ object Users extends Controller {
   def uploadProfilePicture = Authentication.authenticatedAction(parse.multipartFormData) {
     implicit request =>
       implicit user =>
+        val redirect = Redirect(routes.Users.accountSettings())
 
         // Load the image from the file and make it into a thumbnail
         request.body.file("file").map { picture =>
-          val image = ImageTools.makeThumbnail(ImageIO.read(picture.ref.file))
-
-          // Upload the file
-          Async {
-            FileUploader.uploadImage(image, picture.filename).map { url =>
-              // Save the user info about the profile picture
-              user.copy(picture = Some(url)).save
-              Redirect(routes.Users.accountSettings()).flashing("info" -> "Profile picture updated")
+          ImageTools.makeThumbnail(ImageIO.read(picture.ref.file)) match {
+            case Some(image) => Async { // Upload the file
+              FileUploader.uploadImage(image, picture.filename).map { url =>
+                // Save the user info about the profile picture
+                user.copy(picture = Some(url)).save
+                redirect.flashing("info" -> "Profile picture updated")
+              }
             }
+            case None => redirect.flashing("error" -> "Unknown error while processing image")
           }
         }.getOrElse {
-          Redirect(routes.Users.accountSettings()).flashing("error" -> "Missing file")
+          redirect.flashing("error" -> "Missing file")
         }
   }
 
@@ -146,7 +147,7 @@ object Users extends Controller {
             Ok(views.html.users.teacherRequest.status())
           else
             Ok(views.html.users.teacherRequest.requestForm())
-            
+
         }
   }
 

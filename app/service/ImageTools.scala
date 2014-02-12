@@ -5,7 +5,7 @@ import java.awt.{RenderingHints, Graphics2D, Color}
 import scala.concurrent.{ExecutionContext, Future}
 import javax.imageio.ImageIO
 import java.net.URL
-import java.io.File
+import java.io.{File, IOException}
 import play.api.Play
 import play.api.Play.current
 import java.awt.geom.AffineTransform
@@ -23,47 +23,59 @@ import ExecutionContext.Implicits.global
  */
 object ImageTools {
 
-  def scaleImage(image: BufferedImage, width: Int, height: Int, background: Color): BufferedImage = {
-    // Maintain aspect ratio
-    var newWidth = width
-    var newHeight = height
-    val imgWidth = image.getWidth
-    val imgHeight = image.getHeight
-    if (imgWidth*height < imgHeight*width) {
-      newWidth = imgWidth*height/imgHeight
-    } else {
-      newHeight = imgHeight*width/imgWidth
-    }
+  def scaleImage(image: BufferedImage, width: Int, height: Int, background: Color): Option[BufferedImage] = {
+    if(image == null) None
+    else {
+      // Maintain aspect ratio
+      var newWidth = width
+      var newHeight = height
+      val imgWidth = image.getWidth
+      val imgHeight = image.getHeight
+      if (imgWidth*height < imgHeight*width) {
+        newWidth = imgWidth*height/imgHeight
+      } else {
+        newHeight = imgHeight*width/imgWidth
+      }
 
-    // Write the image to a new image of a different size
-    val newImage = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_RGB)
-    val graphics = newImage.createGraphics()
-    try {
-      graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC)
-      graphics.setBackground(background)
-      graphics.clearRect(0, 0, newWidth, newHeight)
-      graphics.drawImage(image, 0, 0, newWidth, newHeight, null)
-    } finally {
-      graphics.dispose()
+      // Write the image to a new image of a different size
+      val newImage = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_RGB)
+      val graphics = newImage.createGraphics()
+      try {
+        graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC)
+        graphics.setBackground(background)
+        graphics.clearRect(0, 0, newWidth, newHeight)
+        graphics.drawImage(image, 0, 0, newWidth, newHeight, null)
+        Some(newImage)
+      } catch {
+        case _: Throwable => None
+      } finally {
+        graphics.dispose()
+      }
     }
-    newImage
   }
 
-  def makeThumbnail(image: BufferedImage): BufferedImage = scaleImage(image, 250, 250, Color.black)
+  def makeThumbnail(image: BufferedImage): Option[BufferedImage] = scaleImage(image, 250, 250, Color.black)
 
-  def generateThumbnail(url: String): Future[String] = {
-    val image = makeThumbnail(
-      ImageIO.read(new URL(url))
-    )
-    val filename = FileUploader.uniqueFilename(url + ".jpg")
-    FileUploader.uploadImage(image, filename)
+  def generateThumbnail(source: Any): Future[Option[String]] = {
+    val orig = source match {
+      case url:String => ImageIO.read(new URL(url))
+      case file:File => ImageIO.read(file)
+      case _ => throw new IOException("unknown source type")
+    }
+    makeThumbnail(orig) match {
+      case Some(image) =>
+        val filename = FileUploader.uniqueFilename("thumbnail.jpg")
+        FileUploader.uploadImage(image, filename).map(s => Some(s))
+      case None => Future(None)
+    }
   }
 
   def getNormalizedImageFromFile(file: File): BufferedImage = {
+    //TODO: Implement proper error checking
     val image = ImageIO.read(file)
     val width = math.min(image.getWidth, Play.configuration.getInt("media.image.maxWidth").get)
     val height = math.min(image.getHeight, Play.configuration.getInt("media.image.maxHeight").get)
-    scaleImage(image, width, height, Color.black)
+    scaleImage(image, width, height, Color.black).get
   }
 
   def crop(image: BufferedImage, top: Double, left: Double, bottom: Double, right: Double): BufferedImage = {
