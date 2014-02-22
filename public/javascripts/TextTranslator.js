@@ -70,7 +70,7 @@ var TextTranslator = (function () {
 
 	TextTranslator.prototype.translate = function translate(text, srcLang, destLang, callback) {
 		var _this = this;
-		//TODO: Use CustomEvent
+		//TODO: Update API, make endpoint configurable
 		$.ajax("http://sartre3.byu.edu:9010/api/v1/lookup?srcLang=" + srcLang + "&destLang=" + destLang + "&word=" + encodeURIComponent(text), {
 			dataType: "json",
 			success: function success(data) {

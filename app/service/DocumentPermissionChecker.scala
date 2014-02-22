@@ -1,7 +1,7 @@
 package service
 
 import models.{Course, User, Content}
-import play.api.libs.json.{JsArray, JsObject}
+import play.api.libs.json.{JsArray, JsObject, JsString}
 import dataAccess.ResourceController
 import scala.concurrent._
 import scala.concurrent.duration._
@@ -25,28 +25,22 @@ class DocumentPermissionChecker(user: User, content: Content, course: Option[Cou
   // Filters
 
   // A document resource is personal if clientUser.id = "user:ID"
-  def personalFilter(resource: JsObject): Boolean =
-    try {
-      val id = (resource \ "clientUser" \ "id").as[String]
-      id.startsWith("user") && id.split(":")(1).toLong == user.id.get
-    } catch {
-      case _: Throwable => false
-    }
+  def personalFilter(resource: JsObject): Boolean = try { //try block handles unchecked gets
+    val id = (resource \ "clientUser" \ "id").as[String]
+    id.startsWith("user") && id.split(":")(1).toLong == user.id.get
+  } catch {
+    case _: Throwable => false
+  }
 
-  def courseFilter(resource: JsObject): Boolean =
-    try {
-      val id = (resource \ "clientUser" \ "id").as[String]
-      id.startsWith("course") && id.split(":")(1).toLong == course.get.id.get
-    } catch {
-      case _: Throwable => false
-    }
+  def courseFilter(resource: JsObject): Boolean = try { //try block handles unchecked gets
+    val id = (resource \ "clientUser" \ "id").as[String]
+    id.startsWith("course") && id.split(":")(1).toLong == course.get.id.get
+  } catch {
+    case _: Throwable => false
+  }
 
   def globalFilter(resource: JsObject): Boolean =
-    try {
-      (resource \ "clientUser" \ "id").asOpt[String].isEmpty
-    } catch {
-      case _: Throwable => true
-    }
+    (resource \ "clientUser" \ "id").isInstanceOf[JsString]
 
   // Permission checkers
 
@@ -118,16 +112,11 @@ class DocumentPermissionChecker(user: User, content: Content, course: Option[Cou
    * Checks if the user is allowed to publish this particular resource
    */
   def canPublish(resource: JsObject): Boolean = {
-    // Only owners/admins can publish
-    if (content isEditableBy user) {
-      // Only allow resources which have been submitted
-      try {
-        (resource \ "clientUser" \ "id").as[String].endsWith("request")
-      } catch {
-        case _: Throwable => false
-      }
-    } else
-      false
+    (content isEditableBy user) && // Only owners/admins can publish
+    ((resource \ "clientUser" \ "id") match { // Only allow resources which have been submitted
+      case id: JsString => id.value.endsWith("request")
+      case _ => false
+    })
   }
 
   // Resource getters

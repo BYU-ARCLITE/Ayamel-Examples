@@ -23,6 +23,19 @@ object Users extends Controller {
         Ok(views.html.users.notifications())
   }
 
+  def modNotification(id: Long, user: User)(cb: Notification => (String, String)) =
+    Notification.findById(id) match {
+    case Some(notification) =>
+      // Make sure the notification belongs to the user
+      if (user.getNotifications.contains(notification)) {
+        val message = cb(notification)
+        Redirect(routes.Users.notifications()).flashing(message)
+      } else
+        Errors.forbidden
+    case _ =>
+      Errors.notFound
+    }
+
   /**
    * Marks a notification as read
    * @param id The ID of the notification
@@ -30,17 +43,9 @@ object Users extends Controller {
   def markNotification(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-
-        Notification.findById(id) match {
-        case Some(notification) =>
-          // Make sure the notification belongs to the user
-          if (user.getNotifications.contains(notification)) {
-            notification.copy(messageRead = true).save
-            Redirect(routes.Users.notifications()) flashing ("info" -> "Notification marked as read.")
-          } else
-            Errors.forbidden
-        case _ =>
-          Errors.notFound
+        modNotification(id, user) { notification =>
+          notification.copy(messageRead = true).save
+          "info" -> "Notification marked as read."
         }
   }
 
@@ -51,17 +56,9 @@ object Users extends Controller {
   def deleteNotification(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-
-        Notification.findById(id) match {
-        case Some(notification) =>
-          // Make sure the notification belongs to the user
-          if (user.getNotifications.contains(notification)) {
-            notification.delete()
-            Redirect(routes.Users.notifications()) flashing ("info" -> "Notification deleted.")
-          } else
-            Errors.forbidden
-        case _ =>
-          Errors.notFound
+        modNotification(id, user) { notification =>
+          notification.delete()
+          "info" -> "Notification deleted."
         }
   }
 
@@ -98,13 +95,14 @@ object Users extends Controller {
 
         val password1 = request.body("password1")(0)
         val password2 = request.body("password2")(0)
+        val redirect = Redirect(routes.Users.accountSettings())
 
         // Make sure the passwords match
         if (password1 == password2) {
           user.copy(authId = HashTools.sha256Base64(password1)).save
-          Redirect(routes.Users.accountSettings()).flashing("info" -> "Password changed.")
+          redirect.flashing("info" -> "Password changed.")
         } else
-          Redirect(routes.Users.accountSettings()).flashing("alert" -> "Passwords don't match.")
+          redirect.flashing("alert" -> "Passwords don't match.")
   }
 
   /**
