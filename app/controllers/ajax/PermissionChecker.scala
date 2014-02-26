@@ -2,8 +2,8 @@ package controllers.ajax
 
 import play.api.mvc.Controller
 import controllers.authentication.Authentication
-import models.Course
 import controllers.ContentController
+import models.Course
 import service.DocumentPermissionChecker
 import scala.concurrent.{ExecutionContext, Future}
 import ExecutionContext.Implicits.global
@@ -33,33 +33,25 @@ object PermissionChecker extends Controller {
     implicit request =>
       implicit user =>
         val contentId = request.body("contentId")(0).toLong
-        ContentController.getContent(contentId) {
-          content =>
+        ContentController.getContent(contentId) { content =>
+          // Collect data
+          val permission = Symbol(request.body("permission")(0))
+          val course = Course.findById(request.body.get("courseId").map(_(0).toLong).getOrElse(0))
+          val documentType = documentTypeMap(request.body("documentType")(0))
+          val checker = new DocumentPermissionChecker(user, content, course, documentType)
 
-            // Collect data
-            val permission = Symbol(request.body("permission")(0))
-            val course = Course.findById(request.body.get("courseId").map(_(0).toLong).getOrElse(0))
-            val documentType = documentTypeMap(request.body("documentType")(0))
-            val checker = new DocumentPermissionChecker(user, content, course, documentType)
-
-            // Look at the permission and call the appropriate function
-            Async {
-              val results =
-                if (permission == 'view)
-                  checker.getViewable
-                else if (permission == 'enable)
-                  checker.getEnableable
-                else if (permission == 'edit)
-                  checker.getEditable
-                else if (permission == 'publish)
-                  checker.getPublishable
-                else
-                  Future(Nil)
-
-              results.map(resources =>
-                Ok(JsArray(resources.map(_ \ "id")))
-              )
+          // Look at the permission and call the appropriate function
+          Async {
+            (permission match {
+              case 'view => checker.getViewable
+              case 'enable => checker.getEnableable
+              case 'edit => checker.getEditable
+              case 'publish => checker.getPublishable
+              case _ => Future(Nil)
+            }).map { resources =>
+              Ok(JsArray(resources.map(_ \ "id")))
             }
-        }
+          }
+      }
   }
 }

@@ -39,8 +39,9 @@ class DocumentPermissionChecker(user: User, content: Content, course: Option[Cou
     case _: Throwable => false
   }
 
-  def globalFilter(resource: JsObject): Boolean =
-    (resource \ "clientUser" \ "id").isInstanceOf[JsString]
+  def globalFilter(resource: JsObject): Boolean = true
+    // No idea what this check is actually supposed to do
+    // (resource \ "clientUser" \ "id").isInstanceOf[JsString]
 
   // Permission checkers
 

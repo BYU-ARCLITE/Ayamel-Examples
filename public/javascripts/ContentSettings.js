@@ -245,7 +245,7 @@ var ContentSettings = (function() {
         },
         function (args, context, callback) {
 
-            // Get the list of enableable caption tracks
+            // Get the list of enableable annotation sets
             $.ajax("/ajax/permissionChecker", {
                 type: "post",
                 data: {
