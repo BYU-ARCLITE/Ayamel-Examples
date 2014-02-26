@@ -38,17 +38,20 @@ object PermissionChecker extends Controller {
           val permission = Symbol(request.body("permission")(0))
           val course = Course.findById(request.body.get("courseId").map(_(0).toLong).getOrElse(0))
           val documentType = documentTypeMap(request.body("documentType")(0))
+          val ids = request.body("ids")(0).split(",").toList.filter(!_.isEmpty)
+          if(ids.length == 0) BadRequest
           val checker = new DocumentPermissionChecker(user, content, course, documentType)
 
           // Look at the permission and call the appropriate function
           Async {
             (permission match {
-              case 'view => checker.getViewable
-              case 'enable => checker.getEnableable
-              case 'edit => checker.getEditable
-              case 'publish => checker.getPublishable
+              case 'view => checker.checkViewable(ids)
+              case 'enable => checker.checkEnableable(ids)
+              case 'edit => checker.checkEditable(ids)
+              case 'publish => checker.checkPublishable(ids)
               case _ => Future(Nil)
             }).map { resources =>
+              //possible room for request minimization if this just returns complete resources instead
               Ok(JsArray(resources.map(_ \ "id")))
             }
           }

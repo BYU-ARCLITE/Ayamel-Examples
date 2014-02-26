@@ -1,6 +1,7 @@
 package service
 
 import models.{Course, User, Content}
+import play.api.Logger
 import play.api.libs.json.{JsArray, JsObject, JsString}
 import dataAccess.ResourceController
 import scala.concurrent._
@@ -56,13 +57,12 @@ class DocumentPermissionChecker(user: User, content: Content, course: Option[Cou
    * Checks if the user is allowed to view this particular resource
    */
   def canView(resource: JsObject): Boolean = {
-    if (personalFilter(resource)) // Is it a personal document?
-      enabled(resource, personalPrefix) // Yes. Allow it if it's enabled
-    else { // No. Are we in the context of a course
-      if (course.isDefined) { // Yes. Allow it if it's enabled
-        enabled(resource, coursePrefix)
-      } else { // No. Allow it if it's global and enabled
-        globalFilter(resource) && enabled(resource, "")
+    (personalFilter(resource) && enabled(resource, personalPrefix)) || {
+      course match { //Are we in the context of a course
+        // Yes. Allow it if it's enabled
+        case Some(_) => enabled(resource, coursePrefix)
+        // No. Allow it if it's global and enabled
+        case None => globalFilter(resource) && enabled(resource, "")
       }
     }
   }
@@ -71,20 +71,17 @@ class DocumentPermissionChecker(user: User, content: Content, course: Option[Cou
    * Checks if the user is allowed to enable this particular resource
    */
   def canEnable(resource: JsObject): Boolean = {
-    if (personalFilter(resource)) // Is it a personal document?
-      true
-    else { // No. Are we in the context of a course
-      if (course.isDefined) { // Yes. Is the user allowed to edit the course?
-        if (user canEdit course.get) { // Yes. Is it a course document
-          if (courseFilter(resource)) // Yes. Allow it
-            true
-          else { // No. Allow it if it is enabled globally
-            globalFilter(resource) && enabled(resource, "")
-          }
-        } else // No. Allow it if the user can edit the content and it's global (owner or admin)
+    personalFilter(resource) || {
+      course match { // Are we in the context of a course?
+        // Yes. Is the user allowed to edit the course?
+        case Some(_) =>
+          if (user canEdit course.get) // Yes. Is it a course document
+            courseFilter(resource) || (globalFilter(resource) && enabled(resource, ""))
+          else // No. Allow it if the user can edit the content and it's global (owner or admin)
+            globalFilter(resource) && (content isEditableBy user)
+        // No. Allow it if the user can edit the content and it's global (owner or admin)
+        case None =>
           globalFilter(resource) && (content isEditableBy user)
-      } else { // No. Allow it if the user can edit the content and it's global (owner or admin)
-        globalFilter(resource) && (content isEditableBy user)
       }
     }
   }
@@ -94,17 +91,17 @@ class DocumentPermissionChecker(user: User, content: Content, course: Option[Cou
    */
   def canEdit(resource: JsObject): Boolean = {
     // Is it a personal document?
-    if (personalFilter(resource)) // Yes. Allow it
-      true
-    else {
+    personalFilter(resource) || {
       // Is the document global
       if (globalFilter(resource)) // Yes. Allow it if the user is owner
         content isEditableBy user
       else { // No. Are we in the context of a course
-        if (course.isDefined) { // Yes. Allow it if the user is a teacher and the doc is a course doc
-          courseFilter(resource) && user.canEdit(course.get)
-        } else // No. Then don't allow it
-          false
+        course match {
+          // Yes. Allow it if the user is a teacher and the doc is a course doc
+          case Some(_) => courseFilter(resource) && (user canEdit course.get)
+          // No. Then don't allow it
+          case None => false
+        }
       }
     }
   }
@@ -120,42 +117,29 @@ class DocumentPermissionChecker(user: User, content: Content, course: Option[Cou
     })
   }
 
-  // Resource getters
-
-  def getAll: Future[List[JsObject]] = {
-    // Get the relations
-    ResourceController.getRelations(content.resourceId).flatMap { response =>
-      response match {
-        case Some(json) => {
-          val relations = (json \ "relations").as[JsArray].value.toList.map(_.as[JsObject])
-          future {
-            relations.filter(documentType.filter).map { relation =>
-              Await.result(
-                ResourceController.getResource((relation \ documentType.relation).as[String])
-                  .map(_.map(json => (json \ "resource").as[JsObject])),
-                Duration.Inf
-              )
-            }.collect { case Some(json) => json }
-          }
+  //TODO: update the content database so that this doesn't have to make resource requests
+  def getSpecified(ids: List[String]): Future[List[JsObject]] = {
+    val requests = ids.map { id => ResourceController.getResource(id) }
+    future {
+      requests.flatMap { req =>
+        Await.result(req, Duration.Inf) match {
+          case Some(json) => List((json \ "resource").as[JsObject])
+          case None => Nil
         }
-        case None =>
-          Future(List.empty[JsObject])
       }
     }
   }
 
-  def getViewable: Future[List[JsObject]] = getAll.map(_.filter(canView))
-  def getEnableable: Future[List[JsObject]] = getAll.map(_.filter(canEnable))
-  def getEditable: Future[List[JsObject]] = getAll.map(_.filter(canEdit))
-  def getPublishable: Future[List[JsObject]] = getAll.map(_.filter(canPublish))
+  def checkViewable(ids: List[String]) = getSpecified(ids).map(_.filter(canView))
+  def checkEnableable(ids: List[String]) = getSpecified(ids).map(_.filter(canEnable))
+  def checkEditable(ids: List[String]) = getSpecified(ids).map(_.filter(canEdit))
+  def checkPublishable(ids: List[String]) = getSpecified(ids).map(_.filter(canPublish))
 
 }
 
 object DocumentPermissionChecker {
   object documentTypes {
-
     val captionTrack = DocumentType("CaptionTracks", r => (r \ "type").as[String] == "transcript_of", "subjectId")
-
     val annotations = DocumentType("AnnotationDocuments", r => (r \ "type").as[String] == "references", "subjectId")
   }
 }

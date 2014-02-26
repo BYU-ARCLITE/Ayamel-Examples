@@ -217,55 +217,54 @@ var ContentSettings = (function() {
         }
     };
 
-    var initActions = [
-        function (args, context, callback) {
-
-            // Get the list of enableable caption tracks
+    function getPermittedResources(data,cb){
+        if(data.ids.length){
             $.ajax("/ajax/permissionChecker", {
                 type: "post",
-                data: {
-                    contentId: args.content.id,
-                    courseId: context.courseId,
-                    permission: "enable",
-                    documentType: "captionTrack"
-                },
+                data: data,
                 success: function(data) {
-
                     // Now turn those IDs into resources
                     async.map(data, function (id, asyncCallback) {
                         ResourceLibrary.load(id, function (resource) {
                             asyncCallback(null, resource);
                         });
-                    }, function (err, data) {
-                        args.content.enableableCaptionTracks = data;
-                        callback();
-                    });
+                    }, cb);
                 }
+            });
+        } else { cb(null,[]); }
+    }
+
+    var initActions = [
+        function (args, context, callback) {
+            var captionTrackIds = args.resource.relations
+                .filter(function(r){return r.type==="transcript_of";})
+                .map(function(r){return r.subjectId;}).join(',');
+            // Get the list of enableable caption tracks
+            getPermittedResources({
+                contentId: args.content.id,
+                courseId: context.courseId,
+                permission: "enable",
+                documentType: "captionTrack",
+                ids: captionTrackIds
+            },function (err, data) {
+                args.content.enableableCaptionTracks = data;
+                callback();
             });
         },
         function (args, context, callback) {
-
+            var annotationIds = args.resource.relations
+                .filter(function(r){return r.type==="references";})
+                .map(function(r){return r.subjectId;}).join(',');
             // Get the list of enableable annotation sets
-            $.ajax("/ajax/permissionChecker", {
-                type: "post",
-                data: {
-                    contentId: args.content.id,
-                    courseId: context.courseId,
-                    permission: "enable",
-                    documentType: "annotations"
-                },
-                success: function(data) {
-
-                    // Now turn those IDs into resources
-                    async.map(data, function (id, asyncCallback) {
-                        ResourceLibrary.load(id, function (resource) {
-                            asyncCallback(null, resource);
-                        });
-                    }, function (err, data) {
-                        args.content.enableableAnnotationDocuments = data;
-                        callback();
-                    });
-                }
+            getPermittedResources({
+                contentId: args.content.id,
+                courseId: context.courseId,
+                permission: "enable",
+                documentType: "annotations",
+                ids: annotationIds
+            },function (err, data) {
+                args.content.enableableAnnotationDocuments = data;
+                callback();
             });
         }
     ];

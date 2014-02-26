@@ -102,134 +102,143 @@ $(function() {
         window.location = "/content/" + content.id + "/delete/" + rid + courseQuery;
     }
 
-    // Load personal caption tracks
-    $.ajax("/ajax/permissionChecker", {
-        type: "post",
-        data: {
-            contentId: content.id,
-            permission: "edit",
-            documentType: "captionTrack"
-        }
-    }).then(function(data) {
-        getResources(data, function(resources) {
-            var r = new Ractive({
-                el: "personalCaptionsTable",
-                template: captionsTemplate,
-                data: { resources: resources }
-            });
-            r.on('delete', function(_, which){ deleteDoc(which); });
-            r.on('publish', function(_, which){ sendPublishRequest(which); });
-        });
-    });
+    ResourceLibrary.load(content.resourceId, function(resource){
+        var captionTrackIds = resource.relations
+                .filter(function(r){return r.type==="transcript_of";})
+                .map(function(r){return r.subjectId;}).join(','),
+            annotationIds = resource.relations
+                .filter(function(r){return r.type==="references";})
+                .map(function(r){return r.subjectId;}).join(',');
 
-    // Load personal annotations
-    $.ajax("/ajax/permissionChecker", {
-        type: "post",
-        data: {
-            contentId: content.id,
-            permission: "edit",
-            documentType: "annotations"
-        }
-    }).then(function(data) {
-        getResources(data, function(resources) {
-            var r = new Ractive({
-                el: "personalAnnotationsTable",
-                template: annotationsTemplate,
-                data: { resources: resources }
-            });
-            r.on('delete', function(_, which){ deleteDoc(which); });
-            r.on('publish', function(_, which){ sendPublishRequest(which); });
-            r.on('edit', function(_, which){
-                window.location = "/content/" + content.id + "/annotations?doc=" + which;
-            });
-        });
-    });
-
-    if(document.getElementById('courseCaptionsTable')){
-        // Load course caption tracks
-        $.ajax("/ajax/permissionChecker", {
-            type: "post",
-            data: {
-                contentId: content.id,
-                courseId: courseId,
-                permission: "edit",
-                documentType: "captionTrack"
-            }
-        }).then(function(data) {
+        (function(cb){
+            if(captionTrackIds.length){
+                $.ajax("/ajax/permissionChecker", {
+                    type: "post",
+                    data: {
+                        contentId: content.id,
+                        permission: "edit",
+                        documentType: "captionTrack",
+                        ids: captionTrackIds
+                    }
+                }).then(cb);
+            }else{ cb([]); }
+        }(function(data) {
             getResources(data, function(resources) {
-                var r = new Ractive({
-                    el: "courseCaptionsTable",
+                var p, c;
+                // Load personal caption tracks
+                p = new Ractive({
+                    el: "personalCaptionsTable",
                     template: captionsTemplate,
                     data: { resources: resources }
                 });
-                r.on('delete', function(_, which){ deleteDoc(which); });
-                r.on('publish', function(_, which){ sendPublishRequest(which); });
-            });
-        });
+                p.on('delete', function(_, which){ deleteDoc(which); });
+                p.on('publish', function(_, which){ sendPublishRequest(which); });
 
-        // Load course annotations
-        $.ajax("/ajax/permissionChecker", {
-            type: "post",
-            data: {
-                contentId: content.id,
-                courseId: courseId,
-                permission: "edit",
-                documentType: "annotations"
-            }
-        }).then(function(data) {
+                // Load course caption tracks
+                if(document.getElementById('courseCaptionsTable')){
+                    c = new Ractive({
+                        el: "courseCaptionsTable",
+                        template: captionsTemplate,
+                        data: { resources: resources }
+                    });
+                    c.on('delete', function(_, which){ deleteDoc(which); });
+                    c.on('publish', function(_, which){ sendPublishRequest(which); });
+                }
+            });
+        }));
+
+        (function(cb){
+            if(annotationIds.length){
+                $.ajax("/ajax/permissionChecker", {
+                    type: "post",
+                    data: {
+                        contentId: content.id,
+                        permission: "edit",
+                        documentType: "annotations",
+                        ids: annotationIds
+                    }
+                }).then(cb);
+            }else{ cb([]); }
+        }(function(data) {
             getResources(data, function(resources) {
-                var r = new Ractive({
-                    el: "courseAnnotationsTable",
+                var p, c;
+
+                // Load personal annotations
+                p = new Ractive({
+                    el: "personalAnnotationsTable",
                     template: annotationsTemplate,
                     data: { resources: resources }
                 });
-                r.on('delete', function(_, which){ deleteDoc(which); });
-                r.on('publish', function(_, which){ sendPublishRequest(which); });
-                r.on('edit', function(_, which){
+                p.on('delete', function(_, which){ deleteDoc(which); });
+                p.on('publish', function(_, which){ sendPublishRequest(which); });
+                p.on('edit', function(_, which){
                     window.location = "/content/" + content.id + "/annotations?doc=" + which;
                 });
-            });
-        });
-    }
 
-    if (owner) {
-        // Load publishable caption tracks
-        $.ajax("/ajax/permissionChecker", {
-            type: "post",
-            data: {
-                contentId: content.id,
-                permission: "publish",
-                documentType: "captionTrack"
-            }
-        }).then(function(data){
-            getResources(data, function(resources) {
-                var r = new Ractive({
-                    el: "trackPublishRequests",
-                    template: publishTemplate,
-                    data: { resources: resources.filter(function(res){return res.publishRequest}) }
+                // Load course annotations
+                if(document.getElementById('courseCaptionsTable')){
+                    c = new Ractive({
+                        el: "courseAnnotationsTable",
+                        template: annotationsTemplate,
+                        data: { resources: resources }
+                    });
+                    c.on('delete', function(_, which){ deleteDoc(which); });
+                    c.on('publish', function(_, which){ sendPublishRequest(which); });
+                    c.on('edit', function(_, which){
+                        window.location = "/content/" + content.id + "/annotations?doc=" + which;
+                    });
+                }
+            });
+        }));
+
+        if (owner) {
+            // Load publishable caption tracks
+            (function(cb){
+                if(captionTrackIds.length){
+                    $.ajax("/ajax/permissionChecker", {
+                        type: "post",
+                        data: {
+                            contentId: content.id,
+                            permission: "publish",
+                            documentType: "captionTrack",
+                            ids: captionTrackIds
+                        }
+                    }).then(cb);
+                } else { cb([]); }
+            }(function(data){
+                getResources(data, function(resources) {
+                    var r = new Ractive({
+                        el: "trackPublishRequests",
+                        template: publishTemplate,
+                        data: { resources: resources.filter(function(res){return res.publishRequest}) }
+                    });
+                    r.on('publish', function(_, which){ publish(which); });
                 });
-                r.on('publish', function(_, which){ publish(which); });
-            });
-        });
+            }));
 
-        // Load publishable annotations
-        $.ajax("/ajax/permissionChecker", {
-            type: "post",
-            data: {
-                contentId: content.id,
-                permission: "publish",
-                documentType: "annotations"
-            }
-        }).then(function(data){
-            getResources(data, function(resources) {
-                var r = new Ractive({
-                    el: "annotationPublishRequests",
-                    template: publishTemplate,
-                    data: { resources: resources.filter(function(res){return res.publishRequest}) }
+            // Load publishable annotations
+            (function(cb){
+                if(annotationIds.length){
+                    $.ajax("/ajax/permissionChecker", {
+                        type: "post",
+                        data: {
+                            contentId: content.id,
+                            permission: "publish",
+                            documentType: "annotations",
+                            ids: annotationIds
+                        }
+                    }).then(cb);
+                } else { cb([]); }
+            }(function(data){
+                getResources(data, function(resources) {
+                    var r = new Ractive({
+                        el: "annotationPublishRequests",
+                        template: publishTemplate,
+                        data: { resources: resources.filter(function(res){return res.publishRequest}) }
+                    });
+                    r.on('publish', function(_, which){ publish(which); });
                 });
-                r.on('publish', function(_, which){ publish(which); });
-            });
-        });
-    }
-
+            }));
+        }
+    });
 });

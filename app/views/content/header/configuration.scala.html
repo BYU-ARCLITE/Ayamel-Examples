@@ -47,24 +47,27 @@
         var userId = @user.id.get;
         var courseId = @course.map(_.id.get).getOrElse(0);
         var teacher = @course.exists(c => user.canEdit(course.get));
-
-        new ContentSettings({
-            content: content,
-            owner: owner,
-            userId: userId,
-            $holder: $("#personalSettings"),
-            action: "@routes.ContentEditing.setSettings(content.id.get)",
-            method: "post"
-        });
-
-        if (teacher) {
+        ResourceLibrary.load("@content.resourceId", function(resource) {
             new ContentSettings({
                 content: content,
-                courseId: courseId,
-                $holder: $("#courseSettings"),
-                action: "@{routes.ContentEditing.setCourseSettings(content.id.get, course.map(_.id.get).getOrElse(0))}",
+                owner: owner,
+                userId: userId,
+                resource: resource,
+                $holder: $("#personalSettings"),
+                action: "@routes.ContentEditing.setSettings(content.id.get)",
                 method: "post"
             });
-        }
+
+            if (teacher) {
+                new ContentSettings({
+                    content: content,
+                    courseId: courseId,
+                    resource: resource,
+                    $holder: $("#courseSettings"),
+                    action: "@{routes.ContentEditing.setCourseSettings(content.id.get, course.map(_.id.get).getOrElse(0))}",
+                    method: "post"
+                });
+            }
+        });
     });
 </script>
