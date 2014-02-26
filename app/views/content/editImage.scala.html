@@ -1,16 +1,12 @@
 @(content: models.Content, resourceLibraryUrl: String, course: Option[Course] = None)(implicit request: RequestHeader, user: User)
 
-@moreStyles =  @{
-    List(
-        ("screen", "stylesheets/content.css")
-    )
-}
+@main("Ayamel - " + content.name,
+  Local(
+    CSS("stylesheets/content.css"),
+    JS("javascripts/ImageEditor.js"))
+) {
 
-@main("Ayamel - " + content.name, moreStyles) {
-
-    @views.html.content.header.dependencies()
-
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/ImageEditor.js")"></script>
+    @views.html.content.header.includes()
 
     <div class="padded">
 

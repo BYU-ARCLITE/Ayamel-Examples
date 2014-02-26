@@ -27,11 +27,9 @@
     </div>
 }
 
-@main("Ayamel - Settings") {
-
-    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/admin.css")"/>
-    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/home.css")"/>
-
+@main("Ayamel - Settings", 
+  Local(Rel("stylesheets/", CSS("admin.css"), CSS("home.css")))
+) {
     <div class="adminBackground">
     </div>
 
@@ -64,6 +62,7 @@
 
     </div>
 
+    <!-- TODO: Eliminate the hidden form fields -->
     <script type="text/javascript">
         $(function() {
             $("input[type=checkbox]").click(function() {

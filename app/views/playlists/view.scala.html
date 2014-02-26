@@ -1,22 +1,27 @@
-@(content: models.Content, playGraphHost: String, key: String, secret: String, resourceLibraryUrl: String)(implicit request: RequestHeader, user: User)
+@(content: models.Content, resourceLibraryUrl: String)(implicit request: RequestHeader, user: User)
+
+@import dataAccess.PlayGraph
 
 @main("Ayamel - Playlist") {
-	
-	@views.html.content.header.dependencies()
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/libraries/oauth.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/playGraph/player.js")"></script>
-    <script type="text/javascript" src="@{playGraphHost}assets/javascripts/author/PlayGraph.js"></script>
-	
-	<div class="padded">
-		<h1>@content.name</h1>
-		<div id="playlistPlayer"></div>
-	</div>
+    
+    @views.html.content.header.includes()
+    @Dependencies(
+	  Local(
+	    Rel("javascripts/",
+		  JS("libraries/oauth.js"),
+          JS("playGraph/player.js"))),
+	  JS(PlayGraph.host+"assets/javascripts/author/PlayGraph.js"))
+    
+    <div class="padded">
+        <h1>@content.name</h1>
+        <div id="playlistPlayer"></div>
+    </div>
 
-	<script type="text/javascript">
-		$(function() {
+    <script type="text/javascript">
+        $(function() {
             ResourceLibrary.setBaseUrl("@resourceLibraryUrl");
             var content = @Html(content.toJson.toString());
-		    var $playlistPlayer = $("#playlistPlayer");
+            var $playlistPlayer = $("#playlistPlayer");
 
             // Render the content
             ContentRenderer.render({
@@ -30,13 +35,13 @@
                 },
                 aspectRatio: Ayamel.aspectRatios.hdVideo,
                 playGraph: {
-                    key: "@key",
-                    secret: "@secret",
-                    host: "@playGraphHost"
+                    key: "@{PlayGraph.playerKey.consumerKey}",
+                    secret: "@{PlayGraph.playerKey.consumerSecret}",
+                    host: "@{PlayGraph.host}"
                 }
             });
 
-		});
-	</script>
+        });
+    </script>
 
 }

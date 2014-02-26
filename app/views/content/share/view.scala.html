@@ -16,25 +16,25 @@
     <head>
         <title>Ayamel - @content.name</title>
 
-        @views.html.resources.stylesheets(
-          List(
-            ("screen", "stylesheets/bootstrap.min.css"),
-            ("screen", "stylesheets/bootstrap-responsive.min.css"),
-            ("screen", "stylesheets/font-awesome.min.css"),
-            ("screen", "stylesheets/main.css")
-          )
+		@Dependencies(
+          Local(
+			Icon("images/favicon.png", "image/png"),
+		    Rel("stylesheets/",
+              CSS("bootstrap.min.css"),
+              CSS("bootstrap-responsive.min.css"),
+              CSS("font-awesome.min.css"),
+              CSS("main.css")),
+			Rel("javascripts/",
+			  Rel("libraries/",
+			    JS("jquery-1.9.0.min.js"),
+                JS("bootstrap.min.js"),
+                JS("mustache.js")),
+              JS("contentSelection/ContentItemRenderer.js"),
+              JS("ActivityStreams.js"),
+              JS("ScreenAdapter.js")))
         )
 
-        <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.png")">
-
-        <script type="text/javascript" src="@routes.Assets.at("javascripts/libraries/jquery-1.9.0.min.js")"></script>
-        <script type="text/javascript" src="@routes.Assets.at("javascripts/libraries/bootstrap.min.js")"></script>
-        <script type="text/javascript" src="@routes.Assets.at("javascripts/libraries/mustache.js")"></script>
-        <script type="text/javascript" src="@routes.Assets.at("javascripts/contentSelection/ContentItemRenderer.js")"></script>
-        <script type="text/javascript" src="@routes.Assets.at("javascripts/ActivityStreams.js")"></script>
-        <script type="text/javascript" src="@routes.Assets.at("javascripts/ScreenAdapter.js")"></script>
-
-        @views.html.content.header.dependencies()
+        @views.html.content.header.includes()
 
         <script type="text/javascript">
             $(function() {

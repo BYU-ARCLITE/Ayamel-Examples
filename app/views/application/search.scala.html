@@ -1,12 +1,6 @@
 @(contentList: List[models.Content], courses: List[Course])(implicit request: RequestHeader, user: User)
 
-@moreStyles =  @{
-    List(
-      ("screen", "stylesheets/content.css")
-    )
-}
-
-@main("Ayamel - Search Results",moreStyles) {
+@main("Ayamel - Search Results",Local(CSS("stylesheets/content.css"))) {
 
     <div class="padded">
         <h1>Search Results</h1>

@@ -22,8 +22,7 @@ object Playlists extends Controller {
             if (content.contentType == 'playlist) {
               // Check that the user can view the content
               if (content isVisibleBy user) {
-                Ok(views.html.playlists.about(content, PlayGraph.host, PlayGraph.authorKey.consumerKey,
-                  PlayGraph.playerKey.consumerKey))
+                Ok(views.html.playlists.about(content))
               } else {
                 Errors.forbidden
               }
@@ -46,8 +45,7 @@ object Playlists extends Controller {
             if (content.contentType == 'playlist) {
               // Check that the user can view the content
               if (content isVisibleBy user) {
-                Ok(views.html.playlists.view(content, PlayGraph.host, PlayGraph.playerKey.consumerKey,
-                  PlayGraph.playerKey.consumerSecret, ResourceController.baseUrl))
+                Ok(views.html.playlists.view(content, ResourceController.baseUrl))
               } else {
                 Errors.forbidden
               }

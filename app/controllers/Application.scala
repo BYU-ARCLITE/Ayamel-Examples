@@ -33,26 +33,6 @@ object Application extends Controller {
   }
 
   /**
-   * A page I use for testing things
-   */
-  def test = Action {
-    implicit request =>
-      val json1 = Json.obj(
-        "attr1" -> "Something"
-      )
-
-      val nuller = Json.obj(
-        "attr1" -> JsNull,
-        "attr2" -> JsNull
-      )
-
-      val json2 = Json.obj(
-        "attr2" -> "Something else"
-      )
-      Ok(json1 ++ nuller ++ json2)
-  }
-
-  /**
    * Searches and shows the results
    */
   def search = Authentication.authenticatedAction() {

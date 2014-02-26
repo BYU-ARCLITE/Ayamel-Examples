@@ -1,8 +1,6 @@
 @(requests: List[TeacherRequest])(implicit request: RequestHeader, user: User)
 
-@main("Ayamel - Teacher Request Approval") {
-
-    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/teacher.css")"/>
+@main("Ayamel - Teacher Request Approval", Local(CSS("stylesheets/teacher.css"))) {
 
     <div class="teacherRequestBackground">
     </div>

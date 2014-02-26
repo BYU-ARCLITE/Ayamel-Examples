@@ -1,4 +1,6 @@
-@(content: models.Content, playGraphHost: String, authorKey: String, playerKey: String)(implicit request: RequestHeader, user: User)
+@(content: models.Content)(implicit request: RequestHeader, user: User)
+
+@import dataAccess.PlayGraph
 
 @main("Ayamel - Playlist") {
 
@@ -11,9 +13,9 @@
 		<div>
 			<a href="@routes.Playlists.view(content.id.get)" class="btn btn-blue"><i class="icon-play-sign"></i> Play</a>
 			@if(content.isEditableBy(user)) {
-				<form action="@{playGraphHost}author" method="post" class="inline-block">
-				    <input name="author" value="@authorKey" type="hidden"/>
-				    <input name="player" value="@playerKey" type="hidden"/>
+				<form action="@{PlayGraph.host}author" method="post" class="inline-block">
+				    <input name="author" value="@{PlayGraph.authorKey.consumerKey}" type="hidden"/>
+				    <input name="player" value="@{PlayGraph.playerKey.consumerKey}" type="hidden"/>
 				    <input name="graph" value="@content.resourceId" type="hidden"/>
 				    <input name="action" value="edit" type="hidden"/>
 				    <input name="exit" value="@routes.Playlists.about(content.id.get).absoluteURL()" type="hidden"/>

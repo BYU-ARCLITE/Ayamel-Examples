@@ -1,15 +1,13 @@
 @()(implicit request: RequestHeader, user: User)
 
-@moreStyles = @{
-    List(
-      ("screen", "stylesheets/home.css"),
-      ("screen", "stylesheets/course.css"),
-      ("screen", "stylesheets/content.css")
-    )
-}
+@main("Ayamel",
+  Local(
+    Rel("stylesheets/",
+      CSS("home.css"),
+      CSS("course.css"),
+      CSS("content.css")))
+) {
 
-@main("Ayamel", moreStyles) {
-    
     <div class="spotlight">
         <div id="slider" class="swipe">
             <div class="swipe-wrap">

@@ -87,6 +87,12 @@ smtp.name="Ayamel Admin"
 smtp.address=""
 smtp.password=""
 
+# Client Dependency Settings
+dependency.Ayamel.js=""
+dependency.EditorWidgets=""
+dependency.TimedText=""
+dependency.TimelineEditor=""
+
 # Settings for Google powered exercises
 exercises.createFormScript="https://script.google.com/macros/s/1234567890abcdefghijklmnopqrstuvwxyz/exec"
 exercises.getResponseIndexScript="https://script.google.com/macros/s/1234567890abcdefghijklmnopqrstuvwxyz/exec"

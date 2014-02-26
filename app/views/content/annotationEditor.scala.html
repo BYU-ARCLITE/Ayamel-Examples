@@ -11,28 +11,25 @@
     )
 }
 
-@moreStyles =  @{
-    List(
-      ("screen", "stylesheets/content.css"),
-      ("screen", "stylesheets/annotator.css"),
-      ("screen", "wysihtml5/bootstrap-wysihtml5.css")
-    )
-}
+@main("Ayamel - " + content.name,
+  Local(
+    Rel("stylesheets/",
+	  CSS("content.css"),
+	  CSS("annotator.css")),
+	Rel("wysihtml5/",
+	  CSS("bootstrap-wysihtml5.css"),
+      JS("bootstrap-wysihtml5.js"),
+	  JS("wysihtml5-0.3.0.js")),
+	Rel("javascripts/",
+	  JS("contentSelection/PopupBrowser.js"),
+	  Rel("annotationEditing/",
+	    JS("AnnotationPopupEditor.js"),
+	    JS("AnnotationImageEditor.js"),
+	    JS("AnnotationTextEditor.js"),
+	    JS("annotationEditing.js"))))
+) {
 
-@main("Ayamel - " + content.name, moreStyles) {
-
-    @views.html.content.header.dependencies()
-
-    <script type="text/javascript" src="/assets/javascripts/contentSelection/PopupBrowser.js"></script>
-    <script type="text/javascript" src="/assets/javascripts/annotationEditing/AnnotationPopupEditor.js"></script>
-    <script type="text/javascript" src="/assets/javascripts/annotationEditing/AnnotationImageEditor.js"></script>
-    <script type="text/javascript" src="/assets/javascripts/annotationEditing/AnnotationTextEditor.js"></script>
-    <script type="text/javascript" src="/assets/javascripts/annotationEditing/annotationEditing.js"></script>
-    <script type="text/javascript" src="/assets/wysihtml5/wysihtml5-0.3.0.js"></script>
-    <script type="text/javascript" src="/assets/wysihtml5/bootstrap-wysihtml5.js"></script>
-
-    <link rel="stylesheet" href="/assets/wysihtml5/bootstrap-wysihtml5.css"/>
-
+    @views.html.content.header.includes()
 
     <div class="padded">
 

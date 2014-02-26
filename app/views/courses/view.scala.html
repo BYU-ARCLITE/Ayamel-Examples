@@ -5,21 +5,21 @@
 }
 
 @moreStyles =  @{
-    List(
-        ("screen", "stylesheets/course.css"),
-        ("screen", "stylesheets/content.css")
-    )
+
 }
 
-@main("Ayamel - " + course.name, moreStyles) {
+@main("Ayamel - " + course.name, Local(
+  Rel("stylesheets/", CSS("course.css"), CSS("content.css")),
+  Rel("javascripts/",
+    Rel("contentSelection/",
+      JS("PopupBrowser.js"),
+      JS("PopupLabelBrowser.js")),
+    JS("pageScripts/viewCourse.js")))
+) {
 
     <script type="text/javascript">
         var courseId = @course.id.get;
     </script>
-
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/contentSelection/PopupBrowser.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/contentSelection/PopupLabelBrowser.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/pageScripts/viewCourse.js")"></script>
 
     <div class="courseBackground">
         <div class="courseTitle">

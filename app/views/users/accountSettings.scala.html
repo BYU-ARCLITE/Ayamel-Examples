@@ -1,15 +1,10 @@
 @()(implicit request: RequestHeader, user: User)
 
-@moreStyles =  @{
-    List(
-        ("screen", "stylesheets/course.css")
-    )
-}
-
-@main("Ayamel - Account Settings", moreStyles) {
-
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/formFixes/fileFix.js")"></script>
-
+@main("Ayamel - Account Settings",
+  Local(
+    CSS("stylesheets/course.css"),
+    JS("javascripts/formFixes/fileFix.js"))
+){
     <div class="padded">
         <h1>Account Settings</h1>
 

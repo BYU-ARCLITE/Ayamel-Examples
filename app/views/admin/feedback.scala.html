@@ -1,10 +1,8 @@
 @(feedback: List[Feedback])(implicit request: RequestHeader, user: User)
 
-@main("Ayamel - Feedback") {
-
-    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/admin.css")"/>
-    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/home.css")"/>
-
+@main("Ayamel - Feedback", 
+  Local(Rel("stylesheets/", CSS("admin.css"), CSS("home.css")))
+) {
     <div class="adminBackground">
     </div>
 

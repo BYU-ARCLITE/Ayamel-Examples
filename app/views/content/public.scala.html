@@ -1,12 +1,6 @@
 @(allContent: List[models.Content])(implicit request: RequestHeader, user: User)
 
-@moreStyles =  @{
-    List(
-      ("screen", "stylesheets/content.css")
-    )
-}
-@main("Ayamel - Public Content", moreStyles) {
-
+@main("Ayamel - Public Content", Local(CSS("stylesheets/content.css"))) {
     <div class="padded">
 
         <h1>Public Content</h1>

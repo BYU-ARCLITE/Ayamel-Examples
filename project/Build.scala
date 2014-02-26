@@ -24,7 +24,8 @@ object ApplicationBuild extends Build {
 
   val main = play.Project(appName, appVersion, appDependencies).settings(
     // Add your own project settings here
-    resolvers += "xuggle repo" at "http://xuggle.googlecode.com/svn/trunk/repo/share/java/"
+    resolvers += "xuggle repo" at "http://xuggle.googlecode.com/svn/trunk/repo/share/java/",
+	templatesImport += "dependencies._"
   )
 
 }

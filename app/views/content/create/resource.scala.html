@@ -1,12 +1,6 @@
 @()(implicit request: RequestHeader, user: User)
 
-@moreStyles =  @{
-    List(
-      ("screen", "stylesheets/content.css")
-    )
-}
-
-@main("Ayamel - Add Content", moreStyles) {
+@main("Ayamel - Add Content", Local(CSS("stylesheets/content.css"))) {
 
     <div class="padded">
 

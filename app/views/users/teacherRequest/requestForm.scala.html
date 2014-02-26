@@ -1,8 +1,6 @@
 @()(implicit request: RequestHeader, user: User)
 
-@main("Ayamel - Teacher Request Form") {
-
-    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/teacher.css")"/>
+@main("Ayamel - Teacher Request Form", Local(CSS("stylesheets/teacher.css"))) {
 
     <div class="teacherRequestBackground">
     </div>

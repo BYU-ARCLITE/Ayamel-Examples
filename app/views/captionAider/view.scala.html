@@ -1,28 +1,33 @@
 @(content: models.Content, course: Option[Course], resourceLibraryUrl: String)(implicit request: RequestHeader, user: User)
 
-@editor("Ayamel - CaptionAider") {
+@editor("Ayamel - CaptionAider",
+  Extern("TimelineEditor", CSS("timeline.css")),
+  Local(
+    CSS("stylesheets/timeline.css"),
+    JS("javascripts/pageScripts/captionAider.js"))
+) {
 
-    @views.html.content.header.dependencies()
+    @views.html.content.header.includes()
 
-    <link rel="stylesheet" href="@routes.Assets.at("subtitle-timeline-editor/timeline.css")"/>
-    <link rel="stylesheet" href="@routes.Assets.at("stylesheets/timeline.css")"/>
-
-    <script type="text/javascript" src="@routes.Assets.at("subtitle-timeline-editor/Timeline.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("subtitle-timeline-editor/Slider.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("subtitle-timeline-editor/TimelineSkin.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("subtitle-timeline-editor/TimelineView.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("subtitle-timeline-editor/TextTrack.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("subtitle-timeline-editor/TimelineMenus.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("subtitle-timeline-editor/CaptionEditor.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("subtitle-timeline-editor/WaveForm.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("subtitle-timeline-editor/Resampler.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("subtitle-timeline-editor/AudioTrack.js")"></script>
-
-    <script type="text/javascript" src="@routes.Assets.at("subtitle-timeline-editor/aurora/aurora.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("subtitle-timeline-editor/aurora/aac.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("subtitle-timeline-editor/aurora/alac.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("subtitle-timeline-editor/aurora/flac.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("subtitle-timeline-editor/aurora/mp3.js")"></script>
+    @Dependencies(
+	  Extern("TimelineEditor",
+        JS("Timeline.js"),
+        JS("Slider.js"),
+        JS("TimelineSkin.js"),
+        JS("TimelineView.js"),
+        JS("TextTrack.js"),
+        JS("TimelineMenus.js"),
+        JS("CaptionEditor.js"),
+        JS("WaveForm.js"),
+        JS("Resampler.js"),
+        JS("AudioTrack.js"),
+		Rel("aurora/",
+		  JS("aurora.js"),
+          JS("aac.js"),
+          JS("alac.js"),
+          JS("flac.js"),
+          JS("mp3.js")))
+    )
 
     <div class="container">
         <div class="mainContent">
@@ -105,8 +110,6 @@
         var teacher = @course.exists(c => user.canEdit(c));
         ResourceLibrary.setBaseUrl("@resourceLibraryUrl");
     </script>
-
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/pageScripts/captionAider.js")"></script>
 
 }
 
