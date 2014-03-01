@@ -6,7 +6,8 @@
     JS("javascripts/formFixes/labelsInput.js")),
   Extern("Ayamel.js",
     JS("js/Ayamel.js"),
-    JS("js/LangCodes.js"))
+    JS("js/LangCodes.js"),
+    JS("js/MimeExts.js"))
 ){
     <div class="padded">
 
@@ -115,6 +116,16 @@
 
             langList.unshift({value:'zxx',text:'No Linguistic Content'});
 
+            function isYouTube(uri){
+                return uri.indexOf("youtube://") === 0 ||
+                    uri.indexOf("http://www.youtube.com/watch?v=") === 0 ||
+                    uri.indexOf("http://youtu.be/") === 0;
+            }
+
+            function isBrightcove(uri){
+                return uri.indexOf("brightcove://") === 0;
+            }
+
             new EditorWidgets.SuperSelect({
                 el: "langLocation",
                 data:{
@@ -128,18 +139,11 @@
             });
 
             $("#url").change(function() {
-                // Try to detect the mime type
-                $.ajax("/ajax/util/detectMime", {
-                    type: "post",
-                    data: {
-                        uri: $(this).val()
-                    },
-                    dataType: "text",
-                    success: function(mime) {
-                        var type = mime.split("/")[0];
-                        $("#contentType").val(typeMap[type]);
-                    }
-                });
+                var uri = $(this).val();
+                $("#contentType").val(typeMap[
+                    (isYouTube(uri)||isBrightcove(uri))?"video":
+                    Ayamel.utils.mimeFromFilename(uri).split("/")[0]
+                ]);
             });
         });
     </script>

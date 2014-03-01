@@ -154,7 +154,6 @@ POST    /help/:id/edit                      controllers.HelpPages.save(id: Long)
 GET     /help/:id/delete                    controllers.HelpPages.delete(id: Long)
 
 # Ajax utilities
-POST    /ajax/util/detectMime                               controllers.ajax.Util.detectMime
 POST    /ajax/activity                                      controllers.ajax.ActivitySaver.save
 POST    /ajax/permissionChecker                             controllers.ajax.PermissionChecker.check
 GET     /ajax/content/mine                                  controllers.ajax.ContentLister.mine

@@ -90,18 +90,12 @@ object ResourceHelper {
    * @return The mime type
    */
   def getMimeFromUri(uri: String): String = {
-    // Check for YouTube
     if (isYouTube(uri)) {
       "video/x-youtube"
     } else if (isBrightcove(uri)) {
       "video/x-brightcove"
     } else {
-      val extension = uri.substring(uri.lastIndexOf("."))
-      MimeTypes.forExtension(extension) match {
-      case Some(mime) => mime
-      case _ =>
-        MimeTypes.forFileName(uri).getOrElse("application/octet-stream")
-      }
+      MimeTypes.forFileName(uri).getOrElse("application/octet-stream")
     }
   }
 
