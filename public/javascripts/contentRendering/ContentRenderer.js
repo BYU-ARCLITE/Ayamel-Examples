@@ -54,8 +54,7 @@ var ContentRenderer = (function () {
                     courseId: args.courseId,
                     contentId: args.content.id,
                     permission: args.permission || "view",
-                    documentType: "annotations",
-                    ids:
+                    documentType: "annotations"
                 },
                 success: function(data) {
                     // Now turn those IDs into resources then into annotation manifests
