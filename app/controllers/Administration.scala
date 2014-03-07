@@ -268,7 +268,7 @@ object Administration extends Controller {
     implicit request =>
       implicit user =>
         Authentication.enforceRole(User.roles.admin) {
-
+          val redirect = Redirect(routes.Administration.homePageContent())
           val data = request.body.dataParts.mapValues(_(0))
           val homePageContent = HomePageContent(NotAssigned,
             data("title"),
@@ -282,17 +282,21 @@ object Administration extends Controller {
           if (data("background").isEmpty) {
             request.body.file("file").map { file =>
               Async {
-                FileUploader.uploadFile(file).map { url =>
-                  homePageContent.copy(background = url).save
-                  Redirect(routes.Administration.homePageContent()).flashing("info" -> "Home page content created")
+                FileUploader.uploadFile(file).map {
+                  case Some(url) =>
+                    homePageContent.copy(background = url).save
+                    redirect.flashing("info" -> "Home page content created")
+                  case None =>  
+                    redirect.flashing("error" -> "Could not upload image")
                 }
               }
             }.getOrElse {
-              Redirect(routes.Administration.homePageContent()).flashing("info" -> "Home page content created")
+              homePageContent.save
+              redirect.flashing("info" -> "Home page content created")
             }
           } else {
             homePageContent.save
-            Redirect(routes.Administration.homePageContent()).flashing("info" -> "Home page content created")
+            redirect.flashing("info" -> "Home page content created")
           }
         }
   }

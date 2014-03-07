@@ -265,26 +265,29 @@ object ContentEditing extends Controller {
 
             // Load the image
             Async {
-              ImageTools.loadImageFromContent(content).flatMap { opt =>
-                opt.map { image =>
-
-                // Make the changes to the image
+              ImageTools.loadImageFromContent(content).flatMap {
+                case Some(image) =>
+                  // Make the changes to the image
                   val newImage = ImageTools.crop(
                     if (rotation > 0) ImageTools.rotate(image, rotation) else image,
                     cropTop, cropLeft, cropBottom, cropRight
                   )
 
                   // Save the new image
-                  FileUploader.uploadImage(newImage, FileUploader.uniqueFilename(content.resourceId + ".jpg")).flatMap { url =>
-
-                    // Update the resource
-                    ResourceHelper.updateFileUri(content.resourceId, url).map { resource =>
-                      redirect.flashing("info" -> "Image updated")
-                    }
+                  FileUploader.uploadImage(newImage, FileUploader.uniqueFilename(content.resourceId + ".jpg")).flatMap {
+                    case Some(url) =>
+                      // Update the resource
+                      ResourceHelper.updateFileUri(content.resourceId, url).map {
+                        case Some(resource) =>
+                          redirect.flashing("info" -> "Image updated")
+                        case None =>
+                          redirect.flashing("error" -> "Failed to update image")
+                      }
+                    case None =>
+                      Future(redirect.flashing("error" -> "Failed to update image"))
                   }
-                }.getOrElse {
+                case None =>
                   Future(redirect.flashing("error" -> "Couldn't load image"))
-                }
               }
             }
           } else

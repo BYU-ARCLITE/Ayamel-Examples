@@ -65,7 +65,7 @@ object ImageTools {
     makeThumbnail(orig) match {
       case Some(image) =>
         val filename = FileUploader.uniqueFilename("thumbnail.jpg")
-        FileUploader.uploadImage(image, filename).map(s => Some(s))
+        FileUploader.uploadImage(image, filename)
       case None => Future(None)
     }
   }

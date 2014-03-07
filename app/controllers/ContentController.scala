@@ -189,25 +189,25 @@ object ContentController extends Controller {
           val labels = data.get("labels").map(_.toList).getOrElse(Nil)
           val keywords = labels.mkString(",")
           val languages = data.get("languages").map(_.toList).getOrElse(List("eng"))
-
+          lazy val redirect = Redirect(routes.ContentController.createPage("file"))
 
           // Upload the file
           request.body.file("file").map { file =>
             Async {
-              FileUploader.normalizeAndUploadFile(file).flatMap { url =>
-
-                // Create the content
-                val info = ContentDescriptor(title, description, keywords, url, file.ref.file.length(), file.contentType.get,
-                  labels = labels, languages = languages)
-                ContentManagement.createContent(info, user, contentType).map { opt =>
-                  opt.map { content =>
-                    Redirect(routes.ContentController.view(content.id.get))
-                      .flashing("success" -> "Content added")
-                  }.getOrElse {
-                    Redirect(routes.ContentController.createPage("file"))
-                      .flashing("error" -> "Failed to create content")
+              FileUploader.normalizeAndUploadFile(file).flatMap {
+                case Some(url) =>
+                  // Create the content
+                  val info = ContentDescriptor(title, description, keywords, url, file.ref.file.length(), file.contentType.get,
+                    labels = labels, languages = languages)
+                  ContentManagement.createContent(info, user, contentType).map {
+                    case Some(content) =>
+                      Redirect(routes.ContentController.view(content.id.get))
+                        .flashing("success" -> "Content added")
+                    case None =>
+                      redirect.flashing("error" -> "Failed to create content")
                   }
-                }
+                case None =>
+                  Future(redirect.flashing("error" -> "Failed to upload file"))
               }
             }
           }.getOrElse {

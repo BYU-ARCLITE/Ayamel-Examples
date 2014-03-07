@@ -57,7 +57,7 @@ object VideoTools {
         file.delete()
         ImageTools.makeThumbnail(image) match {
           case Some(thumbnail) =>
-            FileUploader.uploadImage(thumbnail, FileUploader.uniqueFilename("thumbnail.jpg")).map(s => Some(s))
+            FileUploader.uploadImage(thumbnail, FileUploader.uniqueFilename("thumbnail.jpg"))
           case None => Future(None)
         }
       } catch {

@@ -13,9 +13,9 @@ import play.api.mvc.MultipartFormData.FilePart
 
 
 trait UploadEngine {
-  def upload(inputStream: InputStream, filename: String, contentLength: Long, contentType: String): Future[String]
+  def upload(inputStream: InputStream, filename: String, contentLength: Long, contentType: String): Future[Option[String]]
 
-  def upload(file: File, filename: String, contentType: String): Future[String] = {
+  def upload(file: File, filename: String, contentType: String): Future[Option[String]] = {
     val contentLength = file.length()
     val inputStream = new FileInputStream(file)
     upload(inputStream, filename, contentLength, contentType)
@@ -27,14 +27,15 @@ object FileUploader {
   private val uploadEngines = Map[String, UploadEngine](
     "s3" -> S3Uploader
   )
+  
+  val engine = uploadEngines(Play.configuration.getString("uploadEngine").get)
 
-  def normalizeAndUploadFile(tempFile: FilePart[TemporaryFile]): Future[String] = {
+  def normalizeAndUploadFile(tempFile: FilePart[TemporaryFile]): Future[Option[String]] = {
     val file = tempFile.ref.file
     val filename = uniqueFilename(tempFile.filename)
     val contentType = tempFile.contentType.getOrElse("application/octet-stream")
 
     if (contentType.startsWith("image")) {
-
       // Do extra processing on images
       val normalizedImage = ImageTools.getNormalizedImageFromFile(file)
       uploadImage(normalizedImage, filename)
@@ -48,24 +49,20 @@ object FileUploader {
     unique + extension
   }
 
-  def uploadFile(file: File, filename: String, contentType: String): Future[String] = {
-    val engine = Play.configuration.getString("uploadEngine").get
-    uploadEngines(engine).upload(file, filename, contentType)
-  }
+  def uploadFile(file: File, filename: String, contentType: String): Future[Option[String]] =
+    engine.upload(file, filename, contentType)
 
-  def uploadFile(tempFile: FilePart[TemporaryFile]): Future[String] = {
+  def uploadFile(tempFile: FilePart[TemporaryFile]): Future[Option[String]] = {
     val file = tempFile.ref.file
     val filename = uniqueFilename(tempFile.filename)
     val contentType = tempFile.contentType.getOrElse("application/octet-stream")
     uploadFile(file, filename, contentType)
   }
 
-  def uploadStream(inputStream: InputStream, filename: String, contentLength: Long, contentType: String): Future[String] = {
-    val engine = Play.configuration.getString("uploadEngine").get
-    uploadEngines(engine).upload(inputStream, filename, contentLength, contentType)
-  }
+  def uploadStream(inputStream: InputStream, filename: String, contentLength: Long, contentType: String): Future[Option[String]] =
+    engine.upload(inputStream, filename, contentLength, contentType)
 
-  def uploadImage(image: BufferedImage, filename: String): Future[String] = {
+  def uploadImage(image: BufferedImage, filename: String): Future[Option[String]] = {
 
     // Convert the BufferedImage to an input stream so we can upload it
     val outputStream = new ByteArrayOutputStream()

@@ -42,25 +42,25 @@ object DocumentManager extends Controller {
     (implicit request: RequestHeader, user: User): Future[Result] = {
 
     // First upload the annotation data
-    FileUploader.uploadStream(stream, filename, length, mime).flatMap { url =>
-      // Next create a resource
-      val resource = ResourceHelper.make.resource(Json.obj(
-        "title" -> title,
-        "keywords" -> "annotations",
-        "type" -> "data",
-        "languages" -> Json.obj(
-          "iso639_3" -> languages
-        )
-      ))
-      ResourceHelper.createResourceWithUri(resource, url, length, mime).flatMap {
-        case Some(json) =>
-          val subjectId = (json \ "id").as[String]
-          // Add a relation
-          AdditionalDocumentAdder.add(content, subjectId, 'annotations) {
-            course => callback
-          }
-        case None => Future(InternalServerError)
-      }
+    FileUploader.uploadStream(stream, filename, length, mime).flatMap {
+	  case Some(url) =>
+        // Next create a resource
+        val resource = ResourceHelper.make.resource(Json.obj(
+          "title" -> title,
+          "keywords" -> "annotations",
+          "type" -> "data",
+          "languages" -> Json.obj(
+            "iso639_3" -> languages
+          )
+        ))
+        ResourceHelper.createResourceWithUri(resource, url, length, mime).flatMap {
+          case Some(json) =>
+            val subjectId = (json \ "id").as[String]
+            // Add a relation
+            AdditionalDocumentAdder.add(content, subjectId, 'annotations) { _ => callback }
+          case None => Future(InternalServerError)
+        }
+	  case None => Future(InternalServerError)
     }
   }
 
