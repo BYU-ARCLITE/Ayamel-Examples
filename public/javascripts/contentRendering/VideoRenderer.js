@@ -93,13 +93,32 @@ var VideoRenderer = (function () {
 
             function engineToHTML(detail){
                 var engine = detail.engine;
+				var src = Ayamel.utils.downgradeLangCode(detail.srcLang);
+				var dest = Ayamel.utils.downgradeLangCode(detail.destLang);
                 if(engine === "WordReference"){
                     return '<a href="http://www.wordreference.com/' +
-                        Ayamel.utils.downgradeLangCode(detail.srcLang) +
-                        Ayamel.utils.downgradeLangCode(detail.destLang) +
+                        src +
+                        dest +
                         '/' + detail.text + '" target="wordreference">' +
                         detail.text + ' at WordReference.com</a> © WordReference.com';
-                } else {
+                }
+				else if(engine === "Merriam-Webster Inc."){
+					var logoURL="http://www.dictionaryapi.com/images/info/branding-guidelines/mw-logo-light-background-50x50.png";
+					if((src==="es") || (dest==="es"))
+						return '<a href="http://www.spanishcentral.com/translate/' +
+							detail.text + '" target="Merriam-Webster">' + 
+							'<img src="' + logoURL + '"></img> ' +
+							detail.text +' at Merriam-Webster.com</a><br/>Merriam-Webster\'s Spanish-English Dictionary';
+					else if ((src==="en") && (dest==="en"))
+						return '<a href="http://www.merriam-webster.com/dictionary/' +
+							detail.text + '" target="Merriam-Webster">' + 
+							'<img src="' + logoURL + '"></img> ' +
+							detail.text +' at Merriam-Webster.com</a>' +
+							'<br/> Merriam-Webster\'s Collegiate® Dictionary';
+					else
+						return engine;
+                }
+				else {
                     return engine;
                 }
             }
@@ -112,7 +131,7 @@ var VideoRenderer = (function () {
                         '<div class="addToWordList"><button class="btn btn-small"><i class="icon-paste"></i> Add to Word List</button></div>':"",
                     $html = $('<div class="translationResult">\
                         <div class="sourceText">' + detail.text + '</div>\
-                        <div class="translations">' + translations.join(", ") + '</div>\
+                        <div class="translations">' + translations.join(",<br/>") + '</div>\
                         <div class="engine">' + engineToHTML(detail) + '</div>' + wordList +
                     '</div>');
 
