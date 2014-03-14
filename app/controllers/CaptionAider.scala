@@ -53,7 +53,6 @@ object CaptionAider extends Controller {
             // We need to determine if this file has already been saved
             val resourceId = params("resourceId")
 
-            val name = FileUploader.uniqueFilename(tmpFile.filename)
             val mime = tmpFile.contentType.getOrElse("text/plain")
             val file = tmpFile.ref.file
             val size = file.length()
@@ -64,6 +63,7 @@ object CaptionAider extends Controller {
                 
                 // Create a new resource
                 // Upload the data
+                val name = FileUploader.uniqueFilename(tmpFile.filename)
                 FileUploader.uploadFile(file, name, mime).flatMap {
                   case Some(url) =>
                     // Create subtitle (subject) resource
@@ -94,7 +94,7 @@ object CaptionAider extends Controller {
                     
                     // Now find the file
                     val url = ((resource \ "content" \ "files")(0) \ "downloadUri").as[String]
-                    val filename = url.substring(url.lastIndexOf("/") + 1)
+                    val name = url.substring(url.lastIndexOf("/") + 1)
                     
                     // Replace the file
                     FileUploader.uploadFile(file, name, mime).flatMap {
