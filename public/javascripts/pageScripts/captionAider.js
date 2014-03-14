@@ -437,7 +437,7 @@ $(function() {
 									data.append("label", textTrack.label);
 									data.append("language", textTrack.language);
 									data.append("kind", textTrack.kind);
-									data.append("resourceId", videoPlayer.textTrackResources(textTrack).id || "");
+									data.append("resourceId", videoPlayer.textTrackResources.get(textTrack).id || "");
 									data.append("contentId", content.id);
 									return $.ajax({
 										url: "/captionaider/save?course=" + courseId,
@@ -451,7 +451,7 @@ $(function() {
 										commandStack.setFileSaved(textTrack.label);
 										//This is a horrible hack which results in data inconsistencies that are merely incidentally inconsequential right now.
 										//We should actually update the local copy of the resource, which we can do with a local request
-										videoPlayer.textTrackResources(textTrack).id = data;
+										videoPlayer.textTrackResources.get(textTrack).id = data;
 									},function(xhr, status, error){
 										alert("Error occurred while saving "+textTrack.label+":\n"+status)
 									});
