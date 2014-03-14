@@ -437,7 +437,7 @@ $(function() {
 									data.append("label", textTrack.label);
 									data.append("language", textTrack.language);
 									data.append("kind", textTrack.kind);
-									data.append("resourceId", textTrack.resourceId || "");
+									data.append("resourceId", videoPlayer.textTrackResources(textTrack).id || "");
 									data.append("contentId", content.id);
 									return $.ajax({
 										url: "/captionaider/save?course=" + courseId,

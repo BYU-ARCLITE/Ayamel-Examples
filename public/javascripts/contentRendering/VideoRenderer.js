@@ -93,8 +93,8 @@ var VideoRenderer = (function () {
 
             function engineToHTML(detail){
                 var engine = detail.engine;
-				var src = Ayamel.utils.downgradeLangCode(detail.srcLang);
-				var dest = Ayamel.utils.downgradeLangCode(detail.destLang);
+                var src = Ayamel.utils.downgradeLangCode(detail.srcLang);
+                var dest = Ayamel.utils.downgradeLangCode(detail.destLang);
                 if(engine === "WordReference"){
                     return '<a href="http://www.wordreference.com/' +
                         src +
@@ -102,23 +102,23 @@ var VideoRenderer = (function () {
                         '/' + detail.text + '" target="wordreference">' +
                         detail.text + ' at WordReference.com</a> © WordReference.com';
                 }
-				else if(engine === "Merriam-Webster Inc."){
-					var logoURL="http://www.dictionaryapi.com/images/info/branding-guidelines/mw-logo-light-background-50x50.png";
-					if((src==="es") || (dest==="es"))
-						return '<a href="http://www.spanishcentral.com/translate/' +
-							detail.text + '" target="Merriam-Webster">' + 
-							'<img src="' + logoURL + '"></img> ' +
-							detail.text +' at Merriam-Webster.com</a><br/>Merriam-Webster\'s Spanish-English Dictionary';
-					else if ((src==="en") && (dest==="en"))
-						return '<a href="http://www.merriam-webster.com/dictionary/' +
-							detail.text + '" target="Merriam-Webster">' + 
-							'<img src="' + logoURL + '"></img> ' +
-							detail.text +' at Merriam-Webster.com</a>' +
-							'<br/> Merriam-Webster\'s Collegiate® Dictionary';
-					else
-						return engine;
+                else if(engine === "Merriam-Webster Inc."){
+                    var logoURL="http://www.dictionaryapi.com/images/info/branding-guidelines/mw-logo-light-background-50x50.png";
+                    if((src==="es") || (dest==="es"))
+                        return '<a href="http://www.spanishcentral.com/translate/' +
+                            detail.text + '" target="Merriam-Webster">' + 
+                            '<img src="' + logoURL + '"></img> ' +
+                            detail.text +' at Merriam-Webster.com</a><br/>Merriam-Webster\'s Spanish-English Dictionary';
+                    else if ((src==="en") && (dest==="en"))
+                        return '<a href="http://www.merriam-webster.com/dictionary/' +
+                            detail.text + '" target="Merriam-Webster">' + 
+                            '<img src="' + logoURL + '"></img> ' +
+                            detail.text +' at Merriam-Webster.com</a>' +
+                            '<br/> Merriam-Webster\'s Collegiate® Dictionary';
+                    else
+                        return engine;
                 }
-				else {
+                else {
                     return engine;
                 }
             }
@@ -269,9 +269,9 @@ var VideoRenderer = (function () {
 
                 // Attach the translator
                 if (args.translator) {
-                    var trackID = "unknown";
-                    if (args.trackResource)
-                        trackID = args.trackResource.get(renderedCue.cue.track).id;
+                    var trackID = args.trackResource?
+                        args.trackResource.get(renderedCue.cue.track).id:
+                        "Unknown";
                     args.translator.attach(node, renderedCue.language, "en", {
                         captionTrackId: trackID, 
                         cueIndex: renderedCue.cue.id
@@ -323,6 +323,7 @@ var VideoRenderer = (function () {
     function setupTranscripts(args) {
         if (showTranscript(args)) {
             var transcriptPlayer = new TranscriptPlayer({
+                //requires the actual TextTrack objects; should be fixed up to take resource IDs, I think
                 captionTracks: args.captionTracks,
                 $holder: args.layout.$transcript,
                 syncButton: true,
@@ -331,7 +332,7 @@ var VideoRenderer = (function () {
                     // Attach the translator
                     if (args.translator) {
                         args.translator.attach($cue[0], cue.track.language, "en", {
-                            captionTrackId: cue.track.resourceId,
+                            captionTrackId: args.trackResource.get(cue.track).id,
                             cueIndex: cue.track.cues.indexOf(cue)
                         });
                     }
@@ -345,15 +346,13 @@ var VideoRenderer = (function () {
 
             // Cue clicking
             transcriptPlayer.addEventListener("cueclick", function(event){
-                var trackID = "Unknown";
-                if (args.trackResource)
-                        trackID = args.trackResource.get(event.detail.track).id;
+                var trackID = args.trackResource?
+                    args.trackResource.get(event.detail.track).id:
+                    "Unknown";
             
                 args.videoPlayer.currentTime = event.detail.cue.startTime;
                 ActivityStreams.predefined.transcriptCueClick(trackID, event.detail.cue.id);
             });
-
-
 
             return transcriptPlayer;
         }
