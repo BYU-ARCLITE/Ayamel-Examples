@@ -449,7 +449,9 @@ $(function() {
 										dataType: "text"
 									}).then(function(data){
 										commandStack.setFileSaved(textTrack.label);
-										textTrack.resourceId = data;
+										//This is a horrible hack which results in data inconsistencies that are merely incidentally inconsequential right now.
+										//We should actually update the local copy of the resource, which we can do with a local request
+										videoPlayer.textTrackResources(textTrack).id = data;
 									},function(xhr, status, error){
 										alert("Error occurred while saving "+textTrack.label+":\n"+status)
 									});
