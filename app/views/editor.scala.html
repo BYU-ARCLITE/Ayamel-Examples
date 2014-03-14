@@ -9,30 +9,32 @@
     <head>
         <title>@title</title>
 
-		@Dependencies(
+        @Dependencies(
           Local(
-			Icon("images/favicon.png", "image/png"),
-		    Rel("stylesheets/",
+            Icon("images/favicon.png", "image/png"),
+            Rel("stylesheets/",
               CSS("bootstrap.min.css"),
               CSS("bootstrap-responsive.min.css"),
               CSS("font-awesome.min.css"),
               CSS("main.css")),
-			Rel("javascripts/",
-			  Rel("libraries/",
-			    JS("jquery-1.9.0.min.js"),
+            Rel("javascripts/",
+              Rel("libraries/",
+                JS("jquery-1.9.0.min.js"),
                 JS("bootstrap.min.js"),
                 JS("mustache.js"),
                 JS("Ractive.min.js")),
               JS("contentSelection/ContentItemRenderer.js"),
+              JS("Map.js"),
               JS("ActivityStreams.js"),
               JS("ScreenAdapter.js"))),
-		  Extern("EditorWidgets",
-		    CSS("css/Superselect.css"),
-            JS("js/SuperSelect.js"),
-			JS("js/Save.js"),
-			JS("js/CommandStack.js"),
-			JS("js/Dragable.js"),
-			JS("js/LocalFiles.js"))
+          Extern("EditorWidgets",
+            CSS("css/Superselect.css"),
+            Rel("js/",
+              JS("SuperSelect.js"),
+              JS("Save.js"),
+              JS("CommandStack.js"),
+              JS("Dragable.js"),
+              JS("LocalFiles.js")))
         )
         @Dependencies(moreDependencies:_*)
 
