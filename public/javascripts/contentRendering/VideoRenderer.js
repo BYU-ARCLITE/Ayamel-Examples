@@ -7,6 +7,7 @@
  */
 var VideoRenderer = (function () {
 
+    var languageSelect;
     var translationHighlight,
         captionTrackId,
         cueNumber;
@@ -92,9 +93,10 @@ var VideoRenderer = (function () {
             });
 
             function engineToHTML(detail){
-                var engine = detail.engine;
-                var src = Ayamel.utils.downgradeLangCode(detail.srcLang);
-                var dest = Ayamel.utils.downgradeLangCode(detail.destLang);
+                var logoURL,
+                    engine = detail.engine,
+                    src = Ayamel.utils.downgradeLangCode(detail.srcLang),
+                    dest = Ayamel.utils.downgradeLangCode(detail.destLang);
                 if(engine === "WordReference"){
                     return '<a href="http://www.wordreference.com/' +
                         src +
@@ -102,25 +104,24 @@ var VideoRenderer = (function () {
                         '/' + detail.text + '" target="wordreference">' +
                         detail.text + ' at WordReference.com</a> © WordReference.com';
                 }
-                else if(engine === "Merriam-Webster Inc."){
-                    var logoURL="http://www.dictionaryapi.com/images/info/branding-guidelines/mw-logo-light-background-50x50.png";
-                    if((src==="es") || (dest==="es"))
-                        return '<a href="http://www.spanishcentral.com/translate/' +
-                            detail.text + '" target="Merriam-Webster">' + 
-                            '<img src="' + logoURL + '"></img> ' +
-                            detail.text +' at Merriam-Webster.com</a><br/>Merriam-Webster\'s Spanish-English Dictionary';
-                    else if ((src==="en") && (dest==="en"))
-                        return '<a href="http://www.merriam-webster.com/dictionary/' +
-                            detail.text + '" target="Merriam-Webster">' + 
-                            '<img src="' + logoURL + '"></img> ' +
-                            detail.text +' at Merriam-Webster.com</a>' +
-                            '<br/> Merriam-Webster\'s Collegiate® Dictionary';
-                    else
-                        return engine;
+                if(engine === "Merriam-Webster Inc."){
+                    logoURL="http://www.dictionaryapi.com/images/info/branding-guidelines/mw-logo-light-background-50x50.png";
+                    if((src==="es") || (dest==="es")){
+                        return '<a href="http://www.spanishcentral.com/translate/' + detail.text + '" target="Merriam-Webster">'
+                            + detail.text +' at SpanishCentral.com </a>'
+                            + '<br/>Merriam-Webster\'s Spanish-English Dictionary '
+                            + '<div class="merriamLogo"><a href="http://www.spanishcentral.com/translate/' 
+                            + detail.text + '" target="Merriam-Webster"> <img src="' + logoURL + '"></img></a></div>';
+                    }
+                    if ((src==="en") && (dest==="en")) {   
+                        return '<a href="http://www.merriam-webster.com/dictionary/' + detail.text + '" target="Merriam-Webster">'
+                            + detail.text +' at Merriam-Webster.com </a>' 
+                            + '<br/> Merriam-Webster\'s Collegiate® Dictionary <br/>'
+                            + '<div class="merriamLogo"><a href="http://www.merriam-webster.com/dictionary/' 
+                            + detail.text + '" target="Merriam-Webster"><img src="' + logoURL + '"></img></a></div>';
+                    }
                 }
-                else {
-                    return engine;
-                }
+                return engine;
             }
 
             // Translation succeeded
@@ -272,7 +273,7 @@ var VideoRenderer = (function () {
                     var trackID = args.trackResource?
                         args.trackResource.get(renderedCue.cue.track).id:
                         "Unknown";
-                    args.translator.attach(node, renderedCue.language, "en", {
+                    args.translator.attach(node, renderedCue.language, Ayamel.utils.downgradeLangCode(languageSelect.get("selection")), {
                         captionTrackId: trackID, 
                         cueIndex: renderedCue.cue.id
                     });
@@ -331,7 +332,7 @@ var VideoRenderer = (function () {
                 filter: function(cue, $cue) {
                     // Attach the translator
                     if (args.translator) {
-                        args.translator.attach($cue[0], cue.track.language, "en", {
+                        args.translator.attach($cue[0], cue.track.language, Ayamel.utils.downgradeLangCode(languageSelect.get("selection")), {
                             captionTrackId: args.trackResource.get(cue.track).id,
                             cueIndex: cue.track.cues.indexOf(cue)
                         });
@@ -361,7 +362,6 @@ var VideoRenderer = (function () {
 
     return {
         render: function (args) {
-
             // Load the caption tracks
             ContentRenderer.getTranscripts(args, function (transcripts) {
                 args.transcripts = transcripts;
@@ -406,9 +406,35 @@ var VideoRenderer = (function () {
 
                     // Prepare to create the Transcript when the video player is created
                     args.captionTrackCallback = function(tracks, trackResource) {
+                        var selectHolder, langList;
                         args.captionTracks = tracks;
                         args.trackResource = trackResource;
                         args.transcriptPlayer = setupTranscripts(args);
+
+                        
+                        // Refactor Later
+                        if(true){
+                            selectHolder = document.createElement('div');
+                            langList = Object.keys(Ayamel.utils.p1map).map(function (p1) {
+                                var code = Ayamel.utils.p1map[p1];
+                                return {value: code, text: Ayamel.utils.getLangName(code)};
+                            }).sort(function(a,b){ return a.text.localeCompare(b.text); });
+                            langList.unshift({value:'zxx',text:'No Linguistic Content'});
+
+                            languageSelect = new EditorWidgets.SuperSelect({
+                                el: selectHolder,
+                                data:{
+                                    id: 'transLang',
+                                    selection: 'eng',
+                                    icon: 'icon-globe',
+                                    text: 'Select Language',
+                                    multiple: false,
+                                    options: langList
+                                }
+                            });                         
+                            
+                            args.layout.$definitions.append(selectHolder);
+                        }
 
                         setupTranscriptWithPlayer(args);
 
