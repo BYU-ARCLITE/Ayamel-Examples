@@ -474,3 +474,17 @@
 #playlistPlayer #nextButton {
     margin-top: 100px;
 }
+
+/* Translation Box*/
+.merriamAudio{
+    width:95%;
+}
+
+.merriamLogo{
+    text-align:center;
+}
+
+.engine{
+    width:100%;
+    text-align:right;
+}

@@ -105,16 +105,19 @@ var VideoRenderer = (function () {
                 else if(engine === "Merriam-Webster Inc."){
                     var logoURL="http://www.dictionaryapi.com/images/info/branding-guidelines/mw-logo-light-background-50x50.png";
                     if((src==="es") || (dest==="es"))
-                        return '<a href="http://www.spanishcentral.com/translate/' +
-                            detail.text + '" target="Merriam-Webster">' + 
-                            '<img src="' + logoURL + '"></img> ' +
-                            detail.text +' at Merriam-Webster.com</a><br/>Merriam-Webster\'s Spanish-English Dictionary';
+                    {   var url = '<a href="http://www.spanishcentral.com/translate/' + detail.text + '" target="Merriam-Webster">'
+                        return url
+                            + detail.text +' at SpanishCentral.com </a>'
+                            + '<br/>Merriam-Webster\'s Spanish-English Dictionary '
+                            + '<div class="merriamLogo"> ' + url + ' <img src="' + logoURL + '"></img></a></div>';
+                    }
                     else if ((src==="en") && (dest==="en"))
-                        return '<a href="http://www.merriam-webster.com/dictionary/' +
-                            detail.text + '" target="Merriam-Webster">' + 
-                            '<img src="' + logoURL + '"></img> ' +
-                            detail.text +' at Merriam-Webster.com</a>' +
-                            '<br/> Merriam-Webster\'s Collegiate® Dictionary';
+                    {   var url = '<a href="http://www.merriam-webster.com/dictionary/' + detail.text + '" target="Merriam-Webster">'  
+                        return url
+                            + detail.text +' at Merriam-Webster.com </a>' 
+                            + '<br/> Merriam-Webster\'s Collegiate® Dictionary <br/>'
+                            + '<div class="merriamLogo">' + url + '<img src="' + logoURL + '"></img></a></div>';
+                    }
                     else
                         return engine;
                 }
