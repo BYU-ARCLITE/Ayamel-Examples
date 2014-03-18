@@ -93,9 +93,10 @@ var VideoRenderer = (function () {
             });
 
             function engineToHTML(detail){
-                var engine = detail.engine;
-                var src = Ayamel.utils.downgradeLangCode(detail.srcLang);
-                var dest = Ayamel.utils.downgradeLangCode(detail.destLang);
+                var logoURL,
+                    engine = detail.engine,
+                    src = Ayamel.utils.downgradeLangCode(detail.srcLang),
+                    dest = Ayamel.utils.downgradeLangCode(detail.destLang);
                 if(engine === "WordReference"){
                     return '<a href="http://www.wordreference.com/' +
                         src +
@@ -103,28 +104,22 @@ var VideoRenderer = (function () {
                         '/' + detail.text + '" target="wordreference">' +
                         detail.text + ' at WordReference.com</a> © WordReference.com';
                 }
-                else if(engine === "Merriam-Webster Inc."){
-                    var logoURL="http://www.dictionaryapi.com/images/info/branding-guidelines/mw-logo-light-background-50x50.png";
-                    if((src==="es") || (dest==="es"))
-                    {   var url = '<a href="http://www.spanishcentral.com/translate/' + detail.text + '" target="Merriam-Webster">'
-                        return url
+                if(engine === "Merriam-Webster Inc."){
+                    logoURL="http://www.dictionaryapi.com/images/info/branding-guidelines/mw-logo-light-background-50x50.png";
+                    if((src==="es") || (dest==="es")){
+                        return '<a href="http://www.spanishcentral.com/translate/' + detail.text + '" target="Merriam-Webster">'
                             + detail.text +' at SpanishCentral.com </a>'
                             + '<br/>Merriam-Webster\'s Spanish-English Dictionary '
                             + '<div class="merriamLogo"> ' + url + ' <img src="' + logoURL + '"></img></a></div>';
                     }
-                    else if ((src==="en") && (dest==="en"))
-                    {   var url = '<a href="http://www.merriam-webster.com/dictionary/' + detail.text + '" target="Merriam-Webster">'  
-                        return url
+                    if ((src==="en") && (dest==="en")) {   
+                        return '<a href="http://www.merriam-webster.com/dictionary/' + detail.text + '" target="Merriam-Webster">'
                             + detail.text +' at Merriam-Webster.com </a>' 
                             + '<br/> Merriam-Webster\'s Collegiate® Dictionary <br/>'
                             + '<div class="merriamLogo">' + url + '<img src="' + logoURL + '"></img></a></div>';
                     }
-                    else
-                        return engine;
                 }
-                else {
-                    return engine;
-                }
+                return engine;
             }
 
             // Translation succeeded
