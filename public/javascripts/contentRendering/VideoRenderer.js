@@ -143,7 +143,7 @@ var VideoRenderer = (function () {
                     var $addWord = $(this).parent();
                     $.ajax("/words", {
                         type: "post",
-                        data: {Ayamel.utils.downgradeLangCode(languageSelect.get("selection"))
+                        data: {
                             language: event.srcLang,
                             word: sourceText
                         },
