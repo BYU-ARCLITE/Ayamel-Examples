@@ -4,7 +4,8 @@ import authentication.Authentication
 import play.api.mvc.{RequestHeader, Result, Request, Controller}
 import models._
 import service.FileUploader
-import scala.concurrent.ExecutionContext
+import scala.concurrent._
+import scala.concurrent.duration._
 import ExecutionContext.Implicits.global
 import anorm.NotAssigned
 import play.api.Logger
@@ -241,7 +242,7 @@ object Administration extends Controller {
           val params = request.body.mapValues(_(0))
           val shareability = params("shareability").toInt
           val visibility = params("visibility").toInt
-          
+
           params("ids").split(",").foreach {
             case id if !id.isEmpty =>
               Content.findById(id.toLong).foreach(_.copy(shareability = shareability, visibility = visibility).save)
@@ -269,34 +270,35 @@ object Administration extends Controller {
       implicit user =>
         Authentication.enforceRole(User.roles.admin) {
           val redirect = Redirect(routes.Administration.homePageContent())
-          val data = request.body.dataParts.mapValues(_(0))
-          val homePageContent = HomePageContent(NotAssigned,
-            data("title"),
-            data("text"),
-            data("link"),
-            data("linkText"),
-            data("background"),
-            active = false
-          )
-          //TODO: Find some way to reduce duplication here
-          if (data("background").isEmpty) {
-            request.body.file("file").map { file =>
-              Async {
-                FileUploader.uploadFile(file).map {
-                  case Some(url) =>
-                    homePageContent.copy(background = url).save
-                    redirect.flashing("info" -> "Home page content created")
-                  case None =>  
-                    redirect.flashing("error" -> "Could not upload image")
+          try {
+            val data = request.body.dataParts.mapValues(_(0))
+            val homePageContent = HomePageContent(NotAssigned,
+              data("title"),
+              data("text"),
+              data("link"),
+              data("linkText"),
+              data("background"),
+              active = false
+            )
+
+            (if (data("background").isEmpty) {
+              request.body.file("file").flatMap { file =>
+                Await.result(FileUploader.uploadFile(file), Duration.Inf).map { url =>
+                    homePageContent.copy(background = url)
                 }
               }
-            }.getOrElse {
-              homePageContent.save
-              redirect.flashing("info" -> "Home page content created")
+            } else {
+                Some(homePageContent)
+            }) match {
+              case Some(hpc) =>
+                hpc.save
+                redirect.flashing("info" -> "Home page content created")
+              case None =>
+                redirect.flashing("error" -> "Could not upload image")
             }
-          } else {
-            homePageContent.save
-            redirect.flashing("info" -> "Home page content created")
+          } catch {
+            case _ : Throwable =>
+              redirect.flashing("error" -> "Failed to create home page content")
           }
         }
   }
