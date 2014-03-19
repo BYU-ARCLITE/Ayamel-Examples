@@ -6,30 +6,21 @@
         <h3 id="configurationModalLabel">Edit Configuration</h3>
     </div>
     <div class="modal-body">
-
         <div style="position: relative">
             <ul class="nav nav-pills">
                 <li><a href="#personalSettings" data-toggle="pill">Personal</a></li>
-
                 @if(course.isDefined && user.canEdit(course.get)) {
                     <li><a href="#courseSettings" data-toggle="pill">Course</a></li>
                 }
             </ul>
         </div>
         <div class="clearfix"></div>
-
         <div class="tab-content">
-
-            <div class="tab-pane" id="personalSettings">
-            </div>
-
+            <div class="tab-pane" id="personalSettings"></div>
             @if(course.isDefined && user.canEdit(course.get)) {
                 <div class="tab-pane" id="courseSettings"></div>
             }
-
-
         </div>
-
     </div>
     <div class="modal-footer">
         <div>

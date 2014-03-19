@@ -25,12 +25,9 @@ var ContentSettings = (function() {
     }
 
     function getPermissionLevel(context) {
-        if (context.owner)
-            return "global";
-        else if (context.courseId)
-            return "course";
-        else
-            return "personal";
+        if(context.owner){ return "global"; }
+        if(context.courseId){ return "course"; }
+        return "personal";
     }
 
     var predefined = {
@@ -90,11 +87,10 @@ var ContentSettings = (function() {
             }
         },
         enabledCaptionTracks: {
-            type: "select",
+            type: "multicheck",
             label: "Enabled Caption Tracks",
             name: "captionTracks",
-            multiple: true,
-            options: function(context, content) {
+            items: function(context, content) {
                 // Get the document name and language from the ID
                 return content.enableableCaptionTracks.map(function (resource) {
                     var langCode = resource.languages.iso639_3[0].length === 3 ? resource.languages.iso639_3[0] : Ayamel.utils.upgradeLangCode(resource.languages.iso639_3[0]);
@@ -108,15 +104,14 @@ var ContentSettings = (function() {
             attach: function($control, context, content) {
                 var prefix = getPrefix(context);
                 var items = (content.settings[prefix + "enabledCaptionTracks"] || "").split(",").filter(function(s){return !!s;});
-                $control.find("select").val(items);
+                items.forEach(function(item){ $control.find("input[value="+item+"]").prop("checked", true); });
             }
         },
         enabledAnnotations: {
-            type: "select",
+            type: "multicheck",
             label: "Enabled Annotations",
             name: "annotationDocs",
-            multiple: true,
-            options: function(context, content) {
+            items: function(context, content) {
                 // Get the document name and language from the ID
                 return content.enableableAnnotationDocuments.map(function (resource) {
                     var langCode = resource.languages.iso639_3[0].length === 3 ? resource.languages.iso639_3[0] : Ayamel.utils.upgradeLangCode(resource.languages.iso639_3[0]);
@@ -130,7 +125,7 @@ var ContentSettings = (function() {
             attach: function($control, context, content) {
                 var prefix = getPrefix(context);
                 var items = (content.settings[prefix + "enabledAnnotationDocuments"] || "").split(",").filter(function(s){return !!s;});
-                $control.find("select").val(items);
+                items.forEach(function(item){ $control.find("input[value="+item+"]").prop("checked", true); });
             }
         }
     };
@@ -270,7 +265,8 @@ var ContentSettings = (function() {
     ];
 
     function createControls(config, context, content) {
-        if (config.type === "radio") {
+        switch(config.type){
+        case "radio":
             return new SettingsForm.formParts.RadioButtons({
                 name: config.name,
                 label: config.label,
@@ -279,7 +275,16 @@ var ContentSettings = (function() {
                     config.attach($control, context, content);
                 }
             });
-        } else if (config.type === "checkbox") {
+        case "multicheck":
+            return new SettingsForm.formParts.MultiCheck({
+                name: config.name,
+                label: config.label,
+                items: config.items(context, content),
+                attach: function ($control) {
+                    config.attach($control, context, content);
+                }
+            });
+        case "checkbox":
             return new SettingsForm.formParts.CheckBox({
                 name: config.name,
                 label: config.label,
@@ -287,7 +292,7 @@ var ContentSettings = (function() {
                     config.attach($control, context, content);
                 }
             });
-        } else if (config.type === "select") {
+        case "select":
             return new SettingsForm.formParts.Select({
                 name: config.name,
                 label: config.label,
@@ -297,14 +302,14 @@ var ContentSettings = (function() {
                     config.attach($control, context, content);
                 }
             });
-        } else if (config.type === "hidden") {
+        case "hidden":
             return new SettingsForm.formParts.HiddenInput({
                 name: config.name,
                 attach: function ($control) {
                     config.attach($control, context, content);
                 }
             });
-        } else if (config.type === "submit") {
+        case "submit":
             return new SettingsForm.formParts.Submit({
                 name: config.name,
                 classes: config.classes,
