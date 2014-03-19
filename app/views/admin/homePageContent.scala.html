@@ -5,15 +5,10 @@
     Rel("stylesheets/", CSS("admin.css"), CSS("home.css")),
     JS("javascripts/formFixes/fileFix.js"))
 ) {
-    <div class="adminBackground">
-    </div>
-
+    <div class="adminBackground"></div>
     <div class="padded">
-
         @views.html.admin.navbar("homePageContent")
-
         <h1>Home Page Content</h1>
-
         @for(homePageContent <- HomePageContent.list) {
             <div class="spotlight">
                 <div class="slide" style="background-image: url('@homePageContent.background'); background-size: cover; background-position: center;">
@@ -26,7 +21,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="pad-top-high">
                 @if(homePageContent.active) {
                     <span class="badge badge-yellow">Active</span>
@@ -37,23 +31,20 @@
                 }
                 <a class="btn" href="@routes.Administration.deleteHomePageContent(homePageContent.id.get)"><i class="icon-trash"></i> Delete</a>
             </div>
-
             <hr>
         }
-
         <h2>Create new content</h2>
-
         <form class="form-horizontal" action="@routes.Administration.createHomePageContent()" method="post" enctype="multipart/form-data">
             <div class="control-group">
                 <label class="control-label" for="title">Title</label>
                 <div class="controls">
-                    <input type="text" id="title" name="title" placeholder="Title">
+                    <input type="text" id="title" name="title" placeholder="Title" maxlength="255">
                 </div>
             </div>
             <div class="control-group">
                 <label class="control-label" for="text">Text</label>
                 <div class="controls">
-                    <textarea name="text" id="text"></textarea>
+                    <textarea name="text" id="text" maxlength="255"></textarea>
                 </div>
             </div>
             <div class="control-group">
@@ -66,7 +57,7 @@
                             </p>
                             <div class="pad-top-high">
                                 <p>Image URL</p>
-                                <input type="text" id="background" name="background" placeholder="Background Image URL">
+                                <input type="text" id="background" name="background" placeholder="Background Image URL" maxlength="255">
                             </div>
                             <div class="pad-top-high">
                                 <p>Upload image</p>
@@ -79,7 +70,7 @@
             <div class="control-group">
                 <label class="control-label" for="link">Link URL</label>
                 <div class="controls">
-                    <input type="text" id="link" name="link" placeholder="Link">
+                    <input type="text" id="link" name="link" placeholder="Link" maxlength="255">
                     <p>
                         (Leave field blank for no link)
                     </p>
@@ -88,7 +79,7 @@
             <div class="control-group">
                 <label class="control-label" for="linkText">Link Text</label>
                 <div class="controls">
-                    <input type="text" id="linkText" name="linkText" placeholder="Link Text">
+                    <input type="text" id="linkText" name="linkText" placeholder="Link Text" maxlength="255">
                 </div>
             </div>
             <div class="control-group">
@@ -97,7 +88,5 @@
                 </div>
             </div>
         </form>
-
     </div>
-
 }
