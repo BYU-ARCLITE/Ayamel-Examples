@@ -40,7 +40,7 @@ var SettingsForm = (function() {
     Control.prototype.create = function(template, data, attach) {
         var html = Mustache.to_html(controlTemplate, data, {control: template});
         var $element = $(html);
-        if (attach) {
+        if (typeof attach === 'function') {
             attach($element);
         }
         return $element;
@@ -78,6 +78,31 @@ var SettingsForm = (function() {
         };
 
         return RadioButtons;
+    })();
+
+    var MultiCheck = (function() {
+        var template =
+            '<div>\
+                {{#items}}<label>\
+                    <input type="checkbox" name="{{name}}" value="{{value}}">{{text}}\
+                </label>{{/items}}\
+            </div>';
+
+        function MultiCheck(args) {
+            this.data = {
+                label: args.label || "Check boxes",
+                name: args.name,
+                items: args.items || []
+            };
+            this.attach = args.attach;
+        }
+        MultiCheck.prototype = Object.create(Control.prototype);
+        MultiCheck.prototype.constructor = MultiCheck;
+        MultiCheck.prototype.render = function() {
+            return this.create(template, this.data, this.attach);
+        };
+
+        return MultiCheck;
     })();
 
     var CheckBox = (function() {
@@ -190,6 +215,7 @@ var SettingsForm = (function() {
         SettingsForm: SettingsForm,
         formParts: {
             CheckBox: CheckBox,
+            MultiCheck: MultiCheck,
             HiddenInput: HiddenInput,
             RadioButtons: RadioButtons,
             Select: Select,

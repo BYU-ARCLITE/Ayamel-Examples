@@ -360,7 +360,7 @@ var VideoRenderer = (function () {
         return "nothing";
     }
 
-    function setupDefinitionPane($pane){
+    function setupDefinitionsPane($pane){
         var selectHolder = document.createElement('div');
         //this sets a module-global variable
         languageSelect = new EditorWidgets.SuperSelect({
