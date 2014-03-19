@@ -112,9 +112,9 @@ var VideoRenderer = (function () {
                             + '<br/>Merriam-Webster\'s Spanish-English Dictionary '
                             + '<div class="merriamLogo"> ' + url + ' <img src="' + logoURL + '"></img></a></div>';
                     }
-                    if ((src==="en") && (dest==="en")) {   
+                    if ((src==="en") && (dest==="en")) {
                         return '<a href="http://www.merriam-webster.com/dictionary/' + detail.text + '" target="Merriam-Webster">'
-                            + detail.text +' at Merriam-Webster.com </a>' 
+                            + detail.text +' at Merriam-Webster.com </a>'
                             + '<br/> Merriam-Webster\'s Collegiate® Dictionary <br/>'
                             + '<div class="merriamLogo">' + url + '<img src="' + logoURL + '"></img></a></div>';
                     }
@@ -272,7 +272,7 @@ var VideoRenderer = (function () {
                         args.trackResource.get(renderedCue.cue.track).id:
                         "Unknown";
                     args.translator.attach(node, renderedCue.language, Ayamel.utils.downgradeLangCode(languageSelect.get("selection")), {
-                        captionTrackId: trackID, 
+                        captionTrackId: trackID,
                         cueIndex: renderedCue.cue.id
                     });
                 }
@@ -348,7 +348,7 @@ var VideoRenderer = (function () {
                 var trackID = args.trackResource?
                     args.trackResource.get(event.detail.track).id:
                     "Unknown";
-            
+
                 args.videoPlayer.currentTime = event.detail.cue.startTime;
                 ActivityStreams.predefined.transcriptCueClick(trackID, event.detail.cue.id);
             });
@@ -356,6 +356,26 @@ var VideoRenderer = (function () {
             return transcriptPlayer;
         }
         return "nothing";
+    }
+
+    function setupDefinitionPane($pane){
+        var selectHolder = document.createElement('div');
+        //this sets a module-global variable
+        languageSelect = new EditorWidgets.SuperSelect({
+            el: selectHolder,
+            data:{
+                id: 'transLang',
+                selection: 'eng',
+                icon: 'icon-globe',
+                text: 'Select Language',
+                multiple: false,
+                options: Object.keys(Ayamel.utils.p1map).map(function (p1) {
+                    var code = Ayamel.utils.p1map[p1];
+                    return {value: code, text: Ayamel.utils.getLangName(code)};
+                }).sort(function(a,b){ return a.text.localeCompare(b.text); })
+            }
+        });
+        $pane.append(selectHolder);
     }
 
     return {
@@ -395,43 +415,19 @@ var VideoRenderer = (function () {
                                 });
                             }
 
-                            if (args.callback) {
-                                args.callback(args);
-                            }
+                            if(typeof args.callback === 'function'){ args.callback(args); }
                             loaded = true;
                         }
                     }
 
                     // Prepare to create the Transcript when the video player is created
                     args.captionTrackCallback = function(tracks, trackResource) {
-                        var selectHolder, langList;
                         args.captionTracks = tracks;
                         args.trackResource = trackResource;
                         args.transcriptPlayer = setupTranscripts(args);
 
-                        
-                        // Refactor Later
-                        if(true){
-                            selectHolder = document.createElement('div');
-                            langList = Object.keys(Ayamel.utils.p1map).map(function (p1) {
-                                var code = Ayamel.utils.p1map[p1];
-                                return {value: code, text: Ayamel.utils.getLangName(code)};
-                            }).sort(function(a,b){ return a.text.localeCompare(b.text); });
-                            langList.unshift({value:'zxx',text:'No Linguistic Content'});
-
-                            languageSelect = new EditorWidgets.SuperSelect({
-                                el: selectHolder,
-                                data:{
-                                    id: 'transLang',
-                                    selection: 'eng',
-                                    icon: 'icon-globe',
-                                    text: 'Select Language',
-                                    multiple: false,
-                                    options: langList
-                                }
-                            });                         
-                            
-                            args.layout.$definitions.append(selectHolder);
+                        if(args.layout.$definitions){
+                            setupDefinitionsPane(args.layout.$definitions);
                         }
 
                         setupTranscriptWithPlayer(args);
