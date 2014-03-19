@@ -238,16 +238,22 @@ object Administration extends Controller {
     implicit request =>
       implicit user =>
         Authentication.enforceRole(User.roles.admin) {
+          val redirect = Redirect(routes.Administration.manageContent())
+          try {
+            val params = request.body.mapValues(_(0))
+            val shareability = params("shareability").toInt
+            val visibility = params("visibility").toInt
 
-          val params = request.body.mapValues(_(0))
-          val shareability = params("shareability").toInt
-          val visibility = params("visibility").toInt
-
-          params("ids").split(",").foreach {
-            case id if !id.isEmpty =>
-              Content.findById(id.toLong).foreach(_.copy(shareability = shareability, visibility = visibility).save)
+            for(id <- params("ids").split(",") if !id.isEmpty;
+                content <- Content.findById(id.toLong)) {
+              content.copy(shareability = shareability, visibility = visibility).save
+            }
+            redirect.flashing("info" -> "Contents updated")
+          } catch {
+            case e: Throwable =>
+              Logger.debug(e.getMessage())
+              redirect.flashing("error" -> ("Error while updating: "+e.getMessage()))
           }
-          Redirect(routes.Administration.manageContent()).flashing("info" -> "Contents updated")
         }
   }
 
