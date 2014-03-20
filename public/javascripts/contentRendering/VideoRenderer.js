@@ -110,13 +110,15 @@ var VideoRenderer = (function () {
                         return '<a href="http://www.spanishcentral.com/translate/' + detail.text + '" target="Merriam-Webster">'
                             + detail.text +' at SpanishCentral.com </a>'
                             + '<br/>Merriam-Webster\'s Spanish-English Dictionary '
-                            + '<div class="merriamLogo"> ' + url + ' <img src="' + logoURL + '"></img></a></div>';
+                            + '<div class="merriamLogo"><a href="http://www.spanishcentral.com/translate/' 
+                            + detail.text + '" target="Merriam-Webster"> <img src="' + logoURL + '"></img></a></div>';
                     }
                     if ((src==="en") && (dest==="en")) {
                         return '<a href="http://www.merriam-webster.com/dictionary/' + detail.text + '" target="Merriam-Webster">'
                             + detail.text +' at Merriam-Webster.com </a>'
                             + '<br/> Merriam-Webster\'s Collegiate® Dictionary <br/>'
-                            + '<div class="merriamLogo">' + url + '<img src="' + logoURL + '"></img></a></div>';
+                            + '<div class="merriamLogo"><a href="http://www.merriam-webster.com/dictionary/' 
+                            + detail.text + '" target="Merriam-Webster"><img src="' + logoURL + '"></img></a></div>';
                     }
                 }
                 return engine;
