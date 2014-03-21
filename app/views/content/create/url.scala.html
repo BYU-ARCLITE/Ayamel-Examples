@@ -118,8 +118,8 @@
 
             function isYouTube(uri){
                 return uri.indexOf("youtube://") === 0 ||
-                    uri.indexOf("http://www.youtube.com/watch?v=") === 0 ||
-                    uri.indexOf("http://youtu.be/") === 0;
+                    /^https?:\/\/www\.youtube\.com\/watch\?v=/.test(uri) ||
+                    /^https?:\/\/youtu\.be\//.test(uri);
             }
 
             function isBrightcove(uri){
