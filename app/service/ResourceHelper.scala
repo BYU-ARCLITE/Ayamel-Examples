@@ -29,7 +29,10 @@ object ResourceHelper {
    * @return
    */
   def isYouTube(uri: String): Boolean = uri.startsWith("youtube://") ||
-    uri.startsWith("http://www.youtube.com/watch?v=") || uri.startsWith("http://youtu.be/")
+    uri.startsWith("http://www.youtube.com/watch?v=") ||
+    uri.startsWith("https://www.youtube.com/watch?v=") ||
+    uri.startsWith("http://youtu.be/") ||
+    uri.startsWith("https://youtu.be/")
 
   /**
    * Determines if the given URL is to a brightcove video or not
@@ -81,7 +84,7 @@ object ResourceHelper {
    * @return
    */
   def getUrlName(url: String): String =
-    if (isHTTP(url)) "downloadUri" else "streamUri"
+    if (!isYouTube(url) && isHTTP(url)) "downloadUri" else "streamUri"
 
   /**
    * Attempts to retrieve the mime type from the uri. Doesn't deal with the resource library, but this is used by other
