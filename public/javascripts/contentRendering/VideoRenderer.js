@@ -254,7 +254,14 @@ var VideoRenderer = (function () {
         // Make sure the element will be contained on the page if it's a video
         if (args.content.contentType === "video" && args.screenAdaption && args.screenAdaption.fit) {
             ScreenAdapter.containByHeight(args.layout.$player, Ayamel.aspectRatios.hdVideo, args.screenAdaption.padding);
+            args.layout.$player.css("padding-bottom","61px"); // padding for the control bar
         }
+        window.onresize = function(event) {
+            if (args.content.contentType === "video" && args.screenAdaption && args.screenAdaption.fit) {
+                ScreenAdapter.containByHeight(args.layout.$player, Ayamel.aspectRatios.hdVideo, args.screenAdaption.padding);
+                $(".videoBox").height(args.layout.$player.height());
+            }
+        };
 
         var videoPlayer = new Ayamel.classes.AyamelPlayer({
             components: components,
