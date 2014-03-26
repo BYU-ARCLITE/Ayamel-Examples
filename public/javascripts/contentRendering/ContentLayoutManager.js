@@ -26,10 +26,10 @@ var ContentLayoutManager = (function() {
         '</div>';
 
     var twoPanelLayoutMobile =
-        '<div class="primary"></div>' +
-        '<div class="secondary">' +
-            '<div class="secondaryContent">{{>tabs}}</div>' +
-        '</div>';
+        '<div class="primary"></div>\
+        <div class="secondary">\
+            <div class="secondaryContent">{{>tabs}}</div>\
+        </div>';
 
     var tabIcons = {
         Transcript: "th-list",

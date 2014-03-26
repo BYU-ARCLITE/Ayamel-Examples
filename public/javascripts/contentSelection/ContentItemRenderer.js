@@ -3,340 +3,336 @@
  */
 var ContentItemRenderer = (function() {
 
-	var contentTemplates = {
-		block:
-			'<div class="contentItem blockFormat">\
-				<div class="contentBadge {{type}}"></div>\
-			    <div class="contentDescription">\
-			        <h3>{{title}}</h3>\
-			        <div class="contentStats">{{views}} views</div>\
-			        <div class="contentIcons">\
-			            {{#annotations}}<i class="icon-bookmark" title="This {{type}} has annotations."></i>{{/annotations}}\
-			            {{#captions}}&nbsp;<img src="/assets/images/videos/captions.png" alt="This {{type}} has captions." title="This {{type}} has captions."/>{{/captions}}\
-			            {{#isVideo}}&nbsp;<span class="badge badge-magenta" title="This video is set to level {{level}}.">{{level}}</span>{{/isVideo}}\
-			        </div>\
-			    </div>\
-			</div>',
+    var contentTemplates = {
+        block:
+            '<div class="contentItem blockFormat">\
+                <div class="contentBadge {{type}}" style="{{#thumbnail}}background:urls(\'{{thumbnail}}\') center no-repeat;background-size:cover;{{/thumbnail}}"></div>\
+                <div class="contentDescription">\
+                    <h3>{{title}}</h3>\
+                    <div class="contentStats">{{views}} views</div>\
+                    <div class="contentIcons">\
+                        {{#annotations}}<i class="icon-bookmark" title="This {{type}} has annotations."></i>{{/annotations}}\
+                        {{#captions}}&nbsp;<img src="/assets/images/videos/captions.png" alt="This {{type}} has captions." title="This {{type}} has captions."/>{{/captions}}\
+                        {{#isVideo}}&nbsp;<span class="badge badge-magenta" title="This video is set to level {{level}}.">{{level}}</span>{{/isVideo}}\
+                    </div>\
+                </div>\
+            </div>',
 
-		table:
-			'<div class="contentItem tableFormat">\
-			    <div class="contentBadge {{type}}"></div>\
-			    <div class="contentName">{{title}}</div>\
-			    <div class="contentStats">{{views}} Views</div>\
-			    <div class="contentIcons">\
-			        {{#annotations}}<i class="icon-bookmark" title="This {{type}} has annotations."></i>{{/annotations}}\
-			        {{#captions}}&nbsp;<img src="/assets/images/videos/captions.png" alt="This {{type}} has captions." title="This {{type}} has captions."/>{{/captions}}\
-			        {{#isVideo}}&nbsp;<span class="badge badge-magenta" title="This video is set to level {{level}}.">{{level}}</span>{{/isVideo}}\
-			    </div>\
-			</div>',
+        table:
+            '<div class="contentItem tableFormat">\
+                <div class="contentBadge {{type}}" style="{{#thumbnail}}background:urls(\'{{thumbnail}}\') center no-repeat;background-size:cover;{{/thumbnail}}"></div>\
+                <div class="contentName">{{title}}</div>\
+                <div class="contentStats">{{views}} Views</div>\
+                <div class="contentIcons">\
+                    {{#annotations}}<i class="icon-bookmark" title="This {{type}} has annotations."></i>{{/annotations}}\
+                    {{#captions}}&nbsp;<img src="/assets/images/videos/captions.png" alt="This {{type}} has captions." title="This {{type}} has captions."/>{{/captions}}\
+                    {{#isVideo}}&nbsp;<span class="badge badge-magenta" title="This video is set to level {{level}}.">{{level}}</span>{{/isVideo}}\
+                </div>\
+            </div>',
 
-		icon:
-			'<div class="contentItem iconFormat">\
-			    <div class="contentBadge {{type}}"></div>\
-			</div>',
-
-		iconContent:
-			'<div class="inline-block pad-right-high pull-left">{{views}} views</div>\
-			<div class="inline-block pad-left-high pull-right">\
-			    {{#annotations}}<i class="icon-bookmark" title="This {{type}} has annotations."></i>{{/annotations}}\
-			    {{#captions}}&nbsp;<img src="/assets/images/videos/captions.png" alt="This {{type}} has captions." title="This {{type}} has captions."/>{{/captions}}\
-			    {{#isVideo}}&nbsp;<span class="badge badge-magenta" title="This video is set to level {{level}}.">{{level}}</span>{{/isVideo}}\
-			</div>\
-			<div class="clearfix pad-top-low"></div>',
-
-
-		conditions: {
-			captions: function (content, courseId) {
-				return function () {
-					if (contentTemplates.conditions.isTimedMedia(content)() && contentTemplates.helpers.level(content, courseId) < 2)
-						return false;
-					if (courseId)
-						return content.settings["course_" + courseId + ":enabledCaptionTracks"];
-					return content.settings.enabledCaptionTracks;
-				};
-			},
-			annotations: function (content, courseId) {
-				return function () {
-					if (contentTemplates.conditions.isTimedMedia(content)() && contentTemplates.helpers.level(content, courseId) < 4)
-						return false;
-					if (courseId)
-						return content.settings["course_" + courseId + ":enabledAnnotationDocuments"];
-					return content.settings.enabledAnnotationDocuments;
-				};
-			},
-			isVideo: function (content) {
-				return function () {
-					return content.contentType === "video";
-				};
-			},
-			isAudio: function (content) {
-				return function () {
-					return content.contentType === "audio";
-				};
-			},
-			isTimedMedia: function (content) {
-				return function () {
-					return contentTemplates.conditions.isVideo(content)() || contentTemplates.conditions.isAudio(content)();
-				};
-			}
-		},
-
-		helpers: {
-			level: function (content, courseId) {
-				if (courseId) {
-					if (content.settings["course_" + courseId + ":level"])
-						return content.settings["course_" + courseId + ":level"];
-					else
-						return 1;
-				}
-				if (content.settings.level)
-					return content.settings.level;
-				return 1;
-			},
-			views: function (content) {
-				return content.views;
-			}
-		}
+        icon:
+            '<div class="contentItem iconFormat">\
+                <div class="contentBadge {{type}}" style="{{#thumbnail}}background:urls(\'{{thumbnail}}\') center no-repeat;background-size:cover;{{/thumbnail}}"></div>\
+            </div>'
 	};
+	
+        /*iconContent: //popover for icons
+            '<div class="inline-block pad-right-high pull-left">{{views}} views</div>\
+            <div class="inline-block pad-left-high pull-right">\
+                {{#annotations}}<i class="icon-bookmark" title="This {{type}} has annotations."></i>{{/annotations}}\
+                {{#captions}}&nbsp;<img src="/assets/images/videos/captions.png" alt="This {{type}} has captions." title="This {{type}} has captions."/>{{/captions}}\
+                {{#isVideo}}&nbsp;<span class="badge badge-magenta" title="This video is set to level {{level}}.">{{level}}</span>{{/isVideo}}\
+            </div>\
+            <div class="clearfix pad-top-low"></div>',*/
 
-	function renderContent(args) {
-		var template = contentTemplates[args.format];
-
-		var html = Mustache.to_html(template, {
-			title: args.content.name,
-			type: args.content.contentType,
-			views: contentTemplates.helpers.views(args.content),
-			level: contentTemplates.helpers.level(args.content, args.courseId),
-			annotations: contentTemplates.conditions.annotations(args.content, args.courseId),
-			captions: contentTemplates.conditions.captions(args.content, args.courseId),
-			isVideo: contentTemplates.conditions.isVideo(args.content)
-		});
-
-		var $element = $(html).click(function () {
-			if (args.click) {
-				args.click(args.content, args.courseId, $(this));
-			} else {
-				window.open(
-					args.courseId?"/course/" + args.courseId + "/content/" + args.content.id:
-					args.content.courseId?"/course/" + args.content.courseId + "/content/" + args.content.id:
-					"/content/" + args.content.id,
-					'_blank'
-				);
-			}
-		});
-		if (args.content.thumbnail) {
-			$element.children(".contentBadge")
-				.css("background", "url('" + args.content.thumbnail + "') center no-repeat")
-				.css("background-size", "cover");
-		}
-
-		return $element;
-	}
-
-	function enablePopover(content, $element) {
-		var data = Mustache.to_html(contentTemplates.iconContent, {
-			type: content.contentType,
-			views: contentTemplates.helpers.views(content),
-			level: contentTemplates.helpers.level(content),
-			annotations: contentTemplates.conditions.annotations(content),
-			captions: contentTemplates.conditions.captions(content),
-			isVideo: contentTemplates.conditions.isVideo(content)
-		});
-
-		$element.popover({
-			html: true,
-			placement: "bottom",
-			trigger: "hover",
-			title: content.name,
-			content: data,
-			container: "body"
-		});
-	}
-
-	function adjustFormat(args) {
-		var tableThreshold = 20;
-
-		if (args.content.length > tableThreshold) {
-			return "table";
-		}
-		return "block";
-	}
-
-	function createSizer(args) {
-		var template =
-			'<div class="btn-group" data-toggle="buttons-radio">\
-			    <button class="btn" data-format="block"><i class="icon-th-large"></i></button>\
-			    <button class="btn" data-format="table"><i class="icon-th-list"></i></button>\
-			    <button class="btn" data-format="icon"><i class="icon-th"></i></button>\
-			</div>';
-
-		var $element = $(template).button();
-		$element.children("button[data-format='" + args.format + "']").addClass("active");
-		$element.children("button").click(function() {
-			var format = $(this).attr("data-format");
-			ContentItemRenderer.renderAll({
-				content: args.content,
-				$holder: args.$holder,
-				format: format,
-				sizing: true,
-				sorting: args.sorting,
-				organization: args.organization,
-				labels: args.labels,
-				filters: args.filters,
-				courseId: args.courseId,
-				click: args.click
-			});
-		});
-
-		return $element;
-	}
-
-	function createOrganizer(args) {
-		var template =
-			'<div class="btn-group" data-toggle="buttons-radio">\
-			    <button class="btn" data-organization="contentType"><i class="icon-play-circle"></i> Content Type</button>\
-			    <button class="btn" data-organization="labels"><i class="icon-tags"></i> Labels</button>\
-			</div>';
-
-		var $element = $(template).button();
-		$element.children("button[data-organization='" + args.organization + "']").addClass("active");
-		$element.children("button").click(function() {
-			var organization = $(this).attr("data-organization");
-			ContentItemRenderer.renderAll({
-				content: args.content,
-				$holder: args.$holder,
-				format: args.format,
-				sizing: true,
-				sorting: args.sorting,
-				organization: organization,
-				labels: args.labels,
-				filters: args.filters,
-				courseId: args.courseId,
-				click: args.click
-			});
-		});
-
-		return $element;
-	}
-
-	return {
-		render: function(args) {
-			var $element = renderContent(args);
-			args.$holder.append($element);
-
-			if (args.format === "icon") {
-				// Enable the popover
-				enablePopover(args.content, $element);
-			}
+	var templateConditions = {
+		captions: function (content, courseId) {
+			return function () {
+				if (contentTemplates.conditions.isTimedMedia(content)() && contentTemplates.helpers.level(content, courseId) < 2)
+					return false;
+				if (courseId)
+					return content.settings["course_" + courseId + ":enabledCaptionTracks"];
+				return content.settings.enabledCaptionTracks;
+			};
 		},
-
-		renderAll: function(args) {
-			// Clear out the holder
-			args.$holder.html("");
-
-			// Adjust args
-			args.format = args.format || "block";
-			if (args.format === "auto") {
-				args.format = adjustFormat(args);
-			}
-
-			// Set up sizing
-			if (args.sizing) {
-				args.$holder.append(createSizer(args));
-			}
-
-			// Set up organizing
-			var filters = args.filters;
-			if (args.labels) {
-				args.organization = args.organization || "labels";
-				args.$holder.append(createOrganizer(args));
-
-				if (args.organization === "labels") {
-					filters = {};
-					args.labels.forEach(function (label) {
-						filters['<h3><i class="icon-tag"></i> ' + label + '</h3>'] = function (content) {
-							return content.labels.indexOf(label) >= 0;
-						};
-					});
-					filters['<h3>Unlabeled</h3>'] = function (content) {
-						return content.labels.length === 0;
-					};
-				}
-			} else {
-				args.organization = "contentType";
-			}
-
-			// Set up sorting
-			if (args.sorting) {
-				// TODO: Setup sorting
-				console.log("TODO: Setup sorting");
-			}
-
-
-			// Add the content to the holder
-			if (filters) {
-
-				// Filter the content into categories
-				Object.keys(filters).forEach(function (filterName) {
-
-					// Filter the content
-					var filteredContent = args.content.filter(filters[filterName]);
-
-					// If there were results then show them
-					if (filteredContent.length) {
-
-						// Add the name of the filter
-						args.$holder.append(filterName);
-
-						// Add the content
-						var $contentHolder = $('<div class="contentHolder ' + args.format + 'Format"></div>');
-						args.$holder.append($contentHolder);
-						filteredContent.forEach(function (content) {
-							ContentItemRenderer.render({
-								content: content,
-								$holder: $contentHolder,
-								format: args.format,
-								courseId: args.courseId,
-								click: args.click
-							})
-						});
-					}
-				});
-			} else {
-
-				// No filter, so just show everything
-				var $contentHolder = $('<div class="contentHolder"></div>');
-				args.$holder.append($contentHolder);
-				args.content.forEach(function (content) {
-					ContentItemRenderer.render({
-						content: content,
-						$holder: $contentHolder,
-						format: args.format,
-						courseId: args.courseId,
-						click: args.click
-					});
-				});
-			}
+		annotations: function (content, courseId) {
+			return function () {
+				if (contentTemplates.conditions.isTimedMedia(content)() && contentTemplates.helpers.level(content, courseId) < 4)
+					return false;
+				if (courseId)
+					return content.settings["course_" + courseId + ":enabledAnnotationDocuments"];
+				return content.settings.enabledAnnotationDocuments;
+			};
 		},
-		standardFilters: {
-			'<h2 class="pad-top-high"><i class="icon-film"></i> Videos</h2>': function(content) {
+		isVideo: function (content) {
+			return function () {
 				return content.contentType === "video";
-			},
-			'<h2 class="pad-top-high"><i class="icon-picture"></i> Images</h2>': function(content) {
-				return content.contentType === "image";
-			},
-			'<h2 class="pad-top-high"><i class="icon-volume-up"></i> Audio</h2>': function(content) {
+			};
+		},
+		isAudio: function (content) {
+			return function () {
 				return content.contentType === "audio";
-			},
-			'<h2 class="pad-top-high"><i class="icon-file"></i> Text</h2>': function(content) {
-				return content.contentType === "text";
-			},
-			'<h2 class="pad-top-high"><i class="icon-list-ol"></i> Playlists</h2>': function(content) {
-				return content.contentType === "playlist";
-			},
-			'<h2 class="pad-top-high"><i class="icon-question-sign"></i> Question Sets</h2>': function(content) {
-				return content.contentType === "questions";
-			}
+			};
+		},
+		isTimedMedia: function (content) {
+			return function () {
+				return contentTemplates.conditions.isVideo(content)() || contentTemplates.conditions.isAudio(content)();
+			};
 		}
-	};
+    }
+	
+	var templateHelpers = {
+		level: function (content, courseId) {
+			if (courseId) {
+				if (content.settings["course_" + courseId + ":level"])
+					return content.settings["course_" + courseId + ":level"];
+				else
+					return 1;
+			}
+			if (content.settings.level)
+				return content.settings.level;
+			return 1;
+		},
+		views: function (content) {
+			return content.views;
+		}
+    };
+
+    function renderContent(args) {
+        var ractive,
+            el = document.createElement('span');
+
+        ractive = new Ractive({
+            el: el,
+            template: contentTemplates[args.format],
+            data: {
+                title: args.content.name,
+                type: args.content.contentType,
+                thumbnail: args.content.thumbnail,
+                views: templateHelpers.views(args.content),
+                level: templateHelpers.level(args.content, args.courseId),
+                annotations: templateConditions.annotations(args.content, args.courseId),
+                captions: templateConditions.captions(args.content, args.courseId),
+                isVideo: templateConditions.isVideo(args.content)
+            }
+        });
+
+        el.addEventListener('click', function(){
+            if (typeof args.click === 'function') {
+                args.click(args.content, args.courseId, $(this));
+            } else {
+                window.open(
+                    args.courseId?"/course/" + args.courseId + "/content/" + args.content.id:
+                    args.content.courseId?"/course/" + args.content.courseId + "/content/" + args.content.id:
+                    "/content/" + args.content.id,
+                    '_blank'
+                );
+            }
+        },false);
+
+        return $(el);
+    }
+
+    /*function enablePopover(content, $element) {
+        var data = Mustache.to_html(contentTemplates.iconContent, {
+            type: content.contentType,
+            views: contentTemplates.helpers.views(content),
+            level: contentTemplates.helpers.level(content),
+            annotations: contentTemplates.conditions.annotations(content),
+            captions: contentTemplates.conditions.captions(content),
+            isVideo: contentTemplates.conditions.isVideo(content)
+        });
+
+        $element.popover({
+            html: true,
+            placement: "bottom",
+            trigger: "hover",
+            title: content.name,
+            content: data,
+            container: "body"
+        });
+    }*/
+
+    function adjustFormat(args) {
+        var tableThreshold = 20;
+        return (args.content.length > tableThreshold)?"table":"block";
+    }
+
+    function createSizer(args) {
+        var template =
+            '<div class="btn-group" data-toggle="buttons-radio">\
+                <button class="btn" data-format="block"><i class="icon-th-large"></i></button>\
+                <button class="btn" data-format="table"><i class="icon-th-list"></i></button>\
+                <button class="btn" data-format="icon"><i class="icon-th"></i></button>\
+            </div>';
+
+        var $element = $(template).button();
+        $element.children("button[data-format='" + args.format + "']").addClass("active");
+        $element.children("button").click(function() {
+            var format = $(this).attr("data-format");
+            ContentItemRenderer.renderAll({
+                content: args.content,
+                $holder: args.$holder,
+                format: format,
+                sizing: true,
+                sorting: args.sorting,
+                organization: args.organization,
+                labels: args.labels,
+                filters: args.filters,
+                courseId: args.courseId,
+                click: args.click
+            });
+        });
+
+        return $element;
+    }
+
+    function createOrganizer(args) {
+        var template =
+            '<div class="btn-group" data-toggle="buttons-radio">\
+                <button class="btn" data-organization="contentType"><i class="icon-play-circle"></i> Content Type</button>\
+                <button class="btn" data-organization="labels"><i class="icon-tags"></i> Labels</button>\
+            </div>';
+
+        var $element = $(template).button();
+        $element.children("button[data-organization='" + args.organization + "']").addClass("active");
+        $element.children("button").click(function() {
+            var organization = $(this).attr("data-organization");
+            ContentItemRenderer.renderAll({
+                content: args.content,
+                $holder: args.$holder,
+                format: args.format,
+                sizing: true,
+                sorting: args.sorting,
+                organization: organization,
+                labels: args.labels,
+                filters: args.filters,
+                courseId: args.courseId,
+                click: args.click
+            });
+        });
+
+        return $element;
+    }
+
+    return {
+        render: function(args) {
+            var $element = renderContent(args);
+            args.$holder.append($element);
+
+            /*if (args.format === "icon") {
+                // Enable the popover
+                enablePopover(args.content, $element);
+            }*/
+        },
+
+        renderAll: function(args) {
+            // Clear out the holder
+            args.$holder.html("");
+
+            // Adjust args
+            args.format = args.format || "block";
+            if (args.format === "auto") {
+                args.format = adjustFormat(args);
+            }
+
+            // Set up sizing
+            if (args.sizing) {
+                args.$holder.append(createSizer(args));
+            }
+
+            // Set up organizing
+            var filters = args.filters;
+            if (args.labels) {
+                args.organization = args.organization || "labels";
+                args.$holder.append(createOrganizer(args));
+
+                if (args.organization === "labels") {
+                    filters = {};
+                    args.labels.forEach(function (label) {
+                        filters['<h3><i class="icon-tag"></i> ' + label + '</h3>'] = function (content) {
+                            return content.labels.indexOf(label) >= 0;
+                        };
+                    });
+                    filters['<h3>Unlabeled</h3>'] = function (content) {
+                        return content.labels.length === 0;
+                    };
+                }
+            } else {
+                args.organization = "contentType";
+            }
+
+            // Set up sorting
+            if (args.sorting) {
+                // TODO: Setup sorting
+                console.log("TODO: Setup sorting");
+            }
+
+
+            // Add the content to the holder
+            if (filters) {
+
+                // Filter the content into categories
+                Object.keys(filters).forEach(function (filterName) {
+
+                    // Filter the content
+                    var filteredContent = args.content.filter(filters[filterName]);
+
+                    // If there were results then show them
+                    if (filteredContent.length) {
+
+                        // Add the name of the filter
+                        args.$holder.append(filterName);
+
+                        // Add the content
+                        var $contentHolder = $('<div class="contentHolder ' + args.format + 'Format"></div>');
+                        args.$holder.append($contentHolder);
+                        filteredContent.forEach(function (content) {
+                            ContentItemRenderer.render({
+                                content: content,
+                                $holder: $contentHolder,
+                                format: args.format,
+                                courseId: args.courseId,
+                                click: args.click
+                            })
+                        });
+                    }
+                });
+            } else {
+
+                // No filter, so just show everything
+                var $contentHolder = $('<div class="contentHolder"></div>');
+                args.$holder.append($contentHolder);
+                args.content.forEach(function (content) {
+                    ContentItemRenderer.render({
+                        content: content,
+                        $holder: $contentHolder,
+                        format: args.format,
+                        courseId: args.courseId,
+                        click: args.click
+                    });
+                });
+            }
+        },
+        standardFilters: {
+            '<h2 class="pad-top-high"><i class="icon-film"></i> Videos</h2>': function(content) {
+                return content.contentType === "video";
+            },
+            '<h2 class="pad-top-high"><i class="icon-picture"></i> Images</h2>': function(content) {
+                return content.contentType === "image";
+            },
+            '<h2 class="pad-top-high"><i class="icon-volume-up"></i> Audio</h2>': function(content) {
+                return content.contentType === "audio";
+            },
+            '<h2 class="pad-top-high"><i class="icon-file"></i> Text</h2>': function(content) {
+                return content.contentType === "text";
+            },
+            '<h2 class="pad-top-high"><i class="icon-list-ol"></i> Playlists</h2>': function(content) {
+                return content.contentType === "playlist";
+            },
+            '<h2 class="pad-top-high"><i class="icon-question-sign"></i> Question Sets</h2>': function(content) {
+                return content.contentType === "questions";
+            }
+        }
+    };
 }());
