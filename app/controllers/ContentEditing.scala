@@ -26,40 +26,37 @@ object ContentEditing extends Controller {
   def setMetadata(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
-        ContentController.getContent(id) {
-          content =>
-
+        ContentController.getContent(id) {  content =>
           // Make sure the user is able to edit
-            if (content isEditableBy user) {
+          if (content isEditableBy user) {
+            // Get the info from the form
+            val title = request.body("title")(0)
+            val description = request.body("description")(0)
+            val categories = request.body.get("categories").map(_.toList).getOrElse(Nil)
+            val labels = request.body.get("labels").map(_.toList).getOrElse(Nil)
+            val keywords = labels.mkString(",")
+            val languages = request.body.get("languages").map(_.toList).getOrElse(List("eng"))
 
-              // Get the info from the form
-              val title = request.body("title")(0)
-              val description = request.body("description")(0)
-              val categories = request.body.get("categories").map(_.toList).getOrElse(Nil)
-              val labels = request.body.get("labels").map(_.toList).getOrElse(Nil)
-              val keywords = labels.mkString(",")
-              val languages = request.body.get("languages").map(_.toList).getOrElse(List("eng"))
+            // Update the name and labels of the content
+            content.copy(name = title, labels = labels).save
 
-              // Update the name and labels of the content
-              content.copy(name = title, labels = labels).save
-
-              // Create the JSON object
-              val obj = Json.obj(
-                "title" -> title,
-                "description" -> description,
-                "keywords" -> keywords,
+            // Create the JSON object
+            val obj = Json.obj(
+              "title" -> title,
+              "description" -> description,
+              "keywords" -> keywords,
 //                "categories" -> JsArray(categories.map(c => JsString(c))),
-                "languages" -> Json.obj(
-                  "iso639_3" -> languages
-                )
+              "languages" -> Json.obj(
+                "iso639_3" -> languages
               )
+            )
 
-              // Save the metadata
-              ResourceController.updateResource(content.resourceId, obj)
+            // Save the metadata
+            ResourceController.updateResource(content.resourceId, obj)
 
-              Redirect(routes.ContentController.view(id)).flashing("success" -> "Metadata updated.")
-            } else
-              Errors.forbidden
+            Redirect(routes.ContentController.view(id)).flashing("success" -> "Metadata updated.")
+          } else
+            Errors.forbidden
         }
   }
 
@@ -69,16 +66,14 @@ object ContentEditing extends Controller {
   def setVisibility(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
-        ContentController.getContent(id) {
-          content =>
-
+        ContentController.getContent(id) {  content =>
           // Make sure the user is able to edit
-            if (content isEditableBy user) {
-              val visibility = request.body("visibility")(0).toInt
-              content.copy(visibility = visibility).save
-              Redirect(routes.ContentController.view(id)).flashing("success" -> "Visibility updated.")
-            } else
-              Errors.forbidden
+          if (content isEditableBy user) {
+            val visibility = request.body("visibility")(0).toInt
+            content.copy(visibility = visibility).save
+            Redirect(routes.ContentController.view(id)).flashing("success" -> "Visibility updated.")
+          } else
+            Errors.forbidden
         }
   }
 
@@ -88,16 +83,14 @@ object ContentEditing extends Controller {
   def setShareability(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
-        ContentController.getContent(id) {
-          content =>
-
+        ContentController.getContent(id) {  content =>
           // Make sure the user is able to edit
-            if (content isEditableBy user) {
-              val shareability = request.body("shareability")(0).toInt
-              content.copy(shareability = shareability).save
-              Redirect(routes.ContentController.view(id)).flashing("success" -> "Shareability updated.")
-            } else
-              Errors.forbidden
+          if (content isEditableBy user) {
+            val shareability = request.body("shareability")(0).toInt
+            content.copy(shareability = shareability).save
+            Redirect(routes.ContentController.view(id)).flashing("success" -> "Shareability updated.")
+          } else
+            Errors.forbidden
         }
   }
 
@@ -107,13 +100,13 @@ object ContentEditing extends Controller {
    * @param course If set, then course settings are being set for this course
    * @param user If set, then personal settings are being set for this user
    */
-  def setAudioVideoSettings(content: Content, course: Option[Course] = None, user: Option[User] = None)(implicit request: Request[Map[String, Seq[String]]]) {
+  def setAudioVideoSettings(content: Content, data: Map[String, Seq[String]], course: Option[Course] = None, user: Option[User] = None) {
     val prefix = course.map(c => "course_" + c.id.get + ":")
       .getOrElse(user.map(u => "user_" + u.id.get + ":").getOrElse(""))
-    val level = request.body("level")(0)
-    val enabledCaptionTracks = request.body.get("captionTracks").map(_.mkString(",")).getOrElse("")
-    val enabledAnnotationDocuments = request.body.get("annotationDocs").map(_.mkString(",")).getOrElse("")
-    val includeTranscriptions = request.body.get("includeTranscriptions").map(_(0)).getOrElse("false")
+    val level = data("level")(0)
+    val enabledCaptionTracks = data.get("captionTracks").map(_.mkString(",")).getOrElse("")
+    val enabledAnnotationDocuments = data.get("annotationDocs").map(_.mkString(",")).getOrElse("")
+    val includeTranscriptions = data.get("includeTranscriptions").map(_(0)).getOrElse("false")
 
     content.setSetting(prefix + "level", level)
       .setSetting(prefix + "enabledCaptionTracks", enabledCaptionTracks)
@@ -127,10 +120,10 @@ object ContentEditing extends Controller {
    * @param course If set, then course settings are being set for this course
    * @param user If set, then personal settings are being set for this user
    */
-  def setImageSettings(content: Content, course: Option[Course] = None, user: Option[User] = None)(implicit request: Request[Map[String, Seq[String]]]) {
+  def setImageSettings(content: Content, data: Map[String, Seq[String]], course: Option[Course] = None, user: Option[User] = None) {
     val prefix = course.map(c => "course_" + c.id.get + ":")
       .getOrElse(user.map(u => "user_" + u.id.get + ":").getOrElse(""))
-    val enabledAnnotationDocuments = request.body.get("annotationDocs").map(_.mkString(",")).getOrElse("")
+    val enabledAnnotationDocuments = data.get("annotationDocs").map(_.mkString(",")).getOrElse("")
     content.setSetting(prefix + "enabledAnnotationDocuments", enabledAnnotationDocuments).save
   }
 
@@ -140,10 +133,10 @@ object ContentEditing extends Controller {
    * @param course If set, then course settings are being set for this course
    * @param user If set, then personal settings are being set for this user
    */
-  def setTextSettings(content: Content, course: Option[Course] = None, user: Option[User] = None)(implicit request: Request[Map[String, Seq[String]]]) {
+  def setTextSettings(content: Content, data: Map[String, Seq[String]], course: Option[Course] = None, user: Option[User] = None) {
     val prefix = course.map(c => "course_" + c.id.get + ":")
       .getOrElse(user.map(u => "user_" + u.id.get + ":").getOrElse(""))
-    val enabledAnnotationDocuments = request.body.get("annotationDocs").map(_.mkString(",")).getOrElse("")
+    val enabledAnnotationDocuments = data.get("annotationDocs").map(_.mkString(",")).getOrElse("")
     content.setSetting(prefix + "enabledAnnotationDocuments", enabledAnnotationDocuments).save
   }
 
@@ -151,25 +144,24 @@ object ContentEditing extends Controller {
    * Sets the content's settings
    * @param id The ID of the content
    */
-  def setSettings(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
+  def setSettings(id: Long) = Authentication.authenticatedAction(parse.multipartFormData) {
     implicit request =>
       implicit user =>
-        ContentController.getContent(id) {
-          content =>
-
+        ContentController.getContent(id) { content =>
+          val data = request.body.dataParts
           // Make sure the user is able to edit
-            if (content isEditableBy user) {
-              val contentType = Symbol(request.body("contentType")(0))
-              if (contentType == 'video || contentType == 'audio)
-                setAudioVideoSettings(content)
-              if (contentType == 'image)
-                setImageSettings(content)
-              if (contentType == 'text)
-                setTextSettings(content)
+          if (content isEditableBy user) {
+            val contentType = Symbol(data("contentType")(0))
+            if (contentType == 'video || contentType == 'audio)
+              setAudioVideoSettings(content, data)
+            else if (contentType == 'image)
+              setImageSettings(content, data)
+            else if (contentType == 'text)
+              setTextSettings(content, data)
 
-              Redirect(routes.ContentController.view(id)).flashing("success" -> "Settings updated.")
-            } else
-              Errors.forbidden
+            Redirect(routes.ContentController.view(id)).flashing("success" -> "Settings updated.")
+          } else
+            Errors.forbidden
         }
   }
 
@@ -183,20 +175,20 @@ object ContentEditing extends Controller {
       implicit user =>
         ContentController.getContent(id) {
           content =>
-            Courses.getCourse(courseId) {
-              course =>
-
+            Courses.getCourse(courseId) {  course =>
               // Make sure the user is able to edit the course
-                if (user canEdit course) {
-                  val contentType = Symbol(request.body("contentType")(0))
-                  if (contentType == 'video || contentType == 'audio)
-                    setAudioVideoSettings(content, Some(course))
-                  if (contentType == 'image)
-                    setImageSettings(content, Some(course))
+              if (user canEdit course) {
+                val contentType = Symbol(request.body("contentType")(0))
+                if (contentType == 'video || contentType == 'audio)
+                  setAudioVideoSettings(content, request.body, Some(course))
+                else if (contentType == 'image)
+                  setImageSettings(content, request.body, Some(course))
+                else if (contentType == 'text)
+                  setTextSettings(content, request.body, Some(course))
 
-                  Redirect(routes.CourseContent.viewInCourse(id, course.id.get)).flashing("success" -> "Settings updated.")
-                } else
-                  Errors.forbidden
+                Redirect(routes.CourseContent.viewInCourse(id, course.id.get)).flashing("success" -> "Settings updated.")
+              } else
+                Errors.forbidden
             }
         }
   }
@@ -208,17 +200,17 @@ object ContentEditing extends Controller {
   def setPersonalSettings(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
-        ContentController.getContent(id) {
-          content =>
-
+        ContentController.getContent(id) { content =>
           // Make sure the user is able to edit the course
-            val contentType = Symbol(request.body("contentType")(0))
-            if (contentType == 'video || contentType == 'audio)
-              setAudioVideoSettings(content, None, Some(user))
-            if (contentType == 'image)
-              setImageSettings(content, None, Some(user))
+          val contentType = Symbol(request.body("contentType")(0))
+          if (contentType == 'video || contentType == 'audio)
+            setAudioVideoSettings(content, request.body, None, Some(user))
+          else if (contentType == 'image)
+            setImageSettings(content, request.body, None, Some(user))
+          else if (contentType == 'text)
+            setTextSettings(content, request.body, None, Some(user))
 
-            Redirect(routes.ContentController.view(id)).flashing("success" -> "Settings updated.")
+          Redirect(routes.ContentController.view(id)).flashing("success" -> "Settings updated.")
         }
   }
 
@@ -229,16 +221,15 @@ object ContentEditing extends Controller {
   def editImage(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        ContentController.getContent(id) {
-          content =>
-            if (content isEditableBy user) {
-              if (content.contentType == 'image) {
-                val course = AdditionalDocumentAdder.getCourse()
-                Ok(views.html.content.editImage(content, ResourceController.baseUrl, course))
-              } else
-                Errors.forbidden
+        ContentController.getContent(id) {  content =>
+          if (content isEditableBy user) {
+            if (content.contentType == 'image) {
+              val course = AdditionalDocumentAdder.getCourse()
+              Ok(views.html.content.editImage(content, ResourceController.baseUrl, course))
             } else
               Errors.forbidden
+          } else
+            Errors.forbidden
         }
   }
 
