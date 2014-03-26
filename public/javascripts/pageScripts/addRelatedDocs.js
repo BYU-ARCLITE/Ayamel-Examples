@@ -69,10 +69,8 @@ $(function() {
         </table>';
 
     function getLanguage(resource) {
-        if (resource.languages.iso639_3 && resource.languages.iso639_3[0]) {
-            return Ayamel.utils.getLangName(resource.languages.iso639_3[0].length === 3 ? resource.languages.iso639_3[0] : Ayamel.utils.upgradeLangCode(resource.languages.iso639_3[0]));
-        }
-        return "English";
+        var langs = resource.languages.iso639_3;
+        return (langs && langs[0])?Ayamel.utils.getLangName(langs[0]):"English";
     }
 
     // A resource id -> Resource object function

@@ -20,10 +20,18 @@
         "personal"
 }
 
-@main("Ayamel - " + content.name) {
-
+@main("Ayamel - " + content.name,
+  Local(
+    Rel("javascripts/",
+      Rel("libraries/",
+        JS("sha1.js"),
+        JS("oauth.js")),
+      Rel("formFixes/",
+        JS("fileFix.js"),
+        JS("labelsInput.js")),
+      JS("ContentSettings.js")))
+) {
     @views.html.content.header.includes()
-
     <script type="text/javascript">
         ResourceLibrary.setBaseUrl("@resourceLibraryUrl");
         var content = @Html(content.toJson.toString());
@@ -37,26 +45,13 @@
             ActivityStreams.predefined.pageload();
         });
     </script>
-
-    <!-- OAuth and Cryptography -->
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/libraries/sha1.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/libraries/oauth.js")"></script>
-
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/formFixes/fileFix.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/formFixes/labelsInput.js")"></script>
-
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/SettingsForm.js")"></script>
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/ContentSettings.js")"></script>
-
     <div class="padded">
-
         @if(course.isDefined) {
             <ul class="breadcrumb">
                 <li><a href="@routes.Courses.view(course.get.id.get)">@course.get.name</a> <span class="divider">/</span></li>
                 <li class="active">@content.name</li>
             </ul>
         }
-
         <div class="navbar">
             <div class="navbar-inner">
                 <div class="container">
@@ -65,7 +60,6 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </a>
-
                     <div class="nav-collapse collapse">
                         <ul class="nav">
                             @if(content.isShareableBy(user)) {
@@ -74,7 +68,6 @@
                             }
                         </ul>
                         <ul class="nav pull-right">
-
                             <li class="dropdown">
                                 <a class="dropdown-toggle" data-toggle="dropdown" href="#">
                                     <i class="icon-quote-left"></i> Text <b class="caret"></b>
@@ -86,7 +79,6 @@
                                     <li><a href="#annotationsModal" data-toggle="modal"><i class="icon-comments"></i> Annotations</a></li>
                                 </ul>
                             </li>
-
                             @if(course.isDefined) {
                                 @if(user.canEdit(course.get)) {
                                     <li class="dropdown">
@@ -111,7 +103,6 @@
                                     @views.html.content.header.addToCourse(content)
                                 }
                             }
-
                             @if(content.isEditableBy(user)) {
                                 <li class="dropdown">
                                     <a class="dropdown-toggle" data-toggle="dropdown" href="#">
@@ -133,14 +124,13 @@
                                     </ul>
                                     @views.html.content.header.settings(content, resourceLibraryUrl)
                                 </li>
-								<li class="dropdown">
+                                <li class="dropdown">
                                     <a class="dropdown-toggle" data-toggle="dropdown" href="#">
                                         <i class="icon-pencil"></i> Download <b class="caret"></b>
                                     </a>
                                     <ul class="dropdown-menu" id="downloadMenu"></ul>
                                 </li>
                             }
-
                             <li><a href="#configurationModal" data-toggle="modal"><i class="icon-cogs"></i> Configuration</a></li>
                             @views.html.content.header.configuration(content, resourceLibraryUrl, course)
                         </ul>
@@ -149,36 +139,28 @@
             </div>
         </div>
         @views.html.content.header.addRelatedDocs(content, course, resourceLibraryUrl)
-
         <div id="contentHolder" class="@content.contentType.name"></div>
-
         <div>
             <h1>
                 <i class="@contentIcons(content.contentType)"></i> @content.name
                 <small class="pad-left-high" id="metadataCategories"></small>
             </h1>
             <p id="metadataDescription"></p>
-
             <div class="inline-block">
                 <div id="metadataContainer">
                     <div id="metadataLanguages"><i class="icon-globe"></i> </div>
                     <div id="metadataLabels"><i class="icon-tags"></i> </div>
                 </div>
             </div>
-
             <!-- TODO: Metadata. Issue # 54 -->
         </div>
-
         <script type="text/javascript">
             $(function() {
-
                 // Set up the playlist renderer
                 @*PlaylistRenderer.setInfo(*@
                     @*"@dataAccess.PlayGraph.host",*@
                     @*["@dataAccess.PlayGraph.playerKey.consumerKey", "@dataAccess.PlayGraph.playerKey.consumerSecret"]*@
                 @*);*@
-
-
                 // Make sure we have enough room
                 var $contentHolder = $("#contentHolder");
 
@@ -204,29 +186,27 @@
                 });
 
                 // Show the metadata
-				ResourceLibrary.load(content.resourceId, function(resource) {
-					var $metadataLanguages, $downloadMenu;
-//                    $("#metadataCategories").text(resource.categories.join(", "))
+                ResourceLibrary.load(content.resourceId, function(resource) {
+                    var $metadataLanguages, $downloadMenu;
+                    //$("#metadataCategories").text(resource.categories.join(", "))
                     document.getElementById("metadataDescription").textContent = resource.description;
 
                     $metadataLanguages = $("#metadataLanguages");
                     resource.languages.iso639_3.forEach(function (langCode) {
-                        langCode = langCode.length === 2 ? Ayamel.utils.upgradeLangCode(langCode) : langCode;
                         var language = Ayamel.utils.getLangName(langCode);
                         $metadataLanguages.append('<em class="pad-left-high">' + language + '</em>');
                     });
-					
+
                     $("#metadataLabels").append(resource.keywords.split(",").filter(function(w){return !!w;}).map(function(w){return "<span class='label label-info pad-left-med'>" + w + "</span>";}))
-					
-					
-					$downloadMenu = $("#downloadMenu");
-					if($downloadMenu.length === 0){
-						$downloadMenu.append('<li>No downloads available</li>'); 
-					}
-					resource.content.files.forEach(function(fobj){
-						if(fobj.downloadUri){ $downloadMenu.append('<li><a href="'+fobj.downloadUri+'" target="_blank">'+fobj.respresentation+': '+fobj.mime+' ('+(fobj.bytes/1024)+'KB)</a></li>'); }
-					});
-				})
+
+                    $downloadMenu = $("#downloadMenu");
+                    if($downloadMenu.length === 0){
+                        $downloadMenu.append('<li>No downloads available</li>');
+                    }
+                    resource.content.files.forEach(function(fobj){
+                        if(fobj.downloadUri){ $downloadMenu.append('<li><a href="'+fobj.downloadUri+'" target="_blank">'+fobj.respresentation+': '+fobj.mime+' ('+(fobj.bytes/1024)+'KB)</a></li>'); }
+                    });
+                })
             });
         </script>
     </div>
