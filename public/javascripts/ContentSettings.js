@@ -220,7 +220,7 @@ var ContentSettings = (function() {
                 success: function(data) {
                     // Now turn those IDs into resources
                     async.map(data, function (id, asyncCallback) {
-                        ResourceLibrary.load(id, function (resource) {
+                        ResourceLibrary.load(id).then(function (resource) {
                             asyncCallback(null, resource);
                         });
                     }, cb);

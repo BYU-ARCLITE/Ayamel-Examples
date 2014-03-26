@@ -5,7 +5,8 @@
  * Time: 12:24 PM
  * To change this template use File | Settings | File Templates.
  */
-var VideoRenderer = (function () {
+
+var VideoRenderer = (function(){
 
     var languageSelect;
     var translationHighlight,
@@ -254,6 +255,7 @@ var VideoRenderer = (function () {
         // Make sure the element will be contained on the page if it's a video
         if (args.content.contentType === "video" && args.screenAdaption && args.screenAdaption.fit) {
             ScreenAdapter.containByHeight(args.layout.$player, Ayamel.aspectRatios.hdVideo, args.screenAdaption.padding);
+            //TODO: Dynamically check the actual control bar height
             args.layout.$player.css("padding-bottom","61px"); // padding for the control bar
         }
         window.onresize = function(event) {
