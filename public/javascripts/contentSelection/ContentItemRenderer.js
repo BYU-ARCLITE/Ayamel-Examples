@@ -34,8 +34,8 @@ var ContentItemRenderer = (function() {
             '<div class="contentItem iconFormat">\
                 <div class="contentBadge {{type}}" style="{{#thumbnail}}background:urls(\'{{thumbnail}}\') center no-repeat;background-size:cover;{{/thumbnail}}"></div>\
             </div>'
-	};
-	
+    };
+
         /*iconContent: //popover for icons
             '<div class="inline-block pad-right-high pull-left">{{views}} views</div>\
             <div class="inline-block pad-left-high pull-right">\
@@ -45,75 +45,45 @@ var ContentItemRenderer = (function() {
             </div>\
             <div class="clearfix pad-top-low"></div>',*/
 
-	var templateConditions = {
-		captions: function (content, courseId) {
-			return function () {
-				if (contentTemplates.conditions.isTimedMedia(content)() && contentTemplates.helpers.level(content, courseId) < 2)
-					return false;
-				if (courseId)
-					return content.settings["course_" + courseId + ":enabledCaptionTracks"];
-				return content.settings.enabledCaptionTracks;
-			};
-		},
-		annotations: function (content, courseId) {
-			return function () {
-				if (contentTemplates.conditions.isTimedMedia(content)() && contentTemplates.helpers.level(content, courseId) < 4)
-					return false;
-				if (courseId)
-					return content.settings["course_" + courseId + ":enabledAnnotationDocuments"];
-				return content.settings.enabledAnnotationDocuments;
-			};
-		},
-		isVideo: function (content) {
-			return function () {
-				return content.contentType === "video";
-			};
-		},
-		isAudio: function (content) {
-			return function () {
-				return content.contentType === "audio";
-			};
-		},
-		isTimedMedia: function (content) {
-			return function () {
-				return contentTemplates.conditions.isVideo(content)() || contentTemplates.conditions.isAudio(content)();
-			};
-		}
+    var templateConditions = {
+        captions: function (content) {
+            if (templateConditions.isTimedMedia(content) && content.settings.level < 2)
+                return false;
+            return !!content.settings.enabledCaptionTracks;
+        },
+        annotations: function (content) {
+            if (templateConditions.isTimedMedia(content) && content.settings.level < 4)
+                return false;
+            return content.settings.enabledAnnotationDocuments;
+        },
+        isVideo: function (content) {
+            return content.contentType === "video";
+        },
+        isAudio: function (content) {
+            return content.contentType === "audio";
+        },
+        isTimedMedia: function (content) {
+            return (content.contentType === "video") || (content.contentType === "audio");
+        }
     }
-	
-	var templateHelpers = {
-		level: function (content, courseId) {
-			if (courseId) {
-				if (content.settings["course_" + courseId + ":level"])
-					return content.settings["course_" + courseId + ":level"];
-				else
-					return 1;
-			}
-			if (content.settings.level)
-				return content.settings.level;
-			return 1;
-		},
-		views: function (content) {
-			return content.views;
-		}
-    };
 
     function renderContent(args) {
         var ractive,
+            content = args.content,
             el = document.createElement('span');
 
         ractive = new Ractive({
             el: el,
             template: contentTemplates[args.format],
             data: {
-                title: args.content.name,
-                type: args.content.contentType,
-                thumbnail: args.content.thumbnail,
-                views: templateHelpers.views(args.content),
-                level: templateHelpers.level(args.content, args.courseId),
-                annotations: templateConditions.annotations(args.content, args.courseId),
-                captions: templateConditions.captions(args.content, args.courseId),
-                isVideo: templateConditions.isVideo(args.content)
+                title: content.name,
+                type: content.contentType,
+                thumbnail: content.thumbnail,
+                views: content.views,
+                level: content.settings.level || 1,
+                annotations: templateConditions.annotations(content),
+                captions: templateConditions.captions(content),
+                isVideo: templateConditions.isVideo(content)
             }
         });
 
