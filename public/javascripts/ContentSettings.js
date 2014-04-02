@@ -45,20 +45,6 @@ var ContentSettings = (function() {
         {{/controls}}\
     </form>';
 
-    function coursePrefix(courseId) {
-        return "course_" + courseId + ":";
-    }
-
-    function userPrefix(userId) {
-        return "user_" + userId + ":";
-    }
-
-    function getPrefix(context) {
-        if (context.owner){ return ""; }
-        if (context.courseId){ return coursePrefix(context.courseId); }
-        return userPrefix(context.userId);
-    }
-
     function getPermissionLevel(context) {
         if(context.owner){ return "global"; }
         if(context.courseId){ return "course"; }
@@ -81,7 +67,7 @@ var ContentSettings = (function() {
             name: "level",
             include: function(context, content) { return true; },
             setting: function(context, content) {
-                return content.settings[getPrefix(context) + "level"] || 1;
+                return content.settings.level || 1;
             },
             items: function(context, content) {
                 var all = [
@@ -103,12 +89,10 @@ var ContentSettings = (function() {
             label: "Show transcripts?",
             name: "includeTranscriptions",
             include: function(context, content){
-                var global = content.settings.includeTranscriptions === "true";
-                // Remove the control if we're not global and it's not enabled globally
-                return global || !getPrefix(context);
+                return !!content.enableableCaptionTracks.length;
             },
             setting: function(context, content) {
-                return content.settings[getPrefix(context)+"includeTranscriptions"] === "true";
+                return content.settings.includeTranscriptions === "true";
             },
             items: function(){}
         },
@@ -120,9 +104,8 @@ var ContentSettings = (function() {
                 return !!content.enableableCaptionTracks.length;
             },
             setting: function(context, content) {
-                var prefix = getPrefix(context),
-                    items = (content.settings[prefix + "enabledCaptionTracks"] || "");
-                return items.split(",").filter(function(s){return !!s;});
+                return (content.settings.enabledCaptionTracks || "")
+                    .split(",").filter(function(s){return !!s;});
             },
             items: function(context, content) {
                 // Get the document name and language from the ID
@@ -144,9 +127,8 @@ var ContentSettings = (function() {
                 return !!content.enableableAnnotationDocuments.length;
             },
             setting: function(context, content) {
-                var prefix = getPrefix(context),
-                    items = (content.settings[prefix + "enabledAnnotationDocuments"] || "");
-                return items.split(",").filter(function(s){return !!s;});
+                return (content.settings.enabledAnnotationDocuments || "")
+                    .split(",").filter(function(s){return !!s;});
             },
             items: function(context, content) {
                 // Get the document name and language from the ID

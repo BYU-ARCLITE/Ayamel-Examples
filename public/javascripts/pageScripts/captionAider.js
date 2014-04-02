@@ -80,7 +80,6 @@ $(function() {
 		teacher: teacher,
 		courseId: courseId,
 		holder: contentHolder,
-		coursePrefix: "",
 		annotate: true,
 		permission: "edit",
 //        screenAdaption: {

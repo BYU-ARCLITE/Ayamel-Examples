@@ -123,7 +123,6 @@ var ContentRenderer = (function () {
         getTranscripts: getTranscripts,
         getAnnotations: getAnnotations,
         render: function (args) {
-            args.coursePrefix = args.coursePrefix || "";
             if (typeof args.content == "object") {
                 renderContent(args);
             }

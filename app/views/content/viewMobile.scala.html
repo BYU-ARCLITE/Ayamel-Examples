@@ -32,11 +32,10 @@
         @views.html.content.header.includes()
 
         <script type="text/javascript">
-            var coursePrefix = "@course.map(c => "course_" + c.id.get + ":").getOrElse("")";
             $(function() {
                 ResourceLibrary.setBaseUrl("@resourceLibraryUrl");
                 // Register the page for later activity stream calls
-                ActivityStreams.registerPage("content", coursePrefix + "view", [@content.id.get][0]);
+                ActivityStreams.registerPage("content", coursePrefix + "@{course.map(c => "course_" + c.id.get + ":").getOrElse("")}view", @{content.id.get});
 
                 // Save the page load
                 ActivityStreams.predefined.pageload();
@@ -114,7 +113,6 @@
                     teacher: @course.map(c => user.canEdit(c)).getOrElse(false),
                     courseId: @course.map(_.id.get).getOrElse(0),
                     holder: contentHolder,
-                    coursePrefix: coursePrefix,
                     annotate: true,
                     startTime: "@request.queryString.get("starttime").getOrElse("0")",
                     endTime: "@request.queryString.get("endtime").getOrElse("-1")"
