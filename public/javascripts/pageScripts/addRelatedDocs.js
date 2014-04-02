@@ -125,7 +125,7 @@ $(function() {
                 var p, c;
                 // Load personal caption tracks
                 p = new Ractive({
-                    el: "personalCaptionsTable",
+                    el: "#personalCaptionsTable",
                     template: captionsTemplate,
                     data: { resources: resources }
                 });
@@ -135,7 +135,7 @@ $(function() {
                 // Load course caption tracks
                 if(document.getElementById('courseCaptionsTable')){
                     c = new Ractive({
-                        el: "courseCaptionsTable",
+                        el: "#courseCaptionsTable",
                         template: captionsTemplate,
                         data: { resources: resources }
                     });
@@ -163,7 +163,7 @@ $(function() {
 
                 // Load personal annotations
                 p = new Ractive({
-                    el: "personalAnnotationsTable",
+                    el: "#personalAnnotationsTable",
                     template: annotationsTemplate,
                     data: { resources: resources }
                 });
@@ -176,7 +176,7 @@ $(function() {
                 // Load course annotations
                 if(document.getElementById('courseCaptionsTable')){
                     c = new Ractive({
-                        el: "courseAnnotationsTable",
+                        el: "#courseAnnotationsTable",
                         template: annotationsTemplate,
                         data: { resources: resources }
                     });
@@ -206,7 +206,7 @@ $(function() {
             }(function(data){
                 getResources(data, function(resources) {
                     var r = new Ractive({
-                        el: "trackPublishRequests",
+                        el: "#trackPublishRequests",
                         template: publishTemplate,
                         data: { resources: resources.filter(function(res){return res.publishRequest}) }
                     });
@@ -230,7 +230,7 @@ $(function() {
             }(function(data){
                 getResources(data, function(resources) {
                     var r = new Ractive({
-                        el: "annotationPublishRequests",
+                        el: "#annotationPublishRequests",
                         template: publishTemplate,
                         data: { resources: resources.filter(function(res){return res.publishRequest}) }
                     });
