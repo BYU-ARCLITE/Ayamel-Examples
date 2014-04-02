@@ -14,10 +14,7 @@ var VideoRenderer = (function(){
         cueNumber;
 
     function getLevel(args) {
-        var levelAttr = args.coursePrefix + "level",
-            courseLevel = +args.content.settings[levelAttr] || 1,
-            globalLevel = +args.content.settings.level || 1;
-        return Math.min(courseLevel, globalLevel);
+        return +args.content.settings.level || 1;
     }
 
     function showTranscript(args) {
@@ -111,14 +108,14 @@ var VideoRenderer = (function(){
                         return '<a href="http://www.spanishcentral.com/translate/' + detail.text + '" target="Merriam-Webster">'
                             + detail.text +' at SpanishCentral.com </a>'
                             + '<br/>Merriam-Webster\'s Spanish-English Dictionary '
-                            + '<div class="merriamLogo"><a href="http://www.spanishcentral.com/translate/' 
+                            + '<div class="merriamLogo"><a href="http://www.spanishcentral.com/translate/'
                             + detail.text + '" target="Merriam-Webster"> <img src="' + logoURL + '"></img></a></div>';
                     }
                     if ((src==="en") && (dest==="en")) {
                         return '<a href="http://www.merriam-webster.com/dictionary/' + detail.text + '" target="Merriam-Webster">'
                             + detail.text +' at Merriam-Webster.com </a>'
                             + '<br/> Merriam-Webster\'s Collegiate® Dictionary <br/>'
-                            + '<div class="merriamLogo"><a href="http://www.merriam-webster.com/dictionary/' 
+                            + '<div class="merriamLogo"><a href="http://www.merriam-webster.com/dictionary/'
                             + detail.text + '" target="Merriam-Webster"><img src="' + logoURL + '"></img></a></div>';
                     }
                 }
