@@ -18,7 +18,7 @@ var VideoRenderer = (function(){
     }
 
     function showTranscript(args) {
-        return args.content.settings.includeTranscriptions && args.content.settings.includeTranscriptions === "true";
+        return args.content.settings.includeTranscriptions === "true";
     }
 
     function createLayout(args) {

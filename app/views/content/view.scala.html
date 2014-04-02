@@ -36,10 +36,9 @@
         ResourceLibrary.setBaseUrl("@resourceLibraryUrl");
         var content = @Html(content.toJson.toString());
 
-        var coursePrefix = "@course.map(c => "course_" + c.id.get + ":").getOrElse("")";
         $(function() {
             // Register the page for later activity stream calls
-            ActivityStreams.registerPage("content", coursePrefix + "view", [@content.id.get][0]);
+            ActivityStreams.registerPage("content", "@{course.map(c => "course_" + c.id.get + ":").getOrElse("")}view", @{content.id.get});
 
             // Save the page load
             ActivityStreams.predefined.pageload();
@@ -172,7 +171,6 @@
                     teacher: @course.exists(c => user.canEdit(c)),
                     courseId: @course.map(_.id.get).getOrElse(0),
                     holder: $contentHolder[0],
-                    coursePrefix: coursePrefix,
                     annotate: true,
                     open: true,
                     screenAdaption: {
