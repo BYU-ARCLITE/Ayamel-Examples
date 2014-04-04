@@ -45,7 +45,7 @@ $(function() {
 	Ractive.partials.trackLangSelect = '<div class="control-group">\
 		<label class="control-label">Language</label>\
 		<div class="controls">\
-			<rv-superselect icon="icon-globe" text="Select Language" selection="{{trackLang}}" open="{{selectOpen}}" multiple="false" options="{{languages}}">\
+			<superselect icon="icon-globe" text="Select Language" selection="{{trackLang}}" open="{{selectOpen}}" multiple="false" options="{{languages}}">\
 		</div>\
 	</div>';
 
