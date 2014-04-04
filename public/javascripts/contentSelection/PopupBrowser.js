@@ -9,32 +9,32 @@ var PopupBrowser = (function() {
     var host = "/";
 
     var template =
-        '<div id="popupBrowserModal" class="modal bigModal hide fade" tabindex="-1" role="dialog" aria-labelledby="popupBrowserModalLabel" aria-hidden="true">' +
-            '<div class="modal-header">' +
-                '<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>' +
-                '<h3 id="myModalLabel">Select content</h3>' +
-            '</div>' +
-            '<div class="modal-body">' +
-                '<ul class="nav nav-pills">' +
-                    '<li><a href="#popupBrowserMine" data-load="mine">My Content</a></li>' +
-                    '<li><a href="#popupBrowserCourse" data-load="course">Course Content</a></li>' +
-                    '<li><a href="#popupBrowserPublic" data-load="public">Public</a></li>' +
-                    '<li><a href="#popupBrowserSearch" data-load="search">Search</a></li>' +
-                '</ul>' +
-                '<div class="tab-content">' +
-                    '<div class="tab-pane" id="popupBrowserMine"></div>' +
-                    '<div class="tab-pane" id="popupBrowserCourse"></div>' +
-                    '<div class="tab-pane" id="popupBrowserPublic"></div>' +
-                    '<div class="tab-pane" id="popupBrowserSearch"></div>' +
-                '</div>' +
-            '</div>' +
-            '<div class="modal-footer">' +
-                '<div>' +
-                    '<button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>' +
-                    '<button class="btn btn-primary disabled" id="popupBrowserSelectButton">Select</button>' +
-                '</div>' +
-            '</div>' +
-        '</div>';
+        '<div id="popupBrowserModal" class="modal bigModal hide fade" tabindex="-1" role="dialog" aria-labelledby="popupBrowserModalLabel" aria-hidden="true">\
+            <div class="modal-header">\
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>\
+                <h3 id="myModalLabel">Select content</h3>\
+            </div>\
+            <div class="modal-body">\
+                <ul class="nav nav-pills">\
+                    <li><a href="#popupBrowserMine" data-load="mine">My Content</a></li>\
+                    <li><a href="#popupBrowserCourse" data-load="course">Course Content</a></li>\
+                    <li><a href="#popupBrowserPublic" data-load="public">Public</a></li>\
+                    <li><a href="#popupBrowserSearch" data-load="search">Search</a></li>\
+                </ul>\
+                <div class="tab-content">\
+                    <div class="tab-pane" id="popupBrowserMine"></div>\
+                    <div class="tab-pane" id="popupBrowserCourse"></div>\
+                    <div class="tab-pane" id="popupBrowserPublic"></div>\
+                    <div class="tab-pane" id="popupBrowserSearch"></div>\
+                </div>\
+            </div>\
+            <div class="modal-footer">\
+                <div>\
+                    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>\
+                    <button class="btn btn-primary disabled" id="popupBrowserSelectButton">Select</button>\
+                </div>\
+            </div>\
+        </div>';
 
     function ajax(path, success) {
         var params = {
