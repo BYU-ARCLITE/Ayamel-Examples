@@ -317,7 +317,7 @@ var ContentSettings = (function() {
                 });
 
                 xhr.addEventListener('load', function(event){
-                    //close the dialog box
+                    $('#configurationModal').modal('hide');
                 });
 
                 xhr.addEventListener('error', function(event){
