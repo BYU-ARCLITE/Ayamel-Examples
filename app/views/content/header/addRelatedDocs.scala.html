@@ -18,45 +18,22 @@
                 <h3 id="captionTrackModalLabel">Captions/Subtitles</h3>
             </div>
             <div class="modal-body">
-
                 <div class="row-fluid">
                     <div class="span6">
                         <h4>Add/Edit Tracks</h4>
-                        <div style="position: relative">
-                            <ul class="nav nav-pills">
-                                <li><a href="#personalCaptions" data-toggle="pill">Personal</a></li>
-
-                                @if(course.isDefined && user.canEdit(course.get)) {
-                                    <li><a href="#courseCaptions" data-toggle="pill">Course</a></li>
-                                }
-                            </ul>
-                        </div>
                         <div class="clearfix"></div>
+                        <p>Add or edit caption tracks with CaptionAider.</p>
+                        <a href="@routes.CaptionAider.view(content.id.get, 0)" class="btn btn-yellow"><i class="icon-desktop"></i> Launch CaptionAider</a>
 
-                        <div class="tab-content">
-                            <div class="tab-pane" id="personalCaptions">
+                        <hr>
 
-                                <p>Add or edit personal caption tracks with CaptionAider.</p>
-                                <a href="@routes.CaptionAider.view(content.id.get, 0)" class="btn btn-yellow"><i class="icon-desktop"></i> Launch CaptionAider</a>
+                        <p>Upload caption track.</p>
+                        <div id="captionsUpload"></div>
 
-                                <hr>
+                        <hr>
 
-                                <p>Caption tracks you can edit:</p>
-                                <div id="personalCaptionsTable"></div>
-
-                            </div>
-                            @if(course.isDefined && user.canEdit(course.get)) {
-                                <div class="tab-pane" id="courseCaptions">
-                                    <p>Add or edit course-visible caption tracks with CaptionAider.</p>
-                                    <a href="@routes.CaptionAider.view(content.id.get, course.get.id.get)" class="btn btn-magenta"><i class="icon-desktop"></i> Launch CaptionAider</a>
-
-                                    <hr>
-
-                                    <p>Caption tracks you can edit:</p>
-                                    <div id="courseCaptionsTable"></div>
-                                </div>
-                            }
-                        </div>
+                        <p>Caption tracks you can edit:</p>
+                        <div id="captionsTable"></div>
                     </div>
 
                     <div class="span6">
@@ -79,7 +56,7 @@
 
         <script type="text/javascript">
             $(function() {
-                $('#captionTrackModal a[href="#personalCaptions"]').tab('show');
+                $('#captionTrackModal a[href="#captions"]').tab('show');
             });
         </script>
     }
@@ -93,33 +70,18 @@
             <div class="row-fluid">
                 <div class="span6">
                     <h4>Add/Edit Annotations</h4>
-
-                    <div style="position: relative">
-                        <ul class="nav nav-pills">
-                            <li><a href="#personalAnnotations" data-toggle="pill">Personal</a></li>
-
-                            @if(course.isDefined && user.canEdit(course.get)) {
-                                <li><a href="#courseAnnotations" data-toggle="pill">Course</a></li>
-                            }
-                        </ul>
-                    </div>
                     <div class="clearfix"></div>
+                    <p>Add or edit annotations sets.</p>
+                    <a class="btn btn-yellow" href="@routes.DocumentManager.editAnnotations(content.id.get)"><i class="icon-file-text"></i> Create a new Annotation Set</a>
 
-                    <div class="tab-content">
-                        <div class="tab-pane" id="personalAnnotations">
+                    <hr>
 
-                            <p>Add or edit personal annotations sets.</p>
-                            <a class="btn btn-yellow" href="@routes.DocumentManager.editAnnotations(content.id.get)"><i class="icon-file-text"></i> Create a new Annotation Set</a>
-                            <div id="personalAnnotationsTable"></div>
-                        </div>
-                        @if(course.isDefined && user.canEdit(course.get)) {
-                            <div class="tab-pane" id="courseAnnotations">
-                                <p>Add or edit course-visible annotations sets.</p>
-                                <a class="btn btn-magenta" href="@{routes.DocumentManager.editAnnotations(content.id.get)}?course=@course.get.id.get"><i class="icon-file-text"></i> Create a new Annotation Set</a>
-                                <div id="courseAnnotationsTable"></div>
-                            </div>
-                        }
-                    </div>
+                    <p>Upload annotations</p>
+                    <div id="annotationsUpload"></div>
+
+                    <hr>
+
+                    <div id="annotationsTable"></div>
                 </div>
 
                 <div class="span6">

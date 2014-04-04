@@ -81,9 +81,6 @@ GET     /content/:id/edit               controllers.ContentEditing.editImage(id:
 POST    /content/:id/edit               controllers.ContentEditing.saveImageEdits(id: Long)
 GET     /content/:id/makeThumb/:time    controllers.ContentEditing.createThumbnail(id: Long, time: Double)
 POST    /content/:id/source             controllers.ContentEditing.setMediaSource(id: Long)
-#POST    /content/:id/addAnnotations     controllers.DocumentManager.addAnnotations(id: Long)
-GET     /content/:id/annotations        controllers.DocumentManager.editAnnotations(id: Long)
-POST    /content/:id/annotations        controllers.DocumentManager.saveAnnotations(id: Long)
 GET     /content/:id/publish/:docId     controllers.DocumentManager.publishDocument(id: Long, docId: String)
 GET     /content/:id/accept/:docId      controllers.DocumentManager.acceptDocument(id: Long, docId: String)
 GET     /content/:id/delete/:docId      controllers.DocumentManager.deleteDocument(id: Long, docId: String)
@@ -137,6 +134,10 @@ GET     /admin/proxy/:id                    controllers.Administration.proxy(id:
 # CaptionAider pages
 GET     /captionaider/:id/:courseId         controllers.CaptionAider.view(id: Long, courseId: Long)
 POST    /captionaider/save                  controllers.CaptionAider.save
+
+# Annotation Editor pages
+GET     /annotations/:id/                   controllers.DocumentManager.editAnnotations(id: Long)
+POST    /annotations/save                   controllers.DocumentManager.saveAnnotations
 
 # Word List pages
 GET     /words                              controllers.WordLists.view

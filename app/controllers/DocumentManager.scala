@@ -28,103 +28,90 @@ object DocumentManager extends Controller {
   }
 
   /**
-   * Helper function which creates annotations
-   * @param stream The data stream to save in a file
-   * @param filename The filename of the annotation set
-   * @param length The length of the stream
-   * @param mime The MIME type of the file to be saved
-   * @param title The title of the annotation set
-   * @param languages The languages of the annotation set
-   * @param content The content with which the annotations will be associated
-   * @return The result
-   */
-  def createAnnotations(stream: InputStream, filename: String, length: Long, mime: String, title: String, languages: List[String], content: Content)(callback: Result)
-    (implicit request: RequestHeader, user: User): Future[Result] = {
-
-    // First upload the annotation data
-    FileUploader.uploadStream(stream, filename, length, mime).flatMap {
-	  case Some(url) =>
-        // Next create a resource
-        val resource = ResourceHelper.make.resource(Json.obj(
-          "title" -> title,
-          "keywords" -> "annotations",
-          "type" -> "data",
-          "languages" -> Json.obj(
-            "iso639_3" -> languages
-          )
-        ))
-        ResourceHelper.createResourceWithUri(resource, url, length, mime).flatMap {
-          case Some(json) =>
-            val subjectId = (json \ "id").as[String]
-            // Add a relation
-            AdditionalDocumentAdder.add(content, subjectId, 'annotations) { _ => callback }
-          case None => Future(InternalServerError)
-        }
-	  case None => Future(InternalServerError)
-    }
-  }
-
-  /**
-   * Helper function which updates annotations
-   * @param stream The data stream to save
-   * @param filename The filename of the file
-   * @param length The length of the stream
-   * @param mime The MIME type of the file
-   * @param resourceId The ID of the resource that will be updated
-   * @param title The title of the annotation set
-   * @param languages The languages of the annotation set
-   */
-  def updateAnnotations(stream: InputStream, filename: String, length: Long, mime: String, resourceId: String, title: String, languages: List[String]) {
-    // Update the data
-    FileUploader.uploadStream(stream, filename, length, mime)
-
-    // Update the resource
-    ResourceController.updateResource(resourceId, Json.obj(
-      "title" -> title,
-      "languages" -> Json.obj(
-        "iso639_3" -> languages
-      )
-    ))
-  }
-
-  /**
    * AJAX endpoint which saves the annotation set.
-   * @param id The ID of the content with which the annotations will be associated
    */
-  def saveAnnotations(id: Long) = Authentication.authenticatedAction(parse.multipartFormData) {
+  def saveAnnotations = Authentication.authenticatedAction(parse.multipartFormData) {
     implicit request =>
       implicit user =>
-        ContentController.getContent(id) { content =>
-          val data = request.body.dataParts.mapValues(_(0))
-          val title = data("title")
-          val annotations = data("annotations")
-          val stream = new ByteArrayInputStream(annotations.getBytes("UTF-8"))
-          val length = annotations.getBytes("UTF-8").size // Don't use string length. Breaks if there are 2-byte characters
-          val mime = "application/json"
-          val filename = data.get("filename").getOrElse(FileUploader.uniqueFilename(annotations + ".json"))
-          val languages = List(data("language"))
-          val resourceId = data("resourceId")
-          val course = request.queryString.get("course").flatMap(id => Course.findById(id(0).toLong))
+	    val params = request.body.dataParts.mapValues(_(0))
+        val contentId = params("contentId").toLong
+        ContentController.getContent(contentId) { content =>
+		  request.body.file("file").map { tmpFile =>
+            val title = params("title")
+            val languages = List(params("language"))
+			
+            // We need to determine if this file has already been saved
+			val resourceId = params.getOrElse("resourceId","")
+			
+			val mime = tmpFile.contentType.getOrElse("application/json")
+            val file = tmpFile.ref.file
+            val size = file.length()
 
-          Async {
-            if (resourceId.isEmpty) {
-              // We are uploading a new thing
-              createAnnotations(stream, filename, length, mime, title, languages, content) {
-                Ok
-              }
-            } else {
-              // We are updating. Check that we are allowed to do this
-              val checker = new DocumentPermissionChecker(user, content, course, DocumentPermissionChecker.documentTypes.annotations)
-              ResourceController.getResource(resourceId).map {
-                case Some(json) =>
-                  if (checker.canEdit((json \ "resource").as[JsObject])) {
-                    // We are, so create a new annotation set
-                    updateAnnotations(stream, filename, length, mime, resourceId, title, languages)
-                    Ok
-                  } else Forbidden
-                case None => NotFound
+            Async {
+              if (resourceId.isEmpty) {
+                // We are uploading a new thing
+                // First upload the annotation data
+				val name = FileUploader.uniqueFilename(tmpFile.filename)
+				FileUploader.uploadFile(file, name, mime).flatMap {
+				  case Some(url) =>
+					// Next create a resource
+					val resource = ResourceHelper.make.resource(Json.obj(
+					  "title" -> title,
+					  "keywords" -> "annotations",
+					  "type" -> "data",
+					  "languages" -> Json.obj(
+						"iso639_3" -> languages
+					  )
+					))
+					ResourceHelper.createResourceWithUri(resource, url, size, mime).flatMap {
+					  case Some(json) =>
+						val subjectId = (json \ "id").as[String]
+						AdditionalDocumentAdder.add(content, subjectId, 'annotations) { _ => Ok(subjectId) }
+					  case None =>
+                        Future(InternalServerError("Could not create resource"))
+					}
+				  case None =>
+                   Future(InternalServerError("Could not upload file"))
+				}
+              } else {
+                //TODO: Check permissions
+                // Figure out which file we are replacing
+                // First get the resource
+                ResourceController.getResource(resourceId).flatMap {
+                  case Some(json) =>
+                    val resource = json \ "resource"
+					
+					// Now find the file
+                    val url = ((resource \ "content" \ "files")(0) \ "downloadUri").as[String]
+                    val name = url.substring(url.lastIndexOf("/") + 1)
+					
+					// Replace the file
+                    FileUploader.uploadFile(file, name, mime).flatMap {
+                      case Some(url) =>
+                        // Handle updating the information.
+                        val updatedFile = (resource \ "content" \ "files")(0).as[JsObject] ++ Json.obj(
+                            "bytes" -> size
+                        )
+                        val updatedResource = resource.as[JsObject] ++ Json.obj(
+                          "title" -> title,
+                          "languages" -> Json.obj(
+                            "iso639_3" -> languages
+                          ),
+                          "content" -> Json.obj("files" -> List(updatedFile))
+                        )
+                        ResourceController.updateResource(resourceId, updatedResource).map {
+                          case Some(json) => Ok(resourceId)
+                          case None => InternalServerError("Could not update resource")
+                        }
+
+                      case None => Future(InternalServerError("Could not replace file"))
+                    }
+                  case None => Future(InternalServerError("Could not access resource"))
+				}
               }
             }
+          }.getOrElse {
+            BadRequest
           }
         }
   }

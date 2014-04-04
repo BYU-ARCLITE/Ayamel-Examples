@@ -51,7 +51,7 @@ object CaptionAider extends Controller {
             val kind = params("kind")
 
             // We need to determine if this file has already been saved
-            val resourceId = params("resourceId")
+            val resourceId = params.getOrElse("resourceId","")
 
             val mime = tmpFile.contentType.getOrElse("text/plain")
             val file = tmpFile.ref.file
@@ -69,7 +69,7 @@ object CaptionAider extends Controller {
                     // Create subtitle (subject) resource
                     val resource = ResourceHelper.make.resource(Json.obj(
                       "title" -> label,
-                      "keywords" -> kind,
+                      "keywords" -> kind, //This makes no sense.... kind should be recorded in relations
                       "type" -> "data",
                       "languages" -> Json.obj(
                         "iso639_3" -> languages
@@ -86,6 +86,7 @@ object CaptionAider extends Controller {
                    Future(InternalServerError("Could not upload file"))
                 }
               } else {
+				//TODO: Check permissions
                 // Figure out which file we are replacing
                 // First get the resource
                 ResourceController.getResource(resourceId).flatMap {
@@ -102,7 +103,7 @@ object CaptionAider extends Controller {
                         // Handle updating the information.
                         val updatedFile = (resource \ "content" \ "files")(0).as[JsObject] ++ Json.obj(
                             "bytes" -> size,
-                            "attributes" -> Json.obj("kind" -> kind)
+                            "attributes" -> Json.obj("kind" -> kind) //How do we do this up above?
                         )
                         val updatedResource = resource.as[JsObject] ++ Json.obj(
                           "title" -> label,
