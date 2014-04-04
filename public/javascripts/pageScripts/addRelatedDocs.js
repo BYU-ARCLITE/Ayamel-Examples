@@ -236,15 +236,15 @@ $(function() {
                 alert("Invalid File");
                 return;
             }
-            formData.append("title", addAnnR.get('label'));
-            formData.append("language", addAnnR.get('lang'));
-            formData.append("annotations", doc);
-            formData.append("resourceId", "");
-            formData.append("filename", file.name);
+            data.append("title", addAnnR.get('label'));
+            data.append("language", addAnnR.get('lang'));
+            data.append("annotations", doc);
+            data.append("resourceId", "");
+            data.append("filename", file.name);
 
             $.ajax("/content/" + content.id + "/annotations", {
                 type: "post",
-                data: formData,
+                data: data,
                 cache: false,
                 contentType: false,
                 processData: false
