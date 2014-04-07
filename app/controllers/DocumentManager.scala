@@ -51,7 +51,7 @@ object DocumentManager extends Controller {
               if (resourceId.isEmpty) {
                 // We are uploading a new thing
                 // First upload the annotation data
-				val name = FileUploader.uniqueFilename(tmpFile.filename)
+				val name = FileUploader.uniqueFilename(tmpFile.filename, ".json")
 				FileUploader.uploadFile(file, name, mime).flatMap {
 				  case Some(url) =>
 					// Next create a resource

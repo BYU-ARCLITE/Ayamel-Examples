@@ -27,7 +27,7 @@ object FileUploader {
   private val uploadEngines = Map[String, UploadEngine](
     "s3" -> S3Uploader
   )
-  
+
   val engine = uploadEngines(Play.configuration.getString("uploadEngine").get)
 
   def normalizeAndUploadFile(tempFile: FilePart[TemporaryFile]): Future[Option[String]] = {
@@ -43,10 +43,13 @@ object FileUploader {
       uploadFile(file, filename, contentType)
   }
 
-  def uniqueFilename(filename: String): String = {
-    val extension = filename.substring(filename.lastIndexOf("."))
+  def uniqueFilename(filename: String, ext: String = ""): String = {
     val unique = HashTools.md5Hex(filename + new Date().getTime)
-    unique + extension
+    val extIndex = filename.lastIndexOf(".")
+    unique + (
+      if (extIndex < 0) ext
+      else filename.substring(extIndex)
+    )
   }
 
   def uploadFile(file: File, filename: String, contentType: String): Future[Option[String]] =
