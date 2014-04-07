@@ -176,7 +176,6 @@ $(function() {
         data.append("label", label);
         data.append("language", this.get('lang'));
         data.append("kind", this.get('kind'));
-        data.append("resourceId", "");
         data.append("contentId", content.id);
         return $.ajax({
             url: "/captionaider/save",
@@ -218,45 +217,32 @@ $(function() {
         }
     });
     addAnnR.on('upload', function(){
-        var reader, file,
+        var reader, file, data,
             files = this.get('files'),
             label = this.get('label');
         if(!(files && label)){
             alert('File & Name are Required');
             return;
         }
-        //TODO: Make the annotation controller take a file instead of a string
-        file = files[0];
-        reader = new FileReader();
-        reader.onload = function(e) {
-            var doc = e.target.result,
-                data = new FormData();
-            try { JSON.parse(doc); }
-            catch(e){
-                alert("Invalid File");
-                return;
-            }
-            data.append("title", addAnnR.get('label'));
-            data.append("language", addAnnR.get('lang'));
-            data.append("annotations", doc);
-            data.append("resourceId", "");
-            data.append("filename", file.name);
 
-            $.ajax("/content/" + content.id + "/annotations", {
-                type: "post",
-                data: data,
-                cache: false,
-                contentType: false,
-                processData: false
-            }).then(function () {
-                alert("Annotations saved.");
-            },function(data) {
-                console.log(data);
-                alert("There was a problem while saving the annotations.");
-            });
+        data = new FormData();
+        data.append("file", new Blob([files[0]],{type:'application/json'}), label);
+        data.append("title", label);
+        data.append("language", addAnnR.get('lang'));
+        data.append("contentId", content.id);
 
-        };
-        reader.readAsText(file);
+        $.ajax("/annotations/save", {
+            type: "post",
+            data: data,
+            cache: false,
+            contentType: false,
+            processData: false
+        }).then(function () {
+            alert("Annotations saved.");
+        },function(data) {
+            console.log(data);
+            alert("There was a problem while saving the annotations.");
+        });
     });
 
     ResourceLibrary.load(content.resourceId, function(resource){
