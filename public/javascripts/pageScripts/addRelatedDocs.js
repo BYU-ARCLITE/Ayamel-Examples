@@ -76,7 +76,6 @@ $(function() {
                     <td>{{.language}}</td>\
                     <td>{{#.content.files}}<a href="{{.downloadUri}}" download="{{title}}">{{.mime}}&nbsp;</a>{{/.content.files}}</td>\
                     <td>\
-                        <button class="btn btn-blue" proxy-tap="edit:{{.id}}"><i class="icon-edit-sign"></i> Edit</button>\
                         <button class="btn btn-magenta" proxy-tap="delete:{{.id}}"><i class="icon-trash"></i> Delete</button>\
                     </td>\
                     <td>\
@@ -202,9 +201,6 @@ $(function() {
     });
     viewAnnR.on('delete', function(_, which){ deleteDoc(which); });
     viewAnnR.on('publish', function(_, which){ sendPublishRequest(which); });
-    viewAnnR.on('edit', function(_, which){
-        window.location = "/content/" + content.id + "/annotations?doc=" + which;
-    });
 
     addAnnR = new Ractive({
         el: "#annotationsUpload",
