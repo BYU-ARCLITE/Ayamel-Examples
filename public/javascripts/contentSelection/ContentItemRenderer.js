@@ -6,7 +6,7 @@ var ContentItemRenderer = (function() {
     var contentTemplates = {
         block:
             '<div class="contentItem blockFormat">\
-                <div class="contentBadge {{type}}" style="{{#thumbnail}}background:urls(\'{{thumbnail}}\') center no-repeat;background-size:cover;{{/thumbnail}}"></div>\
+                <div class="contentBadge {{type}}" style="{{#thumbnail}}background:url(\'{{thumbnail}}\') center no-repeat;background-size:cover;{{/thumbnail}}"></div>\
                 <div class="contentDescription">\
                     <h3>{{title}}</h3>\
                     <div class="contentStats">{{views}} views</div>\
@@ -20,7 +20,7 @@ var ContentItemRenderer = (function() {
 
         table:
             '<div class="contentItem tableFormat">\
-                <div class="contentBadge {{type}}" style="{{#thumbnail}}background:urls(\'{{thumbnail}}\') center no-repeat;background-size:cover;{{/thumbnail}}"></div>\
+                <div class="contentBadge {{type}}" style="{{#thumbnail}}background:url(\'{{thumbnail}}\') center no-repeat;background-size:cover;{{/thumbnail}}"></div>\
                 <div class="contentName">{{title}}</div>\
                 <div class="contentStats">{{views}} Views</div>\
                 <div class="contentIcons">\
@@ -32,7 +32,7 @@ var ContentItemRenderer = (function() {
 
         icon:
             '<div class="contentItem iconFormat">\
-                <div class="contentBadge {{type}}" style="{{#thumbnail}}background:urls(\'{{thumbnail}}\') center no-repeat;background-size:cover;{{/thumbnail}}"></div>\
+                <div class="contentBadge {{type}}" style="{{#thumbnail}}background:url(\'{{thumbnail}}\') center no-repeat;background-size:cover;{{/thumbnail}}"></div>\
             </div>'
     };
 
