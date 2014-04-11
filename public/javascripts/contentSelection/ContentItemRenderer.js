@@ -108,9 +108,7 @@ var ContentItemRenderer = (function() {
             el: 'container',
             template: contentTemplates.iconContent,
             data: {
-                title: content.name,
                 type: content.contentType,
-                thumbnail: content.thumbnail,
                 views: content.views,
                 level: content.settings.level || 1,
                 annotations: templateConditions.annotations(content),
