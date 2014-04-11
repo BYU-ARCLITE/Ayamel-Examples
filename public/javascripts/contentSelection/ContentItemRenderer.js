@@ -33,17 +33,17 @@ var ContentItemRenderer = (function() {
         icon:
             '<div class="contentItem iconFormat">\
                 <div class="contentBadge {{type}}" style="{{#thumbnail}}background:url(\'{{thumbnail}}\') center no-repeat;background-size:cover;{{/thumbnail}}"></div>\
-            </div>'
-    };
+            </div>',
 
-        /*iconContent: //popover for icons
+        iconContent: //popover for icons
             '<div class="inline-block pad-right-high pull-left">{{views}} views</div>\
             <div class="inline-block pad-left-high pull-right">\
                 {{#annotations}}<i class="icon-bookmark" title="This {{type}} has annotations."></i>{{/annotations}}\
                 {{#captions}}&nbsp;<img src="/assets/images/videos/captions.png" alt="This {{type}} has captions." title="This {{type}} has captions."/>{{/captions}}\
                 {{#isVideo}}&nbsp;<span class="badge badge-magenta" title="This video is set to level {{level}}.">{{level}}</span>{{/isVideo}}\
             </div>\
-            <div class="clearfix pad-top-low"></div>',*/
+            <div class="clearfix pad-top-low"></div>'
+    };
 
     var templateConditions = {
         captions: function (content) {
@@ -103,25 +103,31 @@ var ContentItemRenderer = (function() {
         return $(el);
     }
 
-    /*function enablePopover(content, $element) {
-        var data = Mustache.to_html(contentTemplates.iconContent, {
-            type: content.contentType,
-            views: contentTemplates.helpers.views(content),
-            level: contentTemplates.helpers.level(content),
-            annotations: contentTemplates.conditions.annotations(content),
-            captions: contentTemplates.conditions.captions(content),
-            isVideo: contentTemplates.conditions.isVideo(content)
+    function enablePopover(content, $element) {
+        var ractive = new Ractive({
+            el: 'container',
+            template: contentTemplates.iconContent,
+            data: {
+                title: content.name,
+                type: content.contentType,
+                thumbnail: content.thumbnail,
+                views: content.views,
+                level: content.settings.level || 1,
+                annotations: templateConditions.annotations(content),
+                captions: templateConditions.captions(content),
+                isVideo: templateConditions.isVideo(content)
+            }
         });
 
         $element.popover({
-            html: true,
+            html:true,
             placement: "bottom",
             trigger: "hover",
             title: content.name,
-            content: data,
+            content: ractive.toHTML(),
             container: "body"
         });
-    }*/
+    }
 
     function adjustFormat(args) {
         var tableThreshold = 20;
@@ -190,10 +196,10 @@ var ContentItemRenderer = (function() {
             var $element = renderContent(args);
             args.$holder.append($element);
 
-            /*if (args.format === "icon") {
+            if (args.format === "icon") {
                 // Enable the popover
                 enablePopover(args.content, $element);
-            }*/
+            }
         },
 
         renderAll: function(args) {
