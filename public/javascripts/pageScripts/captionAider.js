@@ -339,12 +339,33 @@ $(function() {
 						components:{ superselect: EditorWidgets.SuperSelect },
 						actions: {
 							save: function(event){
-								timeline.alterTextTrack(
-									ractive.data.trackToEdit,
-									ractive.data.trackKind,
-									ractive.data.trackLang,
-									ractive.data.trackName,
-									true);
+								var undo, redo,
+									data = ractive.data,
+									oname = data.trackToEdit,
+									nname = data.trackName,
+									track = timeline.getTrack(oname);
+
+								//Set up the undo/redo functions
+								undo = timeline.alterTextTrack.bind(
+									timeline, nname,
+									track.trackKind,
+									track.trackLang,
+									oname, true
+								);
+								redo = timeline.alterTextTrack.bind(
+									timeline, oname,
+									data.trackKind,
+									data.trackLang,
+									nname, true
+								);
+								commandStack.push({
+									file: data.trackToEdit,
+									redo: redo,
+									undo: undo
+								});
+
+								//perform the edit
+								redo();
 
 								$("#editTrackModal").modal("hide");
 								this.set({selectOpen: false});
