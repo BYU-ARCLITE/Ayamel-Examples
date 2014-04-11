@@ -162,16 +162,26 @@ $(function() {
         }
     });
     addCapR.on('upload', function(){
-        var data,
+        var data, file, mime,
             files = this.get('files'),
             label = this.get('label');
+
         if(!(files && label)){
             alert('File & Name are Required');
             return;
         }
+
+        file = files[0];
+        mime = file.type || TimedText.inferType(file.name);
+
+        if(!mime){
+            alert('Could not determine file type.');
+            return;
+        }
+
         //TODO: Validate the file
         data = new FormData();
-        data.append("file", files[0]);
+        data.append("file", new Blob([file],{type:mime}), file.name);
         data.append("label", label);
         data.append("language", this.get('lang'));
         data.append("kind", this.get('kind'));
