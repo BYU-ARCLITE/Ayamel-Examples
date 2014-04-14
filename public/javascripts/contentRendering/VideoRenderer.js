@@ -259,6 +259,8 @@ var VideoRenderer = (function(){
             if (args.content.contentType === "video" && args.screenAdaption && args.screenAdaption.fit) {
                 ScreenAdapter.containByHeight(args.layout.$player, Ayamel.aspectRatios.hdVideo, args.screenAdaption.padding);
                 $(".videoBox").height(args.layout.$player.height());
+                $(".transcriptContent").css("max-height", $(".ayamelPlayer").height()-($("#videoTabs").height() + 57));
+
             }
         };
 
