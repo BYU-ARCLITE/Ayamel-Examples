@@ -305,15 +305,20 @@ $(function() {
 			//Edit Track
 			(function(){
 				var template = '<form class="form-horizontal">\
+						{{#(trackList.length === 0)}}\
+						There are no tracks loaded for editing.\
+						{{/(trackList)}}\
+						{{#(trackList.length > 0)}}\
+						{{#(trackList.length > 1)}}\
 						<div class="control-group">\
 							<label class="control-label">Which Track</label>\
 							<div class="controls">\
 								<select value="{{trackToEdit}}">\
-								<option value="">---Please Select a Track---</option>\
 								{{#trackList}}<option value="{{.}}">{{.}}</option>{{/trackList}}\
 								</select>\
 							</div>\
 						</div>\
+						{{/(trackList)}}\
 						<div style="display:{{(trackToEdit === "" ? "none" : "block")}}">\
 							<div class="control-group">\
 								<label class="control-label">Name</label>\
@@ -324,6 +329,7 @@ $(function() {
 							{{>trackKindSelect}}\
 							{{>trackLangSelect}}\
 						</div>\
+						{{/(trackList)}}\
 					</form>',
 					ractive = new Dialog({
 						el: document.getElementById("editTrackModal"),
@@ -339,11 +345,14 @@ $(function() {
 						components:{ superselect: EditorWidgets.SuperSelect },
 						actions: {
 							save: function(event){
-								var undo, redo,
+								var undo, redo, track,
 									data = ractive.data,
 									oname = data.trackToEdit,
-									nname = data.trackName,
-									track = timeline.getTrack(oname);
+									nname = data.trackName;
+								
+								if(oname === ""){ return; }
+								
+								track = timeline.getTrack(oname);
 
 								//Set up the undo/redo functions
 								undo = timeline.alterTextTrack.bind(
@@ -374,9 +383,10 @@ $(function() {
 						}
 					});
 				$("#editTrackModal").on("show", function() {
+					var trackList = timeline.trackNames.slice();
 					ractive.set({
-						trackList: timeline.trackNames.slice(),
-						trackToEdit: ""
+						trackList: trackList,
+						trackToEdit: trackList.length ? trackList[0] : ""
 					});
 				});
 
