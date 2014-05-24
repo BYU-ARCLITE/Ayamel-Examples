@@ -60,7 +60,7 @@ class DocumentPermissionChecker(user: User, content: Content, course: Option[Cou
     (personalFilter(resource) && enabled(resource, personalPrefix)) || {
       course match { //Are we in the context of a course
         // Yes. Allow it if it's enabled
-        case Some(_) => enabled(resource, coursePrefix)
+        case Some(_) => true //enabled(resource, coursePrefix)
         // No. Allow it if it's global and enabled
         case None => globalFilter(resource) && enabled(resource, "")
       }

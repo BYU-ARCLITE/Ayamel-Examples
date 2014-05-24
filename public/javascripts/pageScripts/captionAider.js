@@ -1,7 +1,8 @@
 $(function() {
 	"use strict";
 
-	var captionEditor, Dialog,
+	var captionEditor, videoPlayer,
+		commandStack, Dialog,
 		langList = Object.keys(Ayamel.utils.p1map).map(function (p1) {
 			var code = Ayamel.utils.p1map[p1];
 			return {value: code, text: Ayamel.utils.getLangName(code)};
@@ -73,6 +74,352 @@ $(function() {
 		ScreenAdapter.scrollTo(document.body.scrollHeight - window.innerHeight);
 	}
 
+	//Create New Track From Scratch
+	var newTrackData = (function(){
+		var ractive, datalist, resolver, failer;
+		ractive = new Dialog({
+			el: document.getElementById('newTrackModal'),
+			data: {
+				dialogTitle: "Create a new track",
+				languages: langList,
+				trackLang: "zxx",
+				trackKind: "subtitles",
+				trackName: "",
+				trackMime: "text/vtt",
+				buttons: [{event:"create",label:"Create"}]
+			},
+			partials:{ dialogBody: document.getElementById('createTrackTemplate').textContent },
+			components:{ superselect: EditorWidgets.SuperSelect },
+			actions: {
+				create: function(event){
+					var data = this.data;
+					$('#newTrackModal').modal('hide');
+					resolver(datalist.map(function(key){
+						switch(key){
+						case 'kind': return data.trackKind;
+						case 'name': return data.trackName || "Untitled";
+						case 'lang': return data.trackLang;
+						case 'mime': return data.trackMime;
+						case 'overwrite': return true;
+						case 'handler':
+							return function(tp){
+								tp.then(function(track){ track.mode = "showing"; });
+							};
+						}
+					}));			
+				}
+			}
+		});
+
+		return function(dl){		
+			// Clear the form
+			ractive.set({trackName: "", selectOpen: false });
+			$('#newTrackModal').modal('show');
+			datalist = dl;
+			return new Promise(function(resolve, reject){
+				resolver = resolve;
+				failer = reject;
+			});
+		};
+	}());
+	
+	//Edit Track
+	var editTrackData =	(function(){
+		var ractive, datalist, resolver, failer;
+		ractive = new Dialog({
+			el: document.getElementById("editTrackModal"),
+			data: {
+				dialogTitle: "Edit tracks",
+				languages: langList,
+				trackLang: "zxx",
+				trackKind: "subtitles",
+				trackName: "",
+				buttons: [{event:"save",label:"Save"}]
+			},
+			partials:{ dialogBody: document.getElementById('editTrackTemplate').textContent },
+			components:{ superselect: EditorWidgets.SuperSelect },
+			actions: {
+				save: function(event){
+					var data = this.data;
+					if(data.trackToEdit === "" || data.trackName === ""){
+						failer("cancel");
+						return;
+					}
+					
+					$("#editTrackModal").modal("hide");
+					this.set({selectOpen: false});
+					
+					resolver(datalist.map(function(key){
+						switch(key){
+						case 'tid': return data.trackToEdit;
+						case 'kind': return data.trackKind;
+						case 'name': return data.trackName || "Untitled";
+						case 'lang': return data.trackLang;
+						case 'overwrite': return true;
+						}
+					}));
+				}
+			}
+		});
+		$("#editTrackModal").on("show", function() {
+			var trackList = timeline.trackNames.slice();
+			ractive.set({
+				trackList: trackList,
+				trackToEdit: trackList.length ? trackList[0] : ""
+			});
+		});
+
+		ractive.observe("trackToEdit",function(trackName){
+			var track;
+			if(trackName === ""){ return; }
+			track = timeline.getTrack(trackName);
+			ractive.set({
+				trackName: trackName,
+				trackKind: track.kind,
+				trackLang: track.language
+			});
+		});
+		
+		return function(dl){
+			$('#editTrackModal').modal('show');
+			datalist = dl;
+			return new Promise(function(resolve, reject){
+				resolver = resolve;
+				failer = reject;
+			});
+		};
+	}());
+	
+	//Save Tracks
+	var saveTrackData = (function(){
+		var ractive, datalist, resolver, failer,
+			targets = EditorWidgets.Save.targets;
+		ractive = new Dialog({
+			el: document.getElementById('saveTrackModal'),
+			data: {
+				dialogTitle: "Save Tracks",
+				saveDestinations: Object.keys(targets).map(function(key){
+					return {
+						value: key,
+						name: targets[key].label.replace("To ", "")
+					};
+				}), saveDestination: "server",
+				buttons: [{event:"save",label:"Save"}]
+			},
+			partials:{ dialogBody: document.getElementById('saveTrackTemplate').textContent },
+			components:{ superselect: EditorWidgets.SuperSelect },
+			actions: {
+				save: function(event){
+					var saver, data = this.data;
+
+					$("#saveTrackModal").modal("hide");
+					this.set({selectOpen: false});
+					if(!tracks.length) {
+						failer('cancel');
+						return;
+					}
+
+					resolver(datalist.map(function(key){
+						switch(key){
+						case 'tidlist': return data.tracksToSave;
+						case 'saver': return function(listp){ listp.then(saver); };
+						}
+					}));
+					
+					if(data.saveDestination === "server") {
+						saver = function(exportedTracks){
+							var savep = Promise.all(exportedTracks.map(function(fObj){
+								var data = new FormData(),
+									textTrack = fObj.track;
+								data.append("file", new Blob([fObj.data],{type:fObj.mime}), fObj.name);
+								data.append("label", textTrack.label);
+								data.append("language", textTrack.language);
+								data.append("kind", textTrack.kind);
+								data.append("resourceId", videoPlayer.textTrackResources.has(textTrack)?
+														  videoPlayer.textTrackResources.get(textTrack).id
+														  :"");
+								data.append("contentId", content.id);
+								return Promise.resolve($.ajax({
+									url: "/captionaider/save?course=" + courseId,
+									data: data,
+									cache: false,
+									contentType: false,
+									processData: false,
+									type: "post",
+									dataType: "text"
+								})).then(function(data){
+									//We really need some way to update cached resources as well as just retrieving newly created ones
+									//That might allow us to save a roundtrip by having this ajax call return the complete updated resource
+									if(!videoPlayer.textTrackResources.has(textTrack)){
+										ResourceLibrary.load(data).then(function(resource){
+											videoPlayer.textTrackResources.set(textTrack, resource);
+										});
+									}
+									return textTrack.label;
+								},function(xhr, status, error){
+									alert("Error occurred while saving "+textTrack.label+":\n"+status)
+								});
+							}));							
+							savep.then(function(){
+								alert("Saved Successfully");
+								//Scott bandaid to fix the tracks being saved.
+								//There is absolutely no logical reason why this should work,
+								//but apparently it does.
+								window.location.reload(true);
+							});
+							return savep;
+						};
+					} else {
+						// Use one of the editor widget saving mechanisms
+						saver = function(exportedTracks){
+							return new Promise(function(resolve, reject){
+								EditorWidgets.Save(
+									exportedTracks, data.saveDestination,
+									function(){
+										alert("Saved Successfully");
+										resolve(exportedTracks.map(function(fObj){
+											return fObj.track.label;
+										}));
+									},
+									function(){
+										alert("Error Saving; please try again.");
+										reject(new Error("Error saving."));
+									}
+								);
+							});
+						};
+					}
+				}
+			}
+		});
+		// Saving modal opening
+		$("#saveTrackModal").on("show", function () {
+			ractive.set({
+				trackList: timeline.trackNames.slice(),
+				tracksToSave: ""
+			});
+		});
+		
+		return function(dl){
+			$('#editTrackModal').modal('show');
+			datalist = dl;
+			return new Promise(function(resolve, reject){
+				resolver = resolve;
+				failer = reject;
+			});
+		};
+	}());
+	
+	// Load a track
+	var loadTrackData = (function(){
+		var ractive, datalist, resolver, failer,
+			sources = EditorWidgets.LocalFile.sources;
+		ractive = new Dialog({
+			el: document.getElementById('loadTrackModal'),
+			data: {
+				dialogTitle: "Load Track",
+				languages: langList,
+				trackLang: "zxx",
+				trackKind: "subtitles",
+				sources: Object.keys(sources).map(function(key){ return {name: key, label: sources[key].label}; }),
+				buttons: [{event:"load",label:"Load"}]
+			},
+			partials:{ dialogBody: document.getElementById('loadTrackTemplate').textContent },
+			components:{ superselect: EditorWidgets.SuperSelect },
+			actions: {
+				load: function(event){
+					var data = this.data;
+					$("#loadTrackModal").modal("hide");
+					this.set({selectOpen: false});
+					
+					EditorWidgets.LocalFile(data.loadSource,/.*\.(vtt|srt|ass|ttml)/,function(fileObj){
+						//If the label is omitted, it will be filled in with the file name stripped of extension
+						//That's easier than doing the stripping here, so leave out that parameter unless we can
+						//fill it with user input in the future
+						resolver(datalist.map(function(key){
+							switch(key){
+							case 'tracksrc': return fileObj;
+							case 'kind': return data.trackKind;
+							case 'lang': return data.trackLang;
+							case 'overwrite': return true;
+							case 'handler':
+								return function(trackp){
+									trackp.then(function(track){
+										track.mode = "showing";
+										commandStack.setFileUnsaved(track.label);
+									},function(_){
+										alert("There was an error loading the track.");
+									});
+								};
+							}
+						}));
+					});
+				}
+			}
+		});
+		
+		return function(dl){
+			$('#loadTrackModal').modal('show');
+			datalist = dl;
+			return new Promise(function(resolve, reject){
+				resolver = resolve;
+				failer = reject;
+			});
+		};
+	}());
+	
+	function loadTranscript(datalist){
+		//datalist is always the array ['linesrc']
+		return new Promise(function(resolve,reject){
+			var f = document.createElement('input');
+			f.type = "file";
+			f.addEventListener('change',function(evt){
+				resolve([evt.target.files[0]]);
+			});
+			f.click();
+		});
+	}
+	
+	function loadAudio(datalist){
+		return new Promise(function(resolve,reject){
+			var f = document.createElement('input');
+			f.type = "file";
+			f.addEventListener('change',function(evt){
+				var f = evt.target.files[0];
+				resolve(datalist.map(function(key){
+					switch(key){
+					case 'audiosrc': return f;
+					case 'name': return f.name;
+					}
+				}));
+			});
+			f.click();
+		});
+	}
+	
+	function getFor(whatfor, datalist){
+		switch(whatfor){
+		case 'newtrack': return newTrackData(datalist);
+		case 'edittrack': return editTrackData(datalist);
+		case 'savetrack': return saveTrackData(datalist);
+		case 'loadtrack': return loadTrackData(datalist);
+		case 'loadlines': return loadTranscript(datalist);
+		case 'loadaudio': return loadAudio(datalist);
+		}
+	}
+	
+	function canGetFor(whatfor, datalist){
+		switch(whatfor){
+		case 'newtrack':
+		case 'edittrack':
+		case 'savetrack':
+		case 'loadtrack':
+		case 'loadlines':
+		case 'loadaudio': return true;
+		}
+		return false;
+	}
+	
 	ContentRenderer.render({
 		content: content,
 		userId: userId,
@@ -91,26 +438,26 @@ $(function() {
 		renderCue: renderCue,
 		noUpdate: true, // Disable transcript player updating for now
 		callback: function(args) {
-			var format = "text/vtt",
-				commandStack = new EditorWidgets.CommandStack(),
-				timeline = new Timeline(document.getElementById("timeline"), {
-					stack: commandStack,
-					width: document.body.clientWidth || window.innerWidth,
-					length: 3600,
-					start: 0,
-					end: 240,
-					multi: true,
-					tool: Timeline.SELECT
-				}),
-				timestamp = document.getElementById("timestamp"),
-				automove = document.getElementById("moveAfterAddButton"),
-				clearRepeatButton = document.getElementById("clearRepeatButton"),
-				enableRepeatButton = document.getElementById("enableRepeatButton"),
-				repeatIcon = document.getElementById("repeatIcon"),
-				videoPlayer = args.videoPlayer,
-				transcript = args.transcriptPlayer,
-				renderer = videoPlayer.captionRenderer;
+			var renderer, timeline,
+				transcript = args.transcriptPlayer;
 
+			commandStack = new EditorWidgets.CommandStack();
+			videoPlayer = args.videoPlayer;
+			renderer = videoPlayer.captionRenderer;
+			
+			timeline = new Timeline(document.getElementById("timeline"), {
+				stack: commandStack,
+				syncWith: videoPlayer,
+				width: document.body.clientWidth || window.innerWidth,
+				length: 3600,
+				start: 0,
+				end: 240,
+				tool: Timeline.SELECT,
+				showControls: true,
+				canGetFor: canGetFor,
+				getFor: getFor
+			});
+			
 			updateSpacing();
 
 			captionEditor = CaptionEditor({
@@ -131,12 +478,6 @@ $(function() {
 			}, false);
 
 			// Set up listeners
-			function setlen(){ timeline.length = videoPlayer.duration; timestamp.textContent = timeline.timeCode; }
-			function frame_change() { timeline.currentTime = this.currentTime; }
-
-			videoPlayer.addEventListener('loadedmetadata',setlen,false);
-			videoPlayer.addEventListener('durationchange',setlen,false);
-			videoPlayer.addEventListener("timeupdate",frame_change.bind(videoPlayer),false);
 
 			// Track selection
 			videoPlayer.addEventListener("enabletrack", function(event) {
@@ -145,70 +486,16 @@ $(function() {
 				timeline.addTextTrack(track, track.mime);
 				updateSpacing();
 			});
-			//videoPlayer.addEventListener("disabletrack", function(event) {
-			//    timeline.removeTextTrack(event.detail.track.label);
-			//    updateSpacing();
-			//});
 
-			timeline.on('jump', function(event){ videoPlayer.currentTime = event.time; });
-			timeline.on('timeupdate', function(){ timestamp.textContent = timeline.timeCode; });
+			//TODO: Integrate the next listener into the timeline editor
 			timeline.on('activechange', function(){ renderer.rebuildCaptions(); });
-			timeline.on('segcomplete',function(evt) {
-				if(!automove.classList.contains('active')){ return; }
-				timeline.currentTool = Timeline.MOVE;
-				$("#moveToolButton").button("toggle");
-			});
-			timeline.on('abRepeatEnabled',function(){
-				enableRepeatButton.title = "Disable Repeat";
-				repeatIcon.className = "icon-circle";
-			});
-			timeline.on('abRepeatDisabled',function(){
-				enableRepeatButton.title = "Enable Repeat";
-				repeatIcon.className = "icon-circle-blank";
-			});
-			timeline.on('abRepeatSet',function(){
-				[clearRepeatButton, enableRepeatButton].forEach(function(b){ b.classList.remove('disabled'); });
-			});
-			timeline.on('abRepeatUnset',function(){
-				[clearRepeatButton, enableRepeatButton].forEach(function(b){ b.classList.add('disabled'); });
-			});
-
+			
 			timeline.on('addtrack',function(evt){
 				videoPlayer.addTextTrack(evt.track.textTrack);
 				updateSpacing();
 			});
 
 			timeline.on('removetrack', updateSpacing);
-
-			automove.addEventListener("click", function() {
-				if(automove.classList.contains('active')){
-					automove.classList.remove("btn-yellow");
-					automove.classList.add("btn-inverse");
-				} else {
-					automove.classList.add("btn-yellow");
-					automove.classList.remove("btn-inverse");
-				}
-			}, false);
-
-			//Bind the toolbar buttons
-
-			// Undo/redo buttons
-			document.getElementById("undoButton").addEventListener('click',function(){ timeline.commandStack.undo(); },false);
-			document.getElementById("redoButton").addEventListener('click',function(){ timeline.commandStack.redo(); },false);
-
-			function setTool(tool){ timeline.currentTool = tool; }
-
-			[   // Tool buttons
-				[Timeline.CREATE,document.getElementById("addCueToolButton")],
-				[Timeline.SELECT,document.getElementById("selectToolButton")],
-				[Timeline.DELETE,document.getElementById("deleteToolButton")],
-				[Timeline.MOVE,document.getElementById("moveToolButton")],
-				[Timeline.SPLIT,document.getElementById("splitToolButton")],
-				[Timeline.SCROLL,document.getElementById("scrollToolButton")],
-				[Timeline.ORDER,document.getElementById("reorderToolButton")],
-				[Timeline.SHIFT,document.getElementById("timeShiftToolButton")],
-				[Timeline.REPEAT,document.getElementById("repeatToolButton")]
-			].forEach(function(pair){ pair[1].addEventListener("click", setTool.bind(null, pair[0]), false); });
 
 			[   //Set up keyboard shortcuts
 				[Ayamel.KeyBinder.keyCodes.a,Timeline.CREATE],  //a - Add
@@ -228,356 +515,12 @@ $(function() {
 					//  2. A modal isn't open
 					var inputFocused = ["TEXTAREA", "INPUT"].indexOf(document.activeElement.nodeName) > -1,
 						modalOpen = $(".modal:visible").length;
-					if (!inputFocused && !modalOpen){ setTool(tool); }
+					if (!inputFocused && !modalOpen){ timeline.currentTool = tool; }
 				});
 			});
 
 			// Autocue controls
 			Ayamel.KeyBinder.addKeyBinding(Ayamel.KeyBinder.keyCodes['|'], timeline.breakPoint.bind(timeline),true);
-			Ayamel.KeyBinder.addKeyBinding(Ayamel.KeyBinder.keyCodes['\\'], timeline.breakPoint.bind(timeline,true),true);
-
-			// AB Repeat Controls
-			clearRepeatButton.addEventListener('click',function(){ timeline.clearRepeat(); },false);
-			enableRepeatButton.addEventListener('click',function(){ timeline.abRepeatOn = !timeline.abRepeatOn; },false);
-
-			//Create New Track
-			(function () {
-				var ractive,
-					template = '<form class="form-horizontal">\
-						<div class="control-group">\
-							<label class="control-label">Name</label>\
-							<div class="controls">\
-								<input type="text" value="{{trackName}}" placeholder="Name">\
-							</div>\
-						</div>\
-						{{>trackKindSelect}}\
-						<div class="control-group">\
-							<label class="control-label">Format</label>\
-							<div class="controls">\
-								<select value="{{trackMime}}">\
-									<option value="text/vtt" selected>WebVTT</option>\
-									<option value="text/srt">SubRip</option>\
-									<option value="application/ttml+xml">TTML</option>\
-									<option value="text/x-ssa">Sub Station Alpha</option>\
-								</select>\
-							</div>\
-						</div>\
-						{{>trackLangSelect}}\
-					</form>';
-				ractive = new Dialog({
-					el: document.getElementById('newTrackModal'),
-					data: {
-						dialogTitle: "Create a new track",
-						languages: langList,
-						trackLang: "zxx",
-						trackKind: "subtitles",
-						trackName: "",
-						trackMime: "text/vtt",
-						buttons: [{event:"create",label:"Create"}]
-					},
-					partials:{ dialogBody: template },
-					components:{ superselect: EditorWidgets.SuperSelect },
-					actions: {
-						create: function(event){
-							var kind = this.get("trackKind"),
-								name = this.get('trackName') || "Untitled",
-								language = this.get("trackLang"),
-								mime = this.get('trackMime'),
-								track = new TextTrack(kind, name, language);
-
-							$('#newTrackModal').modal('hide');
-							track.mode = "showing";
-							track.readyState = TextTrack.LOADED;
-							timeline.addTextTrack(track, mime);
-							timeline.commandStack.setFileUnsaved(name);
-							updateSpacing();
-
-							// Clear the form
-							this.set({
-								trackName: "",
-								selectOpen: false
-							});
-						}
-					}
-				});
-			}());
-
-			//Edit Track
-			(function(){
-				var template = '<form class="form-horizontal">\
-						{{#(trackList.length === 0)}}\
-						There are no tracks loaded for editing.\
-						{{/(trackList)}}\
-						{{#(trackList.length > 0)}}\
-						{{#(trackList.length > 1)}}\
-						<div class="control-group">\
-							<label class="control-label">Which Track</label>\
-							<div class="controls">\
-								<select value="{{trackToEdit}}">\
-								{{#trackList}}<option value="{{.}}">{{.}}</option>{{/trackList}}\
-								</select>\
-							</div>\
-						</div>\
-						{{/(trackList)}}\
-						<div style="display:{{(trackToEdit === "" ? "none" : "block")}}">\
-							<div class="control-group">\
-								<label class="control-label">Name</label>\
-								<div class="controls">\
-									<input type="text" value="{{trackName}}" placeholder="Name">\
-								</div>\
-							</div>\
-							{{>trackKindSelect}}\
-							{{>trackLangSelect}}\
-						</div>\
-						{{/(trackList)}}\
-					</form>',
-					ractive = new Dialog({
-						el: document.getElementById("editTrackModal"),
-						data: {
-							dialogTitle: "Edit tracks",
-							languages: langList,
-							trackLang: "zxx",
-							trackKind: "subtitles",
-							trackName: "",
-							buttons: [{event:"save",label:"Save"}]
-						},
-						partials: { dialogBody: template },
-						components:{ superselect: EditorWidgets.SuperSelect },
-						actions: {
-							save: function(event){
-								var undo, redo, track,
-									data = ractive.data,
-									oname = data.trackToEdit,
-									nname = data.trackName;
-								
-								if(oname === ""){ return; }
-								
-								track = timeline.getTrack(oname);
-
-								//Set up the undo/redo functions
-								undo = timeline.alterTextTrack.bind(
-									timeline, nname,
-									track.trackKind,
-									track.trackLang,
-									oname, true
-								);
-								redo = timeline.alterTextTrack.bind(
-									timeline, oname,
-									data.trackKind,
-									data.trackLang,
-									nname, true
-								);
-								commandStack.push({
-									file: data.trackToEdit,
-									redo: redo,
-									undo: undo
-								});
-
-								//perform the edit
-								redo();
-
-								$("#editTrackModal").modal("hide");
-								this.set({selectOpen: false});
-								return false;
-							}
-						}
-					});
-				$("#editTrackModal").on("show", function() {
-					var trackList = timeline.trackNames.slice();
-					ractive.set({
-						trackList: trackList,
-						trackToEdit: trackList.length ? trackList[0] : ""
-					});
-				});
-
-				ractive.observe("trackToEdit",function(trackName){
-					var track;
-					if(trackName === ""){ return; }
-					track = timeline.getTrack(trackName);
-					ractive.set({
-						trackName: trackName,
-						trackKind: track.kind,
-						trackLang: track.language
-					});
-				});
-			}());
-
-			//Save Tracks
-			(function () {
-				var ractive,
-					targets = EditorWidgets.Save.targets,
-					template = '<form class="form-horizontal">\
-						<div class="control-group">\
-							<label class="control-label">Which Tracks</label>\
-							<div class="controls">\
-								<select value="{{tracksToSave}}" multiple="multiple">\
-								{{#trackList}}<option value="{{.}}">{{.}}</option>{{/trackList}}\
-								</select>\
-							</div>\
-						</div>\
-						<div class="control-group">\
-							<label class="control-label">Destination</label>\
-							<div class="controls">\
-								<div id="saveDestinations">\
-									<label class="radio">\
-										<input type="radio" name="{{saveDestination}}" value="server">Server\
-									</label>\
-									{{#saveDestinations}}\
-									<label class="radio">\
-										<input type="radio" name="{{saveDestination}}" value="{{.value}}">{{.name}}\
-									</label>\
-									{{/saveDestinations}}\
-								</div>\
-							</div>\
-						</div>\
-					</form>';
-				ractive = new Dialog({
-					el: document.getElementById('saveTrackModal'),
-					data: {
-						dialogTitle: "Save Tracks",
-						saveDestinations: Object.keys(targets).map(function(key){
-							return {
-								value: key,
-								name: targets[key].label.replace("To ", "")
-							};
-						}), saveDestination: "server",
-						buttons: [{event:"save",label:"Save"}]
-					},
-					partials: { dialogBody: template },
-					components:{ superselect: EditorWidgets.SuperSelect },
-					actions: {
-						save: function(event){
-
-							var tracks = this.get("tracksToSave"),
-								destination = this.get("saveDestination"),
-								exportedTracks;
-
-							$("#saveTrackModal").modal("hide");
-							this.set({selectOpen: false});
-							if(!tracks.length) { return; }
-
-							if (destination === "server") {
-								//Save to the server; don't bother to re-send already saved tracks
-								exportedTracks = timeline.exportTracks(tracks.filter(function(trackName){
-									return !commandStack.isFileSaved(trackName);
-								}));
-								$.when.apply($,Object.keys(exportedTracks).map(function(key){
-									var data = new FormData(), fObj = exportedTracks[key],
-										textTrack = timeline.getTrack(tracks[key]).textTrack;
-									data.append("file", new Blob([fObj.data],{type:fObj.mime}), fObj.name);
-									data.append("label", textTrack.label);
-									data.append("language", textTrack.language);
-									data.append("kind", textTrack.kind);
-									data.append("resourceId", videoPlayer.textTrackResources.has(textTrack)?
-															  videoPlayer.textTrackResources.get(textTrack).id
-															  :"");
-									data.append("contentId", content.id);
-									return $.ajax({
-										url: "/captionaider/save?course=" + courseId,
-										data: data,
-										cache: false,
-										contentType: false,
-										processData: false,
-										type: "post",
-										dataType: "text"
-									}).then(function(data){
-										commandStack.setFileSaved(textTrack.label);
-										//We really need some way to update cached resources as well as just retrieving newly created ones
-										//That might allow us to save a roundtrip by having this ajax call return the complete updated resource
-										if(!videoPlayer.textTrackResources.has(textTrack)){
-											ResourceLibrary.load(data).then(function(resource){
-												videoPlayer.textTrackResources.set(textTrack, resource);
-											});
-										}
-									},function(xhr, status, error){
-										alert("Error occurred while saving "+textTrack.label+":\n"+status)
-									});
-								})).then(function(){
-									timeline.render();
-									alert("Saved Successfully");
-								});
-							} else {
-								// Use one of the editor widget saving mechanisms
-								exportedTracks = timeline.exportTracks(tracks);
-								EditorWidgets.Save(
-									exportedTracks, destination,
-									function(){
-										tracks.forEach(commandStack.setFileSaved.bind(commandStack));
-										timeline.render();
-										alert("Saved Successfully");
-									},
-									function(){ alert("Error Saving; please try again."); }
-								);
-							}
-						}
-					}
-				});
-				// Saving modal opening
-				$("#saveTrackModal").on("show", function () {
-					ractive.set({
-						trackList: timeline.trackNames.slice(),
-						tracksToSave: ""
-					});
-				});
-			}());
-
-			// Load a track
-			(function () {
-				var ractive, sources = EditorWidgets.LocalFile.sources,
-					template = '<form class="form-horizontal">\
-						{{>trackKindSelect}}\
-						{{>trackLangSelect}}\
-						<div class="control-group">\
-							<label class="control-label">Source</label>\
-							<div class="controls">\
-								{{#sources}}\
-								<label class="radio"><input type="radio" name="{{loadSource}}" value="{{.name}}">{{.label}}</label>\
-								{{/sources}}\
-							</div>\
-						</div>\
-					</form>';
-				ractive = new Dialog({
-					el: document.getElementById('loadTrackModal'),
-					data: {
-						dialogTitle: "Load Track",
-						languages: langList,
-						trackLang: "zxx",
-						trackKind: "subtitles",
-						sources: Object.keys(sources).map(function(key){ return {name: key, label: sources[key].label}; }),
-						buttons: [{event:"load",label:"Load"}]
-					},
-					partials: { dialogBody: template },
-					components:{ superselect: EditorWidgets.SuperSelect },
-					actions: {
-						load: function(event){
-							var kind = this.get('trackKind');
-							var language = this.get('trackLang');
-							var where = this.get('loadSource');
-							EditorWidgets.LocalFile(where,/.*\.(vtt|srt|ass|ttml)/,function(fileObj){
-								//If the label is omitted, TexTrack will fill it in with the file name stripped of extension
-								//That's easier than doing the stripping here, so leave out that parameter unless we can
-								//fill it with user input in the future
-								TextTrack.parse({
-									content: fileObj.data,
-									fname: fileObj.name,
-									mime: fileObj.mime,
-									kind: kind,
-									//label:
-									lang: language,
-									success: function(track, mime) {
-										track.mode = "showing";
-										timeline.addTextTrack(track, mime, true);
-										timeline.commandStack.setFileUnsaved(track.label);
-										updateSpacing();
-									}
-								});
-							});
-							$("#loadTrackModal").modal("hide");
-							this.set({selectOpen: false});
-						}
-					}
-				});
-			}());
 		}
 	});
 });
