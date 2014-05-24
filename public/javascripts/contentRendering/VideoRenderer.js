@@ -261,6 +261,10 @@ var VideoRenderer = (function(){
                 $(".videoBox").height(args.layout.$player.height());
                 $(".transcriptContent").css("max-height", $(".ayamelPlayer").height()-($("#videoTabs").height() + 57));
 
+                $("#Definitions, #Annotations").css("height", $(".ayamelPlayer").height()-($("#videoTabs").height() + 27));
+                $(" #Definitions, #Annotations").css("max-height", $(".ayamelPlayer").height()-($("#videoTabs").height() + 27));
+
+
             }
         };
 
@@ -448,6 +452,11 @@ var VideoRenderer = (function(){
                     setupVideoPlayer(args, function (videoPlayer) {
                         args.videoPlayer = videoPlayer;
                         setupTranscriptWithPlayer(args);
+						
+						// Resize the panes' content to be correct size onload
+						$("#Definitions, #Annotations").css("height", $(".ayamelPlayer").height()-($("#videoTabs").height() + 27));
+						$("#Definitions, #Annotations").css("max-height", $(".ayamelPlayer").height()-($("#videoTabs").height() + 27));
+
                     });
                 });
             });

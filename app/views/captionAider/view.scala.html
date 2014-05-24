@@ -17,6 +17,7 @@
         JS("TimelineView.js"),
         JS("TextTrack.js"),
         JS("TimelineMenus.js"),
+        JS("TimelineControls.js"),
         JS("CaptionEditor.js"),
         JS("WaveForm.js"),
         JS("Resampler.js"),
@@ -48,61 +49,16 @@
     </div>
 
     <div id="bottomContainer">
-        <div id="toolbarHolder">
-            <div class="toolbar">
-                <strong>Actions:</strong>
-                <div class="btn-group">
-                    <button class="btn btn-small btn-inverse" id="undoButton" title="Undo"><i class="icon-undo"></i></button>
-                    <button class="btn btn-small btn-inverse" id="redoButton" title="Redo"><i class="icon-repeat"></i></button>
-                </div>
-            </div>
-
-            <div class="toolbar">
-                <strong>Tracks:</strong>
-                <div class="btn-group">
-                    <button class="btn btn-small btn-inverse" id="newTrackButton" title="Create a new track" data-target="#newTrackModal" data-toggle="modal"><i class="icon-file"></i></button>
-                    <button class="btn btn-small btn-inverse" title="Edit track metadata" data-target="#editTrackModal" data-toggle="modal"><i class="icon-pencil"></i></button>
-                    <button class="btn btn-small btn-inverse" title="Save tracks" data-target="#saveTrackModal" data-toggle="modal"><i class="icon-save"></i></button>
-                    <button class="btn btn-small btn-inverse" title="Load tracks" data-target="#loadTrackModal" data-toggle="modal"><i class="icon-folder-open"></i></button>
-                </div>
-            </div>
-
-            <div class="toolbar">
-                <strong>Tools:</strong>
-                <div class="btn-group" data-toggle="buttons-radio">
-                    <button class="btn btn-small btn-inverse active" id="selectToolButton" title="Select Tool"><i class="icon-ok"></i></button>
-                    <button class="btn btn-small btn-inverse" id="addCueToolButton" title="Add Cue Tool"><i class="icon-plus"></i></button>
-                    <button class="btn btn-small btn-inverse" id="moveToolButton" title="Move Tool"><i class="icon-move"></i></button>
-                    <button class="btn btn-small btn-inverse" id="splitToolButton" title="Split Tool"><i class="icon-cut"></i></button>
-                    <button class="btn btn-small btn-inverse" id="deleteToolButton" title="Delete Tool"><i class="icon-trash"></i></button>
-                    <button class="btn btn-small btn-inverse" id="scrollToolButton" title="Scroll Tool"><i class="icon-ellipsis-horizontal"></i></button>
-                    <button class="btn btn-small btn-inverse" id="reorderToolButton" title="Reorder Tool"><i class="icon-reorder"></i></button>
-                    <button class="btn btn-small btn-inverse" id="timeShiftToolButton" title="Time Shift Tool"><i class="icon-resize-horizontal"></i></button>
-                    <button class="btn btn-small btn-inverse" id="repeatToolButton" title="Set Repeat Tool"><i class="icon-repeat"></i></button>
-                </div>
-                <div class="btn-group">
-                    <button class="btn btn-small btn-inverse disabled" id="enableRepeatButton" title="Enable Repeat" data-toggle="button"><i id="repeatIcon" class="icon-circle-blank"></i></button>
-                    <button class="btn btn-small btn-inverse disabled" id="clearRepeatButton" title="Clear Repeat"><i class="icon-ban-circle"></i></button>
-                </div>
-                <button class="btn btn-small btn-inverse" id="moveAfterAddButton" title="Move After Add" data-toggle="button">
-                    <i class="icon-plus"></i>
-                    <i class="icon-angle-right"></i>
-                    <i class="icon-move"></i>
-                </button>
-            </div>
-
-            <div id="timestamp">0:00:00</div>
-        </div>
-
         <div id="timeline"></div>
     </div>
 
     <div id="newTrackModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="newTrackModalLabel" aria-hidden="true"></div>
+    <div id="cloneTrackModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="cloneTrackModalLabel" aria-hidden="true"></div>
     <div id="editTrackModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="editTrackModalLabel" aria-hidden="true"></div>
     <div id="saveTrackModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="saveTrackModalLabel" aria-hidden="true"></div>
     <div id="loadTrackModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="loadTrackModalLabel" aria-hidden="true"></div>
 
-    <script type="text/javascript">
+    <script>
         var content = @Html(content.toJson.toString());
         var courseId = @course.map(_.id.get).getOrElse(0);
         var userId = @user.id.get;
@@ -110,6 +66,98 @@
         var teacher = @course.exists(c => user.canEdit(c));
         ResourceLibrary.setBaseUrl("@resourceLibraryUrl");
     </script>
-
+	<script id='createTrackTemplate' type='text/ractive'>
+		<form class="form-horizontal">
+			<div class="control-group">
+				<label class="control-label">Name</label>
+				<div class="controls">
+					<input type="text" value="{{trackName}}" placeholder="Name">
+				</div>
+			</div>
+			{{>trackKindSelect}}
+			<div class="control-group">
+				<label class="control-label">Format</label>
+				<div class="controls">
+					<select value="{{trackMime}}">
+						<option value="text/vtt" selected>WebVTT</option>
+						<option value="text/srt">SubRip</option>
+						<option value="application/ttml+xml">TTML</option>
+						<option value="text/x-ssa">Sub Station Alpha</option>
+					</select>
+				</div>
+			</div>
+			{{>trackLangSelect}}
+		</form>
+	</script>
+	<script id='editTrackTemplate' type='text/ractive'>
+		<form class="form-horizontal">
+			{{#(trackList.length === 0)}}
+			There are no tracks loaded for editing.
+			{{/(trackList)}}
+			{{#(trackList.length > 0)}}
+			{{#(trackList.length > 1)}}
+			<div class="control-group">
+				<label class="control-label">Which Track</label>
+				<div class="controls">
+					<select value="{{trackToEdit}}">
+					{{#trackList}}<option value="{{.}}">{{.}}</option>{{/trackList}}
+					</select>
+				</div>
+			</div>
+			{{/(trackList)}}
+			<div style="display:{{(trackToEdit === "" ? "none" : "block")}}">
+				<div class="control-group">
+					<label class="control-label">Name</label>
+					<div class="controls">
+						<input type="text" value="{{trackName}}" placeholder="Name">
+					</div>
+				</div>
+				{{>trackKindSelect}}
+				{{>trackLangSelect}}
+			</div>
+			{{/(trackList)}}
+		</form>
+	</script>
+	<script id='saveTrackTemplate' type='text/ractive'>
+		<form class="form-horizontal">
+			<div class="control-group">
+				<label class="control-label">Which Tracks</label>
+				<div class="controls">
+					<select value="{{tracksToSave}}" multiple="multiple">
+					{{#trackList}}<option value="{{.}}">{{.}}</option>{{/trackList}}
+					</select>
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label">Destination</label>
+				<div class="controls">
+					<div id="saveDestinations">
+						<label class="radio">
+							<input type="radio" name="{{saveDestination}}" value="server">Server
+						</label>
+						{{#saveDestinations}}
+						<label class="radio">
+							<input type="radio" name="{{saveDestination}}" value="{{.value}}">{{.name}}
+						</label>
+						{{/saveDestinations}}
+					</div>
+				</div>
+			</div>
+		</form>
+	</script>
+	<script id='loadTrackTemplate' type='text/ractive'>
+		<form class="form-horizontal">
+			{{>trackKindSelect}}
+			{{>trackLangSelect}}
+			<div class="control-group">
+				<label class="control-label">Source</label>
+				<div class="controls">
+					{{#sources}}
+					<label class="radio"><input type="radio" name="{{loadSource}}" value="{{.name}}">{{.label}}</label>
+					{{/sources}}
+				</div>
+			</div>
+		</form>
+	</script>
 }
 
