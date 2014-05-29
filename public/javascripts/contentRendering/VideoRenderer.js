@@ -255,6 +255,16 @@ var VideoRenderer = (function(){
             //TODO: Dynamically check the actual control bar height
             args.layout.$player.css("padding-bottom","61px"); // padding for the control bar
         }
+
+        // Deactivate Space Features and set focus video to play/pause video
+        window.addEventListener("keydown", function(e) {
+            if (e.keyCode == 32 && !($('input:focus').length > 0 )) {
+                // There may be a better way to do this
+                $(document.getElementsByClassName("videoBox")[0]).children()[0].focus();
+                e.preventDefault(); 
+            }
+        });
+        
         window.onresize = function(event) {
             if (args.content.contentType === "video" && args.screenAdaption && args.screenAdaption.fit) {
                 ScreenAdapter.containByHeight(args.layout.$player, Ayamel.aspectRatios.hdVideo, args.screenAdaption.padding);
@@ -452,10 +462,10 @@ var VideoRenderer = (function(){
                     setupVideoPlayer(args, function (videoPlayer) {
                         args.videoPlayer = videoPlayer;
                         setupTranscriptWithPlayer(args);
-						
-						// Resize the panes' content to be correct size onload
-						$("#Definitions, #Annotations").css("height", $(".ayamelPlayer").height()-($("#videoTabs").height() + 27));
-						$("#Definitions, #Annotations").css("max-height", $(".ayamelPlayer").height()-($("#videoTabs").height() + 27));
+                        
+                        // Resize the panes' content to be correct size onload
+                        $("#Definitions, #Annotations").css("height", $(".ayamelPlayer").height()-($("#videoTabs").height() + 27));
+                        $("#Definitions, #Annotations").css("max-height", $(".ayamelPlayer").height()-($("#videoTabs").height() + 27));
 
                     });
                 });
