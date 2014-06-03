@@ -125,7 +125,7 @@
                                 </li>
                                 <li class="dropdown">
                                     <a class="dropdown-toggle" data-toggle="dropdown" href="#">
-                                        <i class="icon-pencil"></i> Download <b class="caret"></b>
+                                        <i class="icon-download"></i> Download <b class="caret"></b>
                                     </a>
                                     <ul class="dropdown-menu" id="downloadMenu"></ul>
                                 </li>
@@ -142,7 +142,6 @@
         <div>
             <h1>
                 <i class="@contentIcons(content.contentType)"></i> @content.name
-                <small class="pad-left-high" id="metadataCategories"></small>
             </h1>
             <p id="metadataDescription"></p>
             <div class="inline-block">
@@ -184,27 +183,26 @@
                 });
 
                 // Show the metadata
-                ResourceLibrary.load(content.resourceId, function(resource) {
-                    var $metadataLanguages, $downloadMenu;
-                    //$("#metadataCategories").text(resource.categories.join(", "))
+                ResourceLibrary.load(content.resourceId).then(function(resource){
                     document.getElementById("metadataDescription").textContent = resource.description;
+                    document.getElementById("metadataLanguages").innerHTML =
+                        resource.languages.iso639_3.map(function(langCode) {
+                            return '<em class="pad-left-high">' + Ayamel.utils.getLangName(langCode) + '</em>';
+                        }).join('');
 
-                    $metadataLanguages = $("#metadataLanguages");
-                    resource.languages.iso639_3.forEach(function (langCode) {
-                        var language = Ayamel.utils.getLangName(langCode);
-                        $metadataLanguages.append('<em class="pad-left-high">' + language + '</em>');
-                    });
+                    document.getElementById("metadataLabels").innerHTML =
+                        resource.keywords.split(",")
+                        .filter(function(w){return !!w;})
+                        .map(function(w){return "<span class='label label-info pad-left-med'>" + w + "</span>";})
+                        .join('');
 
-                    $("#metadataLabels").append(resource.keywords.split(",").filter(function(w){return !!w;}).map(function(w){return "<span class='label label-info pad-left-med'>" + w + "</span>";}))
-
-                    $downloadMenu = $("#downloadMenu");
-                    if($downloadMenu.length === 0){
-                        $downloadMenu.append('<li>No downloads available</li>');
-                    }
-                    resource.content.files.forEach(function(fobj){
-                        if(fobj.downloadUri){ $downloadMenu.append('<li><a href="'+fobj.downloadUri+'" target="_blank">'+fobj.respresentation+': '+fobj.mime+' ('+(fobj.bytes/1024)+'KB)</a></li>'); }
-                    });
-                })
+                    document.getElementById("downloadMenu").innerHTML =
+                        resource.content.files
+                        .filter(function(fobj){return fobj.downloadUri;})
+                        .map(function(fobj){
+                            return '<li><a href="'+fobj.downloadUri+'" target="_blank">'+fobj.representation+': '+fobj.mime+' ('+(fobj.bytes/1024)+'KB)</a></li>';
+                        }).join('') || '<li><a>No downloads available</a></li>';
+                });
             });
         </script>
     </div>
