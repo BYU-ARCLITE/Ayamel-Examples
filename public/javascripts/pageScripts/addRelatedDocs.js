@@ -46,63 +46,34 @@ $(function() {
         </table>',
         captionsTemplate = '<table class="table table-bordered">\
             <thead><tr>\
-                <th>Track name</th><th>Language</th><th>Download</th><th>Options</th><th>Publish</th>\
+                <th>Track name</th><th>Language</th><th>Download</th><th>Options</th>\
             </tr></thead>\
             <tbody>\
                 {{#resources:i}}<tr>\
                     <td>{{.title}}</td>\
-                    <td>{{.language}}</td>\
-                    <td>{{#.content.files}}<a href="{{.downloadUri}}" download="{{title}}">{{.mime}}&nbsp;</a>{{/.content.files}}</td>\
+                    <td>{{getLanguage(this)}}</td>\
+                    <td>{{#.content.files}}<a href="{{.downloadUri}}" download="{{calcName(title, .mime)}}">{{.mime}}&nbsp;</a>{{/.content.files}}</td>\
                     <td>\
                         <button class="btn btn-magenta" proxy-tap="delete:{{.id}}"><i class="icon-trash"></i> Delete</button>\
-                    </td>\
-                    <td>\
-                        {{#.published}}<em>Published</em>{{/.published}}\
-                        {{^.published}}\
-                            {{#.publishRequest}}<em>A publish request has been sent</em>{{/.publishRequest}}\
-                            {{^.publishRequest}}<button class="btn" proxy-tap="publish:{{.id}}"><i class="icon-cloud-upload"></i> Publish</button>{{/.publishRequest}}\
-                        {{/.published}}\
                     </td>\
                 </tr>{{/resources}}\
             </tbody>\
         </table>',
         annotationsTemplate = '<table class="table table-bordered pad-top-high">\
             <thead><tr>\
-                <th>Track name</th><th>Language</th><th>Download</th><th>Options</th><th>Publish</th>\
+                <th>Track name</th><th>Language</th><th>Download</th><th>Options</th>\
             </tr></thead>\
             <tbody>\
                 {{#resources}}<tr>\
                     <td>{{.title}}</td>\
-                    <td>{{.language}}</td>\
-                    <td>{{#.content.files}}<a href="{{.downloadUri}}" download="{{title}}">{{.mime}}&nbsp;</a>{{/.content.files}}</td>\
+                    <td>{{getLanguage(this)}}</td>\
+                    <td>{{#.content.files}}<a href="{{.downloadUri}}" download="{{calcName(title, .mime)}}">{{.mime}}&nbsp;</a>{{/.content.files}}</td>\
                     <td>\
                         <button class="btn btn-magenta" proxy-tap="delete:{{.id}}"><i class="icon-trash"></i> Delete</button>\
-                    </td>\
-                    <td>\
-                        {{#.published}}<em>Published</em>{{/.published}}\
-                        {{^.published}}\
-                            {{#.publishRequest}}<em>A publish request has been sent</em>{{/.publishRequest}}\
-                            {{^.publishRequest}}<button class="btn" proxy-tap="publish:{{.id}}"><i class="icon-cloud-upload"></i> Publish</button>{{/.publishRequest}}\
-                        {{/.published}}\
-                    </td>\
-                </tr>{{/resources}}\
-            </tbody>\
-        </table>',
-        publishTemplate = '<table class="table table-bordered">\
-            <thead><tr>\
-                <th>Track name</th><th>Language</th><th>Options</th><th>Publish</th>\
-            </tr></thead>\
-            <tbody>\
-                {{#resources}}<tr>\
-                    <td>{{.title}}</td>\
-                    <td>{{.language}}</td>\
-                    <td>\
-                        <button class="btn" proxy-tap="publish:{{.id}}"><i class="icon-cloud-upload"></i> Accept Publish Request</button>\
                     </td>\
                 </tr>{{/resources}}\
             </tbody>\
         </table>';
-
 
     langList = Object.keys(Ayamel.utils.p1map).map(function (p1) {
         var code = Ayamel.utils.p1map[p1];
@@ -115,26 +86,15 @@ $(function() {
         return (langs && langs[0])?Ayamel.utils.getLangName(langs[0]):"English";
     }
 
+    function calcName(title, mime){
+        return TimedText.addExt(mime, title);
+    }
+
     // A resource id -> Resource object function
-    function getResources(ids, callback) {
-        async.map(ids, function (id, asyncCallback) {
-            ResourceLibrary.load(id, function (resource) {
-                resource.language = getLanguage(resource);
-                resource.publishRequest = resource.clientUser && resource.clientUser.id && resource.clientUser.id.indexOf("request") > -1;
-                resource.published = !(resource.clientUser && resource.clientUser.id);
-                asyncCallback(null, resource);
-            });
-        }, function (err, data) {
-            callback(data);
-        });
-    }
-
-    function sendPublishRequest(rid) {
-        window.location = "/content/" + content.id + "/publish/" + rid + courseQuery;
-    }
-
-    function publish(rid) {
-        window.location = "/content/" + content.id + "/accept/" + rid + courseQuery;
+    function getResources(ids) {
+        return Promise.all(ids.map(function(id){
+            return ResourceLibrary.load(id);
+        }));
     }
 
     function deleteDoc(rid) {
@@ -145,10 +105,13 @@ $(function() {
     viewCapR = new Ractive({
         el: "#captionsTable",
         template: captionsTemplate,
-        data: { resources: [] }
+        data: {
+            resources: [],
+            getLanguage: getLanguage,
+            calcName: calcName
+        }
     });
     viewCapR.on('delete', function(_, which){ deleteDoc(which); });
-    viewCapR.on('publish', function(_, which){ sendPublishRequest(which); });
 
     addCapR = new Ractive({
         el: "#captionsUpload",
@@ -207,10 +170,13 @@ $(function() {
     viewAnnR = new Ractive({
         el: "#annotationsTable",
         template: annotationsTemplate,
-        data: { resources: [] }
+        data: {
+            resources: [],
+            getLanguage: getLanguage,
+            calcName: function(title){ return title+'.json'; }
+        }
     });
     viewAnnR.on('delete', function(_, which){ deleteDoc(which); });
-    viewAnnR.on('publish', function(_, which){ sendPublishRequest(which); });
 
     addAnnR = new Ractive({
         el: "#annotationsUpload",
@@ -269,7 +235,7 @@ $(function() {
                     ids: captionTrackIds
                 }
             }).then(function(data){
-                getResources(data, function(rs){ viewCapR.set('resources', rs); })
+                getResources(data).then(function(rs){ viewCapR.set('resources', rs); });
             });
         }
 
@@ -283,58 +249,8 @@ $(function() {
                     ids: annotationIds
                 }
             }).then(function(data) {
-                getResources(data, function(rs){ viewAnnR.set('resources', rs); });
+                getResources(data).then(function(rs){ viewAnnR.set('resources', rs); });
             });
-        }
-
-        if (owner) {
-            // Load publishable caption tracks
-            (function(cb){
-                if(captionTrackIds.length){
-                    $.ajax("/ajax/permissionChecker", {
-                        type: "post",
-                        data: {
-                            contentId: content.id,
-                            permission: "publish",
-                            documentType: "captionTrack",
-                            ids: captionTrackIds
-                        }
-                    }).then(cb);
-                } else { cb([]); }
-            }(function(data){
-                getResources(data, function(resources) {
-                    var r = new Ractive({
-                        el: "#trackPublishRequests",
-                        template: publishTemplate,
-                        data: { resources: resources.filter(function(res){return res.publishRequest}) }
-                    });
-                    r.on('publish', function(_, which){ publish(which); });
-                });
-            }));
-
-            // Load publishable annotations
-            (function(cb){
-                if(annotationIds.length){
-                    $.ajax("/ajax/permissionChecker", {
-                        type: "post",
-                        data: {
-                            contentId: content.id,
-                            permission: "publish",
-                            documentType: "annotations",
-                            ids: annotationIds
-                        }
-                    }).then(cb);
-                } else { cb([]); }
-            }(function(data){
-                getResources(data, function(resources) {
-                    var r = new Ractive({
-                        el: "#annotationPublishRequests",
-                        template: publishTemplate,
-                        data: { resources: resources.filter(function(res){return res.publishRequest}) }
-                    });
-                    r.on('publish', function(_, which){ publish(which); });
-                });
-            }));
         }
     });
 });
