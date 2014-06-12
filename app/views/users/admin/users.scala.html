@@ -1,0 +1,185 @@
+@(users: List[User])(implicit request: RequestHeader, user: User)
+
+@optStr(str: Option[String]) = {
+    @if(str.isDefined) {
+        @shorten(str.get)
+    } else {
+        <em>Not set</em>
+    }
+}
+
+@shorten(str: String) = {
+    @if(str.length > 15) {
+        <a href="#" class="shortened" data-toggle="tooltip" title="@str">@{str.substring(0, 12) + "..."}</a>
+    } else {
+        @str
+    }
+}
+
+@main("Ayamel - Manage Users") {
+
+    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/admin.css")"/>
+
+    <div class="adminBackground">
+    </div>
+
+    <div class="padded">
+
+        <div class="pad-bottom-med">
+            <a href="@routes.Users.admin()"><i class="icon-arrow-left"></i> Back to dashboard</a>
+        </div>
+
+        <h1>Manage Users</h1>
+
+        <table class="table table-bordered table-striped table-condensed">
+            <tr>
+                <th>Id</th>
+                <th>Auth Scheme</th>
+                <th>Username</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Merged?</th>
+                <th>Actions</th>
+            </tr>
+            @for(_user <- users) {
+                <tr>
+                    <td>@_user.id.get</td>
+                    <td>@_user.authScheme.name</td>
+                    <td>@shorten(_user.username)</td>
+                    <td>@optStr(_user.name)</td>
+                    <td>@optStr(_user.email)</td>
+                    <td>
+                        @if(_user.role == User.roles.guest) {
+                            Guest
+                        }
+                        @if(_user.role == User.roles.student) {
+                            Student
+                        }
+                        @if(_user.role == User.roles.teacher) {
+                            Teacher
+                        }
+                        @if(_user.role == User.roles.admin) {
+                            Admin
+                        }
+                        @if(user != _user) {
+                            <a href="#roleModal" role="button" class="btn btn-small btn-blue pull-right setRole" data-toggle="modal" data-role="@_user.role" data-id="@_user.id.get">Set</a>
+                        }
+                    </td>
+                    <td>
+                        @if(_user.accountLinkId == -1) {
+                            No
+                        } else {
+                            Yes. (#@_user.getAccountLink.get.primaryAccount)
+                        }
+                    </td>
+                    <td>
+                        @if(user != _user) {
+                            <a href="#notificationModal" role="button" data-toggle="modal" class="btn btn-small btn-blue sendNote" data-id="@_user.id.get">Notify</a>
+                            <a href="#deleteModal" role="button" data-toggle="modal" class="btn btn-small btn-magenta deleteUser" data-id="@_user.id.get">Delete</a>
+                        }
+                    </td>
+                </tr>
+            }
+        </table>
+
+    </div>
+
+    <div id="roleModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="roleModalLabel" aria-hidden="true">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3 id="roleModalLabel">Set user role</h3>
+        </div>
+        <div class="modal-body">
+            <label for="role">Set the role for user #<span id="roleUserIdDisplay"></span>:</label>
+            <form id="userRoleForm" method="post" action="@routes.Users.setRole()">
+                <select id="role" name="role">
+                    <option value="@User.roles.guest">Guest</option>
+                    <option value="@User.roles.student">Student</option>
+                    <option value="@User.roles.teacher">Teacher</option>
+                    <option value="@User.roles.admin">Admin</option>
+                </select>
+                <input type="hidden" name="userId" id="roleUserId" value="">
+                <input type="submit" style="position: absolute; left: -9999px; width: 1px; height: 1px;"/>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+            <button class="btn btn-blue formSubmitter" data-target="#userRoleForm">Save changes</button>
+        </div>
+    </div>
+
+    <div id="notificationModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="notificationModalLabel" aria-hidden="true">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3 id="notificationModalLabel">Send a notification</h3>
+        </div>
+        <div class="modal-body">
+            <label for="role">Send a notification to user #<span id="noteUserIdDisplay"></span>:</label>
+
+            <form id="notificationForm" class="form-horizontal" method="post" action="@routes.Users.sendNotification()">
+                <div class="control-group">
+                    <label class="control-label" for="message">Message</label>
+                    <div class="controls">
+                        <textarea id="message" name="message"></textarea>
+                    </div>
+                </div>
+                <input type="hidden" name="userId" id="noteUserId" value="">
+                <input type="submit" style="position: absolute; left: -9999px; width: 1px; height: 1px;"/>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+            <button class="btn btn-blue formSubmitter" data-target="#notificationForm">Save changes</button>
+        </div>
+    </div>
+
+    <div id="deleteModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3 id="deleteModalLabel">Delete user</h3>
+        </div>
+        <div class="modal-body">
+            <p>Are you sure you want to delete user #<span id="deleteUserId"></span>?</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
+            <button class="btn btn-magenta" id="deleteButton" data-id="">Yes, Delete</button>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        $(function() {
+            $(".shortened").tooltip();
+
+            $(".formSubmitter").click(function() {
+                $($(this).attr("data-target")).submit();
+            });
+
+            $(".setRole").click(function() {
+                var id = $(this).attr("data-id");
+                $("#roleUserId").val(id);
+                $("#roleUserIdDisplay").text(id);
+                $("#role").val($(this).attr("data-role"));
+            });
+
+            $(".sendNote").click(function() {
+                var id = $(this).attr("data-id");
+                $("#noteUserId").val(id);
+                $("#noteUserIdDisplay").text(id);
+            });
+
+            $(".deleteUser").click(function() {
+                var id = $(this).attr("data-id");
+                $("#deleteUserId").text(id);
+                $("#deleteButton").attr("data-id", id);
+            });
+
+            $("#deleteButton").click(function() {
+                var id = $(this).attr("data-id");
+                window.location = "/admin/users/" + id + "/delete";
+            });
+        });
+    </script>
+
+}

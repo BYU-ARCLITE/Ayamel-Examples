@@ -42,13 +42,16 @@ POST    /course/:courseId/content/:id/settings      controllers.ContentControlle
 # Content pages
 GET     /content                        controllers.ContentController.public
 GET     /content/mine                   controllers.ContentController.mine
-GET     /content/create                 controllers.ContentController.createPage
-POST    /content/create                 controllers.ContentController.create
+GET     /content/create/:page           controllers.ContentController.createPage(page: String)
+POST    /content/create/url             controllers.ContentController.createFromUrl
+POST    /content/create/file            controllers.ContentController.createFromFile
+POST    /content/create/resource        controllers.ContentController.createFromResource
 GET     /content/:id                    controllers.ContentController.view(id: Long)
 GET     /content/:id/delete             controllers.ContentController.delete(id: Long)
 POST    /content/:id/visibility         controllers.ContentController.setVisibility(id: Long)
 POST    /content/:id/shareability       controllers.ContentController.setShareability(id: Long)
 POST    /content/:id/settings           controllers.ContentController.setSettings(id: Long)
+POST    /content/:id/metadata           controllers.ContentController.setMetadata(id: Long)
 
 # User pages
 GET     /user/settings                  controllers.Users.accountSettings
@@ -64,6 +67,13 @@ GET     /admin                          controllers.Users.admin
 GET     /admin/teacher                  controllers.Users.teacherApprovalPage
 GET     /admin/teacher/:id/approve      controllers.Users.approveTeacher(id: Long)
 GET     /admin/teacher/:id/deny         controllers.Users.denyTeacher(id: Long)
+GET     /admin/users                    controllers.Users.manageUsers
+POST    /admin/users/setRole            controllers.Users.setRole
+POST    /admin/users/notify             controllers.Users.sendNotification
+POST    /admin/users/:id/delete         controllers.Users.delete(id: Long)
+GET     /admin/courses                  controllers.Users.manageCourses
+GET     /admin/courses/:id/delete       controllers.Users.deleteCourse(id: Long)
+GET     /admin/content                  controllers.Users.manageContent
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file                   controllers.Assets.at(path="/public", file)

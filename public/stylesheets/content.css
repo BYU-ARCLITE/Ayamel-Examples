@@ -109,3 +109,14 @@
     background: url("../images/activities/placeholder.jpg") center no-repeat;
     background-size: cover;
 }
+
+.fileDropper {
+    border: 3px solid #ccc;
+    text-align: center;
+    margin: 20px 30px;
+    height: 250px;
+}
+
+.fileDropper.active {
+    border: 3px solid #08c;
+}

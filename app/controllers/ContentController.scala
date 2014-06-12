@@ -2,10 +2,15 @@ package controllers
 
 import authentication.Authentication
 import play.api.mvc.{Result, Request, Controller}
-import service.ContentManagement
+import service.{ResourceHelper, ContentDescriptor, FileUploader, ContentManagement}
 import models.{Course, User, Content}
 import play.api.Play
 import Play.current
+import play.api.libs.json.{JsString, JsArray, Json}
+import dataAccess.resourceLibrary.ResourceController
+import concurrent.ExecutionContext
+import ExecutionContext.Implicits.global
+import anorm.NotAssigned
 
 /**
  * The controller for dealing with content.
@@ -26,36 +31,112 @@ object ContentController extends Controller {
   /**
    * Content creation page
    */
-  def createPage = Authentication.authenticatedAction() {
+  def createPage(page: String = "file") = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
         // Guests cannot create content
         Authentication.enforceNotRole(User.roles.guest) {
-          Ok(views.html.content.create())
+          if (page == "url")
+            Ok(views.html.content.create.url())
+          else if (page == "resource")
+            Ok(views.html.content.create.resource())
+          else
+            Ok(views.html.content.create.file())
         }
   }
 
   /**
-   * Creates content based on the posted data
+   * Creates content based on the posted data (URL)
    */
-  def create = Authentication.authenticatedAction(parse.multipartFormData) {
+  def createFromUrl = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
 
         // Guests cannot create content
         Authentication.enforceNotRole(User.roles.guest) {
           // Collect the information
-          val data = request.body.dataParts.mapValues(_(0))
-          val contentType = Symbol(data("contentType"))
-          val title = data("title")
-          val description = data("description")
-          val url = data("url")
-          val thumbnail = data("thumbnail")
+          val data = request.body
+          val contentType = Symbol(data("contentType")(0))
+          val title = data("title")(0)
+          val description = data("description")(0)
+          val keywords = data("keywords")(0)
+          val categories = data("categories").toList
+          val url = data("url")(0)
+          val mime = ResourceHelper.getMimeFromUri(url)
 
           // Create the content
-          ContentManagement.createContent(title, description, url, thumbnail, user, contentType)
+          val info = ContentDescriptor(title, description, keywords, categories, url, mime)
+          ContentManagement.createContent(info, user, contentType)
 
           Redirect(routes.Application.home()).flashing("success" -> "Content added")
+        }
+  }
+
+  /**
+   * Creates content based on the posted data (File)
+   */
+  def createFromFile = Authentication.authenticatedAction(parse.multipartFormData) {
+    implicit request =>
+      implicit user =>
+
+        // Guests cannot create content
+        Authentication.enforceNotRole(User.roles.guest) {
+
+          // Collect the information
+          val data = request.body.dataParts
+          val contentType = Symbol(data("contentType")(0))
+          val title = data("title")(0)
+          val description = data("description")(0)
+          val keywords = data("keywords")(0)
+          val categories = data("categories").toList
+
+          Async {
+
+            // Upload the file
+            val file = request.body.file("file").get
+            FileUploader.uploadFile(file).map{
+              url =>
+
+                // Create the content
+                val info = ContentDescriptor(title, description, keywords, categories, url, file.contentType.get)
+                Async {
+                  ContentManagement.createContent(info, user, contentType).map {
+                    content =>
+                      Redirect(routes.ContentController.view(content.id.get))flashing("success" -> "Content added")
+                  }
+                }
+            }
+          }
+        }
+  }
+
+  /**
+   * Creates content based on the posted data (File)
+   */
+  def createFromResource = Authentication.authenticatedAction(parse.urlFormEncoded) {
+    implicit request =>
+      implicit user =>
+
+        // Guests cannot create content
+        Authentication.enforceNotRole(User.roles.guest) {
+
+          // Create from resource
+          val resourceId = request.body("resourceId")(0)
+          Async {
+            ResourceController.getResource(resourceId).map {
+              json =>
+                val code = (json \ "response" \ "code").as[Int]
+                if (code == 200) {
+                  val title = (json \ "resource" \ "title").as[String]
+                  val contentType = (json \ "resource" \ "type").as[String]
+                  val content = Content(NotAssigned, title, Symbol(contentType), "", resourceId).save
+                  user.addContent(content)
+
+                  Redirect(routes.ContentController.view(content.id.get))
+                } else
+                  Redirect(routes.ContentController.createPage("resource")).flashing("error" -> "That resource doesn't exist")
+            }
+          }
         }
   }
 
@@ -137,6 +218,38 @@ object ContentController extends Controller {
       implicit user =>
         val content = Content.listPublic
         Ok(views.html.content.public(content))
+  }
+
+  def setMetadata(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
+    implicit request =>
+      implicit user =>
+        getContent(id) {
+          content =>
+
+           // Make sure the user is able to edit
+            if (content isEditableBy user) {
+
+              // Get the info from the form
+              val title = request.body("title")(0)
+              val description = request.body("description")(0)
+              val keywords = request.body("keywords")(0)
+              val categories = request.body("categories")
+
+              // Create the JSON object
+              val obj = Json.obj(
+                "title" -> title,
+                "description" -> description,
+                "keywords" -> keywords,
+                "categories" -> JsArray(categories.map(c => JsString(c)))
+              )
+
+              // Save the metadata
+              ResourceController.updateResource(content.resourceId, obj)
+
+              Redirect(routes.ContentController.view(id)).flashing("success" -> "Metadata updated.")
+            } else
+              Errors.forbidden
+        }
   }
 
   /**

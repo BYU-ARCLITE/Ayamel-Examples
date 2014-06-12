@@ -18,13 +18,17 @@
     )
 }
 
-@main("Ayamel - " + content.name,moreStyles) {
-
-    
+@main("Ayamel - " + content.name, moreStyles) {
 
     <div class="padded">
 
-        @views.html.content.header.header(content, course)
+        @if(course.isDefined) {
+            <div class="pad-bottom-med">
+                <a href="@routes.Courses.view(course.get.id.get)"><i class="icon-arrow-left"></i> Back to course</a>
+            </div>
+        }
+
+        @views.html.content.header.header(content, resourceLibraryUrl, course)
 
         @renderTitle(content)
 

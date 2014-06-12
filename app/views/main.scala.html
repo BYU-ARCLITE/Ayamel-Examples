@@ -1,6 +1,6 @@
-@(title: String,moreStyles: Seq[(String, String)]=Nil)(content: Html)(implicit request: RequestHeader, user: User)
+@(title: String, moreStyles: Seq[(String, String)] = Nil)(content: Html)(implicit request: RequestHeader, user: User)
 
-@import resources._
+@import views.html.resources._
 
 <!DOCTYPE html>
 <html>
@@ -175,16 +175,13 @@
                     }
                 });
 
-            });
+                setTimeout(function() {
+                    $(".alert").fadeOut(500, function() {
+                        $(this).remove();
+                    });
+                }, 5000);
 
-            window.setTimeout(function() {
-                $(".alert-success").fadeTo(500, 0).slideUp(500, function(){
-                    $(this).remove(); 
-                });
-                $(".alert-info").fadeTo(500, 0).slideUp(500, function(){
-                    $(this).remove(); 
-                });
-            }, 5000);
+            });
         </script>
 
         <!-- Google Analytics -->

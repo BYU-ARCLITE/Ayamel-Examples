@@ -1,4 +1,4 @@
-@(content: models.Content, course: Option[Course])(implicit user: User)
+@(content: models.Content, resourceLibraryUrl: String, course: Option[Course])(implicit user: User)
 
 @isChecked(val1: Any, val2: Any) = {
     @if(val1 == val2) {
@@ -8,6 +8,8 @@
 
 @defining(content isEditableBy user) { userCanEdit =>
     @defining(course.isDefined && user.canEdit(course.get)) { userIsInstructor =>
+
+        <script src="@routes.Assets.at("Ayamel.js/js/Resource.js")" type="text/javascript"></script>
 
         <div class="well">
 
@@ -83,7 +85,7 @@
                     <h3 id="metadataModalLabel">Edit Metadata</h3>
                 </div>
                 <div class="modal-body">
-                    <form class="form-horizontal">
+                    <form class="form-horizontal" method="post" action="@routes.ContentController.setMetadata(content.id.get)">
                         <div class="control-group">
                             <label class="control-label" for="title">Title</label>
                             <div class="controls">
@@ -99,10 +101,10 @@
                         <div class="control-group">
                             <label class="control-label" for="keywords">Keywords</label>
                             <div class="controls">
-                                <div id="keywords"></div>
-                                <div class="input-append">
-                                    <input type="text" id="keywords" placeholder="Keywords">
-                                    <button class="btn" type="button">Add</button>
+                                <div id="keywordsList"></div>
+                                <div class="input-append pad-top-med">
+                                    <input type="text" id="keywords" placeholder="Add a keyword">
+                                    <button id="addKeyword" class="btn" type="button">Add</button>
                                 </div>
                                 <input type="hidden" name="keywords">
                             </div>
@@ -239,6 +241,57 @@
                 $(function() {
                     $("#deleteContentButton").click(function() {
                         window.location = "@routes.ContentController.delete(content.id.get)";
+                    });
+
+                    // Manage the editing of keywords
+                    var keywords = [];
+
+                    function addKeyword(word) {
+                        keywords.push(word);
+                        var keywordsHtml = keywords.map(function (keyword) {
+                            return '<span class="keyword label label-blue pad-right-low" data-keyword="' + keyword + '">' + keyword + ' <a style="color: white" href="#">×</a></span>'
+                        }).join("");
+                        $("#keywordsList").html(keywordsHtml);
+                        $(".keyword > a").click(function () {
+                            var parent = $(this).parent();
+                            var keyword = parent.attr("data-keyword");
+                            parent.remove();
+                            keywords.splice(keywords.indexOf(keyword), 1);
+                            $("input[name='keywords']").val(keywords.join(", "));
+                        });
+                        $("input[name='keywords']").val(keywords.join(", "));
+                    }
+                    $("#addKeyword").click(function() {
+                        var $keywords = $("#keywords");
+                        var keyword = $keywords.val();
+                        $keywords.val("");
+                        addKeyword(keyword);
+                    });
+                    $("#keywords").keydown(function (e) {
+                        // Prevent enter from submitting the form
+                        var keycode = null;
+                        if(window.event)
+                            keycode = window.event.keyCode;
+                        else
+                            keycode = e.which;
+
+                        if (keycode == 13) {
+                            $("#addKeyword").click();
+                            return false;
+                        }
+                        return true;
+                    });
+
+                    // Load metadata
+                    var resourceUrl = "@resourceLibraryUrl/@content.resourceId";
+                    new Resource(resourceUrl, function(resource) {
+                        $("#title").val(resource.title);
+                        $("#description").val(resource.description);
+                        if(resource.keywords && resource.keywords !== "")
+                            resource.keywords.split(", ").forEach(function(keyword) {
+                                addKeyword(keyword);
+                            });
+                        $("#categories").val(resource.categories);
                     });
                 });
             </script>

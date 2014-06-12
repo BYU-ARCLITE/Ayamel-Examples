@@ -6,6 +6,9 @@ import anorm.SqlParser._
 import service.{SerializationTools, TimeTools}
 import play.api.db.DB
 import play.api.Play.current
+import play.api.libs.json.JsValue
+import dataAccess.resourceLibrary.ResourceController
+import concurrent.Future
 
 /**
  * This links a resource object (in a resource library) to this system

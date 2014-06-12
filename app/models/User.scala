@@ -45,6 +45,33 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
    * Deletes the user from the DB
    */
   def delete() {
+
+    // Delete the user's content
+    getContent.foreach(_.delete())
+
+    // Delete the user's enrollment in courses
+    CourseMembership.listByUser(this).foreach(_.delete())
+
+    // Delete the user's announcements
+    Announcement.list.filter(_.userId == id.get).foreach(_.delete())
+
+    // Delete the user's notifications
+    Notification.listByUser(this).foreach(_.delete())
+
+    // Delete all linked accounts
+    getAccountLink.map {
+      accountLink =>
+        accountLink.getUsers.filterNot(_ == this).foreach(_.delete())
+        accountLink.delete()
+    }
+
+    // Delete add course requests
+    AddCourseRequest.list.filter(_.userId == id.get).foreach(_.delete())
+
+    // Delete teacher request
+    TeacherRequest.findByUser(this).map(_.delete())
+
+    // Delete this user
     delete(User.tableName, id)
   }
 
