@@ -89,7 +89,7 @@ var TranscriptPlayer = (function() {
                     var activeCue, parent,
 						track = ractive.data.transcripts[ractive.data.activeIndex];
                     currentTime = +value;
-					[].forEach.call(ractive.findAll('.transcriptContent[data-trackindex="'+ractive.data.activeIndex+'"] > .transcriptCue'),
+					[].forEach.call(document.querySelectorAll('.transcriptContent[data-trackindex="'+ractive.data.activeIndex+'"] > .transcriptCue'),
 						function(node){
 							var cue = track.cues[node.dataset.cueindex];
 							node.classList[(currentTime >= cue.startTime && currentTime <= cue.endTime)?'add':'remove']('active');
@@ -97,7 +97,7 @@ var TranscriptPlayer = (function() {
 					);
                     // Possibly scroll
                     if(!ractive.data.sync){ return; }
-                    activeCue = ractive.find('.transcriptCue.active');
+                    activeCue = document.querySelector('.transcriptCue.active');
                     if(activeCue){
 						parent = activeCue.parentNode;
 						parent.scrollTop = activeCue.offsetTop - parent.offsetTop - (parent.offsetHeight - activeCue.offsetHeight)/2;
