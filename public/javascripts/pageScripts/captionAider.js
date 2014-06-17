@@ -465,8 +465,10 @@ $(function() {
 
 			// Check for unsaved tracks before leaving
 			window.addEventListener('beforeunload',function(e){
+				var warning = "You have unsaved tracks. Your unsaved changes will be lost.";
 				if(!commandStack.saved){
-					return "You have unsaved tracks. Your unsaved changes will be lost.";
+					e.returnValue = warning;
+					return warning;
 				}
 			}, false);
 
