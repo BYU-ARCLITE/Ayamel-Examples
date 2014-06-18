@@ -231,121 +231,123 @@ var VideoRenderer = (function(){
     }
 
     function setupVideoPlayer(args, callback) {
-//        Ayamel.AddVideoPlayer(h5PlayerInstall, 1, function() {
+        try{
 
-        var components = args.components || {
-            left: ["play", "lastCaption", "volume", "captions"],
-            right: ["rate", "fullScreen", "timeCode"]
-        };
-        var captions = args.transcripts;
+            var components = args.components || {
+                left: ["play", "lastCaption", "volume", "captions"],
+                right: ["rate", "fullScreen", "timeCode"]
+            };
+            var captions = args.transcripts;
 
-        if (getLevel(args) === 1) {
-            ["left", "right"].forEach(function(side) {
-                ["lastCaption", "captions"].forEach(function(control) {
-                    var index = components[side].indexOf(control);
-                    if (index >= 0)
-                        components[side].splice(index, 1);
+            if (getLevel(args) === 1) {
+                ["left", "right"].forEach(function(side) {
+                    ["lastCaption", "captions"].forEach(function(control) {
+                        var index = components[side].indexOf(control);
+                        if (index >= 0)
+                            components[side].splice(index, 1);
+                    });
                 });
-            });
-            captions = null;
-        }
-
-        // Set the priority of players
-        Ayamel.prioritizedPlugins.video = ["html5", "flash", "brightcove", "youtube"];
-        Ayamel.prioritizedPlugins.audio = ["html5"];
-
-        // Make sure the element will be contained on the page if it's a video
-        if (args.content.contentType === "video" && args.screenAdaption && args.screenAdaption.fit) {
-            ScreenAdapter.containByHeight(args.layout.$player, Ayamel.aspectRatios.hdVideo, args.screenAdaption.padding);
-            //TODO: Dynamically check the actual control bar height
-            args.layout.$player.css("padding-bottom","61px"); // padding for the control bar
-        }
-
-        // Deactivate Space Features and set focus video to play/pause video
-        window.addEventListener("keydown", function(e) {
-            if (e.keyCode == 32 && !($('input:focus').length > 0 )) {
-                // There may be a better way to do this
-                $(document.getElementsByClassName("videoBox")[0]).children()[0].focus();
-                e.preventDefault();
+                captions = null;
             }
-        });
 
-        window.onresize = function(event) {
+            // Set the priority of players
+            Ayamel.prioritizedPlugins.video = ["html5", "flash", "brightcove", "youtube"];
+            Ayamel.prioritizedPlugins.audio = ["html5"];
+
+            // Make sure the element will be contained on the page if it's a video
             if (args.content.contentType === "video" && args.screenAdaption && args.screenAdaption.fit) {
                 ScreenAdapter.containByHeight(args.layout.$player, Ayamel.aspectRatios.hdVideo, args.screenAdaption.padding);
-                $(".videoBox").height(args.layout.$player.height());
-                $(".transcriptContent").css("max-height", $(".ayamelPlayer").height()-($("#videoTabs").height() + 57));
-
-                $("#Definitions, #Annotations").css("height", $(".ayamelPlayer").height()-($("#videoTabs").height() + 27));
-                $(" #Definitions, #Annotations").css("max-height", $(".ayamelPlayer").height()-($("#videoTabs").height() + 27));
-
-
+                //TODO: Dynamically check the actual control bar height
+                args.layout.$player.css("padding-bottom","61px"); // padding for the control bar
             }
-        };
 
-        videoPlayer = new Ayamel.classes.AyamelPlayer({
-            components: components,
-            $holder: args.layout.$player,
-            resource: args.resource,
-            captionTracks: captions,
-//            components: components,
-            startTime: args.startTime,
-            endTime: args.endTime,
-            renderCue: args.renderCue || function (renderedCue, area) { // Check to use a different renderer
-                var node = document.createElement('div');
-                node.appendChild(renderedCue.cue.getCueAsHTML(renderedCue.  kind === 'subtitles'));
-
-                // Attach the translator
-                if (args.translator) {
-                    var trackID = args.trackResource?
-                        args.trackResource.get(renderedCue.cue.track).id:
-                        "Unknown";
-                    args.translator.attach(node, renderedCue.language, Ayamel.utils.downgradeLangCode(languageSelect.get("selection")), {
-                        captionTrackId: trackID,
-                        cueIndex: renderedCue.cue.id
-                    });
-                }
-
-                // Add annotations
-                if (args.annotator) {
-                    args.annotator.annotate($(node));
-                }
-
-                renderedCue.node = node;
-            },
-            aspectRatio: Ayamel.aspectRatios.hdVideo,
-            captionTrackCallback: args.captionTrackCallback
-        });
-
-        if (args.screenAdaption && args.screenAdaption.scroll) {
-            videoPlayer.addEventListener("durationchange", function () {
-                // The video is loaded. Scroll the window to see it
-                if (!ScreenAdapter.isEntirelyVisible(args.layout.$player, args.screenAdaption.padding)) {
-                    ScreenAdapter.scrollTo(args.layout.$player.offset().top - 10);
+            // Deactivate Space Features and set focus video to play/pause video
+            window.addEventListener("keydown", function(e) {
+                if (e.keyCode == 32 && !($('input:focus').length > 0 )) {
+                    // There may be a better way to do this
+                    $(document.getElementsByClassName("videoBox")[0]).children()[0].focus();
+                    e.preventDefault();
                 }
             });
-        }
 
-        var registerPlay = true;
-        videoPlayer.addEventListener("play", function (event) {
-            // Sometimes two events appear, so only save one within a half second
-            if (registerPlay) {
-                var time = "" + videoPlayer.currentTime;
-                ActivityStreams.predefined.playClick(time);
-                registerPlay = false;
-                setTimeout(function(){ registerPlay = true;}, 500);
+            window.onresize = function(event) {
+                if (args.content.contentType === "video" && args.screenAdaption && args.screenAdaption.fit) {
+                    ScreenAdapter.containByHeight(args.layout.$player, Ayamel.aspectRatios.hdVideo, args.screenAdaption.padding);
+                    $(".videoBox").height(args.layout.$player.height());
+                    $(".transcriptContent").css("max-height", $(".ayamelPlayer").height()-($("#videoTabs").height() + 57));
+
+                    $("#Definitions, #Annotations").css("height", $(".ayamelPlayer").height()-($("#videoTabs").height() + 27));
+                    $(" #Definitions, #Annotations").css("max-height", $(".ayamelPlayer").height()-($("#videoTabs").height() + 27));
+
+
+                }
+            };
+
+            videoPlayer = new Ayamel.classes.AyamelPlayer({
+                components: components,
+                $holder: args.layout.$player,
+                resource: args.resource,
+                captionTracks: captions,
+    //            components: components,
+                startTime: args.startTime,
+                endTime: args.endTime,
+                renderCue: args.renderCue || function (renderedCue, area) { // Check to use a different renderer
+                    var node = document.createElement('div');
+                    node.appendChild(renderedCue.cue.getCueAsHTML(renderedCue.  kind === 'subtitles'));
+
+                    // Attach the translator
+                    if (args.translator) {
+                        var trackID = args.trackResource?
+                            args.trackResource.get(renderedCue.cue.track).id:
+                            "Unknown";
+                        args.translator.attach(node, renderedCue.language, Ayamel.utils.downgradeLangCode(languageSelect.get("selection")), {
+                            captionTrackId: trackID,
+                            cueIndex: renderedCue.cue.id
+                        });
+                    }
+
+                    // Add annotations
+                    if (args.annotator) {
+                        args.annotator.annotate($(node));
+                    }
+
+                    renderedCue.node = node;
+                },
+                aspectRatio: Ayamel.aspectRatios.hdVideo,
+                captionTrackCallback: args.captionTrackCallback
+            });
+
+            if (args.screenAdaption && args.screenAdaption.scroll) {
+                videoPlayer.addEventListener("durationchange", function () {
+                    // The video is loaded. Scroll the window to see it
+                    if (!ScreenAdapter.isEntirelyVisible(args.layout.$player, args.screenAdaption.padding)) {
+                        ScreenAdapter.scrollTo(args.layout.$player.offset().top - 10);
+                    }
+                });
             }
-        });
-        videoPlayer.addEventListener("pause", function (event) {
-            var time = "" + videoPlayer.currentTime;
-            ActivityStreams.predefined.pauseClick(time);
-        });
 
-        // Save the video player to the global context so we can access it from other places
-        window.ayamelPlayer = videoPlayer;
+            var registerPlay = true;
+            videoPlayer.addEventListener("play", function (event) {
+                // Sometimes two events appear, so only save one within a half second
+                if (registerPlay) {
+                    var time = "" + videoPlayer.currentTime;
+                    ActivityStreams.predefined.playClick(time);
+                    registerPlay = false;
+                    setTimeout(function(){ registerPlay = true;}, 500);
+                }
+            });
+            videoPlayer.addEventListener("pause", function (event) {
+                var time = "" + videoPlayer.currentTime;
+                ActivityStreams.predefined.pauseClick(time);
+            });
 
-        callback(videoPlayer);
-//        });
+            // Save the video player to the global context so we can access it from other places
+            window.ayamelPlayer = videoPlayer;
+
+            callback(videoPlayer);
+        }catch(e){
+            alert("Error: "+e.message);
+        }
     }
 
     function setupTranscripts(args) {
