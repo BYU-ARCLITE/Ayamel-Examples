@@ -8,8 +8,9 @@
 
 var VideoRenderer = (function(){
 
-    var languageSelect;
-    var translationHighlight,
+    var videoPlayer,
+        languageSelect,
+        translationHighlight,
         captionTrackId,
         cueNumber;
 
@@ -88,6 +89,7 @@ var VideoRenderer = (function(){
                     data = detail.data,
                     activity = $(detail.sourceElement).hasClass("transcriptCue")?"transcriptionTranslation":"captionTranslation";
                 ActivityStreams.predefined[activity](data.captionTrackId, data.cueIndex, detail.text);
+                videoPlayer.pause();
             });
 
             function engineToHTML(detail){
@@ -176,6 +178,9 @@ var VideoRenderer = (function(){
         if (getLevel(args) >= 4) {
             var textAnnotator = new TextAnnotator({manifests: args.manifests});
             textAnnotator.addEventListener("textAnnotationClick", function (event) {
+
+                videoPlayer.pause();
+
                 if (event.annotation.data.type === "text") {
                     args.layout.$annotations.html(event.annotation.data.value);
                 }
@@ -261,10 +266,10 @@ var VideoRenderer = (function(){
             if (e.keyCode == 32 && !($('input:focus').length > 0 )) {
                 // There may be a better way to do this
                 $(document.getElementsByClassName("videoBox")[0]).children()[0].focus();
-                e.preventDefault(); 
+                e.preventDefault();
             }
         });
-        
+
         window.onresize = function(event) {
             if (args.content.contentType === "video" && args.screenAdaption && args.screenAdaption.fit) {
                 ScreenAdapter.containByHeight(args.layout.$player, Ayamel.aspectRatios.hdVideo, args.screenAdaption.padding);
@@ -278,7 +283,7 @@ var VideoRenderer = (function(){
             }
         };
 
-        var videoPlayer = new Ayamel.classes.AyamelPlayer({
+        videoPlayer = new Ayamel.classes.AyamelPlayer({
             components: components,
             $holder: args.layout.$player,
             resource: args.resource,
@@ -462,7 +467,7 @@ var VideoRenderer = (function(){
                     setupVideoPlayer(args, function (videoPlayer) {
                         args.videoPlayer = videoPlayer;
                         setupTranscriptWithPlayer(args);
-                        
+
                         // Resize the panes' content to be correct size onload
                         $("#Definitions, #Annotations").css("height", $(".ayamelPlayer").height()-($("#videoTabs").height() + 27));
                         $("#Definitions, #Annotations").css("max-height", $(".ayamelPlayer").height()-($("#videoTabs").height() + 27));
