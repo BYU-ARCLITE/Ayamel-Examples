@@ -4,8 +4,8 @@
   Local(
     CSS("stylesheets/content.css"),
     Rel("javascripts/",
-	  Rel("formFixes/",
-	    JS("fileFix.js"),
+      Rel("formFixes/",
+        JS("fileFix.js"),
         JS("dragDropBinder.js"),
         JS("labelsInput.js")),
       JS("pageScripts/fileUpload.js"))),
@@ -27,7 +27,7 @@
             <li><a href="@routes.ContentController.createPage("questions")">Create Question Set</a></li>
         </ul>
 
-        <form class="form-horizontal" enctype="multipart/form-data" method="post" action="@routes.ContentController.createFromFile()">
+        <form class="form-horizontal" method="POST">
             <div id="fileSelect">
                 <h2>Select a file to upload</h2>
                 <div class="fileDropper">
@@ -101,7 +101,7 @@
                 </div>
                 <div class="control-group">
                     <div class="controls">
-                        <button type="submit" class="btn btn-blue">Save and Upload</button>
+                        <button id="uploadbtn" class="btn btn-blue">Save and Upload</button>
                     </div>
                 </div>
             </div>
@@ -110,8 +110,8 @@
     </div>
 
     <script type="text/javascript">
+        var uploadTarget = "@routes.ContentController.createFromFile()";
         $(function() {
-
             var langList = Object.keys(Ayamel.utils.p1map).map(function (p1) {
                     var code = Ayamel.utils.p1map[p1];
                     return {value: code, text: Ayamel.utils.getLangName(code)};

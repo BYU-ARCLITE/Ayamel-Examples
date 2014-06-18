@@ -56,11 +56,13 @@ var supportedMimeTypes = {
 };
 
 function detectType(file) {
-    var normalizedType = file.type.split(";")[0].trim();
-    for (var i=0; i < supportedMimeTypes.types.length; i++) {
-        var type = supportedMimeTypes.types[i];
-        if (supportedMimeTypes[type].indexOf(normalizedType) >= 0)
+    var i, type,
+        normalizedType = file.type.split(";")[0].trim();
+    for(i=0; i < supportedMimeTypes.types.length; i++){
+        type = supportedMimeTypes.types[i];
+        if (supportedMimeTypes[type].indexOf(normalizedType) >= 0){
             return type;
+        }
     }
     return "unknown";
 }
@@ -70,42 +72,80 @@ function capitalize(str) {
 }
 
 $(function() {
-    var maxFileSize = 20971520; // 20 MB
-    var $fileDropper = $(".fileDropper");
-    var $file = $("#file");
-    var $fileInfo = $("#fileInfo");
+    var selectedFile = null,
+        maxFileSize = 20971520, // 20 MB
+        $fileInfo = $("#fileInfo");
+
+    // Set up the continue button and sliding panels
+    $fileInfo.slideUp(0);
 
     // Set up the file uploading
-    bindDropArea($fileDropper[0], $file[0], function(files) {
-        $fileDropper.removeClass("active");
-    }, function() {
-        $fileDropper.addClass("active");
+    [].forEach.call(document.querySelectorAll('.fileDropper'),function(el){
+        bindDropArea(el, function(files) {
+            el.classList.remove("active");
+            setFile(files[0]);
+        }, function() {
+            el.classList.add("active");
+        });
     });
 
-    $file.change(function() {
+    document.getElementById("file").addEventListener('change',function(e){
+        setFile(this.files[0]);
+    },false);
+
+    document.getElementById('uploadbtn').addEventListener('click',function(e){
+		e.preventDefault();
+		var data = new FormData();
+        data.append("file", selectedFile, selectedFile.name);
+        data.append("contentType", document.getElementById('contentType').value);
+        data.append("title", document.getElementById('title').value);
+        data.append("description", document.getElementById('description').value);
+        data.append("labels", document.getElementById('labels').value);
+
+        [].forEach.call(document.getElementById('languages').options,function(option){
+            if(option.selected){ data.append('languages', option.value); }
+        });
+        [].forEach.call(document.getElementById('categories').options,function(option){
+            if(option.selected){ data.append('categories', option.value); }
+        });
+
+        Promise.resolve($.ajax({
+            url: uploadTarget,
+            data: data,
+            cache: false,
+            contentType: false,
+            processData: false,
+            type: "post",
+            dataType: "text"
+        })).then(function(data){
+			//replace current page with returned page
+            document.open();
+            document.write(data);
+            document.close();
+        },function(error){
+            alert("Error occurred while uploading.");
+        });
+    },false);
+
+    function setFile(file) {
         $fileInfo.slideDown(300);
 
         // Update the info form based on the file
         // Set the content type
-        var contentType = detectType(this.files[0]);
+        var contentTypeEl,
+            contentType = detectType(file);
         if (contentType !== "unknown") {
-
             // Check the file size
-            if (this.files[0].size <= maxFileSize) {
-                var $contentType = $("#contentType");
-                $contentType.parent().append("<input type='hidden' name='contentType' value='" + contentType +
-                    "'><div class='pad-top-low'>" + capitalize(contentType) + "</div>");
-                $contentType.remove();
+            if (file.size <= maxFileSize) {
+                contentTypeEl = document.getElementById("contentType");
+                contentTypeEl.parentNode.innerHTML = "<input id='contentType' type='hidden' value='"+contentType+"' /><div class='pad-top-low'>" + capitalize(contentType) + "</div>";
+                selectedFile = file;
             } else {
                 alert("File too big! 20 MB max.");
-                location.reload();
             }
         } else {
             alert("Unsupported file type: " + contentType);
-            location.reload();
         }
-    });
+    }
 
-    // Set up the continue button and sliding panels
-    $fileInfo.slideUp(0);
 });
