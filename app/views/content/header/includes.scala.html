@@ -15,8 +15,7 @@
       JS("libraries/sha1.js"),
       JS("TextTranslator.js"),
       JS("BoxDrawingCanvas.js"),
-      
-      
+
       Rel("contentRendering/",
         JS("ContentCache.js"),
         JS("ContentLayoutManager.js"),
@@ -29,8 +28,8 @@
         JS("VideoRenderer.js")),
 
        Rel("polyfills/",
-        JS("PolyfillPromise.js")),  
-      
+        JS("PolyfillPromise.js")),
+
       Rel("annotating/",
         JS("ImageAnnotation.js"),
         JS("TextAnnotation.js"),
@@ -79,8 +78,11 @@
         JS("TimeCode.js"),
         JS("VolumeSlider.js")),
       Rel("plugins/",
-        JS("brightcove.js"),
+        JS("flowplayer/flowplayer-3.2.12.min.js"),
         JS("flashVideo.js"),
+        JS("brightcove.js"),
         JS("html5Video.js"),
         JS("html5Audio.js"),
         JS("youtube.js")))))
+
+<script>Ayamel.path = "@{Dependencies.config.getString("Ayamel.js").get}";</script>
