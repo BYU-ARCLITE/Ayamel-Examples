@@ -270,8 +270,8 @@ var VideoRenderer = (function(){
                 }
             });
 
-            window.onresize = function(event) {
-                if (args.content.contentType === "video" && args.screenAdaption && args.screenAdaption.fit) {
+             window.onresize = function(event) {
+                if (args.content.contentType === "video" && args.screenAdaption && args.screenAdaption.fit && $(".control.button.fullScreen:not(.active)").length) {
                     ScreenAdapter.containByHeight(args.layout.$player, Ayamel.aspectRatios.hdVideo, args.screenAdaption.padding);
                     $(".videoBox").height(args.layout.$player.height());
                     $(".transcriptContent").css("max-height", $(".ayamelPlayer").height()-($("#videoTabs").height() + 57));
