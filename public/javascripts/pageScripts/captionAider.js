@@ -106,12 +106,12 @@ $(function() {
 								tp.then(function(track){ track.mode = "showing"; });
 							};
 						}
-					}));			
+					}));
 				}
 			}
 		});
 
-		return function(dl){		
+		return function(dl){
 			// Clear the form
 			ractive.set({trackName: "", selectOpen: false });
 			$('#newTrackModal').modal('show');
@@ -122,7 +122,7 @@ $(function() {
 			});
 		};
 	}());
-	
+
 	//Edit Track
 	var editTrackData =	(function(){
 		var ractive, datalist, resolver, failer;
@@ -145,10 +145,10 @@ $(function() {
 						failer("cancel");
 						return;
 					}
-					
+
 					$("#editTrackModal").modal("hide");
 					this.set({selectOpen: false});
-					
+
 					resolver(datalist.map(function(key){
 						switch(key){
 						case 'tid': return data.trackToEdit;
@@ -179,7 +179,7 @@ $(function() {
 				trackLang: track.language
 			});
 		});
-		
+
 		return function(dl){
 			$('#editTrackModal').modal('show');
 			datalist = dl;
@@ -189,7 +189,7 @@ $(function() {
 			});
 		};
 	}());
-	
+
 	//Save Tracks
 	var saveTrackData = (function(){
 		var ractive, datalist, resolver, failer,
@@ -227,7 +227,7 @@ $(function() {
 						case 'saver': return function(listp){ return listp.then(saver); };
 						}
 					}));
-					
+
 					if(data.saveDestination === "server") {
 						saver = function(exportedTracks){
 							var savep = Promise.all(exportedTracks.map(function(fObj){
@@ -261,7 +261,7 @@ $(function() {
 								},function(error){
 									alert("Error occurred while saving "+textTrack.label);
 								});
-							}));							
+							}));
 							savep.then(function(){
 								alert("Saved Successfully");
 								//Scott bandaid to fix the tracks being saved.
@@ -296,7 +296,7 @@ $(function() {
 				tracksToSave: ""
 			});
 		});
-		
+
 		return function(dl){
 			$('#saveTrackModal').modal('show');
 			datalist = dl;
@@ -306,7 +306,7 @@ $(function() {
 			});
 		};
 	}());
-	
+
 	// Load a track
 	var loadTrackData = (function(){
 		var ractive, datalist, resolver, failer,
@@ -328,7 +328,7 @@ $(function() {
 					var data = this.data;
 					$("#loadTrackModal").modal("hide");
 					this.set({selectOpen: false});
-					
+
 					EditorWidgets.LocalFile(data.loadSource,/.*\.(vtt|srt|ass|ttml)/,function(fileObj){
 						//If the label is omitted, it will be filled in with the file name stripped of extension
 						//That's easier than doing the stripping here, so leave out that parameter unless we can
@@ -354,7 +354,7 @@ $(function() {
 				}
 			}
 		});
-		
+
 		return function(dl){
 			$('#loadTrackModal').modal('show');
 			datalist = dl;
@@ -364,7 +364,7 @@ $(function() {
 			});
 		};
 	}());
-	
+
 	function loadTranscript(datalist){
 		//datalist is always the array ['linesrc']
 		return new Promise(function(resolve,reject){
@@ -376,7 +376,7 @@ $(function() {
 			f.click();
 		});
 	}
-	
+
 	function loadAudio(datalist){
 		return new Promise(function(resolve,reject){
 			var f = document.createElement('input');
@@ -393,7 +393,7 @@ $(function() {
 			f.click();
 		});
 	}
-	
+
 	function getFor(whatfor, datalist){
 		switch(whatfor){
 		case 'newtrack': return newTrackData(datalist);
@@ -404,7 +404,7 @@ $(function() {
 		case 'loadaudio': return loadAudio(datalist);
 		}
 	}
-	
+
 	function canGetFor(whatfor, datalist){
 		switch(whatfor){
 		case 'newtrack':
@@ -416,7 +416,7 @@ $(function() {
 		}
 		return false;
 	}
-	
+
 	ContentRenderer.render({
 		content: content,
 		userId: userId,
@@ -441,7 +441,7 @@ $(function() {
 			commandStack = new EditorWidgets.CommandStack();
 			videoPlayer = args.videoPlayer;
 			renderer = videoPlayer.captionRenderer;
-			
+
 			timeline = new Timeline(document.getElementById("timeline"), {
 				stack: commandStack,
 				syncWith: videoPlayer,
@@ -454,7 +454,7 @@ $(function() {
 				canGetFor: canGetFor,
 				getFor: getFor
 			});
-			
+
 			updateSpacing();
 
 			captionEditor = CaptionEditor({
@@ -488,7 +488,7 @@ $(function() {
 
 			//TODO: Integrate the next listener into the timeline editor
 			timeline.on('activechange', function(){ renderer.rebuildCaptions(); });
-			
+
 			timeline.on('addtrack',function(evt){
 				videoPlayer.addTextTrack(evt.track.textTrack);
 				updateSpacing();
@@ -498,14 +498,13 @@ $(function() {
 
 			[   //Set up keyboard shortcuts
 				[Ayamel.KeyBinder.keyCodes.a,Timeline.CREATE],  //a - Add
-				[Ayamel.KeyBinder.keyCodes.s,Timeline.SELEC],   //s - Select
+				[Ayamel.KeyBinder.keyCodes.s,Timeline.SELECT],   //s - Select
 				[Ayamel.KeyBinder.keyCodes.d,Timeline.DELETE],  //d - Delete
-				[Ayamel.KeyBinder.keyCodes.v,Timeline.MOVE],    //v - Move
+				[Ayamel.KeyBinder.keyCodes.m,Timeline.MOVE],    //m - Move
 				[Ayamel.KeyBinder.keyCodes.q,Timeline.SPLIT],   //q - Split
-				[Ayamel.KeyBinder.keyCodes.r,Timeline.SCROLL],  //r - Scroll
-				[Ayamel.KeyBinder.keyCodes.e,Timeline.ORDER],   //e - Reorder
+				[Ayamel.KeyBinder.keyCodes.o,Timeline.ORDER],   //o - Reorder
 				[Ayamel.KeyBinder.keyCodes.f,Timeline.SHIFT],   //f - Time shift
-				[Ayamel.KeyBinder.keyCodes.w,Timeline.REPEAT]   //w - Set repeat tool
+				[Ayamel.KeyBinder.keyCodes.r,Timeline.REPEAT]   //r - Set repeat tool
 			].forEach(function(pair) {
 				var tool = pair[1];
 				Ayamel.KeyBinder.addKeyBinding(pair[0], function() {
@@ -520,6 +519,19 @@ $(function() {
 
 			// Autocue controls
 			Ayamel.KeyBinder.addKeyBinding(Ayamel.KeyBinder.keyCodes['|'], timeline.breakPoint.bind(timeline),true);
+
+			//undo/redo shortcuts
+			document.addEventListener('keydown',function(e){
+				if(!e.ctrlKey){ return; }
+				switch(e.keyCode){
+				case 89: timeline.commandStack.redo();
+					break;
+				case 90: timeline.commandStack.undo();
+					break;
+				default: return;
+				}
+				e.preventDefault();
+			},false);
 		}
 	});
 });
