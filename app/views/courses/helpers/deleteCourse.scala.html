@@ -1,0 +1,17 @@
+@(user: User, course: Course)(implicit request: RequestHeader)
+
+@if(user.canEdit(course)) {
+   <div id="deleteCourseModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3 id="deleteModalLabel">Delete course</h3>
+        </div>
+        <div class="modal-body">
+            <p>Are you sure you want to delete @course.name?</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
+            <button class="btn btn-magenta" id="deleteButton" data-id="">Yes, Delete</button>
+        </div>
+    </div>
+}
