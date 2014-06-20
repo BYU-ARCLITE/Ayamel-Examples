@@ -208,13 +208,16 @@ object Administration extends Controller {
   def deleteCourse(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        Authentication.enforceRole(User.roles.admin) {
+         {
           Courses.getCourse(id) {
             course =>
-
-            // Delete the course
-              course.delete()
-              Redirect(routes.Administration.manageCourses()).flashing("info" -> "Course deleted")
+              if(user.role == User.roles.admin){
+                course.delete()
+                Redirect(routes.Administration.manageCourses()).flashing("info" -> "Course deleted")
+              } else if (user.role == User.roles.teacher){
+                course.delete()
+                Redirect(routes.Application.home).flashing("info" -> "Course deleted")
+              } else {Errors.forbidden}
           }
         }
   }

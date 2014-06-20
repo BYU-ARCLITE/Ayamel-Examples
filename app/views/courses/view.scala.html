@@ -31,6 +31,7 @@
                     <a href="#joinLinkModal" role="button" class="btn" data-toggle="modal"><i class="icon-link"></i> Join Url</a>
                 </div>
                 <a href="#editCourseModal" role="button" class="btn btn-yellow" data-toggle="modal"><i class="icon-pencil"></i> Edit</a>
+                <a href="#deleteCourseModal" role="button" class="btn btn-magenta deleteCourse" data-toggle="modal" data-id="@course.id.get"><i class="icon-trash"></i> Delete</a>
                 @if(!course.getRequests.isEmpty) {
                     <a href="@routes.Courses.approvePage(course.id.get)" class="btn btn-blue"><i class="icon-check"></i> Student Requests</a>
                 }
@@ -80,6 +81,10 @@
                             filters: ContentItemRenderer.standardFilters,
                             courseId: @{course.id.get}
                         });
+
+                        $("#deleteButton").click(function() {
+                            window.location = "/admin/courses/" + courseId + "/delete";
+                        });
                     });
                 </script>
 
@@ -97,6 +102,7 @@
 
     @views.html.courses.helpers.lmsInfo(user, course)
     @views.html.courses.helpers.editCourse(user, course)
+    @views.html.courses.helpers.deleteCourse(user, course)
     @views.html.courses.helpers.studentInfo(user, course)
     @views.html.courses.helpers.joinLink(user, course)
 
