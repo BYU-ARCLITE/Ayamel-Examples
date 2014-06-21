@@ -14,19 +14,19 @@
 @main("Ayamel - " + content.name,
   Local(
     Rel("stylesheets/",
-	  CSS("content.css"),
-	  CSS("annotator.css")),
-	Rel("wysihtml5/",
-	  CSS("bootstrap-wysihtml5.css"),
-      JS("bootstrap-wysihtml5.js"),
-	  JS("wysihtml5-0.3.0.js")),
-	Rel("javascripts/",
-	  JS("contentSelection/PopupBrowser.js"),
-	  Rel("annotationEditing/",
-	    JS("AnnotationPopupEditor.js"),
-	    JS("AnnotationImageEditor.js"),
-	    JS("AnnotationTextEditor.js"),
-	    JS("annotationEditing.js"))))
+      CSS("content.css"),
+      CSS("annotator.css")),
+    Rel("wysihtml5/",
+      CSS("bootstrap-wysihtml5.css"),
+      JS("wysihtml5-0.3.0.js"),
+      JS("bootstrap-wysihtml5.js")),
+    Rel("javascripts/",
+      JS("contentSelection/PopupBrowser.js"),
+      Rel("annotationEditing/",
+        JS("AnnotationPopupEditor.js"),
+        JS("AnnotationImageEditor.js"),
+        JS("AnnotationTextEditor.js"),
+        JS("annotationEditing.js"))))
 ) {
 
     @views.html.content.header.includes()
