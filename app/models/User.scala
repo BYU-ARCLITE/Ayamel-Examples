@@ -58,9 +58,9 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
 
     // Delete the user's notifications
     Notification.listByUser(this).foreach(_.delete())
-	
-	// Delete the user's activities
-	Activity.listByUser(this).foreach(_.delete())
+
+    // Delete the user's activities
+    Activity.listByUser(this).foreach(_.delete())
 
     // Delete add course requests
     AddCourseRequest.listByUser(this).foreach(_.delete())
@@ -440,6 +440,9 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
 
   def canApprove(request: AddCourseRequest, course: Course): Boolean =
     role == User.roles.admin || (canEdit(course) && request.courseId == course.id.get)
+
+  def canRemoveFrom(course: Course): Boolean =
+    role == User.roles.admin || canEdit(course)
 
   def canEdit(course: Course): Boolean =
     role == User.roles.admin || course.getTeachers.contains(this)
