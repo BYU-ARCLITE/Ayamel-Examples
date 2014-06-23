@@ -113,7 +113,7 @@ GET     /admin/teacher/:id/approve          controllers.Administration.approveTe
 GET     /admin/teacher/:id/deny             controllers.Administration.denyTeacher(id: Long)
 GET     /admin/users                        controllers.Administration.manageUsers
 POST    /admin/users/setRole                controllers.Administration.setRole
-POST    /admin/users/notify                 controllers.Administration.sendNotification
+POST    /admin/users/notify                 controllers.Administration.sendNotification(currentPage: Int)
 GET     /admin/users/:id/delete             controllers.Administration.delete(id: Long)
 GET     /admin/logins                       controllers.Administration.logins
 GET     /admin/courses                      controllers.Administration.manageCourses

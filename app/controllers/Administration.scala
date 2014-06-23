@@ -136,7 +136,8 @@ object Administration extends Controller {
   /**
    * Sends a notification to a user
    */
-  def sendNotification = Authentication.authenticatedAction(parse.urlFormEncoded) {
+  def sendNotification(currentPage: Int) = Authentication.authenticatedAction(parse.urlFormEncoded) {
+    //There may be a better way to control the way the user is redirected than with an Integer...
     implicit request =>
       implicit user =>
         Authentication.enforceRole(User.roles.admin) {
@@ -147,7 +148,10 @@ object Administration extends Controller {
             // Send a notification to the user
               val message = request.body("message")(0)
               targetUser.sendNotification(message)
-              Redirect(routes.Administration.manageUsers()).flashing("info" -> "Notification sent to user")
+              if(currentPage == 0) {Redirect(routes.Administration.manageUsers()).flashing("info" -> "Notification sent to user")
+              } else if (currentPage == 1) {
+                Redirect(routes.Administration.manageCourses()).flashing("info" -> "Notification sent to user")
+                } else {Redirect(routes.Application.home).flashing("info" -> "Notification sent to user")}
           }
         }
   }
