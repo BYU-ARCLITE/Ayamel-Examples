@@ -28,32 +28,31 @@ object Courses extends Controller {
    */
   def ltiConfiguration(id: Long) = Action {
     implicit request =>
-      getCourse(id) {
-        course =>
-          val xml = <cartridge_basiclti_link xmlns="http://www.imsglobal.org/xsd/imslticc_v1p0" xmlns:blti="http://www.imsglobal.org/xsd/imsbasiclti_v1p0" xmlns:lticm="http://www.imsglobal.org/xsd/imslticm_v1p0" xmlns:lticp="http://www.imsglobal.org/xsd/imslticp_v1p0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.imsglobal.org/xsd/imslticc_v1p0 http://www.imsglobal.org/xsd/lti/ltiv1p0/imslticc_v1p0.xsd http://www.imsglobal.org/xsd/imsbasiclti_v1p0 http://www.imsglobal.org/xsd/lti/ltiv1p0/imsbasiclti_v1p0.xsd http://www.imsglobal.org/xsd/imslticm_v1p0 http://www.imsglobal.org/xsd/lti/ltiv1p0/imslticm_v1p0.xsd http://www.imsglobal.org/xsd/imslticp_v1p0 http://www.imsglobal.org/xsd/lti/ltiv1p0/imslticp_v1p0.xsd">
-            <blti:title>
-              {course.name}
-              on Ayamel</blti:title>
-            <blti:description>
-              This provides access to the course "
-              {course.name}
-              " on Ayamel where students are able to watch videos,
-              look at images, and listen to audio to learn languages.
-            </blti:description>
-            <blti:icon>
-              {routes.Assets.at("images/lti/icon.png")}
-            </blti:icon>
-            <blti:launch_url>
-              {routes.Courses.ltiAuth(course.id.get).absoluteURL()}
-            </blti:launch_url>
-            <blti:extensions platform="canvas.instructure.com">
-              <lticm:property name="tool_id">Ayamel</lticm:property>
-              <lticm:property name="privacy_level">public</lticm:property>
-            </blti:extensions>
-            <cartridge_bundle identifierref="BLTI001_Bundle"/>
-            <cartridge_icon identifierref="BLTI001_Icon"/>
-          </cartridge_basiclti_link>
-          Ok(xml)
+      getCourse(id) { course =>
+        val xml = <cartridge_basiclti_link xmlns="http://www.imsglobal.org/xsd/imslticc_v1p0" xmlns:blti="http://www.imsglobal.org/xsd/imsbasiclti_v1p0" xmlns:lticm="http://www.imsglobal.org/xsd/imslticm_v1p0" xmlns:lticp="http://www.imsglobal.org/xsd/imslticp_v1p0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.imsglobal.org/xsd/imslticc_v1p0 http://www.imsglobal.org/xsd/lti/ltiv1p0/imslticc_v1p0.xsd http://www.imsglobal.org/xsd/imsbasiclti_v1p0 http://www.imsglobal.org/xsd/lti/ltiv1p0/imsbasiclti_v1p0.xsd http://www.imsglobal.org/xsd/imslticm_v1p0 http://www.imsglobal.org/xsd/lti/ltiv1p0/imslticm_v1p0.xsd http://www.imsglobal.org/xsd/imslticp_v1p0 http://www.imsglobal.org/xsd/lti/ltiv1p0/imslticp_v1p0.xsd">
+          <blti:title>
+            {course.name}
+            on Ayamel</blti:title>
+          <blti:description>
+            This provides access to the course "
+            {course.name}
+            " on Ayamel where students are able to watch videos,
+            look at images, and listen to audio to learn languages.
+          </blti:description>
+          <blti:icon>
+            {routes.Assets.at("images/lti/icon.png")}
+          </blti:icon>
+          <blti:launch_url>
+            {routes.Courses.ltiAuth(course.id.get).absoluteURL()}
+          </blti:launch_url>
+          <blti:extensions platform="canvas.instructure.com">
+            <lticm:property name="tool_id">Ayamel</lticm:property>
+            <lticm:property name="privacy_level">public</lticm:property>
+          </blti:extensions>
+          <cartridge_bundle identifierref="BLTI001_Bundle"/>
+          <cartridge_icon identifierref="BLTI001_Icon"/>
+        </cartridge_basiclti_link>
+        Ok(xml)
       }
   }
 
@@ -63,16 +62,15 @@ object Courses extends Controller {
    */
   def ltiAuth(id: Long) = Action(parse.tolerantText) {
     implicit request =>
-      getCourse(id) {
-        course =>
-          LMSAuth.ltiAuth(course) match {
-          case Some(user) => {
-              user.copy(lastLogin = TimeTools.now()).save
-              Redirect(routes.Courses.view(id)).withSession("userId" -> user.id.get.toString)
-            }
-          case _ =>
-            Errors.forbidden
+      getCourse(id) { course =>
+        LMSAuth.ltiAuth(course) match {
+        case Some(user) => {
+            user.copy(lastLogin = TimeTools.now()).save
+            Redirect(routes.Courses.view(id)).withSession("userId" -> user.id.get.toString)
           }
+        case _ =>
+          Errors.forbidden
+        }
       }
   }
 
@@ -81,14 +79,13 @@ object Courses extends Controller {
    */
   def keyAuth(id: Long) = Action {
     implicit request =>
-      getCourse(id) {
-        course =>
-          LMSAuth.keyAuth(course) match {
-          case Some(user) =>
-            Redirect(routes.Courses.view(id)).withSession("userId" -> user.id.get.toString)
-          case _ =>
-            Errors.forbidden
-          }
+      getCourse(id) { course =>
+        LMSAuth.keyAuth(course) match {
+        case Some(user) =>
+          Redirect(routes.Courses.view(id)).withSession("userId" -> user.id.get.toString)
+        case _ =>
+          Errors.forbidden
+        }
       }
   }
 
@@ -98,12 +95,11 @@ object Courses extends Controller {
   def view(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        getCourse(id) {
-          course =>
-            if (user canView course)
-              Ok(views.html.courses.view(course))
-            else
-              Redirect(routes.Courses.courseRequestPage(id))
+        getCourse(id) { course =>
+          if (user canView course)
+            Ok(views.html.courses.view(course))
+          else
+            Redirect(routes.Courses.courseRequestPage(id))
         }
   }
 
@@ -113,15 +109,14 @@ object Courses extends Controller {
   def edit(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
-        getCourse(id) {
-          course =>
-            if (user canEdit course) {
-              val name = request.body("courseName")(0)
-              val enrollment = Symbol(request.body("courseEnrollment")(0))
-              course.copy(name = name, enrollment = enrollment).save
-              Redirect(routes.Courses.view(id)).flashing("info" -> "Course updated")
-            } else
-              Errors.forbidden
+        getCourse(id) { course =>
+          if (user canEdit course) {
+            val name = request.body("courseName")(0)
+            val enrollment = Symbol(request.body("courseEnrollment")(0))
+            course.copy(name = name, enrollment = enrollment).save
+            Redirect(routes.Courses.view(id)).flashing("info" -> "Course updated")
+          } else
+            Errors.forbidden
         }
   }
 
@@ -132,19 +127,18 @@ object Courses extends Controller {
   def addContent(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
-        getCourse(id) {
-          course =>
+        getCourse(id) { course =>
 
           // Only non-guest members and admins can add content
-            if (user canAddContentTo course) {
+          if (user canAddContentTo course) {
 
-              // Add the content to the course
-              request.body("addContent").foreach(id => {
-                Content.findById(id.toLong).foreach(content => course.addContent(content))
-              })
-              Redirect(routes.Courses.view(id)).flashing("success" -> "Content added to course.")
-            } else
-              Errors.forbidden
+            // Add the content to the course
+            request.body("addContent").foreach(id => {
+              Content.findById(id.toLong).foreach(content => course.addContent(content))
+            })
+            Redirect(routes.Courses.view(id)).flashing("success" -> "Content added to course.")
+          } else
+            Errors.forbidden
         }
   }
 
@@ -155,19 +149,18 @@ object Courses extends Controller {
   def addAnnouncement(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
-        getCourse(id) {
-          course =>
+        getCourse(id) { course =>
 
           // Only non-guest members and admins can add content
-            if (user canAddContentTo course) {
+          if (user canAddContentTo course) {
 
-              // Add the content to the course
-              val announcement = request.body("announcement")(0)
-              course.makeAnnouncement(user, announcement)
-              Redirect(routes.Courses.view(id)).flashing("success" -> "Announcement published.")
-            } else
-              Errors.forbidden
-        }
+            // Add the content to the course
+            val announcement = request.body("announcement")(0)
+            course.makeAnnouncement(user, announcement)
+            Redirect(routes.Courses.view(id)).flashing("success" -> "Announcement published.")
+          } else
+            Errors.forbidden
+      }
   }
 
   /**
@@ -215,7 +208,7 @@ object Courses extends Controller {
     implicit request =>
       implicit user =>
 
-      // Guests cannot browse
+        // Guests cannot browse
         Authentication.enforceNotRole(User.roles.guest) {
           val courses = Course.list
           Ok(views.html.courses.list(courses))
@@ -229,16 +222,15 @@ object Courses extends Controller {
   def courseRequestPage(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        getCourse(id) {
-          course =>
+        getCourse(id) { course =>
 
           // Guests cannot request courses
-            Authentication.enforceNotRole(User.roles.guest) {
-              AddCourseRequest.listByCourse(course).find(req => req.userId == user.id.get) match {
-              case Some(_) => Ok(views.html.courses.pending(course))
-              case _ => Ok(views.html.courses.request(course))
-              }
+          Authentication.enforceNotRole(User.roles.guest) {
+            AddCourseRequest.listByCourse(course).find(req => req.userId == user.id.get) match {
+            case Some(_) => Ok(views.html.courses.pending(course))
+            case _ => Ok(views.html.courses.request(course))
             }
+          }
         }
   }
 
@@ -249,39 +241,38 @@ object Courses extends Controller {
   def submitCourseRequest(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
-        getCourse(id) {
-          course =>
+        getCourse(id) { course =>
 
           // Make sure it's not a guest
-            Authentication.enforceNotRole(User.roles.guest) {
+          Authentication.enforceNotRole(User.roles.guest) {
 
-              // Check to see what kind of enrollment the course is
-              if (course.enrollment == 'closed) {
+            // Check to see what kind of enrollment the course is
+            if (course.enrollment == 'closed) {
 
-                val message = request.body("message")(0)
-                AddCourseRequest(NotAssigned, user.id.get, course.id.get, message).save
+              val message = request.body("message")(0)
+              AddCourseRequest(NotAssigned, user.id.get, course.id.get, message).save
 
-                // Notify the teachers
-                val notificationMessage = "A student has requested to join your course \"" + course.name + "\"."
-                course.getTeachers.foreach {
-                  _.sendNotification(notificationMessage)
-                }
-
-                Ok(views.html.courses.pending(course))
-              } else if (course.enrollment == 'open) {
-
-                // Notify the teachers
-                val notificationMessage = "A student has joined your course \"" + course.name + "\"."
-                course.getTeachers.foreach {
-                  _.sendNotification(notificationMessage)
-                }
-
-                user.enroll(course, teacher = false)
-                Redirect(routes.Courses.view(course.id.get))
-              } else {
-                Redirect(routes.Application.home()).flashing("error" -> "Error: Unknown course enrollment type")
+              // Notify the teachers
+              val notificationMessage = "A student has requested to join your course \"" + course.name + "\"."
+              course.getTeachers.foreach {
+                _.sendNotification(notificationMessage)
               }
+
+              Ok(views.html.courses.pending(course))
+            } else if (course.enrollment == 'open) {
+
+              // Notify the teachers
+              val notificationMessage = "A student has joined your course \"" + course.name + "\"."
+              course.getTeachers.foreach {
+                _.sendNotification(notificationMessage)
+              }
+
+              user.enroll(course, teacher = false)
+              Redirect(routes.Courses.view(course.id.get))
+            } else {
+              Redirect(routes.Application.home()).flashing("error" -> "Error: Unknown course enrollment type")
             }
+          }
         }
   }
 
@@ -292,13 +283,11 @@ object Courses extends Controller {
   def approvePage(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        getCourse(id) {
-          course =>
-
-            if (user canEdit course)
-              Ok(views.html.courses.approveRequests(course))
-            else
-              Errors.forbidden
+        getCourse(id) { course =>
+          if (user canEdit course)
+            Ok(views.html.courses.approveRequests(course))
+          else
+            Errors.forbidden
         }
   }
 
@@ -310,20 +299,19 @@ object Courses extends Controller {
   def approveRequest(id: Long, requestId: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        getCourse(id) {
-          course =>
-            // Get the request
-            AddCourseRequest.findById(requestId) match {
-            case Some(courseRequest) =>
-              // Make sure the user is allowed to approve
-              if (user.canApprove(courseRequest, course)) {
-                courseRequest.approve()
-                Redirect(routes.Courses.approvePage(course.id.get)).flashing("info" -> "Course request approved")
-              } else
-                Errors.forbidden
-            case _ =>
-              Errors.notFound
-            }
+        getCourse(id) { course =>
+          // Get the request
+          AddCourseRequest.findById(requestId) match {
+          case Some(courseRequest) =>
+            // Make sure the user is allowed to approve
+            if (user.canApprove(courseRequest, course)) {
+              courseRequest.approve()
+              Redirect(routes.Courses.approvePage(course.id.get)).flashing("info" -> "Course request approved")
+            } else
+              Errors.forbidden
+          case _ =>
+            Errors.notFound
+          }
         }
   }
 
@@ -335,20 +323,41 @@ object Courses extends Controller {
   def denyRequest(id: Long, requestId: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        getCourse(id) {
-          course =>
-            // Get the request
-            AddCourseRequest.findById(requestId) match {
-            case Some(courseRequest) =>
-              // Make sure the user is allowed to approve
-              if (user.canApprove(courseRequest, course)) {
-                courseRequest.deny()
-                Redirect(routes.Courses.approvePage(course.id.get)).flashing("info" -> "Course request denied")
-              } else
-                Errors.forbidden
+        getCourse(id) { course =>
+          // Get the request
+          AddCourseRequest.findById(requestId) match {
+          case Some(courseRequest) =>
+            // Make sure the user is allowed to approve
+            if (user.canApprove(courseRequest, course)) {
+              courseRequest.deny()
+              Redirect(routes.Courses.approvePage(course.id.get)).flashing("info" -> "Course request denied")
+            } else
+              Errors.forbidden
+          case _ =>
+            Errors.notFound
+          }
+      }
+  }
+
+  /**
+   * Remove a student from a course
+   * @param id The ID of the course
+   * @param studentId The user ID of the student
+   */
+  def removeStudent(id: Long, studentId: Long) = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+        getCourse(id) { course =>
+          if (user.canRemoveFrom(course)) {
+            User.findById(studentId) match {
+            case Some(student) =>
+              student.unenroll(course)
+              Redirect(routes.Courses.view(course.id.get)).flashing("info" -> "Student removed")
             case _ =>
               Errors.notFound
             }
+          } else
+            Errors.forbidden
         }
   }
 
@@ -362,14 +371,13 @@ object Courses extends Controller {
   def joinLink(id: Long, key: String) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        getCourse(id) {
-          course =>
-            if (key == course.lmsKey) {
-              user.enroll(course)
-              Redirect(routes.Courses.view(id)).flashing("info" -> ("Welcome to the course \"" + course.name + "\"."))
-            } else {
-              Unauthorized("Invalid key")
-            }
+        getCourse(id) { course =>
+          if (key == course.lmsKey) {
+            user.enroll(course)
+            Redirect(routes.Courses.view(id)).flashing("info" -> ("Welcome to the course \"" + course.name + "\"."))
+          } else {
+            Unauthorized("Invalid key")
+          }
         }
   }
 }

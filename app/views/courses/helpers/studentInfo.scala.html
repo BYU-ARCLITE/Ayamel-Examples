@@ -31,6 +31,7 @@
                     <tr>
                         <th>Name</th>
                         <th>Email</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -38,6 +39,7 @@
                         <tr>
                             <td>@student.displayName</td>
                             <td>@Html(student.email.getOrElse("<em>None</em>"))</td>
+                            <td><a href="/course/@{course.id.get}/remove/@{student.id.get}" class="btn btn-magenta"><i class="icon-trash"></i> Remove</a></td>
                         </tr>
                     }
                 </tbody>
