@@ -58,7 +58,7 @@ $(function() {
             if(window.event)
                 keycode = window.event.keyCode;
             else
-                keycode = e.which;
+                keycode = event.which;
             if (keycode === 13) {
                 event.stopPropagation();
                 $labelInputButton.click();
