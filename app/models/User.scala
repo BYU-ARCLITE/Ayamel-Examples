@@ -159,29 +159,31 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
    * @param user The user to move ownership
    */
   def consolidateOwnership(user: User) {
+    val thisid = this.id.get
+
     // Transfer content ownership
-    user.getContent.foreach { content => ContentOwnership.findByContent(content).copy(userId = id.get).save }
+    ContentOwnership.listByUser(user).foreach { _.copy(userId = thisid).save }
 
     // Move the notifications over
-    user.getNotifications.foreach { _.copy(userId = id.get).save }
+    user.getNotifications.foreach { _.copy(userId = thisid).save }
 
     // Move the announcements over
-    Announcement.list.filter(_.userId == user.id.get).foreach { _.copy(userId = id.get).save }
+    Announcement.list.filter(_.userId == user.id.get).foreach { _.copy(userId = thisid).save }
 
     // Move the course membership over. Check this user's membership to prevent duplicates
     val myMembership = CourseMembership.listByUser(this).map(_.courseId)
-    CourseMembership.listByUser(user).foreach(membership => {
+    CourseMembership.listByUser(user).foreach { membership =>
       if (myMembership.contains(membership.courseId))
         membership.delete()
       else
-        membership.copy(userId = id.get).save
-    })
+        membership.copy(userId = thisid).save
+    }
 
-    // Move the teacher request over if this one doesn't have one.
-//    if (TeacherRequest.findByUser(this).isDefined)
-//      TeacherRequest.findByUser(user).foreach { _.delete() }
-//    else
-//      TeacherRequest.findByUser(user).foreach { _.copy(userId = id.get) }
+    // Merge teacher requests
+    if (TeacherRequest.findByUser(this).isDefined)
+      TeacherRequest.findByUser(user).foreach { _.delete() }
+    else
+      TeacherRequest.findByUser(user).foreach { _.copy(userId = id.get) }
   }
 
   /**
@@ -192,7 +194,8 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
   //They will only fail if data is corrupted, and it's not immediately clear
   //what should be done in those cases
   def merge(user: User) {
-    val newRole = math.max(role, user.role)
+    val newRole = Math.max(role, user.role)
+    val thisid = this.id.get
 
     /*
      * Three possibilities:
@@ -200,46 +203,49 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
      * 2. One user has an account link
      * 3. Both users have an account link
      */
-    val id1 = accountLinkId
-    val id2 = user.accountLinkId
-    if (id1 == -1 && id2 == -1) { // Case 1
+    if (this.accountLinkId == -1) {
+      if (user.accountLinkId == -1) {
+        // Case 1: Create a new account link
+        val accountLink = AccountLink(NotAssigned, Set(thisid, user.id.get), thisid).save
 
-      // Transfer ownership
-      consolidateOwnership(user)
+        val linkId = accountLink.id.get
+        this.copy(role = newRole, accountLinkId = linkId).save
+        user.copy(role = newRole, accountLinkId = linkId).save
 
-      // Create an account link and add both users to it, then update the users (role and account link)
-      val accountLink = AccountLink(NotAssigned, Set(this, user).map(_.id.get), id.get).save
-      this.copy(role = newRole, accountLinkId = accountLink.id.get).save
-      user.copy(role = newRole, accountLinkId = accountLink.id.get).save
+        consolidateOwnership(user)
+      } else {
+        //Case 2: Make this the primary of the existing account link
+        val accountLink = AccountLink.findById(user.accountLinkId).get
 
-    } else if(Math.min(id1, id2) == -1) { // Case 2
+        accountLink.getUsers foreach { user => user.copy(role = newRole).save }
+        accountLink.addUser(this)
 
-      // Transfer ownership from the other user's primary account to this one
-      consolidateOwnership(
-        user.getAccountLink.get.getPrimaryUser.get
-      )
+        consolidateOwnership(accountLink.getPrimaryUser.get)
 
-      // Merge the non-merged user into the other
-      val accountLink = AccountLink.findById(math.max(id1, id2)).get // The max id is the one that actually exists
-      accountLink.addUser(this).addUser(user).copy(primaryAccount = id.get).save
-      this.copy(role = newRole, accountLinkId = accountLink.id.get).save
-      user.copy(role = newRole, accountLinkId = accountLink.id.get).save
-
-    } else if(id1 != -1 && id2 != -1) { // Case 3
-
-      // Transfer ownership from this user's primary account to the other user's primary account
-      getAccountLink.get.getPrimaryUser.get.consolidateOwnership(
-        user.getAccountLink.get.getPrimaryUser.get
-      )
-
-      // Move all accounts on the other user to this one
-      val accountLink1 = AccountLink.findById(id1).get
-      val accountLink2 = AccountLink.findById(id2).get
-      accountLink1.copy(userIds = accountLink1.userIds ++ accountLink2.userIds, primaryAccount = id.get).save
-      accountLink2.getUsers foreach { user =>
-        user.copy(accountLinkId = accountLink1.id.get).save
+        this.copy(role = newRole, accountLinkId = accountLink.id.get).save
+        accountLink.copy(primaryAccount = thisid).save
       }
-      accountLink2.delete()
+    } else {
+      //these branches can only be talen if this is the primary user
+      if (user.accountLinkId == -1) {
+        // Case 2: Add the other user to this account link
+        val accountLink = AccountLink.findById(this.accountLinkId).get
+
+        accountLink.addUser(user)
+        accountLink.getUsers foreach { user => user.copy(role = newRole).save }
+
+        consolidateOwnership(user)
+      } else {
+        // Case 3: Merge the other account link into this one
+        val thisLink = AccountLink.findById(this.accountLinkId).get
+        val userLink = AccountLink.findById(user.accountLinkId).get
+        val newLink = thisLink.copy(userIds = thisLink.userIds ++ userLink.userIds, primaryAccount = thisid).save
+        val linkId = newLink.id.get
+
+        consolidateOwnership(userLink.getPrimaryUser.get)
+        newLink.getUsers foreach { user => user.copy(role = newRole, accountLinkId = linkId).save }
+        userLink.delete()
+      }
     }
   }
 
