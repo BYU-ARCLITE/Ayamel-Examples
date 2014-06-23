@@ -16,7 +16,7 @@
     }
 }
 
-@main("Ayamel - Manage Users", Local(CSS("stylesheets/admin.css"))) {
+@main("Ayamel - Manage Courses", Local(CSS("stylesheets/admin.css"))) {
     <div class="adminBackground">
     </div>
 
@@ -31,6 +31,8 @@
                 <th>Id</th>
                 <th>Name</th>
                 <th>Enrollment</th>
+                <th>Owner</th>
+                <th>Email</th>
                 <th># Students</th>
                 <th># Content</th>
                 <th># Announcements</th>
@@ -42,6 +44,10 @@
                     <td>@course.id.get</td>
                     <td>@shorten(course.name)</td>
                     <td>@course.enrollment.name.capitalize</td>
+                    <td>@if(course.getTeachers.size > 0){
+                        @optStr(course.getTeachers(0).name)}</td>
+                    <td>@if(course.getTeachers.size > 0){
+                        @optStr(course.getTeachers(0).email)}</td>
                     <td>@course.getMembers.size</td>
                     <td>@course.getContent.size</td>
                     <td>@course.getAnnouncements.size</td>
@@ -50,6 +56,10 @@
                         <a href="@routes.Courses.view(course.id.get)" class="btn btn-small"><i class="icon-eye-open"></i></a>
                         <a href="#editModal" role="button" data-toggle="modal" class="btn btn-small btn-yellow editCourse" data-id="@course.id.get" data-name="@course.name" data-enrollment="@course.enrollment.name"><i class="icon-pencil"></i></a>
                         <a href="#deleteModal" role="button" data-toggle="modal" class="btn btn-small btn-magenta deleteCourse" data-id="@course.id.get"><i class="icon-trash"></i></a>
+                        @if(course.getTeachers.size > 0 && course.getTeachers(0) != user) {
+                            <a href="@routes.Administration.proxy(course.getTeachers(0).id.get)" class="btn btn-small btn-yellow">Proxy</a>
+                            <a href="#notificationModal" role="button" data-toggle="modal" class="btn btn-small btn-blue sendNote" data-id="@course.getTeachers(0).id.get">Notify</a>
+                        }
                     </td>
                 </tr>
             }
@@ -105,6 +115,31 @@
         </div>
     </div>
 
+    <div id="notificationModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="notificationModalLabel" aria-hidden="true">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3 id="notificationModalLabel">Send a notification</h3>
+        </div>
+        <div class="modal-body">
+            <label for="role">Send a notification to user #<span id="noteUserIdDisplay"></span>:</label>
+
+            <form id="notificationForm" class="form-horizontal" method="post" action="@routes.Administration.sendNotification(1)">
+                <div class="control-group">
+                    <label class="control-label" for="message">Message</label>
+                    <div class="controls">
+                        <textarea id="message" name="message"></textarea>
+                    </div>
+                </div>
+                <input type="hidden" name="userId" id="noteUserId" value="">
+                <input type="submit" style="position: absolute; left: -9999px; width: 1px; height: 1px;"/>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+            <button class="btn btn-blue formSubmitter" data-target="#notificationForm">Save changes</button>
+        </div>
+    </div>
+
     <script type="text/javascript">
         $(function() {
             $(".shortened").tooltip();
@@ -124,6 +159,16 @@
             $("#deleteButton").click(function() {
                 var id = $(this).attr("data-id");
                 window.location = "/admin/courses/" + id + "/delete";
+            });
+
+            $(".sendNote").click(function() {
+                var id = $(this).attr("data-id");
+                $("#noteUserId").val(id);
+                $("#noteUserIdDisplay").text(id);
+            });
+
+            $(".formSubmitter").click(function() {
+                $($(this).attr("data-target")).submit();
             });
         });
     </script>

@@ -114,7 +114,7 @@
         <div class="modal-body">
             <label for="role">Send a notification to user #<span id="noteUserIdDisplay"></span>:</label>
 
-            <form id="notificationForm" class="form-horizontal" method="post" action="@routes.Administration.sendNotification()">
+            <form id="notificationForm" class="form-horizontal" method="post" action="@routes.Administration.sendNotification(0)">
                 <div class="control-group">
                     <label class="control-label" for="message">Message</label>
                     <div class="controls">
