@@ -62,8 +62,7 @@ var TextRenderer = (function(){
                                     trigger: "hover"
                                 });
                             };
-                            var translator = new TextAnnotator(args);
-                            translator.annotate(args.layout.$textHolder);
+                            (new TextAnnotator(args)).annotate(args.layout.$textHolder);
                         }
 
                         if (args.callback) {

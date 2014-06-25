@@ -9,7 +9,6 @@
 var VideoRenderer = (function(){
 
     var videoPlayer,
-        languageSelect,
         translationHighlight,
         captionTrackId,
         cueNumber;
@@ -80,7 +79,7 @@ var VideoRenderer = (function(){
     function createTranslator(args) {
         var translator;
         if (getLevel(args) >= 3) {
-            translator = new TextTranslator();
+            translator = new TextTranslator('eng','eng');
 
             // Add translation listeners
             // Translation started
@@ -292,15 +291,15 @@ var VideoRenderer = (function(){
                 startTime: args.startTime,
                 endTime: args.endTime,
                 renderCue: args.renderCue || function (renderedCue, area) { // Check to use a different renderer
-                    var node = document.createElement('div');
+                    var trackID, node = document.createElement('div');
                     node.appendChild(renderedCue.cue.getCueAsHTML(renderedCue.  kind === 'subtitles'));
 
                     // Attach the translator
                     if (args.translator) {
-                        var trackID = args.trackResource?
+                        trackID = args.trackResource?
                             args.trackResource.get(renderedCue.cue.track).id:
                             "Unknown";
-                        args.translator.attach(node, renderedCue.language, Ayamel.utils.downgradeLangCode(languageSelect.get("selection")), {
+                        args.translator.attach(node, {
                             captionTrackId: trackID,
                             cueIndex: renderedCue.cue.id
                         });
@@ -361,7 +360,7 @@ var VideoRenderer = (function(){
                 filter: function(cue, $cue) {
                     // Attach the translator
                     if (args.translator) {
-                        args.translator.attach($cue[0], cue.track.language, Ayamel.utils.downgradeLangCode(languageSelect.get("selection")), {
+                        args.translator.attach($cue[0], {
                             captionTrackId: args.trackResource.get(cue.track).id,
                             cueIndex: cue.track.cues.indexOf(cue)
                         });
@@ -389,10 +388,9 @@ var VideoRenderer = (function(){
         return "nothing";
     }
 
-    function setupDefinitionsPane($pane){
+    function setupDefinitionsPane($pane, translator){
         var selectHolder = document.createElement('div');
-        //this sets a module-global variable
-        languageSelect = new EditorWidgets.SuperSelect({
+		(new EditorWidgets.SuperSelect({
             el: selectHolder,
             data:{
                 id: 'transLang',
@@ -400,12 +398,12 @@ var VideoRenderer = (function(){
                 icon: 'icon-globe',
                 text: 'Select Language',
                 multiple: false,
-                options: Object.keys(Ayamel.utils.p1map).map(function (p1) {
+                options: Object.keys(Ayamel.utils.p1map).map(function(p1){
                     var code = Ayamel.utils.p1map[p1];
                     return {value: code, text: Ayamel.utils.getLangName(code)};
                 }).sort(function(a,b){ return a.text.localeCompare(b.text); })
             }
-        });
+        })).observe('selection', function(newValue){ translator.destLang = newValue; });
         $pane.append(selectHolder);
     }
 
@@ -458,7 +456,7 @@ var VideoRenderer = (function(){
                         args.transcriptPlayer = setupTranscripts(args);
 
                         if(args.layout.$definitions){
-                            setupDefinitionsPane(args.layout.$definitions);
+                            setupDefinitionsPane(args.layout.$definitions, args.translator);
                         }
 
                         setupTranscriptWithPlayer(args);
