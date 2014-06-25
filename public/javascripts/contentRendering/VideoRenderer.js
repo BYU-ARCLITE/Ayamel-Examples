@@ -27,19 +27,19 @@ var VideoRenderer = (function(){
         switch (getLevel(args)) {
         default:
         case 1:
-            return ContentLayoutManager.onePanel($(args.holder));
+            return ContentLayoutManager.onePanel(args.holder);
         case 2:
             if (showTranscript(args)) {
-                panes = ContentLayoutManager.twoPanel($(args.holder), ["Transcript"]);
+                panes = ContentLayoutManager.twoPanel(args.holder, ["Transcript"]);
                 return {
                     $player: panes.$player,
                     $transcript: panes.$Transcript
                 };
             }
-            return ContentLayoutManager.onePanel($(args.holder));
+            return ContentLayoutManager.onePanel(args.holder);
         case 3:
             if (showTranscript(args)) {
-                panes = ContentLayoutManager.twoPanel($(args.holder), ["Transcript", "Definitions"]);
+                panes = ContentLayoutManager.twoPanel(args.holder, ["Transcript", "Definitions"]);
                 return {
                     $player: panes.$player,
                     $definitions: panes.Definitions.$content,
@@ -47,7 +47,7 @@ var VideoRenderer = (function(){
                     $transcript: panes.Transcript.$content
                 };
             }
-            panes = ContentLayoutManager.twoPanel($(args.holder), ["Definitions"]);
+            panes = ContentLayoutManager.twoPanel(args.holder, ["Definitions"]);
             return {
                 $player: panes.$player,
                 $definitions: panes.$Definitions
@@ -55,7 +55,7 @@ var VideoRenderer = (function(){
         case 4:
         case 5:
             if (showTranscript(args)) {
-                panes = ContentLayoutManager.twoPanel($(args.holder), ["Transcript", "Definitions", "Annotations"]);
+                panes = ContentLayoutManager.twoPanel(args.holder, ["Transcript", "Definitions", "Annotations"]);
                 return {
                     $player: panes.$player,
                     $definitions: panes.Definitions.$content,
@@ -65,7 +65,7 @@ var VideoRenderer = (function(){
                     $transcript: panes.Transcript.$content
                 };
             }
-            panes = ContentLayoutManager.twoPanel($(args.holder), ["Definitions", "Annotations"]);
+            panes = ContentLayoutManager.twoPanel(args.holder, ["Definitions", "Annotations"]);
             return {
                 $player: panes.$player,
                 $definitions: panes.Definitions.$content,
@@ -86,7 +86,7 @@ var VideoRenderer = (function(){
             translator.addEventListener("translate", function (event) {
                 var detail = event.detail,
                     data = detail.data,
-                    activity = $(detail.sourceElement).hasClass("transcriptCue")?"transcriptionTranslation":"captionTranslation";
+                    activity = detail.sourceElement.classList.contains("transcriptCue")?"transcriptionTranslation":"captionTranslation";
                 ActivityStreams.predefined[activity](data.captionTrackId, data.cueIndex, detail.text);
                 videoPlayer.pause();
             });
@@ -219,7 +219,7 @@ var VideoRenderer = (function(){
                             annotationDocId = manifest.resourceId;
                     });
                 });
-                ActivityStreams.predefined.viewTextAnnotation(annotationDocId, $(event.sourceElement).text());
+                ActivityStreams.predefined.viewTextAnnotation(annotationDocId, event.sourceElement.textContent);
 
                 args.layout.$annotationsTab.tab("show");
 
@@ -262,15 +262,15 @@ var VideoRenderer = (function(){
 
             // Deactivate Space Features and set focus video to play/pause video
             window.addEventListener("keydown", function(e) {
-                if (e.keyCode == 32 && !($('input:focus').length > 0 )) {
+                if (e.keyCode == 32 && document.querySelectorAll('input:focus').length === 0) {
                     // There may be a better way to do this
-                    $(document.getElementsByClassName("videoBox")[0]).children()[0].focus();
+                    document.querySelector(".videoBox").firstChild.focus();
                     e.preventDefault();
                 }
             });
 
              window.onresize = function(event) {
-                if (args.content.contentType === "video" && args.screenAdaption && args.screenAdaption.fit && $(".control.button.fullScreen:not(.active)").length) {
+                if (args.content.contentType === "video" && args.screenAdaption && args.screenAdaption.fit && document.querySelectorAll(".control.button.fullScreen:not(.active)").length) {
                     ScreenAdapter.containByHeight(args.layout.$player, Ayamel.aspectRatios.hdVideo, args.screenAdaption.padding);
                     $(".videoBox").height(args.layout.$player.height());
                     $(".transcriptContent").css("max-height", $(".ayamelPlayer").height()-($("#videoTabs").height() + 57));
@@ -307,7 +307,7 @@ var VideoRenderer = (function(){
 
                     // Add annotations
                     if (args.annotator) {
-                        args.annotator.annotate($(node));
+                        args.annotator.annotate(node);
                     }
 
                     renderedCue.node = node;
@@ -356,21 +356,8 @@ var VideoRenderer = (function(){
                 captionTracks: args.captionTracks,
                 $holder: args.layout.$transcript,
                 syncButton: true,
-                noUpdate: args.noUpdate,
-                filter: function(cue, $cue) {
-                    // Attach the translator
-                    if (args.translator) {
-                        args.translator.attach($cue[0], {
-                            captionTrackId: args.trackResource.get(cue.track).id,
-                            cueIndex: cue.track.cues.indexOf(cue)
-                        });
-                    }
-
-                    // Add annotations
-                    if (args.annotator) {
-                        args.annotator.annotate($cue);
-                    }
-                }
+                noUpdate: args.noUpdate
+				//TODO: Add links to translator & annotator
             });
 
             // Cue clicking

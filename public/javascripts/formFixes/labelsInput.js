@@ -47,19 +47,14 @@ $(function() {
         $element.append($labelInputHolder);
 
         // Setup the add functionality
-        $labelInputButton.click(function () {
+        $labelInputButton.click(function(){
             var value = $labelInputText.val();
             $labelInputText.val("");
             addLabel(value);
             return false;
         });
-        $labelInputText.keypress(function (event) {
-            var keycode;
-            if(window.event)
-                keycode = window.event.keyCode;
-            else
-                keycode = event.which;
-            if (keycode === 13) {
+        $labelInputText.keypress(function(event){
+            if (event.which === 13) {
                 event.stopPropagation();
                 $labelInputButton.click();
                 return false;

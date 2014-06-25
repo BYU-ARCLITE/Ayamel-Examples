@@ -13,15 +13,9 @@ var AnnotationLoader = (function(){
                 var regex = new RegExp(obj.regex);
                 return new TextAnnotation(regex, obj.data);
             });
-        }
-        if (target === "image") {
+        }else if (target === "image") {
             annotations = doc.annotations.map(function (obj) {
                 return new ImageAnnotation(obj.location, obj.data);
-            });
-        }
-        if (target === "time") {
-            annotations = doc.annotations.map(function (obj) {
-//                return new TimeAnnotation(obj.start, obj.end, obj.data);
             });
         }
 

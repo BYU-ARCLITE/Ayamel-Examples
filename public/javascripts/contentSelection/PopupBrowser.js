@@ -46,10 +46,10 @@ var PopupBrowser = (function() {
         $.ajax(host + path, params);
     }
 
-    function click(content, courseId, $element) {
-        $(".selectedContent").removeClass("selectedContent");
-        $element.addClass("selectedContent");
-        $("#popupBrowserSelectButton").removeClass("disabled");
+    function click(content, courseId, element) {
+        [].forEach.call(document.querySelectorAll(".selectedContent"),function(n){n.classList.remove("selectedContent");});
+        element.classList.add("selectedContent");
+        document.getElementById("popupBrowserSelectButton").classList.remove("disabled");
         selectedContent = content;
     }
 

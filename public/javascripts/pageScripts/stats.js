@@ -6,19 +6,18 @@ $(function() {
 				tid = tel.textContent;
 			if(!tid || tid === "unknown"){ return; }
 			ResourceLibrary.load(tid, function (resource) {
-				var url = resource.content.files[0].downloadUri,
-					promise;
+				var url = resource.content.files[0].downloadUri;
 				tel.textContent = resource.title;
-				if(!fcache.hasOwnProperty(url)){
-					promise = $.Deferred();
-					TextTrack.get({
-						kind: 'subtitles',
-						lang: resource.languages.iso639_3[0],
-						label: resource.title,
-						url: url,
-						success: function(track, mime){ promise.resolve(track); }
+				if(!fcache.hasOwnProperty(url)){					
+					fcache[url] = new Promise(function(resolve, reject){
+						TextTrack.get({
+							kind: 'subtitles',
+							lang: resource.languages.iso639_3[0],
+							label: resource.title,
+							url: url,
+							success: function(track, mime){ resolve(track); }
+						});
 					});
-					fcache[url] = promise;
 				}else{
 					promise = fcache[url];
 				}

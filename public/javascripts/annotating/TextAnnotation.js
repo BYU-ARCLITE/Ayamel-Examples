@@ -13,11 +13,11 @@ var TextAnnotation = (function(){
         this.e = document.createElement("div");
     }
 
-    TextAnnotation.prototype.annotate = function ($content, filter) {
+    TextAnnotation.prototype.annotate = function (content, filter) {
         var nodes = [];
         var _this = this;
-        for (var i=0; i<$content[0].childNodes.length; i += 1) {
-            var node = $content[0].childNodes.item(i);
+        for (var i=0; i<content.childNodes.length; i += 1) {
+            var node = content.childNodes.item(i);
             if (node.nodeType === Node.ELEMENT_NODE) {
                 nodes.push(node);
             }
@@ -62,13 +62,13 @@ var TextAnnotation = (function(){
 
         // Replace the children of the node
         // Start by removing all children
-        while ($content[0].firstChild) {
-            $content[0].removeChild($content[0].firstChild);
+        while (content.firstChild) {
+            content.removeChild(content.firstChild);
         }
 
         // Now add everything back
         nodes.forEach(function (node) {
-            $content[0].appendChild(node);
+            content.appendChild(node);
         });
     };
 

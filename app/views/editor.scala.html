@@ -21,7 +21,6 @@
               Rel("libraries/",
                 JS("jquery-1.9.0.min.js"),
                 JS("bootstrap.min.js"),
-                JS("mustache.js"),
                 JS("Ractive.min.js"),
                 JS("Ractive-events-tap.js")),
               JS("contentSelection/ContentItemRenderer.js"),
@@ -180,16 +179,9 @@
                 });
 
                 // Set up the search box
-                $("#searchBox").keypress(function(event) {
-                    var keycode = null;
-                    if(window.event)
-                        keycode = window.event.keyCode;
-                    else
-                        keycode = event.which;
-
-                    if (keycode == 13) {
-                        var query = $(this).val();
-                        window.location = "/search?query=" + encodeURI(query);
+                $("#searchBox").keypress(function(event){
+                    if (event.which == 13) {
+                        window.location = "/search?query=" + this.value;
                     }
                 });
 

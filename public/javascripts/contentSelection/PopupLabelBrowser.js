@@ -75,7 +75,7 @@ var PopupLabelBrowser = (function() {
 
         ractive.on('hclick', function(i){
             ractive.set('highlighted', i);
-            $("#popupLabelBrowserSelectButton").removeClass("disabled");
+            document.getElementById("popupLabelBrowserSelectButton").classList.remove("disabled");
             selectedContent = allContent;
         });
     }

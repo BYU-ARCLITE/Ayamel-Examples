@@ -16,19 +16,18 @@
     <head>
         <title>Ayamel - @content.name</title>
 
-		@Dependencies(
+        @Dependencies(
           Local(
-			Icon("images/favicon.png", "image/png"),
-		    Rel("stylesheets/",
+            Icon("images/favicon.png", "image/png"),
+            Rel("stylesheets/",
               CSS("bootstrap.min.css"),
               CSS("bootstrap-responsive.min.css"),
               CSS("font-awesome.min.css"),
               CSS("main.css")),
-			Rel("javascripts/",
-			  Rel("libraries/",
-			    JS("jquery-1.9.0.min.js"),
-                JS("bootstrap.min.js"),
-                JS("mustache.js")),
+            Rel("javascripts/",
+              Rel("libraries/",
+                JS("jquery-1.9.0.min.js"),
+                JS("bootstrap.min.js")),
               JS("contentSelection/ContentItemRenderer.js"),
               JS("ActivityStreams.js"),
               JS("ScreenAdapter.js")))
