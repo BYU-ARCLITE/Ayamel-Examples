@@ -10,7 +10,6 @@
     $("body")
         .append('<link rel="stylesheet" href="'+host+'assets/stylesheets/bigModal.css"/>')
         .append('<link rel="stylesheet" href="'+host+'assets/stylesheets/content.css"/>');
-    $.getScript(host + "assets/javascripts/libraries/mustache.js");
     $.getScript(host + "assets/javascripts/contentSelection/ContentItemRenderer.js");
     $.getScript(host + "assets/javascripts/contentRendering/ContentThumbnails.js");
     $.getScript(host + "assets/javascripts/contentSelection/PopupBrowser.js", function () {

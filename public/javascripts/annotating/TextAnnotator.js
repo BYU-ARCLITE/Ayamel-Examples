@@ -12,11 +12,11 @@ var TextAnnotator = (function() {
         this.manifests = args.manifests;
     }
 
-    TextAnnotator.prototype.annotate = function($content) {
+    TextAnnotator.prototype.annotate = function(content) {
         var _this = this;
         this.manifests.forEach(function (manifest) {
             manifest.annotations.forEach(function (annotation) {
-                annotation.annotate($content, _this.filter);
+                annotation.annotate(content, _this.filter);
             });
         });
     };

@@ -19,7 +19,6 @@
               Rel("libraries/",
                 JS("jquery-1.9.0.min.js"),
                 JS("bootstrap.min.js"),
-                JS("mustache.js"),
                 JS("Ractive.min.js")),
               JS("contentSelection/ContentItemRenderer.js"),
               JS("ActivityStreams.js")))
@@ -111,15 +110,8 @@
 
                 // Set up the search box
                 $("#searchBox").keypress(function(event) {
-                    var keycode = null;
-                    if(window.event)
-                        keycode = window.event.keyCode;
-                    else
-                        keycode = e.which;
-
-                    if (keycode == 13) {
-                        var query = $(this).val();
-                        window.location = "/search?query=" + encodeURI(query);
+                    if (event.which == 13) {
+                        window.location = "/search?query=" + encodeURI(this.value);
                     }
                 });
 

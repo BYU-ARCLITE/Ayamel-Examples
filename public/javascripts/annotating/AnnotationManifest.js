@@ -7,9 +7,9 @@ var AnnotationManifest = (function() {
         this.annotations = annotations;
     };
 
-    AnnotationManifest.prototype.annotate = function ($content, renderer) {
+    AnnotationManifest.prototype.annotate = function (content, renderer) {
         this.annotations.forEach(function (annotation) {
-            annotation.annotate($content, renderer);
+            annotation.annotate(content, renderer);
         });
     };
 

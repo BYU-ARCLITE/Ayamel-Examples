@@ -8,29 +8,6 @@
 var ContentLayoutManager = (function() {
     "use strict";
 
-    var noTabs = '<h2>{{name}}</h2><div id="{{name}}"></div>';
-
-    var tabHeaderHolder = '<ul class="nav nav-tabs" id="videoTabs">{{>tabHeaders}}</ul>';
-    var tabHeader       = '<li><a href="#{{name}}">{{name}}</a></li>';
-    var tabHeaderMobile = '<li><a href="#{{name}}"><i class="icon-{{icon}}"></i></a></li>';
-
-    var tabContentHolder = '<div class="tab-content">{{>tabContents}}</div>';
-    var tabContent       = '<div class="tab-pane" id="{{name}}"></div>';
-
-    var twoPanelLayout =
-        '<div class="row-fluid">' +
-            '<div class="span8">' +
-                '<div id="player"></div>' +
-            '</div>' +
-            '<div class="span4">{{>tabs}}</div>' +
-        '</div>';
-
-    var twoPanelLayoutMobile =
-        '<div class="primary"></div>\
-        <div class="secondary">\
-            <div class="secondaryContent">{{>tabs}}</div>\
-        </div>';
-
     var tabIcons = {
         Transcript: "th-list",
         Definitions: "book",
@@ -38,38 +15,38 @@ var ContentLayoutManager = (function() {
     };
 
     function generateTabs(tabNames) {
+        var headers;
         if (tabNames.length === 1) {
-            return Mustache.to_html(noTabs, {name: tabNames[0]});
+            return '<h2>'+tabNames[0]+'</h2><div id="'+tabNames[0]+'"></div>';
         } else {
             // Generate the headers
-            var headers;
             if (Ayamel.utils.mobile.isMobile || document.body.classList.contains("embed")) {
-                headers = tabNames.map(function (name) {
-                    return Mustache.to_html(tabHeaderMobile, {name: name, icon: tabIcons[name]});
+                headers = tabNames.map(function(name){
+                    return '<li><a href="#'+name+'"><i class="icon-'+tabIcons[name]+'"></i></a></li>';
                 }).join("");
             } else {
-                headers = tabNames.map(function (name) {
-                    return Mustache.to_html(tabHeader, {name: name});
+                headers = tabNames.map(function(name){
+                    return '<li><a href="#'+name+'">'+name+'</a></li>';
                 }).join("");
             }
 
-            var header = Mustache.to_html(tabHeaderHolder, {}, {tabHeaders: headers});
-
-            // Generate the content
-            var contents = tabNames.map(function (name) {
-                return Mustache.to_html(tabContent, {name: name});
-            }).join("");
-            var content = Mustache.to_html(tabContentHolder, {}, {tabContents: contents});
-
-            return header + content;
+            return '<ul class="nav nav-tabs" id="videoTabs">'+headers+'</ul><div class="tab-content">'+tabNames.map(function(name){
+                return '<div class="tab-pane" id="'+name+'"></div>';
+            }).join("")+'</div>';
         }
     }
 
-    function generateTwoPanel($container, tabNames) {
+    function generateTwoPanel(container, tabNames) {
         var tabs = generateTabs(tabNames);
-        var html = Mustache.to_html(twoPanelLayout, {}, {tabs: tabs});
-        var $layout = $(html);
-        $container.html($layout);
+        var $layout = $('<div class="row-fluid">\
+            <div class="span8">\
+                <div id="player"></div>\
+            </div>\
+            <div class="span4"></div>\
+        </div>');
+        container.appendChild($layout[0]);
+
+        $layout.find('.span4').html(tabs);
 
         // Return the player and tab panes
         var panes = {
@@ -100,15 +77,19 @@ var ContentLayoutManager = (function() {
         return panes;
     }
 
-    function generateTwoPanelMobile($container, tabNames) {
+    function generateTwoPanelMobile(container, tabNames) {
         var tabs = generateTabs(tabNames);
-        var html = Mustache.to_html(twoPanelLayoutMobile, {}, {tabs: tabs});
-        var $layout = $(html);
-        $container.html($layout);
+        var $layout = $('<div class="primary"></div>\
+            <div class="secondary">\
+                <div class="secondaryContent"></div>\
+            </div>');
+        container.appendChild($layout[0]);
+        container.appendChild($layout[1]);
 
         var $primary = $($layout[0]);
         var $secondary = $($layout[1]);
         var $secondaryContent = $secondary.children(".secondaryContent");
+        $secondaryContent.html(tabs);
 
         var panes = {
             $player: $primary
@@ -150,7 +131,8 @@ var ContentLayoutManager = (function() {
             var availableHeight = window.innerHeight - sizes.header;
             var newHeight;
 
-            $container.width(availableWidth).height(availableHeight);
+            container.style.width = availableWidth;
+            container.style.height = availableHeight;
 
             // Detect which orientation the device is
             if (availableWidth > availableHeight) {
@@ -192,8 +174,6 @@ var ContentLayoutManager = (function() {
         });
         arrangeWindow();
 
-
-
         if (tabNames.length === 1) {
 //            panes["$" + tabNames[0]] =
         }
@@ -201,19 +181,19 @@ var ContentLayoutManager = (function() {
     }
 
     return {
-        onePanel: function ($container) {
+        onePanel: function (container) {
             var $player = $('<div id="player"></div>');
-            $container.html($player);
+            container.appendChild($player[0]);
             return {
                 $player: $player
             };
         },
 
-        twoPanel: function ($container, tabNames) {
+        twoPanel: function (container, tabNames) {
             if (Ayamel.utils.mobile.isMobile) {
-                return generateTwoPanelMobile($container, tabNames);
+                return generateTwoPanelMobile(container, tabNames);
             } else {
-                return generateTwoPanel($container, tabNames);
+                return generateTwoPanel(container, tabNames);
             }
         }
 

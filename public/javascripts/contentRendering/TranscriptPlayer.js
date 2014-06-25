@@ -5,7 +5,7 @@
  * Time: 8:21 AM
  * To change this template use File | Settings | File Templates.
  */
-var TranscriptPlayer = (function() {
+var TranscriptPlayer = (function(){
 
     // TODO: resizing
 
@@ -13,7 +13,7 @@ var TranscriptPlayer = (function() {
 
         var _this = this,
             tracks = args.captionTracks,
-            element = args.$holder.get(0),
+            element = args.$holder[0],
 			currentTime = 0,
             ractive;
 
@@ -32,7 +32,7 @@ var TranscriptPlayer = (function() {
                     {{#transcripts:ti}}\
                     <div class="transcriptContent" style="display:{{ ti === activeIndex ? "block" : "none" }}" data-trackindex="{{ti}}">\
                         {{#.cues:ci}}\
-                        <div class="transcriptCue {{direction(.text)}}" on-tap="cueclick" data-cueindex="{{ci}}">{{.text}}</div>\
+                        <div class="transcriptCue {{direction(.text)}}" on-tap="cueclick" data-cueindex="{{ci}}">{{{.text}}}</div>\
                         {{/.cues}}\
                     </div>\
                     {{/transcripts}}\

@@ -10,7 +10,7 @@ $(function() {
         placement: "bottom"
     });
 
-    $("#browseContent").click(function() {
+    document.getElementById("browseContent").addEventListener('click',function(){
         PopupBrowser.selectContent(function(content) {
             // Create a form to add content
             var form = document.createElement("form");
@@ -27,9 +27,9 @@ $(function() {
             // Submit the form
             form.submit();
         });
-    });
+    },false);
 
-    $("#addByLabel").click(function() {
+    document.getElementById("addByLabel").addEventListener('click',function(){
         PopupLabelBrowser.selectContent(function(contents) {
             // Create a form to add content
             var form = document.createElement("form");
@@ -51,5 +51,5 @@ $(function() {
             // Submit the form
             form.submit();
         });
-    });
+    },false);
 });
