@@ -11,7 +11,7 @@ var ActivityStreams = (function() {
     var pageAction = "unknown";
     var pageId = 0;
 
-
+	//args: generatorType, generatorId, generatorItemRef, objectType, objectId, objectItemRef, verb
     function save(args) {
         $.ajax("/ajax/activity", {
             type: "post",
@@ -96,8 +96,6 @@ var ActivityStreams = (function() {
             pageCategory = category;
             pageAction = action;
             pageId = id;
-        },
-
-        save: save
+        }
     };
 }());
