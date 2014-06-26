@@ -2,7 +2,7 @@ $(function() {
 	"use strict";
 
 	var captionEditor, videoPlayer,
-		commandStack, Dialog,
+		timeline, commandStack, Dialog,
 		langList = Object.keys(Ayamel.utils.p1map).map(function (p1) {
 			var code = Ayamel.utils.p1map[p1];
 			return {value: code, text: Ayamel.utils.getLangName(code)};
@@ -210,7 +210,9 @@ $(function() {
 			components:{ superselect: EditorWidgets.SuperSelect },
 			actions: {
 				save: function(event){
-					var saver, data = this.data;
+					var saver,
+						data = this.data,
+						tracks = data.tracksToSave;
 
 					$("#saveTrackModal").modal("hide");
 					this.set({selectOpen: false});
@@ -222,7 +224,7 @@ $(function() {
 					resolver(datalist.map(function(key){
 						switch(key){
 						case 'tidlist': return data.tracksToSave;
-						case 'saver': return function(listp){ listp.then(saver); };
+						case 'saver': return function(listp){ return listp.then(saver); };
 						}
 					}));
 					
@@ -256,8 +258,8 @@ $(function() {
 										});
 									}
 									return textTrack.label;
-								},function(xhr, status, error){
-									alert("Error occurred while saving "+textTrack.label+":\n"+status)
+								},function(error){
+									alert("Error occurred while saving "+textTrack.label);
 								});
 							}));							
 							savep.then(function(){
@@ -265,7 +267,7 @@ $(function() {
 								//Scott bandaid to fix the tracks being saved.
 								//There is absolutely no logical reason why this should work,
 								//but apparently it does.
-								window.location.reload(true);
+								//window.location.reload(true);
 							});
 							return savep;
 						};
@@ -275,12 +277,7 @@ $(function() {
 							return new Promise(function(resolve, reject){
 								EditorWidgets.Save(
 									exportedTracks, data.saveDestination,
-									function(){
-										alert("Saved Successfully");
-										resolve(exportedTracks.map(function(fObj){
-											return fObj.track.label;
-										}));
-									},
+									function(){ resolve([]); }, // we don't want to mark things saved that were not saved-to-server
 									function(){
 										alert("Error Saving; please try again.");
 										reject(new Error("Error saving."));
@@ -301,7 +298,7 @@ $(function() {
 		});
 		
 		return function(dl){
-			$('#editTrackModal').modal('show');
+			$('#saveTrackModal').modal('show');
 			datalist = dl;
 			return new Promise(function(resolve, reject){
 				resolver = resolve;
@@ -438,7 +435,7 @@ $(function() {
 		renderCue: renderCue,
 		noUpdate: true, // Disable transcript player updating for now
 		callback: function(args) {
-			var renderer, timeline,
+			var renderer,
 				transcript = args.transcriptPlayer;
 
 			commandStack = new EditorWidgets.CommandStack();
