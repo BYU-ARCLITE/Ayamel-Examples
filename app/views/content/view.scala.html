@@ -96,10 +96,16 @@
                                         <li><a href="@routes.CourseContent.removeFromCourse(content.id.get, course.get.id.get)"><i class="icon-remove"></i> Remove from course</a></li>
                                     }
                                 }
-                            } else {
+                            } else {					
                                 @if(user.canCreateCourse) {
-                                    <li><a href="#addToCourseModal" data-toggle="modal"><i class="icon-book"></i> Add to Course</a></li>
-                                    @views.html.content.header.addToCourse(content)
+									@defining(Course.list.filter { course =>
+										(user canAddContentTo course) && !course.getContent.contains(content)
+									}) { possibleCourses =>
+										@if(possibleCourses.length > 0) {
+											<li><a href="#addToCourseModal" data-toggle="modal"><i class="icon-book"></i> Add to Course</a></li>
+											@views.html.content.header.addToCourse(content, possibleCourses)
+										}
+									}
                                 }
                             }
                             @if(content.isEditableBy(user)) {
