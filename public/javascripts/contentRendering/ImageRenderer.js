@@ -7,27 +7,27 @@
  */
 var ImageRenderer = (function(){
 
-    function createLayout(args) {
+    function createLayout(holder) {
         var $imgHolder = $('<div id="imgHolder"></div>');
 
-        $(args.holder).html($imgHolder);
+        $(holder).html($imgHolder);
 
         return {
             $imgHolder: $imgHolder
         };
     }
 
-    function setImage(args, callback) {
+    function setImage(layout, backgroundUrl, callback) {
         var img = new Image();
         img.src = args.backgroundUrl;
-        img.onload = function () {
+        img.onload = function() {
 
             // Set the background
-            args.layout.$imgHolder.css("background-image", "url('" + args.backgroundUrl + "')");
+            layout.$imgHolder.css("background-image", "url('" + backgroundUrl + "')");
 
             // Possibly resize it smaller to the actual size
-            if (this.width <= args.layout.$imgHolder.width() && this.height <= args.layout.$imgHolder.height()) {
-                args.layout.$imgHolder.css("background-size", "initial");
+            if (this.width <= layout.$imgHolder.width() && this.height <= layout.$imgHolder.height()) {
+                layout.$imgHolder.css("background-size", "initial");
             }
 
             callback(img);
@@ -35,32 +35,44 @@ var ImageRenderer = (function(){
     }
 
     return {
+	
+		//args: drawable, filter, open, resource, annotate, callback
+		// courseId, contentId, permission, holder
         render: function(args) {
 
             // Load all important information
-            var file = ContentRenderer.findFile(args.resource, function (file) {
+            var file = ContentRenderer.findFile(args.resource, function(file) {
                 return file.representation === "original";
             });
 
             // Load annotations
-            ContentRenderer.getAnnotations(args, function (manifests) {
-                args.manifests = manifests;
-
+			
+            ContentRenderer.getAnnotations({
+				resource: args.resource,
+				courseId: args.courseId,
+				contentId: args.contentId,
+				permission: args.permission
+			}, function(manifests) {
                 // Create the layout
-                args.layout = createLayout(args);
+				var layout = createLayout(args.holder);
 
                 // Load the image and set the background
-                args.backgroundUrl = file.downloadUri;
-                setImage(args, function (image) {
-                    args.image = image;
+                setImage(layout, file.downloadUri, function(image) {
 
                     // Add annotations
-                    if (args.annotate) {
-                        ImageAnnotator.annotate(args);
+                    if(args.annotate) {
+                        ImageAnnotator.annotate({
+							image: image,
+							layout: layout,
+							drawable: args.drawable,
+							manifests: manifests,
+							filter: args.filter,
+							open: args.open
+						});
                     }
 
-                    if (args.callback) {
-                        args.callback(args);
+                    if(typeof args.imgcallback === 'function') {
+                        args.imgcallback(image, layout);
                     }
                 });
             });

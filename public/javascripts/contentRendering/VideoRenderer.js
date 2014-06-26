@@ -431,7 +431,9 @@ var VideoRenderer = (function(){
                                 });
                             }
 
-                            if(typeof args.callback === 'function'){ args.callback(args); }
+                            if(typeof args.vidcallback === 'function'){
+								args.vidcallback(args.videoPlayer, args.transcriptPlayer);
+							}
                             loaded = true;
                         }
                     }

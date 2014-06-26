@@ -43,6 +43,7 @@ var ContentRenderer = (function () {
         } else { callback([]); }
     }
 
+	//args: resource, courseId, contentId, permission
     function getAnnotations(args, callback) {
         var annotationIds = args.resource.relations
             .filter(function(r){return r.type==="references";})
@@ -102,7 +103,18 @@ var ContentRenderer = (function () {
                         VideoRenderer.render(args);//AudioRenderer.render(args);
                         break;
                     case "image":
-                        ImageRenderer.render(args);
+                        ImageRenderer.render({
+							drawable: args.drawable,
+							filter: args.filter,
+							open: args.open,
+							resource: resource,
+							annotate: args.annotate,
+							callback: args.callback,
+							courseId: args.courseId,
+							contentId: args.contentId,
+							permission: args.permission,
+							holder: args.holder
+						});
                         break;
                     case "text":
                         TextRenderer.render(args);
@@ -119,23 +131,30 @@ var ContentRenderer = (function () {
         }
     }
 
+	function castContentObject(content){
+		return new Promise(function(resolve, reject){
+			if(typeof content == "object"){
+				resolve(content);
+			}else if(typeof args.content == "number") {
+				Promise.cast($.ajax("/content/" + args.content + "/json?"+Date.now().toString(36), {
+					dataType: "json"
+				})).then(resolve, reject);
+			}else{
+				reject('invalid type');
+			}
+		});
+	}
+	
     return {
         findFile: findFile,
         getTranscripts: getTranscripts,
         getAnnotations: getAnnotations,
+		castContentObject: castContentObject,
         render: function (args) {
-            if (typeof args.content == "object") {
-                renderContent(args);
-            }
-            if (typeof args.content == "number") {
-                $.ajax("/content/" + args.content + "/json?"+Date.now().toString(36), {
-                    dataType: "json",
-                    success: function (data) {
-                        args.content = data;
-                        renderContent(args);
-                    }
-                });
-            }
-        }
+			castContentObject(args.content).then(function(data){
+				args.content = data;
+				renderContent(args);
+            });
+		}
     };
 }());
