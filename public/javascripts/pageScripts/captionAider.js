@@ -417,121 +417,129 @@ $(function() {
 		return false;
 	}
 
-	ContentRenderer.render({
-		content: content,
-		userId: userId,
-		owner: owner,
-		teacher: teacher,
-		courseId: courseId,
-		holder: contentHolder,
-		annotate: true,
-		permission: "edit",
-//        screenAdaption: {
-//            fit: true,
-//            padding: 100
-//        },
-		startTime: 0,
-		endTime: -1,
-		renderCue: renderCue,
-		noUpdate: true, // Disable transcript player updating for now
-		callback: function(args) {
-			var renderer,
-				transcript = args.transcriptPlayer;
+	ContentRenderer.castContentObject(content).then(function(content){
+		if(content.contentType !== 'video'){ throw new Error("Non-Video Content"); }
+		else return ResourceLibrary.load(content.resourceId).then(function(resource){
+			return {
+				content: content,
+				resource: resource,
+				userId: userId,
+				owner: owner,
+				teacher: teacher,
+				courseId: courseId,
+				holder: contentHolder,
+				annotate: true,
+				permission: "edit",
+		//        screenAdaption: {
+		//            fit: true,
+		//            padding: 100
+		//        },
+				startTime: 0,
+				endTime: -1,
+				renderCue: renderCue,
+				noUpdate: true, // Disable transcript player updating for now
+				vidcallback: vidcallback 
+			};
+		});
+	}).then(VideoRenderer.render);
+	
+	function vidcallback(vplayer, tplayer) {
+		var renderer,
+			transcript = tplayer;
 
-			commandStack = new EditorWidgets.CommandStack();
-			videoPlayer = args.videoPlayer;
-			renderer = videoPlayer.captionRenderer;
+		commandStack = new EditorWidgets.CommandStack();
+		videoPlayer = vplayer;
+		renderer = videoPlayer.captionRenderer;
 
-			timeline = new Timeline(document.getElementById("timeline"), {
-				stack: commandStack,
-				syncWith: videoPlayer,
-				width: document.body.clientWidth || window.innerWidth,
-				length: 3600,
-				start: 0,
-				end: 240,
-				tool: Timeline.SELECT,
-				showControls: true,
-				canGetFor: canGetFor,
-				getFor: getFor
-			});
+		timeline = new Timeline(document.getElementById("timeline"), {
+			stack: commandStack,
+			syncWith: videoPlayer,
+			width: document.body.clientWidth || window.innerWidth,
+			length: 3600,
+			start: 0,
+			end: 240,
+			tool: Timeline.SELECT,
+			showControls: true,
+			canGetFor: canGetFor,
+			getFor: getFor
+		});
 
+		updateSpacing();
+
+		captionEditor = CaptionEditor({
+			stack: commandStack,
+			renderer: renderer,
+			timeline: timeline
+		});
+
+		// Check for unsaved tracks before leaving
+		window.addEventListener('beforeunload',function(e){
+			var warning = "You have unsaved tracks. Your unsaved changes will be lost.";
+			if(!commandStack.saved){
+				e.returnValue = warning;
+				return warning;
+			}
+		}, false);
+
+		window.addEventListener('resize',function(){
+			timeline.width = window.innerWidth;
+		}, false);
+
+		// Set up listeners
+
+		// Track selection
+		videoPlayer.addEventListener("enabletrack", function(event) {
+			var track = event.detail.track;
+			if (timeline.hasTextTrack(track.label)) { return; }
+			timeline.addTextTrack(track, track.mime);
 			updateSpacing();
+		});
 
-			captionEditor = CaptionEditor({
-				stack: commandStack,
-				renderer: renderer,
-				timeline: timeline
+		//TODO: Integrate the next listener into the timeline editor
+		timeline.on('activechange', function(){ renderer.rebuildCaptions(); });
+
+		timeline.on('addtrack',function(evt){
+			videoPlayer.addTextTrack(evt.track.textTrack);
+			updateSpacing();
+		});
+
+		timeline.on('removetrack', updateSpacing);
+
+		[   //Set up keyboard shortcuts
+			[Ayamel.KeyBinder.keyCodes.a,Timeline.CREATE],  //a - Add
+			[Ayamel.KeyBinder.keyCodes.s,Timeline.SELECT],   //s - Select
+			[Ayamel.KeyBinder.keyCodes.d,Timeline.DELETE],  //d - Delete
+			[Ayamel.KeyBinder.keyCodes.m,Timeline.MOVE],    //m - Move
+			[Ayamel.KeyBinder.keyCodes.q,Timeline.SPLIT],   //q - Split
+			[Ayamel.KeyBinder.keyCodes.o,Timeline.ORDER],   //o - Reorder
+			[Ayamel.KeyBinder.keyCodes.f,Timeline.SHIFT],   //f - Time shift
+			[Ayamel.KeyBinder.keyCodes.r,Timeline.REPEAT]   //r - Set repeat tool
+		].forEach(function(pair) {
+			var tool = pair[1];
+			Ayamel.KeyBinder.addKeyBinding(pair[0], function() {
+				// Only do the shortcut if:
+				//  1. We aren't in an input
+				//  2. A modal isn't open
+				var inputFocused = ["TEXTAREA", "INPUT"].indexOf(document.activeElement.nodeName) > -1,
+					modalOpen = $(".modal:visible").length;
+				if (!inputFocused && !modalOpen){ timeline.currentTool = tool; }
 			});
+		});
 
-			// Check for unsaved tracks before leaving
-			window.addEventListener('beforeunload',function(e){
-				var warning = "You have unsaved tracks. Your unsaved changes will be lost.";
-				if(!commandStack.saved){
-					e.returnValue = warning;
-					return warning;
-				}
-			}, false);
+		// Autocue controls
+		Ayamel.KeyBinder.addKeyBinding(Ayamel.KeyBinder.keyCodes['|'], timeline.breakPoint.bind(timeline),true);
 
-			window.addEventListener('resize',function(){
-				timeline.width = window.innerWidth;
-			}, false);
-
-			// Set up listeners
-
-			// Track selection
-			videoPlayer.addEventListener("enabletrack", function(event) {
-				var track = event.detail.track;
-				if (timeline.hasTextTrack(track.label)) { return; }
-				timeline.addTextTrack(track, track.mime);
-				updateSpacing();
-			});
-
-			//TODO: Integrate the next listener into the timeline editor
-			timeline.on('activechange', function(){ renderer.rebuildCaptions(); });
-
-			timeline.on('addtrack',function(evt){
-				videoPlayer.addTextTrack(evt.track.textTrack);
-				updateSpacing();
-			});
-
-			timeline.on('removetrack', updateSpacing);
-
-			[   //Set up keyboard shortcuts
-				[Ayamel.KeyBinder.keyCodes.a,Timeline.CREATE],  //a - Add
-				[Ayamel.KeyBinder.keyCodes.s,Timeline.SELECT],   //s - Select
-				[Ayamel.KeyBinder.keyCodes.d,Timeline.DELETE],  //d - Delete
-				[Ayamel.KeyBinder.keyCodes.m,Timeline.MOVE],    //m - Move
-				[Ayamel.KeyBinder.keyCodes.q,Timeline.SPLIT],   //q - Split
-				[Ayamel.KeyBinder.keyCodes.o,Timeline.ORDER],   //o - Reorder
-				[Ayamel.KeyBinder.keyCodes.f,Timeline.SHIFT],   //f - Time shift
-				[Ayamel.KeyBinder.keyCodes.r,Timeline.REPEAT]   //r - Set repeat tool
-			].forEach(function(pair) {
-				var tool = pair[1];
-				Ayamel.KeyBinder.addKeyBinding(pair[0], function() {
-					// Only do the shortcut if:
-					//  1. We aren't in an input
-					//  2. A modal isn't open
-					var inputFocused = ["TEXTAREA", "INPUT"].indexOf(document.activeElement.nodeName) > -1,
-						modalOpen = $(".modal:visible").length;
-					if (!inputFocused && !modalOpen){ timeline.currentTool = tool; }
-				});
-			});
-
-			// Autocue controls
-			Ayamel.KeyBinder.addKeyBinding(Ayamel.KeyBinder.keyCodes['|'], timeline.breakPoint.bind(timeline),true);
-
-			//undo/redo shortcuts
-			document.addEventListener('keydown',function(e){
-				if(!e.ctrlKey){ return; }
-				switch(e.keyCode){
-				case 89: timeline.commandStack.redo();
-					break;
-				case 90: timeline.commandStack.undo();
-					break;
-				default: return;
-				}
-				e.preventDefault();
-			},false);
-		}
-	});
+		//undo/redo shortcuts
+		document.addEventListener('keydown',function(e){
+			if(!e.ctrlKey){ return; }
+			switch(e.keyCode){
+			case 89: timeline.commandStack.redo();
+				break;
+			case 90: timeline.commandStack.undo();
+				break;
+			default: return;
+			}
+			e.preventDefault();
+		},false);
+	}
 });

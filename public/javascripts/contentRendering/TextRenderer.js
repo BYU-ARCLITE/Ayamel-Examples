@@ -9,7 +9,7 @@ var TextRenderer = (function(){
 
     function createLayout(args) {
 
-        var panes = ContentLayoutManager.onePanel($(args.holder));
+        var panes = ContentLayoutManager.onePanel(args.holder);
 
         var $textHolder = $('<pre id="textHolder"></pre>');
         panes.$player.append($textHolder);
@@ -65,8 +65,8 @@ var TextRenderer = (function(){
                             (new TextAnnotator(args)).annotate(args.layout.$textHolder);
                         }
 
-                        if (args.callback) {
-                            args.callback(args);
+                        if (typeof args.txtcallback === 'function') {
+                            args.txtcallback(args.layout);
                         }
                     }
                 });

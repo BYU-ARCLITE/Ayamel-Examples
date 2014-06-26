@@ -69,14 +69,18 @@ var AnnotationTextEditor = (function() {
         if (args.content.contentType === "text") {
             // Render the text content
             renderAnnotations = function() {
-                ContentRenderer.render({
-                    content: args.content,
-                    holder: args.$holder[0],
-                    annotate: false,
-                    callback: function(args) {
-                        setupTextAnnotations(args.layout.$textHolder);
-                    }
-                });
+				ResourceLibrary.load(args.content.resourceId, function(resource) {
+					args.resource = resource;
+					TextRenderer.render({
+						content: args.content,
+						resource: resource,
+						holder: args.$holder[0],
+						annotate: false,
+						txtcallback: function(layout) {
+							setupTextAnnotations(layout.$textHolder);
+						}
+					});
+				});
             };
             renderAnnotations();
         } else {
