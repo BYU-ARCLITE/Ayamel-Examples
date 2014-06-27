@@ -7,9 +7,9 @@
  */
 var TextAnnotator = (function() {
 
-    function TextAnnotator(args) {
-        this.filter = args.filter;
-        this.manifests = args.manifests;
+    function TextAnnotator(manifests, filter) {
+        this.filter = filter;
+        this.manifests = manifests;
     }
 
     TextAnnotator.prototype.annotate = function(content) {

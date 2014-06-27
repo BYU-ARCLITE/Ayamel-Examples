@@ -44,9 +44,8 @@
                 owner: owner,
                 userId: userId,
                 resource: resource,
-                $holder: $("#personalSettings"),
-                action: "@routes.ContentEditing.setSettings(content.id.get)",
-                method: "post"
+                $holder: document.getElementById("personalSettings"),
+                action: "@routes.ContentEditing.setSettings(content.id.get)"
             });
 
             if (teacher) {
@@ -54,9 +53,8 @@
                     content: content,
                     courseId: courseId,
                     resource: resource,
-                    $holder: $("#courseSettings"),
-                    action: "@{routes.ContentEditing.setCourseSettings(content.id.get, course.map(_.id.get).getOrElse(0))}",
-                    method: "post"
+                    $holder: document.getElementById("courseSettings"),
+                    action: "@{routes.ContentEditing.setCourseSettings(content.id.get, course.map(_.id.get).getOrElse(0))}"
                 });
             }
         });

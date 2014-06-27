@@ -6,6 +6,7 @@
  * To change this template use File | Settings | File Templates.
  */
 var AnnotationImageEditor = (function() {
+	/* args: content, holder, manifest, popupEditor */
     function AnnotationImageEditor(args) {
 
         var activeAnnotation = null;
@@ -13,15 +14,9 @@ var AnnotationImageEditor = (function() {
 			if(content.contentType !== 'image'){ throw "Non-Image Content"; }
 			ResourceLibrary.load(content.resourceId, function(resource){
 				ImageRenderer.render({
-					drawable: args.drawable,
-					filter: args.filter,
-					open: args.open,
 					resource: resource,
 					annotate: false,
-					courseId: args.courseId,
-					contentId: args.contentId,
-					permission: args.permission,
-					holder: args.$holder[0],
+					holder: args.holder,
 					imgcallback: function(image, layout) {
 
 						// Create the image annotating canvas

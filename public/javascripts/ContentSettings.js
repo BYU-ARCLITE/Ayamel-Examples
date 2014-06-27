@@ -230,26 +230,26 @@ var ContentSettings = (function() {
         return Promise.resolve([]);
     }
 
-    function getCaptionTracks(args, context) {
-        var captionTrackIds = args.resource.relations
+    function getCaptionTracks(content, resource, context) {
+        var captionTrackIds = resource.relations
             .filter(function(r){return r.type==="transcript_of";})
             .map(function(r){return r.subjectId;}).join(',');
         // Get the list of enableable caption tracks
         return getPermittedResources({
-            contentId: args.content.id,
+            contentId: content.id,
             courseId: context.courseId,
             permission: "enable",
             documentType: "captionTrack",
             ids: captionTrackIds
         });
     }
-    function getAnnotationDocs(args, context) {
-        var annotationIds = args.resource.relations
+    function getAnnotationDocs(content, resource, context) {
+        var annotationIds = resource.relations
             .filter(function(r){return r.type==="references";})
             .map(function(r){return r.subjectId;}).join(',');
         // Get the list of enableable annotation sets
         return getPermittedResources({
-            contentId: args.content.id,
+            contentId: content.id,
             courseId: context.courseId,
             permission: "enable",
             documentType: "annotations",
@@ -269,6 +269,7 @@ var ContentSettings = (function() {
         return control;
     }
 
+    /* args: courseId, owner, userId, content, resource, holder, action */
     function ContentSettings(args) {
 
         // Determine what content type and at what permission level we are dealing with
@@ -277,9 +278,11 @@ var ContentSettings = (function() {
             owner: args.owner || false,
             userId: args.userId || 0
         };
+
         var permissionLevel = getPermissionLevel(context);
-        var captionTracks = getCaptionTracks(args, context);
-        var annotationDocs = getAnnotationDocs(args, context);
+        var captionTracks = getCaptionTracks(args.content, args.resource, context);
+        var annotationDocs = getAnnotationDocs(args.content, args.resource, context);
+
         Promise.all([captionTracks,annotationDocs])
         .then(function(data){
             var ractive, controls;
@@ -295,7 +298,7 @@ var ContentSettings = (function() {
             });
 
             ractive = new Ractive({
-                el: args.$holder[0],
+                el: args.holder,
                 template: settingsTemplate,
                 data: {controls: controls},
             });

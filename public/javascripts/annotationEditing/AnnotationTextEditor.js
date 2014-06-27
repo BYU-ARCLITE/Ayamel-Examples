@@ -9,37 +9,41 @@ var AnnotationTextEditor = (function() {
 
     function loadTracks(content, callback) {
         // TODO: Determine which course we're operating in
-        ContentRenderer.getTranscripts({
-            courseId: 0,
-            content: content,
-            documentType: "annotations"
-        }, function(transcripts) {
-            async.map(transcripts, function(transcript, asyncCallback) {
-                Ayamel.utils.loadCaptionTrack(transcript, function (track) {
-                    asyncCallback(null, track);
+        ResourceLibrary.load(content.resourceId).then(function(resource){
+            ContentRenderer.getTranscripts({
+                courseId: 0,
+                contentId: content.id,
+                resource: resource,
+                permission: "view"
+            }, function(transcripts) {
+                async.map(transcripts, function(transcript, asyncCallback) {
+                    Ayamel.utils.loadCaptionTrack(transcript, function (track) {
+                        asyncCallback(null, track);
+                    });
+                }, function (err, data) {
+                    callback(data);
                 });
-            }, function (err, data) {
-                callback(data);
             });
         });
     }
 
+    /* args: manifest, content, holder, popupEditor */ 
     function AnnotationTextEditor(args) {
 
         /*
          * Text annotation
          */
         var activeAnnotation = null;
-        var textAnnotator = new TextAnnotator({
-            manifests: [args.manifest],
-            filter: function ($annotation, annotation) {
+        var textAnnotator = new TextAnnotator(
+            [args.manifest],
+            function ($annotation, annotation) {
                 $annotation.click(function () {
                     args.popupEditor.show();
                     args.popupEditor.annotation = annotation;
                     activeAnnotation = annotation;
                 });
             }
-        });
+        );
         var renderAnnotations = function(){};
 
 
@@ -69,29 +73,30 @@ var AnnotationTextEditor = (function() {
         if (args.content.contentType === "text") {
             // Render the text content
             renderAnnotations = function() {
-				ResourceLibrary.load(args.content.resourceId, function(resource) {
-					args.resource = resource;
-					TextRenderer.render({
-						content: args.content,
-						resource: resource,
-						holder: args.$holder[0],
-						annotate: false,
-						txtcallback: function(layout) {
-							setupTextAnnotations(layout.$textHolder);
-						}
-					});
-				});
+                ResourceLibrary.load(args.content.resourceId, function(resource) {
+                    TextRenderer.render({
+                        courseId: 0,
+                        contentId: args.content.id,
+                        resource: resource,
+                        holder: args.holder,
+                        annotate: false,
+                        txtcallback: function(layout) {
+                            setupTextAnnotations(layout.$textHolder);
+                        }
+                    });
+                });
             };
             renderAnnotations();
         } else {
             // Render the transcripts in a transcript player
             loadTracks(args.content, function(tracks) {
                 var transcriptPlayer = new TranscriptPlayer({
-                    $holder: args.$holder,
+                    holder: args.holder,
                     captionTracks: tracks,
-                    filter: function(cue, $cue) {
+					syncButton: true
+                    /* filter: function(cue, $cue) {
                         setupTextAnnotations($cue);
-                    }
+                    } */
                 });
                 renderAnnotations = function() {
                     transcriptPlayer.update();

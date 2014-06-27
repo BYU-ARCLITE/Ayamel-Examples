@@ -67,6 +67,7 @@ var ContentItemRenderer = (function() {
         }
     }
 
+    /* args: content, format, click, courseId */
     function renderContent(args) {
         var ractive,
             content = args.content,
@@ -127,11 +128,12 @@ var ContentItemRenderer = (function() {
         });
     }
 
-    function adjustFormat(args) {
+    function adjustFormat(content) {
         var tableThreshold = 20;
-        return (args.content.length > tableThreshold)?"table":"block";
+        return (content.length > tableThreshold)?"table":"block";
     }
 
+    /* args: format, content, $holder, sorting, organization, labels, filters, courseId, click */
     function createSizer(args) {
         var template =
             '<div class="btn-group" data-toggle="buttons-radio">\
@@ -161,6 +163,7 @@ var ContentItemRenderer = (function() {
         return $element;
     }
 
+    /* args: format, content, $holder, sorting, labels, filters, courseId, click */
     function createOrganizer(args) {
         var template =
             '<div class="btn-group" data-toggle="buttons-radio">\
@@ -190,6 +193,7 @@ var ContentItemRenderer = (function() {
     }
 
     return {
+        /* args: content, format, click, courseId, $holder */
         render: function(args) {
             var $element = renderContent(args);
             args.$holder.append($element);
@@ -200,6 +204,7 @@ var ContentItemRenderer = (function() {
             }
         },
 
+        /* args: $holder, format, sizing, content, sorting, organization, labels, filters, courseId, click */
         renderAll: function(args) {
             // Clear out the holder
             args.$holder.html("");
@@ -207,19 +212,38 @@ var ContentItemRenderer = (function() {
             // Adjust args
             args.format = args.format || "block";
             if (args.format === "auto") {
-                args.format = adjustFormat(args);
+                args.format = adjustFormat(args.content);
             }
 
             // Set up sizing
             if (args.sizing) {
-                args.$holder.append(createSizer(args));
+                args.$holder.append(createSizer({
+                    format: args.format,
+                    content: args.content,
+                    $holder: args.$holder,
+                    sorting: args.sorting,
+                    organization: args.organization,
+                    labels: args.labels,
+                    filters: args.filters,
+                    courseId: args.courseId,
+                    click: args.click
+                }));
             }
 
             // Set up organizing
             var filters = args.filters;
             if (args.labels) {
                 args.organization = args.organization || "labels";
-                args.$holder.append(createOrganizer(args));
+                args.$holder.append(createOrganizer({
+                    content: args.content,
+                    $holder: args.$holder,
+                    format: args.format,
+                    sorting: args.sorting,
+                    labels: args.labels,
+                    filters: args.filters,
+                    courseId: args.courseId,
+                    click: args.click
+                }));
 
                 if (args.organization === "labels") {
                     filters = {};

@@ -7,9 +7,9 @@
  */
 var TextRenderer = (function(){
 
-    function createLayout(args) {
+    function createLayout(holder) {
 
-        var panes = ContentLayoutManager.onePanel(args.holder);
+        var panes = ContentLayoutManager.onePanel(holder);
 
         var $textHolder = $('<pre id="textHolder"></pre>');
         panes.$player.append($textHolder);
@@ -19,6 +19,7 @@ var TextRenderer = (function(){
     }
 
     return {
+		/* args: resource, courseId, contentId, holder, annotate, txtcallback */
         render: function(args) {
 
             // Load all important information
@@ -27,26 +28,28 @@ var TextRenderer = (function(){
             });
 
             // Load annotations
-            ContentRenderer.getAnnotations(args, function (manifests) {
+            ContentRenderer.getAnnotations({
+				resource: args.resource,
+				courseId: args.courseId,
+				contentId: args.contentId,
+				permission: "view"
+			}, function (manifests) {
                 var url = file.downloadUri,
-                    idx = url.indexOf('?');
+                    idx = url.indexOf('?'),
+					layout = createLayout(args.holder);
+
                 if(idx === -1){ url += "?"; }
                 else if(idx !== url.length-1){ url += '&nocache='; }
                 url += Date.now().toString(36);
 
-                args.manifests = manifests;
-
-                // Create the layout
-                args.layout = createLayout(args);
-
                 // Load the text document
                 $.ajax(file.downloadUri, {
                     success: function(text) {
-                        args.layout.$textHolder.text(text);
+                        layout.$textHolder.text(text);
 
                         // Annotate the document
                         if (args.annotate) {
-                            args.filter = function($annotation, annotation) {
+                            (new TextAnnotator(manifests, function($annotation, annotation){
 
                                 // Show the annotations in a popover
                                 var content = annotation.data.value;
@@ -61,12 +64,11 @@ var TextRenderer = (function(){
                                     container: "body",
                                     trigger: "hover"
                                 });
-                            };
-                            (new TextAnnotator(args)).annotate(args.layout.$textHolder);
+                            })).annotate(layout.$textHolder);
                         }
 
                         if (typeof args.txtcallback === 'function') {
-                            args.txtcallback(args.layout);
+                            args.txtcallback(layout);
                         }
                     }
                 });
