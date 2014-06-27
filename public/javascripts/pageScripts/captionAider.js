@@ -427,10 +427,11 @@ $(function() {
                 contentId: content.id,
                 holder: contentHolder,
                 permission: "edit",
-        //        screenAdaption: {
-        //            fit: true,
-        //            padding: 100
-        //        },
+				screenAdaption: {
+					fit: true,
+					scroll: true,
+					padding: 61
+				},
                 startTime: 0,
                 endTime: -1,
                 renderCue: renderCue,

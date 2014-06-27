@@ -397,7 +397,7 @@ var VideoRenderer = (function(){
 
     return {
 		/* args: resource, content, courseId, contentId, holder, components,
-			screenAdaptation, startTime, endTime, renderCue, permission, vidcallback */
+			screenAdaption, startTime, endTime, renderCue, permission, vidcallback */
         render: function(args) {
             // Load the caption tracks
             ContentRenderer.getTranscripts({
@@ -424,7 +424,7 @@ var VideoRenderer = (function(){
                     setupVideoPlayer({
 						components: args.components,
 						content: args.content,
-						screenAdaptation: args.screenAdaption,
+						screenAdaption: args.screenAdaption,
 						resource: args.resource,
 						startTime: args.startTime,
 						endTime: args.endTime,
