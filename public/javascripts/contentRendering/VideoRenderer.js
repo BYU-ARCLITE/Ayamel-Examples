@@ -257,7 +257,7 @@ var VideoRenderer = (function(){
             Ayamel.prioritizedPlugins.audio = ["html5"];
 
             // Make sure the element will be contained on the page if it's a video
-            if (args.content.contentType === "video" && args.screenAdaption && args.screenAdaption.fit) {
+            if (args.screenAdaption && args.screenAdaption.fit) {
                 ScreenAdapter.containByHeight(args.layout.$player, Ayamel.aspectRatios.hdVideo, args.screenAdaption.padding);
                 //TODO: Dynamically check the actual control bar height
                 args.layout.$player.css("padding-bottom","61px"); // padding for the control bar
@@ -273,7 +273,7 @@ var VideoRenderer = (function(){
             });
 
              window.onresize = function(event) {
-                if (args.content.contentType === "video" && args.screenAdaption && args.screenAdaption.fit && document.querySelectorAll(".control.button.fullScreen:not(.active)").length) {
+                if (args.screenAdaption && args.screenAdaption.fit && !Ayamel.utils.FullScreen.isFullScreen) {
                     ScreenAdapter.containByHeight(args.layout.$player, Ayamel.aspectRatios.hdVideo, args.screenAdaption.padding);
                     $(".videoBox").height(args.layout.$player.height());
                     $(".transcriptContent").css("max-height", $(".ayamelPlayer").height()-($("#videoTabs").height() + 57));
