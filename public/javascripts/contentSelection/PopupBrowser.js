@@ -59,6 +59,7 @@ var PopupBrowser = (function() {
                 var labels = [].concat.apply([], data.map(function(d){return d.labels;}));
                 ContentItemRenderer.renderAll({
                     content: data,
+                    courseId: 0,
                     $holder: $container,
                     format: "table",
                     sizing: true,
@@ -78,6 +79,7 @@ var PopupBrowser = (function() {
                     var labels = [].concat.apply([], data[courseName].map(function(d){return d.labels;}));
                     ContentItemRenderer.renderAll({
                         content: data[courseName],
+                        courseId: index,
                         $holder: $container.find("#" + id),
                         format: "table",
                         sizing: true,
@@ -94,6 +96,7 @@ var PopupBrowser = (function() {
                 var labels = [].concat.apply([], data.map(function(d){return d.labels;}));
                 ContentItemRenderer.renderAll({
                     content: data,
+                    courseId: 0,
                     $holder: $container,
                     format: "table",
                     sizing: true,

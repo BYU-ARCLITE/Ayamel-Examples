@@ -98,7 +98,7 @@ $(function() {
 
                 // Create the text editor
                 var textEditor = new AnnotationTextEditor({
-                    $holder: $("#annotationEditor"),
+                    holder: document.getElementById("annotationEditor"),
                     content: content,
                     manifest: data.manifest,
                     popupEditor: popupEditor
@@ -107,7 +107,7 @@ $(function() {
             if (typeMap[content.contentType] === "image") {
 
                 var imageEditor = new AnnotationImageEditor({
-                    $holder: $("#annotationEditor"),
+                    holder: document.getElementById("annotationEditor"),
                     content: content,
                     manifest: data.manifest,
                     popupEditor: popupEditor

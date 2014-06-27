@@ -9,37 +9,38 @@
 var VideoRenderer = (function(){
 
     var videoPlayer,
+		trackResourceMap,
         translationHighlight,
         captionTrackId,
         cueNumber;
 
-    function getLevel(args) {
-        return +args.content.settings.level || 1;
+    function getLevel(content) {
+        return +content.settings.level || 1;
     }
 
-    function showTranscript(args) {
-        return args.content.settings.includeTranscriptions === "true";
+    function showTranscript(content) {
+        return content.settings.includeTranscriptions === "true";
     }
 
-    function createLayout(args) {
+    function createLayout(content, holder) {
         var panes;
 
-        switch (getLevel(args)) {
+        switch (getLevel(content)) {
         default:
         case 1:
-            return ContentLayoutManager.onePanel(args.holder);
+            return ContentLayoutManager.onePanel(holder);
         case 2:
-            if (showTranscript(args)) {
-                panes = ContentLayoutManager.twoPanel(args.holder, ["Transcript"]);
+            if (showTranscript(content)) {
+                panes = ContentLayoutManager.twoPanel(holder, ["Transcript"]);
                 return {
                     $player: panes.$player,
                     $transcript: panes.$Transcript
                 };
             }
-            return ContentLayoutManager.onePanel(args.holder);
+            return ContentLayoutManager.onePanel(holder);
         case 3:
-            if (showTranscript(args)) {
-                panes = ContentLayoutManager.twoPanel(args.holder, ["Transcript", "Definitions"]);
+            if (showTranscript(content)) {
+                panes = ContentLayoutManager.twoPanel(holder, ["Transcript", "Definitions"]);
                 return {
                     $player: panes.$player,
                     $definitions: panes.Definitions.$content,
@@ -47,15 +48,15 @@ var VideoRenderer = (function(){
                     $transcript: panes.Transcript.$content
                 };
             }
-            panes = ContentLayoutManager.twoPanel(args.holder, ["Definitions"]);
+            panes = ContentLayoutManager.twoPanel(holder, ["Definitions"]);
             return {
                 $player: panes.$player,
                 $definitions: panes.$Definitions
             };
         case 4:
         case 5:
-            if (showTranscript(args)) {
-                panes = ContentLayoutManager.twoPanel(args.holder, ["Transcript", "Definitions", "Annotations"]);
+            if (showTranscript(content)) {
+                panes = ContentLayoutManager.twoPanel(holder, ["Transcript", "Definitions", "Annotations"]);
                 return {
                     $player: panes.$player,
                     $definitions: panes.Definitions.$content,
@@ -65,7 +66,7 @@ var VideoRenderer = (function(){
                     $transcript: panes.Transcript.$content
                 };
             }
-            panes = ContentLayoutManager.twoPanel(args.holder, ["Definitions", "Annotations"]);
+            panes = ContentLayoutManager.twoPanel(holder, ["Definitions", "Annotations"]);
             return {
                 $player: panes.$player,
                 $definitions: panes.Definitions.$content,
@@ -76,9 +77,9 @@ var VideoRenderer = (function(){
         }
     }
 
-    function createTranslator(args) {
+    function createTranslator(content, layout) {
         var translator;
-        if (getLevel(args) >= 3) {
+        if (getLevel(content) >= 3) {
             translator = new TextTranslator('eng','eng');
 
             // Add translation listeners
@@ -153,12 +154,12 @@ var VideoRenderer = (function(){
                     });
                 });
 
-                args.layout.$definitions.append($html);
-                args.layout.$definitions[0].scrollTop = args.layout.$definitions[0].scrollHeight;
+                layout.$definitions.append($html);
+                layout.$definitions[0].scrollTop = layout.$definitions[0].scrollHeight;
 
-                if (args.layout.$definitionsTab) {
-                    args.layout.$definitionsTab.tab("show");
-                    args.layout.$definitions[0].scrollTop = args.layout.$definitions[0].scrollHeight;
+                if (layout.$definitionsTab) {
+                    layout.$definitionsTab.tab("show");
+                    layout.$definitions[0].scrollTop = layout.$definitions[0].scrollHeight;
                 }
             });
 
@@ -172,20 +173,20 @@ var VideoRenderer = (function(){
         return null;
     }
 
-    function createAnnotator(args) {
+    function createAnnotator(content, layout, manifests) {
 
-        if (getLevel(args) >= 4) {
-            var textAnnotator = new TextAnnotator({manifests: args.manifests});
+        if (getLevel(content) >= 4) {
+            var textAnnotator = new TextAnnotator(manifests,null);
             textAnnotator.addEventListener("textAnnotationClick", function (event) {
 
                 videoPlayer.pause();
 
                 if (event.annotation.data.type === "text") {
-                    args.layout.$annotations.html(event.annotation.data.value);
+                    layout.$annotations.html(event.annotation.data.value);
                 }
 
                 if (event.annotation.data.type === "image") {
-                    args.layout.$annotations.html('<img src="' + event.annotation.data.value + '">');
+                    layout.$annotations.html('<img src="' + event.annotation.data.value + '">');
                 }
 
                 if (event.annotation.data.type === "content") {
@@ -197,7 +198,7 @@ var VideoRenderer = (function(){
 
                         ContentRenderer.render({
                             content: content,
-                            holder: args.layout.$annotations[0],
+                            holder: layout.$annotations[0],
                             annotate: false,
                             screenAdaption: {
                                 fit: false
@@ -213,7 +214,7 @@ var VideoRenderer = (function(){
 
                 // Find the annotation doc
                 var annotationDocId = "unknown";
-                args.manifests.forEach(function (manifest) {
+                manifests.forEach(function (manifest) {
                     manifest.annotations.forEach(function (annotation) {
                         if (annotation.isEqualTo(event.annotation))
                             annotationDocId = manifest.resourceId;
@@ -221,7 +222,7 @@ var VideoRenderer = (function(){
                 });
                 ActivityStreams.predefined.viewTextAnnotation(annotationDocId, event.sourceElement.textContent);
 
-                args.layout.$annotationsTab.tab("show");
+                layout.$annotationsTab.tab("show");
 
             });
             return textAnnotator;
@@ -229,6 +230,8 @@ var VideoRenderer = (function(){
         return null;
     }
 
+	/* args: components, transcripts, content, screenAdaption, layout, resource,
+		startTime, endTime, renderCue, translator, annotator, captionTrackCallback, */
     function setupVideoPlayer(args, callback) {
         try{
 
@@ -238,7 +241,7 @@ var VideoRenderer = (function(){
             };
             var captions = args.transcripts;
 
-            if (getLevel(args) === 1) {
+            if (getLevel(args.content) === 1) {
                 ["left", "right"].forEach(function(side) {
                     ["lastCaption", "captions"].forEach(function(control) {
                         var index = components[side].indexOf(control);
@@ -296,8 +299,7 @@ var VideoRenderer = (function(){
 
                     // Attach the translator
                     if (args.translator) {
-                        trackID = args.trackResource?
-                            args.trackResource.get(renderedCue.cue.track).id:
+                        trackID = trackResourceMap?trackResourceMap.get(renderedCue.cue.track).id:
                             "Unknown";
                         args.translator.attach(node, {
                             captionTrackId: trackID,
@@ -349,35 +351,34 @@ var VideoRenderer = (function(){
         }
     }
 
-    function setupTranscripts(args) {
-        if (showTranscript(args)) {
+    function setupTranscripts(content, layout, captionTracks) {
+        if (showTranscript(content)) {
             var transcriptPlayer = new TranscriptPlayer({
                 //requires the actual TextTrack objects; should be fixed up to take resource IDs, I think
-                captionTracks: args.captionTracks,
-                $holder: args.layout.$transcript,
-                syncButton: true,
-                noUpdate: args.noUpdate
-				//TODO: Add links to translator & annotator
+                captionTracks: captionTracks,
+                holder: layout.$transcript[0],
+                syncButton: true
+                //noUpdate: args.noUpdate
+                //TODO: Add links to translator & annotator
             });
 
             // Cue clicking
             transcriptPlayer.addEventListener("cueclick", function(event){
-                var trackID = args.trackResource?
-                    args.trackResource.get(event.detail.track).id:
+                var trackID = trackResourceMap?trackResourceMap.get(event.detail.track).id:
                     "Unknown";
 
-                args.videoPlayer.currentTime = event.detail.cue.startTime;
+                videoPlayer.currentTime = event.detail.cue.startTime;
                 ActivityStreams.predefined.transcriptCueClick(trackID, event.detail.cue.id);
             });
 
             return transcriptPlayer;
         }
-        return "nothing";
+        return null;
     }
 
     function setupDefinitionsPane($pane, translator){
         var selectHolder = document.createElement('div');
-		(new EditorWidgets.SuperSelect({
+        (new EditorWidgets.SuperSelect({
             el: selectHolder,
             data:{
                 id: 'transLang',
@@ -395,73 +396,82 @@ var VideoRenderer = (function(){
     }
 
     return {
-        render: function (args) {
+		/* args: resource, content, courseId, contentId, holder, components,
+			screenAdaptation, startTime, endTime, renderCue, permission, vidcallback */
+        render: function(args) {
             // Load the caption tracks
-            ContentRenderer.getTranscripts(args, function (transcripts) {
-                args.transcripts = transcripts;
+            ContentRenderer.getTranscripts({
+                resource: args.resource,
+                courseId: args.courseId,
+                contentId: args.contentId,
+                permission: args.permission
+            }, function(transcripts) {
 
                 // Load the annotations
-                ContentRenderer.getAnnotations(args, function (manifests) {
-                    args.manifests = manifests;
-
-                    // Create the layout
-                    args.layout = createLayout(args);
-
-                    // Create the translator
-                    args.translator = createTranslator(args);
-
-                    // Create the annotator
-                    args.annotator = createAnnotator(args);
-
-                    var loaded = false;
-                    function setupTranscriptWithPlayer(args) {
-                        // Make sure that
-                        //  1. The video player is loaded
-                        //  2. The transcript player is loaded or you don't need it
-                        //  3. We haven't already called the callback
-                        var needsTranscript = (args.transcripts && args.transcripts.length && showTranscript(args));
-                        var ready = args.videoPlayer &&
-                            (args.transcriptPlayer || !needsTranscript) &&
-                            !loaded;
-
-                        if (ready) {
-                            if (needsTranscript && args.transcriptPlayer && args.transcriptPlayer !== "nothing") {
-                                args.videoPlayer.addEventListener("timeupdate", function() {
-                                    args.transcriptPlayer.currentTime = args.videoPlayer.currentTime;
-                                });
-                            }
-
-                            if(typeof args.vidcallback === 'function'){
-								args.vidcallback(args.videoPlayer, args.transcriptPlayer);
-							}
-                            loaded = true;
-                        }
-                    }
-
-                    // Prepare to create the Transcript when the video player is created
-                    args.captionTrackCallback = function(tracks, trackResource) {
-                        args.captionTracks = tracks;
-                        args.trackResource = trackResource;
-                        args.transcriptPlayer = setupTranscripts(args);
-
-                        if(args.layout.$definitions){
-                            setupDefinitionsPane(args.layout.$definitions, args.translator);
-                        }
-
-                        setupTranscriptWithPlayer(args);
-
-                    };
+                ContentRenderer.getAnnotations({
+                    resource: args.resource,
+                    courseId: args.courseId,
+                    contentId: args.contentId,
+                    permission: args.permission
+                }, function (manifests) {
+					var loaded = false,
+						layout = createLayout(args.content, args.holder),
+						translator = createTranslator(args.content, layout),
+						annotator = createAnnotator(args.content, layout, manifests),
+						transcriptPlayer = null;
 
                     // Set up the video player
-                    setupVideoPlayer(args, function (videoPlayer) {
-                        args.videoPlayer = videoPlayer;
-                        setupTranscriptWithPlayer(args);
+                    setupVideoPlayer({
+						components: args.components,
+						content: args.content,
+						screenAdaptation: args.screenAdaption,
+						resource: args.resource,
+						startTime: args.startTime,
+						endTime: args.endTime,
+						renderCue: args.renderCue,
+
+						layout: layout,
+						transcripts: transcripts,
+						translator: translator,
+						annotator: annotator,
+						captionTrackCallback: function(captionTracks, trm) {
+							trackResourceMap = trm;
+							transcriptPlayer = setupTranscripts(args.content, layout, captionTracks);
+							if(layout.$definitions){ setupDefinitionsPane(layout.$definitions, translator); }
+							setupTranscriptWithPlayer();
+						}
+					}, function() {
+                        setupTranscriptWithPlayer();
 
                         // Resize the panes' content to be correct size onload
                         $("#Definitions, #Annotations").css("height", $(".ayamelPlayer").height()-($("#videoTabs").height() + 27));
                         $("#Definitions, #Annotations").css("max-height", $(".ayamelPlayer").height()-($("#videoTabs").height() + 27));
 
                     });
+					
+                    function setupTranscriptWithPlayer() {
+                        // Make sure that
+                        //  1. The video player is loaded
+                        //  2. The transcript player is loaded or you don't need it
+                        //  3. We haven't already called the callback
+                        var needsTranscript = (transcripts && transcripts.length && showTranscript(args.content));
+                        var ready = videoPlayer &&
+                            (transcriptPlayer || !needsTranscript) &&
+                            !loaded;
+
+                        if (ready) {
+                            if (needsTranscript && transcriptPlayer) {
+                                videoPlayer.addEventListener("timeupdate", function() {
+                                    transcriptPlayer.currentTime = videoPlayer.currentTime;
+                                });
+                            }
+
+                            if(typeof args.vidcallback === 'function'){
+                                args.vidcallback(videoPlayer, transcriptPlayer);
+                            }
+                            loaded = true;
+                        }
+                    }
                 });
             });
         }

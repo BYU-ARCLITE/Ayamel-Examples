@@ -20,6 +20,7 @@ var QuestionSetRenderer = (function() {
         '</div>';
 
 
+	/* args: content, holder, inPlaylist, qcallback */
     function render(args) {
         var $element = $(template.replace("{{formId}}", args.content.resourceId));
         var $loader = $element.children("#questionSetLoading").hide();
@@ -67,8 +68,7 @@ var QuestionSetRenderer = (function() {
             }
         });
 
-        args.questionSetPlayer = $element[0];
-        args.callback && args.callback(args);
+        if(typeof args.qcallback === 'function'){ args.qcallback($element[0]); }
     }
 
     return {
