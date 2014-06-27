@@ -9,11 +9,12 @@ var TranscriptPlayer = (function(){
 
     // TODO: resizing
 
+	/* args: captionTracks, holder, syncButton */
     function TranscriptPlayer(args) {
 
         var _this = this,
             tracks = args.captionTracks,
-            element = args.$holder[0],
+            element = args.holder,
 			currentTime = 0,
             ractive;
 

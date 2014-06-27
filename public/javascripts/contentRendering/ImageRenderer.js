@@ -19,7 +19,7 @@ var ImageRenderer = (function(){
 
     function setImage(layout, backgroundUrl, callback) {
         var img = new Image();
-        img.src = args.backgroundUrl;
+        img.src = backgroundUrl;
         img.onload = function() {
 
             // Set the background
@@ -36,8 +36,8 @@ var ImageRenderer = (function(){
 
     return {
 	
-		//args: drawable, filter, open, resource, annotate, callback
-		// courseId, contentId, permission, holder
+		//args: drawable, filter, open, resource, annotate, imgcallback
+		// courseId, contentId, holder
         render: function(args) {
 
             // Load all important information
@@ -51,7 +51,7 @@ var ImageRenderer = (function(){
 				resource: args.resource,
 				courseId: args.courseId,
 				contentId: args.contentId,
-				permission: args.permission
+				permission: "view"
 			}, function(manifests) {
                 // Create the layout
 				var layout = createLayout(args.holder);

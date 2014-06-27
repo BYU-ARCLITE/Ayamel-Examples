@@ -51,20 +51,20 @@ var PopupLabelBrowser = (function() {
             </div>\
         {{/labels}}';
 
-    function renderLabels(args) {
+    function renderLabels(contentList, holder) {
         var ractive, allContent,
-            labels = [].concat.apply([], args.content.map(function(d){return d.labels;}));
+            labels = [].concat.apply([], contentList.map(function(d){return d.labels;}));
         labels = labels.filter(function(e, i, arr){ return arr.lastIndexOf(e) === i; });
         labels = labels.map(function(label){
             return {
                 name: label,
-                items: args.content.filter(function(content) { return content.labels.indexOf(label) > -1; })
+                items: contentList.filter(function(content) { return content.labels.indexOf(label) > -1; })
             };
         });
         allContent = labels.reduce(function(acc,next){ return acc.concat(next.items); },[]);
 
         ractive = new Ractive({
-            el: args.$holder[0],
+            el: holder,
             template: labelTemplate,
             partials: {item: itemTemplate},
             data: {
@@ -81,20 +81,14 @@ var PopupLabelBrowser = (function() {
     }
 
     var loadingMechanisms = {
-        "mine": function($container) {
+        "mine": function(container) {
             $.ajax("/ajax/content/mine").then(function(data) {
-                renderLabels({
-                    content: data,
-                    $holder: $container
-                });
+                renderLabels(data, container);
             });
         },
         "public": function($container) {
             $.ajax("/ajax/content/public").then(function(data) {
-                renderLabels({
-                    content: data,
-                    $holder: $container
-                });
+                renderLabels(data, container);
             });
         }
     };
@@ -120,8 +114,7 @@ var PopupLabelBrowser = (function() {
             $selectButton.addClass("disabled");
 
             // Run the loading mechanism
-            var m = loadingMechanisms[$(this).attr("data-load")];
-            m.call(null, $($(this).attr("href")));
+            loadingMechanisms[this.dataset.load](document.querySelector(this.href));
         });
         $modal.on("show", function () {
             apply = false;
@@ -129,10 +122,9 @@ var PopupLabelBrowser = (function() {
         });
         $modal.on("shown", function() {
             // Enable the first tab
-            var $pill = $modal.find(".nav-pills li:first-child a"),
-                m = loadingMechanisms[$pill.attr("data-load")];
+            var $pill = $modal.find(".nav-pills li:first-child a");
             $pill.tab("show");
-            m.call(null, $($pill.attr("href")));
+            loadingMechanisms[$pill.attr("data-load")](document.querySelector($pill.attr("href")));
         });
 
         // Add submission functionality
