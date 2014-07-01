@@ -58,21 +58,22 @@
             });
 
             // Create the translator
-            var translator = new TextTranslator();
-          
+            var translator = new Ayamel.utils.Translator(translationEndpoint, translationKey);
+
             // Set up a caching layer
             var translationCache = {};
             function translate(language, text, callback) {
                 // Make sure a cache for the language exists
-                if (!translationCache[language])
+                if (!translationCache[language]){
                     translationCache[language] = {};
+                }
 
                 // Check to see if we have already translated the text. If so pass that in to the callback.
                 // Otherwise invoke the translator
                 if (translationCache[language][text])
                     callback(translationCache[language][text]);
                 else {
-                    translator.translate(text, language, "en", function(results) {
+                    translator.translate(text, language, "en").then(function(results) {
                         translationCache[language][text] = results;
                         callback(results);
                     });

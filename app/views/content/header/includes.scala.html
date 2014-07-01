@@ -1,4 +1,6 @@
 @()
+@import play.api.Play
+@import play.api.Play.current
 
 @Dependencies(
   Local(
@@ -13,7 +15,6 @@
   Local(
     Rel("javascripts/",
       JS("libraries/sha1.js"),
-      JS("TextTranslator.js"),
       JS("BoxDrawingCanvas.js"),
 
       Rel("contentRendering/",
@@ -57,6 +58,8 @@
       JS("Resource.js"),
       JS("swfobject.js"),
       JS("Ayamel.js"),
+      JS("Text.js"),
+      JS("Translator.js"),
       JS("AnimationHandler.js"),
       JS("AyamelPlayer.js"),
       JS("CaptionsTraversal.js"),
@@ -85,4 +88,8 @@
         JS("html5Audio.js"),
         JS("youtube.js")))))
 
-<script>Ayamel.path = "@{Dependencies.config.getString("Ayamel.js").get}";</script>
+<script>
+	var translationEndpoint = "@{Play.configuration.getString("translation.endpoint").get}";
+	var translationKey = "@{Play.configuration.getString("translation.key").get}";
+	Ayamel.path = "@{Dependencies.config.getString("Ayamel.js").get}";
+</script>

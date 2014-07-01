@@ -9,10 +9,11 @@
 var VideoRenderer = (function(){
 
     var videoPlayer,
-		trackResourceMap,
+        trackResourceMap,
         translationHighlight,
         captionTrackId,
-        cueNumber;
+        cueNumber,
+        destLang = "en";
 
     function getLevel(content) {
         return +content.settings.level || 1;
@@ -80,15 +81,14 @@ var VideoRenderer = (function(){
     function createTranslator(content, layout) {
         var translator;
         if (getLevel(content) >= 3) {
-            translator = new TextTranslator('eng','eng');
+            translator = new Ayamel.utils.Translator(translationEndpoint,translationKey);
 
             // Add translation listeners
             // Translation started
-            translator.addEventListener("translate", function (event) {
+            translator.addEventListener("translate", function(event) {
                 var detail = event.detail,
-                    data = detail.data,
-                    activity = detail.sourceElement.classList.contains("transcriptCue")?"transcriptionTranslation":"captionTranslation";
-                ActivityStreams.predefined[activity](data.captionTrackId, data.cueIndex, detail.text);
+                    data = detail.data;
+                ActivityStreams.predefined[data.sourceType](data.captionTrackId, data.cueIndex, detail.text);
                 videoPlayer.pause();
             });
 
@@ -125,7 +125,7 @@ var VideoRenderer = (function(){
             }
 
             // Translation succeeded
-            translator.addEventListener("translateSuccess", function (event) {
+            translator.addEventListener("translation", function(event){
                 var detail = event.detail,
                     translations = detail.translations,
                     wordList = !document.body.classList.contains("share")? // Only allow saving words if the user is logged in (not sharing)
@@ -164,7 +164,7 @@ var VideoRenderer = (function(){
             });
 
             // Handle errors
-            translator.addEventListener("translateError", function (event) {
+            translator.addEventListener("error", function (event) {
                 alert("We couldn't translate \"" + event.detail.text + "\" for you.");
             });
 
@@ -230,8 +230,8 @@ var VideoRenderer = (function(){
         return null;
     }
 
-	/* args: components, transcripts, content, screenAdaption, layout, resource,
-		startTime, endTime, renderCue, translator, annotator, captionTrackCallback, */
+    /* args: components, transcripts, content, screenAdaption, layout, resource,
+        startTime, endTime, renderCue, translator, annotator, captionTrackCallback, */
     function setupVideoPlayer(args, callback) {
         try{
 
@@ -280,8 +280,6 @@ var VideoRenderer = (function(){
 
                     $("#Definitions, #Annotations").css("height", $(".ayamelPlayer").height()-($("#videoTabs").height() + 27));
                     $(" #Definitions, #Annotations").css("max-height", $(".ayamelPlayer").height()-($("#videoTabs").height() + 27));
-
-
                 }
             };
 
@@ -294,25 +292,37 @@ var VideoRenderer = (function(){
                 startTime: args.startTime,
                 endTime: args.endTime,
                 renderCue: args.renderCue || function (renderedCue, area) { // Check to use a different renderer
-                    var trackID, node = document.createElement('div');
-                    node.appendChild(renderedCue.cue.getCueAsHTML(renderedCue.  kind === 'subtitles'));
+                    var trackID,
+                        cue = renderedCue.cue,
+                        txt = new Ayamel.Text({
+                            content: cue.getCueAsHTML(renderedCue.kind === 'subtitles')
+                        });
 
                     // Attach the translator
                     if (args.translator) {
                         trackID = trackResourceMap?trackResourceMap.get(renderedCue.cue.track).id:
                             "Unknown";
-                        args.translator.attach(node, {
-                            captionTrackId: trackID,
-                            cueIndex: renderedCue.cue.id
-                        });
+                        txt.addEventListener('selection',function(event){
+                            args.translator.translate({
+                                srcLang: cue.track.language,
+                                destLang: destLang,
+                                text: event.detail.fragment.textContent.trim(),
+                                data: {
+                                    captionTrackId: trackID,
+                                    cueIndex: renderedCue.cue.id,
+                                    sourceType: "captionTranslation" //"transcriptionTranslation":
+                                }
+                            });
+                        },false);
                     }
 
                     // Add annotations
                     if (args.annotator) {
-                        args.annotator.annotate(node);
+                        //Yuck
+                        args.annotator.annotate(txt.displayElement);
                     }
 
-                    renderedCue.node = node;
+                    renderedCue.node = txt.displayElement;
                 },
                 aspectRatio: Ayamel.aspectRatios.hdVideo,
                 captionTrackCallback: args.captionTrackCallback
@@ -376,7 +386,7 @@ var VideoRenderer = (function(){
         return null;
     }
 
-    function setupDefinitionsPane($pane, translator){
+    function setupDefinitionsPane($pane){
         var selectHolder = document.createElement('div');
         (new EditorWidgets.SuperSelect({
             el: selectHolder,
@@ -391,13 +401,13 @@ var VideoRenderer = (function(){
                     return {value: code, text: Ayamel.utils.getLangName(code)};
                 }).sort(function(a,b){ return a.text.localeCompare(b.text); })
             }
-        })).observe('selection', function(newValue){ translator.destLang = newValue; });
+        })).observe('selection', function(newValue){ destLang = newValue; });
         $pane.append(selectHolder);
     }
 
     return {
-		/* args: resource, content, courseId, contentId, holder, components,
-			screenAdaption, startTime, endTime, renderCue, permission, vidcallback */
+        /* args: resource, content, courseId, contentId, holder, components,
+            screenAdaption, startTime, endTime, renderCue, permission, vidcallback */
         render: function(args) {
             // Load the caption tracks
             ContentRenderer.getTranscripts({
@@ -414,33 +424,33 @@ var VideoRenderer = (function(){
                     contentId: args.contentId,
                     permission: args.permission
                 }, function (manifests) {
-					var loaded = false,
-						layout = createLayout(args.content, args.holder),
-						translator = createTranslator(args.content, layout),
-						annotator = createAnnotator(args.content, layout, manifests),
-						transcriptPlayer = null;
+                    var loaded = false,
+                        layout = createLayout(args.content, args.holder),
+                        translator = createTranslator(args.content, layout),
+                        annotator = createAnnotator(args.content, layout, manifests),
+                        transcriptPlayer = null;
 
                     // Set up the video player
                     setupVideoPlayer({
-						components: args.components,
-						content: args.content,
-						screenAdaption: args.screenAdaption,
-						resource: args.resource,
-						startTime: args.startTime,
-						endTime: args.endTime,
-						renderCue: args.renderCue,
+                        components: args.components,
+                        content: args.content,
+                        screenAdaption: args.screenAdaption,
+                        resource: args.resource,
+                        startTime: args.startTime,
+                        endTime: args.endTime,
+                        renderCue: args.renderCue,
 
-						layout: layout,
-						transcripts: transcripts,
-						translator: translator,
-						annotator: annotator,
-						captionTrackCallback: function(captionTracks, trm) {
-							trackResourceMap = trm;
-							transcriptPlayer = setupTranscripts(args.content, layout, captionTracks);
-							if(layout.$definitions){ setupDefinitionsPane(layout.$definitions, translator); }
-							setupTranscriptWithPlayer();
-						}
-					}, function() {
+                        layout: layout,
+                        transcripts: transcripts,
+                        translator: translator,
+                        annotator: annotator,
+                        captionTrackCallback: function(captionTracks, trm) {
+                            trackResourceMap = trm;
+                            transcriptPlayer = setupTranscripts(args.content, layout, captionTracks);
+                            if(layout.$definitions){ setupDefinitionsPane(layout.$definitions); }
+                            setupTranscriptWithPlayer();
+                        }
+                    }, function() {
                         setupTranscriptWithPlayer();
 
                         // Resize the panes' content to be correct size onload
@@ -448,7 +458,7 @@ var VideoRenderer = (function(){
                         $("#Definitions, #Annotations").css("max-height", $(".ayamelPlayer").height()-($("#videoTabs").height() + 27));
 
                     });
-					
+
                     function setupTranscriptWithPlayer() {
                         // Make sure that
                         //  1. The video player is loaded
