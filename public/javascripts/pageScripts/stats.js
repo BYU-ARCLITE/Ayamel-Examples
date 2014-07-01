@@ -1,4 +1,5 @@
 $(function() {
+	"use strict";
 	var fcache = {};
 	function getCueData(list){
 		list.forEach(function(rel){
@@ -6,10 +7,10 @@ $(function() {
 				tid = tel.textContent;
 			if(!tid || tid === "unknown"){ return; }
 			ResourceLibrary.load(tid, function (resource) {
-				var url = resource.content.files[0].downloadUri;
+				var promise, url = resource.content.files[0].downloadUri;
 				tel.textContent = resource.title;
 				if(!fcache.hasOwnProperty(url)){					
-					fcache[url] = new Promise(function(resolve, reject){
+					promise = new Promise(function(resolve, reject){
 						TextTrack.get({
 							kind: 'subtitles',
 							lang: resource.languages.iso639_3[0],
@@ -18,6 +19,7 @@ $(function() {
 							success: function(track, mime){ resolve(track); }
 						});
 					});
+					fcache[url] = promise;
 				}else{
 					promise = fcache[url];
 				}
