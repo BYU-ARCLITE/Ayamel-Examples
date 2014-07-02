@@ -8,14 +8,15 @@
         @Dependencies(
           Local(
             Icon("images/favicon.png", "image/png"),
-            Rel("stylesheets",
+            Rel("stylesheets/",
               CSS("bootstrap.min.css"),
               CSS("bootstrap-responsive.min.css"),
               CSS("font-awesome.min.css"),
               CSS("main.css")),
             Rel("javascripts/",
-              JS("jquery-1.9.0.min.js"),
-              JS("bootstrap.min.js"))))
+			  Rel("libraries/",
+                JS("jquery-1.9.0.min.js"),
+                JS("bootstrap.min.js")))))
     </head>
     <body>
 
