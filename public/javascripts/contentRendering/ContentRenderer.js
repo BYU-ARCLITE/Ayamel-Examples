@@ -130,6 +130,7 @@ var ContentRenderer = (function () {
                             holder: args.holder
                         });
                         break;
+					case "document":
                     case "text":
                         TextRenderer.render({
                             resource: resource,

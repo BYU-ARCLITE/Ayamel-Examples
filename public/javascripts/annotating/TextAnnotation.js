@@ -16,8 +16,8 @@ var TextAnnotation = (function(){
     TextAnnotation.prototype.annotate = function (content, filter) {
         var nodes = [];
         var _this = this;
-        for (var i=0; i<content.childNodes.length; i += 1) {
-            var node = content.childNodes.item(i);
+        for (var i=0; i<content.childNodes().length; i += 1) {
+            var node = content.childNodes().item(i);
             if (node.nodeType === Node.ELEMENT_NODE) {
                 nodes.push(node);
             }
