@@ -89,9 +89,9 @@
     <script type="text/javascript">
         $(function() {
 
-            $("#saveMetadata").click(function() {
+            document.getElementById("saveMetadata").addEventListener('click', function(){
                 $("#metadataForm").submit();
-            });
+            }, false);
 
             // Load metadata when the modal opens for the first time
             var languagesLoaded = false;
@@ -105,9 +105,9 @@
 
                 if (!languagesLoaded) {
                     ResourceLibrary.load("@content.resourceId", function(resource) {
-                        $("#title").val(resource.title);
-                        $("#description").val(resource.description);
-                        $("#keywords").val(resource.keywords);
+                        document.getElementById("title").value = resource.title;
+                        document.getElementById("description").value = resource.description;
+                        document.getElementById("keywords").value = resource.keywords;
                         new EditorWidgets.SuperSelect({
                             el: "langLocation",
                             data:{
@@ -125,10 +125,6 @@
             });
         });
     </script>
-
-
-
-
 
 
     @*
@@ -189,19 +185,20 @@
 
     <script type="text/javascript">
         $(function() {
-            $("#saveThumbnail").click(function() {
+            document.getElementById("saveThumbnail").addEventListener('click', function(){
                 $("#thumbnailForm").submit();
-            });
+            }, false);
 
-            $("#makeThumbnail").click(function() {
+            document.getElementById("makeThumbnail").addEventListener('click', function(){
                 // Get the time
                 var limit = 300;
                 var time = Math.floor(ayamelPlayer.currentTime * 100) / 100;
-                if (time <= limit)
+                if (time <= limit){
                     window.location = "/content/@content.id.get/makeThumb/" + time;
-                else
+                }else{
                     alert("Please select a time within the first five minutes.")
-            });
+                }
+            }, false);
         });
     </script>
 

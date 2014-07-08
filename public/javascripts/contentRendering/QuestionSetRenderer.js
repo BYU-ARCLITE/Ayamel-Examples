@@ -20,24 +20,28 @@ var QuestionSetRenderer = (function() {
         '</div>';
 
 
-	/* args: content, holder, inPlaylist, qcallback */
+    /* args: content, holder, inPlaylist, qcallback */
     function render(args) {
-        var $element = $(template.replace("{{formId}}", args.content.resourceId));
-        var $loader = $element.children("#questionSetLoading").hide();
-        var $done = $element.children("#questionSetDone").hide();
-        var $doneButton = $done.find("a");
+        var element = Ayamel.utils.parseHTML(template.replace("{{formId}}", args.content.resourceId));
+        var loader = element.querySelector("#questionSetLoading");
+        var done = element.querySelector("#questionSetDone");
+        var doneButton = done.querySelector("a");
         var loadCount = 0;
         var index = -1;
 
-        $(args.holder).html($element);
+        $(loader).hide();
+        $(done).hide();
+        
+        args.holder.innerHTML = "";
+        args.holder.appendChild(element);
 
         function checkIndex(callback) {
             if (index === -1) {
-                $loader.show();
+                $(loader).show();
                 $.ajax("/questions/" + args.content.id + "/getIndex?" + Date.now().toString(36), {
                     success: function(data) {
                         index = +data;
-                        $loader.hide();
+                        $(loader).hide();
                         callback();
                     }
                 });
@@ -46,7 +50,7 @@ var QuestionSetRenderer = (function() {
             }
         }
 
-        $doneButton.click(function(e) {
+        doneButton.addEventListener('click',function(e){
             e.stopPropagation();
 
             // Do different things if
@@ -54,21 +58,21 @@ var QuestionSetRenderer = (function() {
                 var event = document.createEvent("HTMLEvents");
                 event.initEvent("done", true, true);
                 event.index = index;
-                $element[0].dispatchEvent(event);
+                element.dispatchEvent(event);
             } else {
                 window.location = "/questions/" + args.content.id + "/grade/" + index + "?" + Date.now().toString(36);
             }
-        });
+        },false);
 
-        $element.find("iframe")[0].addEventListener("load", function() {
+        element.querySelector("iframe").addEventListener("load", function(){
             if (loadCount++) {
                 checkIndex(function() {
-                    $done.show();
+                    $(done).show();
                 });
             }
-        });
+        },false);
 
-        if(typeof args.qcallback === 'function'){ args.qcallback($element[0]); }
+        if(typeof args.qcallback === 'function'){ args.qcallback(element); }
     }
 
     return {

@@ -58,10 +58,10 @@
                 var $helpPages = $("#helpPages").children();
                 $categories.click(function() {
                     $categories.removeClass("active");
-                    $(this).addClass("active");
+                    this.classList.add("active");
 
                     $helpPages.removeClass("active");
-                    $helpPages.filter("div[data-name=\"" + $(this).attr("data-target") + "\"]").addClass("active");
+                    $helpPages.filter("div[data-name=\"" + this.dataset["target"] + "\"]").addClass("active");
                 });
 
                 // The getting started video
@@ -70,7 +70,7 @@
                 if (gettingStartedId) {
                     ContentRenderer.render({
                         content: gettingStartedId,
-                        holder: $("#gettingStarted"),
+                        holder: document.getElementById("gettingStarted"),
                         annotate: true
                     });
                 }

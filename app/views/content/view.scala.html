@@ -165,8 +165,6 @@
                     @*"@dataAccess.PlayGraph.host",*@
                     @*["@dataAccess.PlayGraph.playerKey.consumerKey", "@dataAccess.PlayGraph.playerKey.consumerSecret"]*@
                 @*);*@
-                // Make sure we have enough room
-                var $contentHolder = $("#contentHolder");
 
                 // Render the content
                 ContentRenderer.render({
@@ -175,7 +173,7 @@
                     owner: @content.isEditableBy(user),
                     teacher: @course.exists(c => user.canEdit(c)),
                     courseId: @course.map(_.id.get).getOrElse(0),
-                    holder: $contentHolder[0],
+                    holder: document.getElementById('contentHolder'),
                     annotate: true,
                     open: true,
                     screenAdaption: {

@@ -20,13 +20,11 @@
     <script type="text/javascript">
         $(function() {
             ResourceLibrary.setBaseUrl("@resourceLibraryUrl");
-            var content = @Html(content.toJson.toString());
-            var $playlistPlayer = $("#playlistPlayer");
 
             // Render the content
             ContentRenderer.render({
-                content: content,
-                $holder: $playlistPlayer,
+                content: @Html(content.toJson.toString()),
+                holder: document.getElementById("playlistPlayer"),
                 annotate: true,
                 screenAdaption: {
                     fit: true,

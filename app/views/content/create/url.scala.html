@@ -138,12 +138,12 @@
                 }
             });
 
-            $("#url").change(function() {
-                var uri = $(this).val();
-                $("#contentType").val(typeMap[
+            document.getElementById("url").addEventListener('change', function(){
+                var uri = this.value;
+                document.getElementById("contentType").value = typeMap[
                     (isYouTube(uri)||isBrightcove(uri))?"video":
                     Ayamel.utils.mimeFromFilename(uri).split("/")[0]
-                ]);
+                ];
             });
         });
     </script>

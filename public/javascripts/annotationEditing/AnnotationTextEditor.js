@@ -27,7 +27,7 @@ var AnnotationTextEditor = (function() {
         });
     }
 
-    /* args: manifest, content, holder, popupEditor */ 
+    /* args: manifest, content, holder, popupEditor */
     function AnnotationTextEditor(args) {
 
         /*
@@ -36,22 +36,22 @@ var AnnotationTextEditor = (function() {
         var activeAnnotation = null;
         var textAnnotator = new TextAnnotator(
             [args.manifest],
-            function ($annotation, annotation) {
-                $annotation.click(function () {
+            function (element, annotation) {
+                element.addEventListener('click', function(){
                     args.popupEditor.show();
                     args.popupEditor.annotation = annotation;
                     activeAnnotation = annotation;
-                });
+                }, false);
             }
         );
         var renderAnnotations = function(){};
 
 
-        function setupTextAnnotations($element) {
-            textAnnotator.annotate($element);
+        function setupTextAnnotations(element) {
+            textAnnotator.annotate(element);
 
             // Have highlighting create annotations
-            $element.mouseup(function (event) {
+            element.addEventListener('mouseup', function(event){
                 // Get the text selection
                 var text = window.getSelection().toString().trim();
 
@@ -64,7 +64,7 @@ var AnnotationTextEditor = (function() {
                     // Rerender the annotations
                     renderAnnotations();
                 }
-            });
+            }, false);
         }
 
         /*
@@ -81,7 +81,7 @@ var AnnotationTextEditor = (function() {
                         holder: args.holder,
                         annotate: false,
                         txtcallback: function(layout) {
-                            setupTextAnnotations(layout.$textHolder);
+                            setupTextAnnotations(layout.textHolder);
                         }
                     });
                 });
@@ -93,7 +93,7 @@ var AnnotationTextEditor = (function() {
                 var transcriptPlayer = new TranscriptPlayer({
                     holder: args.holder,
                     captionTracks: tracks,
-					syncButton: true
+                    syncButton: true
                     /* filter: function(cue, $cue) {
                         setupTextAnnotations($cue);
                     } */

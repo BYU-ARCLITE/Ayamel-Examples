@@ -7,13 +7,13 @@
  */
 var ScreenAdapter = (function() {
 
-    function containByHeight($element, aspectRatio, padding) {
+    function containByHeight(element, aspectRatio, padding) {
         var maxWidth, proportionalVertical, newHeight, newWidth;
         padding = padding || 0;
 
         // Probe and see what the maximum width is
-        $element.width("100%");
-        maxWidth = $element.width();
+        element.style.width = "100%";
+        maxWidth = element.clientWidth;
 
         // Figure out the vertical based on available width and aspect ratio
         proportionalVertical = maxWidth / aspectRatio;
@@ -28,17 +28,16 @@ var ScreenAdapter = (function() {
         }
 
         // Resize the element
-        $element
-            .height(newHeight)
-            .width(newWidth);
+        element.style.height = newHeight + 'px';
+        element.style.width = newWidth + 'px';
     }
 
-    function isEntirelyVisible($element, padding) {
+    function isEntirelyVisible(element, padding) {
         // We are assuming that the element fits in the viewport
         // Look at the position, height, window height, and the scroll top
         padding = padding || 0;
-        var top = $element.offset().top - $(window).scrollTop();
-        var bottom = $element.offset().top + $element.height() + padding - $(window).scrollTop();
+        var top = element.offsetTop - $(window).scrollTop();
+        var bottom = element.offsetTop + element.clientHeight + padding - $(window).scrollTop();
         return (top >= $(window).scrollTop() && bottom <= $(window).scrollTop() + window.innerHeight);
     }
 

@@ -73,7 +73,7 @@
                     $(function() {
                         ContentItemRenderer.renderAll({
                             content: [@Html(course.getContent.map(_.toJson).mkString(","))],
-                            $holder: $("#courseContent"),
+                            holder: document.getElementById("courseContent"),
                             format: "auto",
                             sizing: true,
                             sorting: true,
@@ -82,9 +82,9 @@
                             courseId: @{course.id.get}
                         });
 
-                        $("#deleteButton").click(function() {
+                        document.getElementById("deleteButton").addEventListener('click', function(){
                             window.location = "/admin/courses/" + courseId + "/delete";
-                        });
+                        }, false);
                     });
                 </script>
 

@@ -101,10 +101,10 @@ var ContentItemRenderer = (function() {
             }
         },false);
 
-        return $(el);
+        return el;
     }
 
-    function enablePopover(content, $element) {
+    function enablePopover(content, element) {
         var ractive = new Ractive({
             el: 'container',
             template: contentTemplates.iconContent,
@@ -118,7 +118,7 @@ var ContentItemRenderer = (function() {
             }
         });
 
-        $element.popover({
+        $(element).popover({
             html:true,
             placement: "bottom",
             trigger: "hover",
@@ -133,23 +133,29 @@ var ContentItemRenderer = (function() {
         return (content.length > tableThreshold)?"table":"block";
     }
 
-    /* args: format, content, $holder, sorting, organization, labels, filters, courseId, click */
+    /* args: format, content, holder, sorting, organization, labels, filters, courseId, click */
     function createSizer(args) {
-        var template =
+        var element = Ayamel.utils.parseHTML(
             '<div class="btn-group" data-toggle="buttons-radio">\
                 <button class="btn" data-format="block"><i class="icon-th-large"></i></button>\
                 <button class="btn" data-format="table"><i class="icon-th-list"></i></button>\
                 <button class="btn" data-format="icon"><i class="icon-th"></i></button>\
-            </div>';
+            </div>'
+        );
 
-        var $element = $(template).button();
-        $element.children("button[data-format='" + args.format + "']").addClass("active");
-        $element.children("button").click(function() {
-            var format = $(this).attr("data-format");
+        $(element).button();
+        element.querySelector("button[data-format='" + args.format + "']")
+            .classList.add("active");
+
+        [].forEach.call(element.querySelectorAll("button"),function(node){
+            node.addEventListener('click', clickHandler, false);
+        });
+
+        function clickHandler(){
             ContentItemRenderer.renderAll({
                 content: args.content,
-                $holder: args.$holder,
-                format: format,
+                holder: args.holder,
+                format: this.dataset["format"],
                 sizing: true,
                 sorting: args.sorting,
                 organization: args.organization,
@@ -158,56 +164,62 @@ var ContentItemRenderer = (function() {
                 courseId: args.courseId,
                 click: args.click
             });
-        });
+        }
 
-        return $element;
+        return element;
     }
 
-    /* args: format, content, $holder, sorting, labels, filters, courseId, click */
+    /* args: format, content, holder, sorting, labels, filters, courseId, click */
     function createOrganizer(args) {
-        var template =
+        var element = Ayamel.utils.parseHTML(
             '<div class="btn-group" data-toggle="buttons-radio">\
                 <button class="btn" data-organization="contentType"><i class="icon-play-circle"></i> Content Type</button>\
                 <button class="btn" data-organization="labels"><i class="icon-tags"></i> Labels</button>\
-            </div>';
+            </div>'
+        );
 
-        var $element = $(template).button();
-        $element.children("button[data-organization='" + args.organization + "']").addClass("active");
-        $element.children("button").click(function() {
-            var organization = $(this).attr("data-organization");
+        $(element).button();
+        element.querySelector("button[data-organization='" + args.organization + "']")
+            .classList.add("active");
+
+        [].forEach.call(element.querySelectorAll("button"),function(node){
+            node.addEventListener('click', clickHandler, false);
+        });
+
+        function clickHandler(){
             ContentItemRenderer.renderAll({
                 content: args.content,
-                $holder: args.$holder,
+                holder: args.holder,
                 format: args.format,
                 sizing: true,
                 sorting: args.sorting,
-                organization: organization,
+                organization: this.dataset["organization"],
                 labels: args.labels,
                 filters: args.filters,
                 courseId: args.courseId,
                 click: args.click
             });
-        });
+        }
 
-        return $element;
+        return element;
     }
 
     return {
-        /* args: content, format, click, courseId, $holder */
+        /* args: content, format, click, courseId, holder */
         render: function(args) {
-            var $element = renderContent(args);
-            args.$holder.append($element);
+            var element = renderContent(args);
+            args.holder.appendChild(element);
 
             if (args.format === "icon") {
                 // Enable the popover
-                enablePopover(args.content, $element);
+                enablePopover(args.content, element);
             }
         },
 
-        /* args: $holder, format, sizing, content, sorting, organization, labels, filters, courseId, click */
+        /* args: holder, format, sizing, content, sorting, organization, labels, filters, courseId, click */
         renderAll: function(args) {
             // Clear out the holder
-            args.$holder.html("");
+            args.holder.innerHTML = "";
 
             // Adjust args
             args.format = args.format || "block";
@@ -217,10 +229,10 @@ var ContentItemRenderer = (function() {
 
             // Set up sizing
             if (args.sizing) {
-                args.$holder.append(createSizer({
+                args.holder.appendChild(createSizer({
                     format: args.format,
                     content: args.content,
-                    $holder: args.$holder,
+                    holder: args.holder,
                     sorting: args.sorting,
                     organization: args.organization,
                     labels: args.labels,
@@ -234,10 +246,11 @@ var ContentItemRenderer = (function() {
             var filters = args.filters;
             if (args.labels) {
                 args.organization = args.organization || "labels";
-                args.$holder.append(createOrganizer({
+                args.holder.appendChild(createOrganizer({
                     content: args.content,
-                    $holder: args.$holder,
+                    holder: args.holder,
                     format: args.format,
+					organization: args.organization,
                     sorting: args.sorting,
                     labels: args.labels,
                     filters: args.filters,
@@ -271,7 +284,7 @@ var ContentItemRenderer = (function() {
             if (filters) {
 
                 // Filter the content into categories
-                Object.keys(filters).forEach(function (filterName) {
+                Object.keys(filters).forEach(function(filterName){
 
                     // Filter the content
                     var filteredContent = args.content.filter(filters[filterName]);
@@ -280,15 +293,16 @@ var ContentItemRenderer = (function() {
                     if (filteredContent.length) {
 
                         // Add the name of the filter
-                        args.$holder.append(filterName);
+                        args.holder.appendChild(Ayamel.utils.parseHTML(filterName));
 
                         // Add the content
-                        var $contentHolder = $('<div class="contentHolder ' + args.format + 'Format"></div>');
-                        args.$holder.append($contentHolder);
+                        var contentHolder = document.createElement('div');
+                        contentHolder.className = "contentHolder " + args.format + "Format";
+                        args.holder.appendChild(contentHolder);
                         filteredContent.forEach(function (content) {
                             ContentItemRenderer.render({
                                 content: content,
-                                $holder: $contentHolder,
+                                holder: contentHolder,
                                 format: args.format,
                                 courseId: args.courseId,
                                 click: args.click
@@ -299,12 +313,13 @@ var ContentItemRenderer = (function() {
             } else {
 
                 // No filter, so just show everything
-                var $contentHolder = $('<div class="contentHolder"></div>');
-                args.$holder.append($contentHolder);
+                var contentHolder = document.createElement('div');
+                contentHolder.className = "contentHolder";
+                args.holder.appendChild(contentHolder);
                 args.content.forEach(function (content) {
                     ContentItemRenderer.render({
                         content: content,
-                        $holder: $contentHolder,
+                        holder: contentHolder,
                         format: args.format,
                         courseId: args.courseId,
                         click: args.click

@@ -37,24 +37,24 @@
 
                     // Render the content
                     var content = @Html(content.toJson.toString());
-                    var contentHolder = $("#contentHolder")[0];
+                    var contentHolder = document.getElementById("contentHolder");
                     ContentRenderer.render({
                         content: content,
                         holder: contentHolder,
                         callback: function(data) {
-                            ImageEditor.attach($("#imgHolder"), data.image, function(data) {
-                                $("#cropTop").val(data.top);
-                                $("#cropLeft").val(data.left);
-                                $("#cropBottom").val(data.bottom);
-                                $("#cropRight").val(data.right);
+                            ImageEditor.attach(document.getElementById("imgHolder"), data.image, function(data) {
+                                document.getElementById("cropTop").value = data.top;
+                                document.getElementById("cropLeft").value = data.left;
+                                document.getElementById("cropBottom").value = data.bottom;
+                                document.getElementById("cropRight").value = data.right;
                             });
                         }
                     });
 
-                    $("#resetCrop").click(function() {
+                    document.getElementById("resetCrop").addEventListener('click', function(){
                         ImageEditor.reset();
                         return false;
-                    });
+                    }, false);
                 });
             </script>
             <input type="hidden" id="cropTop" name="cropTop" value="0">
