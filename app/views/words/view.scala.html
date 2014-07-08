@@ -163,11 +163,13 @@
                 };
 
                 // Translate all the words
-                async.map(words, function(word, asyncCallback) {
-                    translate(language, word, function(translationResults) {
-                        asyncCallback(null, translationResults.translations.join(", "));
+                Promise.all(words.map(function(word){
+                    return new Promise(function(resolve){
+                        translate(language, word, function(translationResults) {
+                            resolve(translationResults.translations.join(", "));
+                        });
                     });
-                }, function (err, results) {
+                })).then(function(results){
                     translations = results;
                     exportWords();
                 });
