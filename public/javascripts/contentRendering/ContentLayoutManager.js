@@ -188,9 +188,7 @@ var ContentLayoutManager = (function() {
         container.appendChild(primary);
         container.appendChild(secondary);
 
-        $(window).resize(function () {
-            arrangeWindow();
-        });
+        window.addEventListener('resize', arrangeWindow, false);
         arrangeWindow();
 
         return panes;
