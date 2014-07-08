@@ -51,11 +51,10 @@
         $(function() {
             // Enable the content
             ResourceLibrary.setBaseUrl("@resourceLibraryUrl");
-            $('.contentDisplay').each(function () {
-                var $this = $(this);
+            $('.contentDisplay').each(function(){
                 ContentRenderer.render({
-                    content: Number($this.attr("data-id")),
-                    holder: $this,
+                    content: +this.dataset["id"],
+                    holder: this,
                     annotate: true
                 });
             });

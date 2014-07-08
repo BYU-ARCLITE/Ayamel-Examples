@@ -9,7 +9,7 @@ var ImageAnnotator = (function() {
     return {
 		//args: image, layout, drawable, manifests, filter, open
         annotate: function(args) {
-            var canvas = new BoxDrawingCanvas(args.image, args.layout.$imgHolder);
+            var canvas = new BoxDrawingCanvas(args.image, args.layout.imgHolder);
             if(args.drawable) {
                 canvas.drawable = true;
             }

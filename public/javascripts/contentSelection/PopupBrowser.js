@@ -54,13 +54,13 @@ var PopupBrowser = (function() {
     }
 
     var loadingMechanisms = {
-        "mine": function($container) {
+        "mine": function(container) {
             ajax("ajax/content/mine", function(data) {
                 var labels = [].concat.apply([], data.map(function(d){return d.labels;}));
                 ContentItemRenderer.renderAll({
                     content: data,
                     courseId: 0,
-                    $holder: $container,
+                    holder: container,
                     format: "table",
                     sizing: true,
                     sorting: true,
@@ -70,17 +70,17 @@ var PopupBrowser = (function() {
                 });
             });
         },
-        "course": function($container) {
+        "course": function(container) {
             ajax("ajax/content/course", function(data) {
-                $container.html("");
+                container.innerHTML = "";
                 Object.keys(data).forEach(function(courseName, index) {
                     var id = "courseContent" + index;
-                    $container.append("<h1>" + courseName + "</h1><div id='" + id + "'></div>");
+                    container.appendChild(Ayamel.utils.parseHTML("<h1>" + courseName + "</h1><div id='" + id + "'></div>"));
                     var labels = [].concat.apply([], data[courseName].map(function(d){return d.labels;}));
                     ContentItemRenderer.renderAll({
                         content: data[courseName],
                         courseId: index,
-                        $holder: $container.find("#" + id),
+                        holder: container.querySelector("#" + id),
                         format: "table",
                         sizing: true,
                         sorting: true,
@@ -91,13 +91,13 @@ var PopupBrowser = (function() {
                 });
             });
         },
-        "public": function($container) {
+        "public": function(container) {
             ajax("ajax/content/public", function(data) {
                 var labels = [].concat.apply([], data.map(function(d){return d.labels;}));
                 ContentItemRenderer.renderAll({
                     content: data,
                     courseId: 0,
-                    $holder: $container,
+                    holder: container,
                     format: "table",
                     sizing: true,
                     sorting: true,
@@ -107,8 +107,8 @@ var PopupBrowser = (function() {
                 });
             });
         },
-        "search": function($container) {
-            $container.html("search");
+        "search": function(container) {
+            container.innerHTML = "search";
         }
     };
 
@@ -133,8 +133,7 @@ var PopupBrowser = (function() {
             $selectButton.addClass("disabled");
 
             // Run the loading mechanism
-            var m = loadingMechanisms[$(this).attr("data-load")];
-            m.call(null, $($(this).attr("href")));
+            loadingMechanisms[this.dataset["load"](document.querySelector(this.href));
         });
         $modal.on("show", function () {
             apply = false;
@@ -144,8 +143,7 @@ var PopupBrowser = (function() {
             // Enable the first tab
             var $pill = $modal.find(".nav-pills li:first-child a");
             $pill.tab("show");
-            var m = loadingMechanisms[$pill.attr("data-load")];
-            m.call(null, $($pill.attr("href")));
+            loadingMechanisms[$pill.attr("data-load")](document.querySelector($pill.attr("href")));
         });
 
 

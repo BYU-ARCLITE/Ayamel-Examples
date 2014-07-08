@@ -61,15 +61,13 @@
             $(function() {
                 var $saved = $("#feedbackSaved").hide();
 
-                $("#saveButton").click(function() {
+                document.getElementById("saveButton").addEventListener('click', function(){
 
-                    var description = $("#description").val();
-                    var errorCode = $("#errorCode").val();
                     $.ajax("/feedback/error", {
                         type: "post",
                         data: {
-                            description: description,
-                            errorCode: errorCode
+                            description: document.getElementById('description').value,
+                            errorCode: document.getElementById('errorCode').value
                         }
                     });
 
@@ -77,7 +75,7 @@
                     $saved.show();
 
                     return false;
-                });
+                }, false);
             });
         </script>
 

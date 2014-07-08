@@ -145,30 +145,30 @@
             $(".shortened").tooltip();
 
             $(".editCourse").click(function() {
-                $("#editForm").attr("action", "/admin/courses/" + $(this).attr("data-id"));
-                $("#name").val($(this).attr("data-name"));
-                $("#enrollment").val($(this).attr("data-enrollment"));
+                $("#editForm").attr("action", "/admin/courses/" + this.dataset["id"]);
+                $("#name").val(this.dataset["name"]);
+                $("#enrollment").val(this.dataset["enrollment"]);
             });
 
             $(".deleteCourse").click(function() {
-                var id = $(this).attr("data-id");
+                var id = this.dataset['id'];
                 $("#deleteCourseId").text(id);
                 $("#deleteButton").attr("data-id", id);
             });
 
             $("#deleteButton").click(function() {
-                var id = $(this).attr("data-id");
+                var id = this.dataset['id'];
                 window.location = "/admin/courses/" + id + "/delete";
             });
 
             $(".sendNote").click(function() {
-                var id = $(this).attr("data-id");
+                var id = this.dataset['id'];
                 $("#noteUserId").val(id);
                 $("#noteUserIdDisplay").text(id);
             });
 
             $(".formSubmitter").click(function() {
-                $($(this).attr("data-target")).submit();
+                $(this.dataset["target"]).submit();
             });
         });
     </script>

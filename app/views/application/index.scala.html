@@ -218,12 +218,12 @@
 
     <script type="text/javascript">
         $(function() {
-            $("#login").click(function() {
+            document.getElementById("login").addEventListener('click', function(){
                 $("#loginForm").submit();
-            });
-            $("#signup").click(function() {
+            }, false);
+            document.getElementById("signup").addEventListener('click', function(){
                 $("#signupForm").submit();
-            });
+            }, false);
         });
     </script>
 

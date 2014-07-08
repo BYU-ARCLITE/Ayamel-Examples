@@ -95,23 +95,22 @@
 //                    event.stopPropagation();
                     return false;
                 });
-                $("body").click(function() {
+                document.body.addEventListener('click', function(){
                     $headerDropdowns.hide();
-                });
+                }, false);
                 $headerDropdowns.click(function(event) {
                     event.stopPropagation();
                 });
 
                 // Render the content
                 var content = @Html(content.toJson.toString());
-                var contentHolder = $("#contentHolder")[0];
                 ContentRenderer.render({
                     content: content,
                     userId: "@user.id.get",
                     owner: @content.isEditableBy(user),
                     teacher: @course.map(c => user.canEdit(c)).getOrElse(false),
                     courseId: @course.map(_.id.get).getOrElse(0),
-                    holder: contentHolder,
+                    holder: document.getElementById("contentHolder"),
                     annotate: true,
                     startTime: "@request.queryString.get("starttime").getOrElse("0")",
                     endTime: "@request.queryString.get("endtime").getOrElse("-1")"

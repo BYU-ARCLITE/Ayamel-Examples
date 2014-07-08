@@ -11,15 +11,16 @@ var TextRenderer = (function(){
 
         var panes = ContentLayoutManager.onePanel(holder);
 
-        var $textHolder = $('<pre id="textHolder"></pre>');
-        panes.$player.append($textHolder);
+        var textHolder = document.createElement('pre');
+        textHolder.id = "textHolder";
+        panes.$player.append(textHolder);
         return {
-            $textHolder: $textHolder
+            textHolder: textHolder
         };
     }
 
     return {
-		/* args: resource, courseId, contentId, holder, annotate, txtcallback */
+        /* args: resource, courseId, contentId, holder, annotate, txtcallback */
         render: function(args) {
 
             // Load all important information
@@ -29,14 +30,14 @@ var TextRenderer = (function(){
 
             // Load annotations
             ContentRenderer.getAnnotations({
-				resource: args.resource,
-				courseId: args.courseId,
-				contentId: args.contentId,
-				permission: "view"
-			}, function (manifests) {
+                resource: args.resource,
+                courseId: args.courseId,
+                contentId: args.contentId,
+                permission: "view"
+            }, function (manifests) {
                 var url = file.downloadUri,
                     idx = url.indexOf('?'),
-					layout = createLayout(args.holder);
+                    layout = createLayout(args.holder);
 
                 if(idx === -1){ url += "?"; }
                 else if(idx !== url.length-1){ url += '&nocache='; }
@@ -45,26 +46,26 @@ var TextRenderer = (function(){
                 // Load the text document
                 $.ajax(file.downloadUri, {
                     success: function(text) {
-                        layout.$textHolder.text(text);
+                        layout.textHolder.textContent = text;
 
                         // Annotate the document
                         if (args.annotate) {
-                            (new TextAnnotator(manifests, function($annotation, annotation){
+                            (new TextAnnotator(manifests, function(element, annotation){
 
                                 // Show the annotations in a popover
                                 var content = annotation.data.value;
                                 if (annotation.data.type === "image") {
                                     content = '<img src="' + annotation.data.value + '">';
                                 }
-                                $annotation.popover({
+                                $(element).popover({
                                     placement: "bottom",
                                     html: true,
-                                    title: $annotation.text(),
+                                    title: element.textContent,
                                     content: content,
                                     container: "body",
                                     trigger: "hover"
                                 });
-                            })).annotate(layout.$textHolder);
+                            })).annotate(layout.textHolder);
                         }
 
                         if (typeof args.txtcallback === 'function') {

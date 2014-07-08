@@ -150,30 +150,30 @@
             $(".shortened").tooltip();
 
             $(".formSubmitter").click(function() {
-                $($(this).attr("data-target")).submit();
+                $(this.dataset["target"]).submit();
             });
 
             $(".setRole").click(function() {
-                var id = $(this).attr("data-id");
+                var id = this.dataset["id"];
                 $("#roleUserId").val(id);
                 $("#roleUserIdDisplay").text(id);
-                $("#role").val($(this).attr("data-role"));
+                $("#role").val(this.dataset["role"]);
             });
 
             $(".sendNote").click(function() {
-                var id = $(this).attr("data-id");
+                var id = this.dataset["id"];
                 $("#noteUserId").val(id);
                 $("#noteUserIdDisplay").text(id);
             });
 
             $(".deleteUser").click(function() {
-                var id = $(this).attr("data-id");
+                var id = this.dataset["id"];
                 $("#deleteUserId").text(id);
                 $("#deleteButton").attr("data-id", id);
             });
 
             $("#deleteButton").click(function() {
-                var id = $(this).attr("data-id");
+                var id = this.dataset["id"];
                 window.location = "/admin/users/" + id + "/delete";
             });
         });

@@ -19,7 +19,7 @@
             $(function() {
                 ContentItemRenderer.renderAll({
                     content: [@Html(allContent.map(_.toJson).mkString(","))],
-                    $holder: $("#publicContent"),
+                    holder: document.getElementById("publicContent"),
                     format: "auto",
                     sizing: true,
                     sorting: true,

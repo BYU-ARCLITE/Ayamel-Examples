@@ -23,7 +23,7 @@
             $(function() {
                 ContentItemRenderer.renderAll({
                     content: [@Html(user.getContent.map(_.toJson).mkString(","))],
-                    $holder: $("#myContent"),
+                    holder: document.getElementById("myContent"),
                     format: "auto",
                     sizing: true,
                     sorting: true,

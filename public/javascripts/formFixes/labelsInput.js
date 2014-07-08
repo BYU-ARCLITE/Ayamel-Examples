@@ -2,20 +2,20 @@
  * For usage, see https://github.com/BYU-ARCLITE/Ayamel-Examples/wiki/Improving-forms
  */
 $(function() {
-    $("input[type='labels']").each(function () {
+    [].forEach.call(document.querySelector("input[type='labels']"),function(node){
         // Put a container adjacent
-        var $element = $("<div></div>");
-        $(this).after($element);
+        var element = document.createElement('div');
+        node.parentNode.insertBefore(element, node.nextSibling);
 
         // Replace the element with a multiple select
-        var name = $(this).attr("name");
-        var id = $(this).attr("id");
+        var name = node.name;
+        var id = node.id;
         var $select = $('<select multiple="multiple" name="' + name + '" id="' + id + '"></select>').hide();
-        $element.append($select);
+        element.appendChild($select[0]);
         var values = [];
 
         // Add a place to display the labels
-        var $labelDisplay = $("<div></div>");
+        var labelDisplay = document.createElement('div');
         function addLabel(value) {
             if (!value || values.indexOf(value) >= 0) {
                 return;
@@ -27,42 +27,49 @@ $(function() {
             $select.val(values);
 
             // Add the badge
-            var $badge = $('<span class="badge badge-blue pad-right-low">' + value + ' <a style="color: white" href="#">×</a></span>');
-            $badge.children("a").click(function () {
+            var badge = Ayamel.utils.parseHTML('<span class="badge badge-blue pad-right-low">' + value + ' <a style="color: white" href="#">×</a></span>');
+            badge.querySelector("a").addEventListener('click', function(){
                 values.splice(values.indexOf(value), 1);
                 $select.children("option[value=" + value + "]").remove();
                 $select.val(values);
-                $(this).parent().remove();
-            });
-            $labelDisplay.append($badge);
+                badge.parentNode.removeChild(badge);
+            }, false);
+            labelDisplay.appendChild(badge);
         }
-        $(this).attr("value").split(",").forEach(addLabel);
-        $element.append($labelDisplay);
+
+        node.value.split(",").forEach(addLabel);
+        
+        element.appendChild(labelDisplay);
 
         // Add an input box for creating more labels
-        var $labelInputHolder = $('<div class="pad-top-med"></div>');
-        var $labelInputText = $('<input type="text" class="pad-right-med">');
-        var $labelInputButton = $('<button class="btn">Add</button>');
-        $labelInputHolder.append($labelInputText).append($labelInputButton);
-        $element.append($labelInputHolder);
+        var labelInputHolder = Ayamel.utils.parseHTML(
+            '<div class="pad-top-med">\
+                <input type="text" class="pad-right-med">\
+                <button class="btn">Add</button>\
+            </div>'
+        );
+        var labelInputText = labelInputHolder.querySelector$('input');
+        var labelInputButton = labelInputHolder.querySelector('button');
+
+        element.appendChild(labelInputHolder);
 
         // Setup the add functionality
-        $labelInputButton.click(function(){
-            var value = $labelInputText.val();
-            $labelInputText.val("");
+        labelInputButton.addEventListener('click', clickHandler, false);
+        labelInputText.addEventListener('keypress', function(event){
+            if(event.which !== 13){ return true; }
+            event.stopPropagation();
+            clickHandler();
+            return false;
+        }, false);
+
+        function clickHandler(){
+            var value = labelInputText.value;
+            labelInputText.value = "";
             addLabel(value);
             return false;
-        });
-        $labelInputText.keypress(function(event){
-            if (event.which === 13) {
-                event.stopPropagation();
-                $labelInputButton.click();
-                return false;
-            }
-            return true;
-        });
-
+        }
+        
         // Remove the input
-        $(this).remove();
+        node.parentNode.removeChild(node);
     });
 });

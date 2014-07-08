@@ -203,9 +203,9 @@
 
     <script type="text/javascript">
         $(function() {
-            $("#login").click(function() {
+            document.getElementById("login").addEventListener('click', function(){
                 $("#loginForm").submit();
-            });
+            }, false);
 
             $('#primaryHelp').popover({
                 placement: "bottom",

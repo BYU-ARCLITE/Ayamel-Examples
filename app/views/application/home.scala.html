@@ -70,7 +70,7 @@
                                     }
                                     ContentItemRenderer.renderAll({
                                         content: contentFeed,
-                                        $holder: $("#latestContent"),
+                                        holder: document.getElementById("latestContent"),
                                         format: "icon"
                                     });
                                 });
@@ -129,7 +129,7 @@
                 $(function() {
                     ContentItemRenderer.renderAll({
                         content: [@Html(Content.listPublic.take(12).map(_.toJson).mkString(","))],
-                        $holder: $("#publicContentHolder")
+                        holder: document.getElementById("publicContentHolder")
                     });
                 });
             </script>
@@ -162,33 +162,35 @@
     <script type="text/javascript">
         $(function() {
 
-            var swipe = new Swipe($("#slider")[0], {
+            var swipe = new Swipe(document.getElementById("slider"), {
                 auto: 10000
             });
 
-            $("#leftArrow").click(function() {
+            document.getElementById("leftArrow").addEventListener('click',function(){
                 swipe.prev();
-            });
-            $("#rightArrow").click(function() {
+            }, false);
+            document.getElementById("rightArrow").addEventListener('click',function(){
                 swipe.next();
-            });
+            }, false);
             $(".contentEntry").tooltip({
                 placement: "bottom"
             });
 
             // Set up the button nav
             $(".homeNavContent").hide();
-            $(".homeNavButton").click(function() {
-                if ($(this).hasClass("clicked")) return;
+            [].forEach.call(document.querySelectorAll(".homeNavButton"),function(node){
+                node .addEventListener('click',function(){
+                    if ($(this).hasClass("clicked")) return;
 
-                // Turn off the old one
-                var $old = $(".homeNavButton.active");
-                $($old.attr("data-target")).hide();
-                $old.removeClass('clicked').button('toggle');
+                    // Turn off the old one
+                    var $old = $(".homeNavButton.active");
+                    $($old.attr("data-target")).hide();
+                    $old.removeClass('clicked').button('toggle');
 
-                // Turn on this one
-                $(this).show().addClass('clicked').button('toggle');
-                $($(this).attr("data-target")).show();
+                    // Turn on this one
+                    $(this).show().addClass('clicked').button('toggle');
+                    $(this.dataset["target"]).show();
+                }, false);
             });
             $(".homeNavButton.clicked").button('toggle');
             $("#myAyamel").show();

@@ -45,26 +45,28 @@
 
     PlayGraph.registeredObjects.DataEditor = (function () {
         var template =
-            '<div>' +
-                '<div class="well"></div>' +
-                '<div><button class="btn btn-success">Select Content</button></div>' +
-                '</div>';
+            '<div>\
+                <div class="well"></div>\
+                <div><button class="btn btn-success">Select Content</button></div>\
+            </div>';
 
         function AyamelDataEditor(args) {
-            var _this = this;
-            this.$element = $(template);
-            args.$holder.html(this.$element);
+            var _this = this,
+                element = Ayamel.utils.parseHTML(template);
+            this.element = element;
+            args.holder.innerHTML = "":
+            args.holder.appendChild(element);
 
             // Selector
-            this.$element.find("button").click(function() {
-                PopupBrowser.selectContent(function (content) {
+            element.querySelector("button").addEventListener('click', function(){
+                PopupBrowser.selectContent(function(content){
                     // TODO: Keep track of the course as well
                     _this.content = content;
                 });
-            });
+            }, false);
 
             var activeContent = null;
-            var $contentDiv = this.$element.children("div:first-child");
+            var contentDiv = element.querySelector("div:first-child");
             Object.defineProperty(this, "content", {
                 get: function() {
                     if (!!activeContent)
@@ -77,21 +79,21 @@
                         contentCache[value.id] = value;
                         activeContent = value;
                         var thumbnail = ContentThumbnails.resolve(value);
-                        $contentDiv.html("<img src='" + thumbnail + "'><h1>" + value.name + "</h1>");
+                        contentDiv.innerHTML = "<img src='" + thumbnail + "'><h1>" + value.name + "</h1>";
                     } else {
                         activeContent = null;
-                        $contentDiv.html("<em>No content selected.</em>");
+                        contentDiv.innerHTML = "<em>No content selected.</em>";
                     }
 
                     var newEvent = document.createEvent("HTMLEvents");
                     newEvent.initEvent("update", true, true);
-                    this.$element[0].dispatchEvent(newEvent);
+                    element.dispatchEvent(newEvent);
                 }
             });
         }
 
-        AyamelDataEditor.prototype.addEventListener = function(event, callback) {
-            this.$element[0].addEventListener(event, callback);
+        AyamelDataEditor.prototype.addEventListener = function(event, callback, capture) {
+            this.element.addEventListener(event, callback, capture);
         };
 
         AyamelDataEditor.prototype.getValue = function() {
@@ -166,17 +168,17 @@
      *
      */
 
-    PlayGraph.registeredObjects.TransitionRuleEditor = (function () {
+    PlayGraph.registeredObjects.TransitionRuleEditor = (function(){
         var template =
-            '<select>' +
-                '<option value="always">Always</option>' +
-                '<option value="click">Click</option>' +
-                '<option value="button">Button</option>' +
-                '<option value="timer">Timer</option>' +
-                '<option value="media">Media End</option>' +
-                '<option value="pass">Pass</option>' +
-                '<option value="fail">Fail</option>' +
-            '</select>';
+            '<select>\
+                <option value="always">Always</option>\
+                <option value="click">Click</option>\
+                <option value="button">Button</option>\
+                <option value="timer">Timer</option>\
+                <option value="media">Media End</option>\
+                <option value="pass">Pass</option>\
+                <option value="fail">Fail</option>\
+            </select>';
 
         var ruleMap = {
             always: "true;",
@@ -198,22 +200,23 @@
         };
 
         function TransitionRuleEditor(args) {
-            var _this = this;
-            this.$element = $(template);
-            this.$element.val(ruleMap[args.rule]);
-            args.$holder.html(this.$element);
+            var element = Ayamel.utils.parseHTML(template);
+            this.element = element;
+            element.value = ruleMap[args.rule];
+            args.holder.innerHTML = "";
+            args.holder.appendChild(element);
 
-            this.$element.change(function (event) {
+            element.addEventListener('change', function(event){
                 event.stopPropagation();
                 var newEvent = document.createEvent("HTMLEvents");
                 newEvent.initEvent("update", true, true);
-                newEvent.rule = ruleMap[_this.$element.val()];
+                newEvent.rule = ruleMap[this.value];
                 this.dispatchEvent(newEvent);
-            });
+            }, false);
         }
 
-        TransitionRuleEditor.prototype.addEventListener = function(event, callback) {
-            this.$element[0].addEventListener(event, callback);
+        TransitionRuleEditor.prototype.addEventListener = function(event, callback, capture) {
+            this.element.addEventListener(event, callback, capture);
         };
 
         return TransitionRuleEditor;
@@ -234,56 +237,56 @@
     PlayGraph.registeredObjects.SettingsEditor = (function() {
 
         var template =
-            '<div>' +
-                '<h2>Enabled Triggers</h2>' +
-                '<form class="form-horizontal">' +
-                    '<div class="control-group">' +
-                        '<div class="controls">' +
-                            '<label class="checkbox">' +
-                                '<input type="checkbox" id="clickCheckbox">' +
-                                'Clicking' +
-                            '</label>' +
-                        '</div>' +
-                    '</div>' +
-                    '<div class="control-group">' +
-                        '<div class="controls">' +
-                            '<label class="checkbox">' +
-                                '<input type="checkbox" id="buttonCheckbox">' +
-                                'Button' +
-                            '</label>' +
-                        '</div>' +
-                    '</div>' +
-                    '<div class="control-group">' +
-                        '<div class="controls">' +
-                            '<label class="checkbox">' +
-                                '<input type="checkbox" id="mediaCheckbox">' +
-                                'Media End' +
-                            '</label>' +
-                        '</div>' +
-                    '</div>' +
-                    '<div class="control-group">' +
-                        '<div class="controls">' +
-                            '<label class="checkbox">' +
-                                '<input type="checkbox" id="timerCheckbox">' +
-                                'Timer' +
-                            '</label>' +
-                        '</div>' +
-                    '</div>' +
-                    '<div class="control-group">' +
-                        '<label class="control-label" for="inputPassword">Timer value (seconds):</label>' +
-                        '<div class="controls">' +
-                            '<input type="text" id="timerValue" placeholder="Timer value">' +
-                            '<span class="input-long uneditable-input" id="timerValueDisabled"></span>' +
-                        '</div>' +
-                    '</div>' +
-                    '<div class="control-group">' +
-                        '<label class="control-label" for="inputPassword">Passing value (0-1):</label>' +
-                        '<div class="controls">' +
-                            '<input type="text" id="passingValue" placeholder="Passing value">' +
-                        '</div>' +
-                    '</div>' +
-                '</form>' +
-            '</div>';
+            '<div>\
+                <h2>Enabled Triggers</h2>\
+                <form class="form-horizontal">\
+                    <div class="control-group">\
+                        <div class="controls">\
+                            <label class="checkbox">\
+                                <input type="checkbox" id="clickCheckbox">\
+                                Clicking\
+                            </label>\
+                        </div>\
+                    </div>\
+                    <div class="control-group">\
+                        <div class="controls">\
+                            <label class="checkbox">\
+                                <input type="checkbox" id="buttonCheckbox">\
+                                Button\
+                            </label>\
+                        </div>\
+                    </div>\
+                    <div class="control-group">\
+                        <div class="controls">\
+                            <label class="checkbox">\
+                                <input type="checkbox" id="mediaCheckbox">\
+                                Media End\
+                            </label>\
+                        </div>\
+                    </div>\
+                    <div class="control-group">\
+                        <div class="controls">\
+                            <label class="checkbox">\
+                                <input type="checkbox" id="timerCheckbox">\
+                                Timer\
+                            </label>\
+                        </div>\
+                    </div>\
+                    <div class="control-group">\
+                        <label class="control-label" for="inputPassword">Timer value (seconds):</label>\
+                        <div class="controls">\
+                            <input type="text" id="timerValue" placeholder="Timer value">\
+                            <span class="input-long uneditable-input" id="timerValueDisabled"></span>\
+                        </div>\
+                    </div>\
+                    <div class="control-group">\
+                        <label class="control-label" for="inputPassword">Passing value (0-1):</label>\
+                        <div class="controls">\
+                            <input type="text" id="passingValue" placeholder="Passing value">\
+                        </div>\
+                    </div>\
+                </form>\
+            </div>';
 
         var defaultSettings = {
             click: false,
@@ -303,16 +306,19 @@
         }
 
         function SettingsEditor(args) {
-            this.$element = $(template);
-            args.$holder.html(this.$element);
+            var element = Ayamel.parseHTML(template);
+            args.holder.innerHTML = "";
+            args.holder.appendChild(element);
+            
+            this.element = element;
 
-            var $click = this.$element.find("#clickCheckbox");
-            var $button = this.$element.find("#buttonCheckbox");
-            var $media = this.$element.find("#mediaCheckbox");
-            var $timer = this.$element.find("#timerCheckbox");
-            var $time = this.$element.find("#timerValue");
-            var $timeDisabled = this.$element.find("#timerValueDisabled");
-            var $passingValue = this.$element.find("#passingValue");
+            var click = element.querySelector("#clickCheckbox");
+            var button = element.querySelector("#buttonCheckbox");
+            var media = element.querySelector("#mediaCheckbox");
+            var timer = element.querySelector("#timerCheckbox");
+            var time = element.querySelector("#timerValue");
+            var timeDisabled = element.querySelector("#timerValueDisabled");
+            var passingValue = element.querySelector("#passingValue");
 
             // Set up events
             function update(event) {
@@ -322,44 +328,44 @@
                 newEvent.initEvent("update", true, true);
                 this.dispatchEvent(newEvent);
             }
-            $click.change(update);
-            $button.change(update);
-            $media.change(update);
-            $timer.change(update);
-            $time.change(update);
-            $passingValue.change(update);
+
+            click.addEventListener('change',update,false);
+            button.addEventListener('change',update,false);
+            media.addEventListener('change',update,false);
+            timer.addEventListener('change',update,false);
+            time.addEventListener('change',update,false);
+            passingValue.addEventListener('change',update,false);
 
             // Have the UI update depending on the settings
             var settings = defaultSettings;
             function updateUI() {
-                $click.prop("checked", settings.click);
-                $button.prop("checked", settings.button);
-                $media.prop("checked", settings.media);
-                $timer.prop("checked", settings.timer);
+                click.checked = settings.click;
+                button.checked = settings.button;
+                media.checked = settings.media;
+                timer.checked = settings.timer;
                 if (settings.timer) {
-                    $time.show().val(settings.time);
-                    $timeDisabled.hide();
+                    $(time).show().val(settings.time);
+                    $(timeDisabled).hide();
                 } else {
-                    $time.hide();
-                    $timeDisabled.show();
+                    $(time).hide();
+                    $(timeDisabled).show();
                 }
-                $passingValue.val(settings.passingValue);
+                passingValue.value = settings.passingValue;
             }
 
-
             function updateSettings() {
-                settings.click = $click.prop("checked");
-                settings.button = $button.prop("checked");
-                settings.media = $media.prop("checked");
-                settings.timer = $timer.prop("checked");
+                settings.click = click.checked;
+                settings.button = button.checked;
+                settings.media = media.checked;
+                settings.timer = timer.checked;
                 if (settings.timer) {
-                    settings.time = $time.show().val();
-                    $timeDisabled.hide();
+                    settings.time = $(time).show().val();
+                    $(timeDisabled).hide();
                 } else {
-                    $time.hide();
-                    $timeDisabled.show();
+                    $(time).hide();
+                    $(timeDisabled).show();
                 }
-                settings.passingValue = !!$passingValue.val() ? $passingValue.val() : 0;
+                settings.passingValue = !!passingValue.value ? passingValue.value : 0;
             }
 
             Object.defineProperties(this, {
@@ -377,12 +383,11 @@
             })
         }
 
-        SettingsEditor.prototype.addEventListener = function(event, callback) {
-            this.$element[0].addEventListener(event, callback);
+        SettingsEditor.prototype.addEventListener = function(event, callback, capture) {
+            this.element.addEventListener(event, callback, capture);
         };
 
         return SettingsEditor;
     })();
-
 
 })(PlayGraph);

@@ -34,8 +34,8 @@ var VideoRenderer = (function(){
             if (showTranscript(content)) {
                 panes = ContentLayoutManager.twoPanel(holder, ["Transcript"]);
                 return {
-                    $player: panes.$player,
-                    $transcript: panes.$Transcript
+                    player: panes.player,
+                    transcript: panes.Transcript.content
                 };
             }
             return ContentLayoutManager.onePanel(holder);
@@ -43,37 +43,37 @@ var VideoRenderer = (function(){
             if (showTranscript(content)) {
                 panes = ContentLayoutManager.twoPanel(holder, ["Transcript", "Definitions"]);
                 return {
-                    $player: panes.$player,
-                    $definitions: panes.Definitions.$content,
-                    $definitionsTab: panes.Definitions.$tab,
-                    $transcript: panes.Transcript.$content
+                    player: panes.player,
+                    definitions: panes.Definitions.content,
+                    definitionsTab: panes.Definitions.tab,
+                    transcript: panes.Transcript.content
                 };
             }
             panes = ContentLayoutManager.twoPanel(holder, ["Definitions"]);
             return {
-                $player: panes.$player,
-                $definitions: panes.$Definitions
+                player: panes.player,
+                definitions: panes.Definitions.content
             };
         case 4:
         case 5:
             if (showTranscript(content)) {
                 panes = ContentLayoutManager.twoPanel(holder, ["Transcript", "Definitions", "Annotations"]);
                 return {
-                    $player: panes.$player,
-                    $definitions: panes.Definitions.$content,
-                    $definitionsTab: panes.Definitions.$tab,
-                    $annotations: panes.Annotations.$content,
-                    $annotationsTab: panes.Annotations.$tab,
-                    $transcript: panes.Transcript.$content
+                    player: panes.player,
+                    definitions: panes.Definitions.content,
+                    definitionsTab: panes.Definitions.tab,
+                    annotations: panes.Annotations.content,
+                    annotationsTab: panes.Annotations.tab,
+                    transcript: panes.Transcript.content
                 };
             }
             panes = ContentLayoutManager.twoPanel(holder, ["Definitions", "Annotations"]);
             return {
-                $player: panes.$player,
-                $definitions: panes.Definitions.$content,
-                $definitionsTab: panes.Definitions.$tab,
-                $annotations: panes.Annotations.$content,
-                $annotationsTab: panes.Annotations.$tab
+                player: panes.player,
+                definitions: panes.Definitions.content,
+                definitionsTab: panes.Definitions.tab,
+                annotations: panes.Annotations.content,
+                annotationsTab: panes.Annotations.tab
             };
         }
     }
@@ -130,14 +130,14 @@ var VideoRenderer = (function(){
                     translations = detail.translations,
                     wordList = !document.body.classList.contains("share")? // Only allow saving words if the user is logged in (not sharing)
                         '<div class="addToWordList"><button class="btn btn-small"><i class="icon-paste"></i> Add to Word List</button></div>':"",
-                    $html = $('<div class="translationResult">\
+                    html = Ayamel.utils.parseHTML('<div class="translationResult">\
                         <div class="sourceText">' + detail.text + '</div>\
                         <div class="translations">' + translations.join(",<br/>") + '</div>\
                         <div class="engine">' + engineToHTML(detail) + '</div>' + wordList +
                     '</div>');
 
-                $html.find("button").click(function() {
-                    var $addWord = $(this).parent();
+                html.querySelector("button").addEventListener('click', function(){
+                    var addWord = this.parentNode;
                     $.ajax("/words", {
                         type: "post",
                         data: {
@@ -145,21 +145,21 @@ var VideoRenderer = (function(){
                             word: sourceText
                         },
                         success: function() {
-                            $addWord.html("<span class='color-blue'>Added to word list.</span>");
+                            addWord.innerHTML = "<span class='color-blue'>Added to word list.</span>";
                         },
                         error: function() {
                             alert("Error adding to word list");
-                            $addWord.remove();
+                            addWord.parentNode.removeChild(addWord);
                         }
                     });
                 });
 
-                layout.$definitions.append($html);
-                layout.$definitions[0].scrollTop = layout.$definitions[0].scrollHeight;
+                layout.definitions.appendChild(html);
+                layout.definitions.scrollTop = layout.definitions.scrollHeight;
 
-                if (layout.$definitionsTab) {
-                    layout.$definitionsTab.tab("show");
-                    layout.$definitions[0].scrollTop = layout.$definitions[0].scrollHeight;
+                if (layout.definitionsTab) {
+                    $(layout.definitionsTab).tab("show");
+                    layout.definitions.scrollTop = layout.definitions.scrollHeight;
                 }
             });
 
@@ -182,11 +182,11 @@ var VideoRenderer = (function(){
                 videoPlayer.pause();
 
                 if (event.annotation.data.type === "text") {
-                    layout.$annotations.html(event.annotation.data.value);
+                    layout.annotations.innerHTML = event.annotation.data.value;
                 }
 
                 if (event.annotation.data.type === "image") {
-                    layout.$annotations.html('<img src="' + event.annotation.data.value + '">');
+                    layout.annotations.innerHTML = '<img src="' + event.annotation.data.value + '">';
                 }
 
                 if (event.annotation.data.type === "content") {
@@ -198,7 +198,7 @@ var VideoRenderer = (function(){
 
                         ContentRenderer.render({
                             content: content,
-                            holder: layout.$annotations[0],
+                            holder: layout.annotations,
                             annotate: false,
                             screenAdaption: {
                                 fit: false
@@ -222,7 +222,7 @@ var VideoRenderer = (function(){
                 });
                 ActivityStreams.predefined.viewTextAnnotation(annotationDocId, event.sourceElement.textContent);
 
-                layout.$annotationsTab.tab("show");
+                $(layout.annotationsTab).tab("show");
 
             });
             return textAnnotator;
@@ -258,9 +258,9 @@ var VideoRenderer = (function(){
 
             // Make sure the element will be contained on the page if it's a video
             if (args.screenAdaption && args.screenAdaption.fit) {
-                ScreenAdapter.containByHeight(args.layout.$player, Ayamel.aspectRatios.hdVideo, args.screenAdaption.padding);
+                ScreenAdapter.containByHeight(args.layout.player, Ayamel.aspectRatios.hdVideo, args.screenAdaption.padding);
                 //TODO: Dynamically check the actual control bar height
-                args.layout.$player.css("padding-bottom","61px"); // padding for the control bar
+                args.layout.player.style.paddingBottom = "61px"; // padding for the control bar
             }
 
             // Deactivate Space Features and set focus video to play/pause video
@@ -274,8 +274,8 @@ var VideoRenderer = (function(){
 
              window.onresize = function(event) {
                 if (args.screenAdaption && args.screenAdaption.fit && !Ayamel.utils.FullScreen.isFullScreen) {
-                    ScreenAdapter.containByHeight(args.layout.$player, Ayamel.aspectRatios.hdVideo, args.screenAdaption.padding);
-                    $(".videoBox").height(args.layout.$player.height());
+                    ScreenAdapter.containByHeight(args.layout.player, Ayamel.aspectRatios.hdVideo, args.screenAdaption.padding);
+                    $(".videoBox").height(args.layout.player.offsetHeight);
                     $(".transcriptContent").css("max-height", $(".ayamelPlayer").height()-($("#videoTabs").height() + 57));
 
                     $("#Definitions, #Annotations").css("height", $(".ayamelPlayer").height()-($("#videoTabs").height() + 27));
@@ -285,7 +285,7 @@ var VideoRenderer = (function(){
 
             videoPlayer = new Ayamel.classes.AyamelPlayer({
                 components: components,
-                $holder: args.layout.$player,
+                holder: args.layout.player,
                 resource: args.resource,
                 captionTracks: captions,
     //            components: components,
@@ -331,8 +331,8 @@ var VideoRenderer = (function(){
             if (args.screenAdaption && args.screenAdaption.scroll) {
                 videoPlayer.addEventListener("durationchange", function () {
                     // The video is loaded. Scroll the window to see it
-                    if (!ScreenAdapter.isEntirelyVisible(args.layout.$player, args.screenAdaption.padding)) {
-                        ScreenAdapter.scrollTo(args.layout.$player.offset().top - 10);
+                    if (!ScreenAdapter.isEntirelyVisible(args.layout.player, args.screenAdaption.padding)) {
+                        ScreenAdapter.scrollTo(args.layout.player.offsetTop - 10);
                     }
                 });
             }
@@ -366,7 +366,7 @@ var VideoRenderer = (function(){
             var transcriptPlayer = new TranscriptPlayer({
                 //requires the actual TextTrack objects; should be fixed up to take resource IDs, I think
                 captionTracks: captionTracks,
-                holder: layout.$transcript[0],
+                holder: layout.transcript,
                 syncButton: true
                 //noUpdate: args.noUpdate
                 //TODO: Add links to translator & annotator
@@ -386,7 +386,7 @@ var VideoRenderer = (function(){
         return null;
     }
 
-    function setupDefinitionsPane($pane){
+    function setupDefinitionsPane(pane){
         var selectHolder = document.createElement('div');
         (new EditorWidgets.SuperSelect({
             el: selectHolder,
@@ -402,7 +402,7 @@ var VideoRenderer = (function(){
                 }).sort(function(a,b){ return a.text.localeCompare(b.text); })
             }
         })).observe('selection', function(newValue){ destLang = newValue; });
-        $pane.append(selectHolder);
+        pane.appendChild(selectHolder);
     }
 
     return {
@@ -447,7 +447,7 @@ var VideoRenderer = (function(){
                         captionTrackCallback: function(captionTracks, trm) {
                             trackResourceMap = trm;
                             transcriptPlayer = setupTranscripts(args.content, layout, captionTracks);
-                            if(layout.$definitions){ setupDefinitionsPane(layout.$definitions); }
+                            if(layout.definitions){ setupDefinitionsPane(layout.definitions); }
                             setupTranscriptWithPlayer();
                         }
                     }, function() {

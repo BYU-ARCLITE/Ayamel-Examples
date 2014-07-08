@@ -3,19 +3,19 @@
  * See https://github.com/BYU-ARCLITE/Ayamel-Examples/wiki/Improving-forms
  */
 $(function() {
-    var template = '<button class="btn">Choose File</button> <span>No file chosen</span>';
-    $("input[type='file']").each(function () {
-        var $field = $(this);
-        $field.after(template);
-        $field.next().click(function (event) {
+    var template = '<button class="btn">Choose File</button><span>No file chosen</span>';
+    [].forEach.call(document.querySelectorAll("input[type='file']"), function(node){
+		node.parentNode.insertBefore(Ayamel.utils.parseHTML(template), node.nextSibling);
+        node.nextSibling.addEventListener('click', function(event){
             event.stopPropagation();
-            $field.click();
+            node.click();
             return false;
         });
-        $field.change(function () {
-            var filename = $field.val().replace(/^.*(\/|\\)/, "");
-            $field.next().next().text(filename);
-        });
-        $field.width(1).css("opacity", "0");
+        node.addEventListener('change', function(){
+            var filename = node.value.replace(/^.*(\/|\\)/, "");
+            node.nextSibling.nextSibling.textContent = filename;
+        }, false);
+        node.style.width = "1px";
+		node.style.opacity = "0";
     });
 });

@@ -74,8 +74,8 @@ var ImageEditor = (function () {
     }
 
     return {
-        attach: function($element, image, callback) {
-            canvas = new BoxDrawingCanvas(image, $element);
+        attach: function(element, image, callback) {
+            canvas = new BoxDrawingCanvas(image, element);
             canvas.drawable = true;
             canvas.addEventListener("drawstart", startDraw);
             canvas.addEventListener("drawupdate", updateDraw);

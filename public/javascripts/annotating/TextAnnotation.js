@@ -35,22 +35,24 @@ var TextAnnotation = (function(){
 
                         // If this isn't the last element then save the annotation as well
                         if (j !== parts.length - 1) {
-                            var $annotation = $("<span class='annotation'>" + match[0] + "</span>");
+                            var annotation = document.createElement('span');
+                            annotation.className = 'annotation';
+                            annotation.innerHTML = match[0];
 
                             // Create and dispatch an event when clicked
-                            $annotation.click(function () {
+                            annotation.addEventListener('click', function(){
                                 var event = document.createEvent("HTMLEvents");
                                 event.initEvent("textAnnotationClick", true, true);
                                 event.annotation = _this;
                                 event.sourceElement = this;
                                 _this.e.dispatchEvent(event);
-                            });
+                            }, false);
 
-                            if (filter) {
-                                filter($annotation, this);
+                            if(typeof filter === 'function'){
+                                filter(annotation, this);
                             }
 
-                            nodes.push($annotation[0]);
+                            nodes.push(annotation);
                         }
                     }
                 } else {

@@ -76,10 +76,10 @@ $(function() {
 
     $("#spinner").hide();
 
-    $("#quit").click(function() {
+    document.getElementById("quit").addEventListener('click', function(){
         history.back();
         return false;
-    });
+    }, false);
 
     // First load the annotations
     loadManifest(typeMap[content.contentType], function(data) {
@@ -87,8 +87,8 @@ $(function() {
         // Load metadata from the resource
         var title = !!data.resource ? data.resource.title : "Untitled";
         var language = !!data.resource ? data.resource.languages.iso639_3[0] : "eng";
-        $("#title").val(title);
-        $("#language").val(language);
+        document.getElementById("title").val(title);
+        document.getElementById("language").val(language);
 
         // Then create the popup editor
         new AnnotationPopupEditor(function (popupEditor) {
@@ -115,12 +115,12 @@ $(function() {
             }
 
             // Setup the navbar buttons
-            $("#saveMetadataButton").click(function() {
-                title = $("#title").val();
-                language = $("#language").val();
+            document.getElementById("saveMetadataButton").addEventListener('click', function(){
+                title = document.getElementById("title").value;
+                language = document.getElementById("language").value;
                 $("#metadataModal").modal("hide");
-            });
-            $("#saveButton").click(function() {
+            }, false);
+            document.getElementById("saveButton").addEventListener('click', function(){
                 var $this = $(this).hide();
                 $("#spinner").show();
 
@@ -152,8 +152,8 @@ $(function() {
                         console.log(data);
                         alert("There was a problem while saving the annotations.");
                     }
-                })
-            });
+                });
+            }, false);
         });
     });
 

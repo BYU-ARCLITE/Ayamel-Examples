@@ -73,12 +73,12 @@
 
     <script type="text/javascript">
         $(function() {
-            $("#addContentButton").click(function () {
+            document.getElementById("addContentButton").addEventListener('click', function(){
                 $("#addContentForm").submit();
-            });
-            $("#announcementButton").click(function () {
+            }, false);
+            document.getElementById("announcementButton").addEventListener('click', function(){
                 $("#announcementForm").submit();
-            });
+            }, false);
         });
     </script>
 }
