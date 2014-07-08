@@ -16,13 +16,11 @@ var AnnotationTextEditor = (function() {
                 resource: resource,
                 permission: "view"
             }, function(transcripts) {
-                async.map(transcripts, function(transcript, asyncCallback) {
-                    Ayamel.utils.loadCaptionTrack(transcript, function (track) {
-                        asyncCallback(null, track);
-                    });
-                }, function (err, data) {
-                    callback(data);
-                });
+                Promise.all(transcripts.map(function(transcript){
+                    return new Promise(function(resolve){
+						Ayamel.utils.loadCaptionTrack(transcript, resolve);
+					});
+                }).then(callback);
             });
         });
     }

@@ -30,15 +30,9 @@ var ContentRenderer = (function () {
                     documentType: "captionTrack",
                     ids: captionTrackIds
                 },
-                success: function(data) {
+                success: function(data){
                     // Now turn those IDs into resources
-                    async.map(data, function (id, asyncCallback) {
-                        ResourceLibrary.load(id, function (resource) {
-                            asyncCallback(null, resource);
-                        });
-                    }, function (err, data) {
-                        callback(data);
-                    });
+                    Promise.all(data.map(ResourceLibrary.load)).then(callback);
                 }
             });
         } else { callback([]); }
@@ -61,31 +55,24 @@ var ContentRenderer = (function () {
                 },
                 success: function(data) {
                     // Now turn those IDs into resources then into annotation manifests
-                    async.map(data, function (id, asyncCallback) {
-                        ResourceLibrary.load(id, function (resource) {
+                    Promise.all(data.map(function(id){
+                        ResourceLibrary.load(id).then(function(resource){
                             var url = resource.content.files[0].downloadUri,
                                 idx = url.indexOf('?');
                             if(idx === -1){ url += "?"; }
                             else if(idx !== url.length-1){ url += '&nocache='; }
                             url += Date.now().toString(36);
                             // Now get the actual annotation manifest
-                            $.ajax(url, {
-                                dataType: "json",
-                                success: function(data) {
-                                    AnnotationLoader.load(data, function(manifest) {
-                                        if (manifest) {
-                                            manifest.resourceId = resource.id;
-                                        }
-                                        asyncCallback(null, manifest);
-                                    });
-                                }, error: function(data){
-                                    asyncCallback(data);
-                                }
-                            });
-                        });
-                    }, function (err, data) {
-                        callback(data);
-                    });
+                            return $.ajax(url,{ dataType: "json" });
+                        }).then(function(data){
+							return new Promise(function(resolve){
+								AnnotationLoader.load(data, function(manifest){
+									if(manifest){ manifest.resourceId = resource.id; }
+									resolve(manifest);
+								});
+							});
+                        }, function(err){ return null; });
+                    })).then(callback);
                 }
             });
         } else { callback([]); }
