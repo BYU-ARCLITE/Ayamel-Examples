@@ -86,18 +86,17 @@
 
                 // Render the content
                 var content = @Html(content.toJson.toString());
-                var contentHolder = $("#contentHolder")[0];
+                var contentHolder = document.getElementById("contentHolder");
                 ContentRenderer.render({
                     content: content,
                     holder: contentHolder,
                     annotate: true
                 });
 
-                $("#ayamelLink").click(function() {
-                    var href = $(this).attr("href");
-                    window.top.location = href;
+                document.getElementById("ayamelLink").addEventListener('click', function(){
+                    window.top.location = this.href;
                     return false;
-                });
+                }, false);
 
                 // Hide the header
                 setTimeout(function () {

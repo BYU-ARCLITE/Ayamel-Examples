@@ -38,83 +38,85 @@ var ContentLayoutManager = (function() {
 
     function generateTwoPanel(container, tabNames) {
         var tabs = generateTabs(tabNames);
-        var $layout = $('<div class="row-fluid">\
+        var layout = Ayamel.utils.parseHTML('<div class="row-fluid">\
             <div class="span8">\
                 <div id="player"></div>\
             </div>\
             <div class="span4"></div>\
         </div>');
-        container.appendChild($layout[0]);
+        
+        container.appendChild(layout);
 
-        $layout.find('.span4').html(tabs);
+        layout.querySelector('.span4').innerHTML = tabs;
 
         // Return the player and tab panes
         var panes = {
-            $player: $layout.find("#player")
+            player: layout.querySelector("#player")
         };
 
         // Include the tab panes
-        if (tabNames.length === 1) {
-
+         if (tabNames.length === 1) {
             // No tabs, so include the container
-            panes["$" + tabNames[0]] = $layout.find("#" + tabNames[0]);
-        } else {
-            // Include links to the actual tab and the corresponding content container
-            tabNames.forEach(function (name) {
-                panes[name] = {
-                    $tab: $layout.find("#videoTabs a[href='#" + name + "']"),
-                    $content: $layout.find("#" + name)
-                };
-            });
+             panes[tabNames[0]] = {
+                tab: null,
+                content: layout.querySelector("#" + tabNames[0])
+            };
+         } else {
+             // Include links to the actual tab and the corresponding content container
+             tabNames.forEach(function(name){
+                 panes[name] = {
+                     tab: layout.querySelector("#videoTabs a[href='#" + name + "']"),
+                     content: layout.querySelector("#" + name)
+                 };
+             });
 
-            // Enable the tabs
-            $layout.find("#videoTabs a").click(function (e) {
-                e.preventDefault();
-                $(this).tab('show');
-            });
-            panes[tabNames[0]].$tab.tab("show");
-        }
-        return panes;
-    }
+             // Enable the tabs
+             $(layout).find("#videoTabs a").click(function (e) {
+                 e.preventDefault();
+                 $(this).tab('show');
+             });
+             $(panes[tabNames[0]].tab).tab("show");
+         }
+         return panes;
+     }
 
-    function generateTwoPanelMobile(container, tabNames) {
-        var tabs = generateTabs(tabNames);
-        var $layout = $('<div class="primary"></div>\
+     function generateTwoPanelMobile(container, tabNames) {
+         var tabs = generateTabs(tabNames);
+         var layout = Ayamel.utils.parseHTML(
+                '<div class="primary"></div>\
             <div class="secondary">\
-                <div class="secondaryContent"></div>\
-            </div>');
-        container.appendChild($layout[0]);
-        container.appendChild($layout[1]);
-
-        var $primary = $($layout[0]);
-        var $secondary = $($layout[1]);
-        var $secondaryContent = $secondary.children(".secondaryContent");
-        $secondaryContent.html(tabs);
+            <div class="secondaryContent"></div>\
+            </div>'
+        );
+            
+        var primary = layout.firstChild;
+        var secondary = layout.lastChild;
+        var secondaryContent = secondary.querySelector(".secondaryContent");
+        secondaryContent.innerHTML = tabs;
 
         var panes = {
-            $player: $primary
+            player: primary
         };
-
-        // Include the tab panes
+        // Include the tab panes
         if (tabNames.length === 1) {
 
             // No tabs, so include the container
-            panes["$" + tabNames[0]] = $layout.find("#" + tabNames[0]);
+            panes[tabNames[0]] = layout.querySelector("#" + tabNames[0]);
         } else {
             // Include links to the actual tab and the corresponding content container
             tabNames.forEach(function (name) {
                 panes[name] = {
-                    $tab: $layout.find("#videoTabs a[href='#" + name + "']"),
-                    $content: $layout.find("#" + name)
+                    tab: layout.querySelector("#videoTabs a[href='#" + name + "']"),
+                    content: layout.querySelector("#" + name)
                 };
             });
 
             // Enable the tabs
-            $layout.find("#videoTabs a").click(function (e) {
+            $(layout).find("#videoTabs a").click(function (e) {
                 e.preventDefault();
                 $(this).tab('show');
             });
-            panes[tabNames[0]].$tab.tab("show");
+            $(panes[tabNames[0]].tab).tab("show");
         }
 
         function arrangeWindow() {
@@ -137,55 +139,70 @@ var ContentLayoutManager = (function() {
             // Detect which orientation the device is
             if (availableWidth > availableHeight) {
                 // Landscape
-                $("body").addClass("landscapeOrientation").removeClass("portraitOrientation");
-
+                document.body.classList.remove("portraitOrientation");
+                document.body.classList.add("landscapeOrientation");
+                
                 // First see if we can fit the video with 100% height and have enough space for secondary
                 var newWidth = (availableHeight - sizes.controls) * aspectRatio;
                 if (newWidth <= window.innerWidth - sizes.secondary) {
                     // Yes we can
-                    $primary.height(availableHeight).width(newWidth);
-                    $secondary.height(availableHeight).width(availableWidth - newWidth).css("left", newWidth).css("top", 0);
+                    primary.style.width = newWidth + "px";
+                    primary.style.height = availableHeight + "px";
+                    
+                    secondary.style.height = availableHeight + "px";
+                    secondary.style.width = (availableWidth - newWidth) + "px";
                 } else {
                     // No we can't. So give the secondary container everything it needs and adapt the player to the rest
                     newWidth = window.innerWidth - sizes.secondary;
                     newHeight = (newWidth / aspectRatio) + sizes.controls;
-                    var marginTop = (availableHeight - newHeight) / 2;
-                    $primary.height(newHeight).width(newWidth).css("margin-top", marginTop);
-                    $secondary.height(availableHeight).width(sizes.secondary).css("left", newWidth).css("top", 0);
+
+                    primary.style.width = newWidth + "px";
+                    primary.style.height = newHeight + "px";
+                    primary.style.marginTop = (availableHeight - newHeight) / 2;
+
+                    secondary.style.width = sizes.secondary + "px";
+                    secondary.style.height = availableHeight + "px";
                 }
+            
+                secondary.style.left = newWidth + "px";
+                secondary.style.top = "0px";
+                
             } else {
                 // Portrait
-                $("body").addClass("portraitOrientation").removeClass("landscapeOrientation");
+                document.body.classList.add("portraitOrientation");
+                document.body.classList.remove("landscapeOrientation");
 
                 // Set up the primary container
                 newHeight = (availableWidth / aspectRatio) + sizes.controls;
-                $primary.width(availableWidth).height(newHeight);
+                primary.style.width = availableWidth + "px";
+                primary.style.height = newHeight + "px";
 
                 // Set up the secondary container
-                $secondary.width(availableWidth).height(availableHeight - newHeight).css("left", 0).css("top", newHeight);
+                secondary.style.width = availableWidth + "px";
+                secondary.style.height = (availableHeight - newHeight) + "px";
+                secondary.style.left = "0px";
+                secondary.style.top = newHeight + "px";
             }
-
-//            $secondaryContent.height(secondaryHeight - 16);
-//            $secondaryContent.find('.tab-pane').height(secondaryHeight - 76);
         }
+
+        container.appendChild(primary);
+        container.appendChild(secondary);
 
         $(window).resize(function () {
             arrangeWindow();
         });
         arrangeWindow();
 
-        if (tabNames.length === 1) {
-//            panes["$" + tabNames[0]] =
-        }
         return panes;
     }
 
     return {
         onePanel: function (container) {
-            var $player = $('<div id="player"></div>');
-            container.appendChild($player[0]);
+            var player = document.createElement('div');
+            player.id = 'player';
+            container.appendChild(player);
             return {
-                $player: $player
+                player: player
             };
         },
 
@@ -199,3 +216,4 @@ var ContentLayoutManager = (function() {
 
     };
 }());
+

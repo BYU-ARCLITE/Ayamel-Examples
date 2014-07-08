@@ -12,12 +12,11 @@
             $(function() {
 
                 var content = @Html(content.toJson.toString());
-                var $questionSetHolder = $("#questionSetHolder");
 
                 // Render the content
                 ContentRenderer.render({
                     content: content,
-                    holder: $questionSetHolder[0]
+                    holder: document.getElementById("questionSetHolder")
                 });
             });
         </script>

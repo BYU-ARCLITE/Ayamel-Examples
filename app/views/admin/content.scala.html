@@ -140,7 +140,7 @@
 
             $("#batchEditModal").on("show", function() {
                 var ids = $(".contentSelector:checked").map(function(e, f){return $(f).attr("data-id");}).toArray().join(",");
-                $("#ids").val(ids);
+                document.getElementById("ids").value = ids;
             });
         });
     </script>

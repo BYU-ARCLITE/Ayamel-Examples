@@ -25,13 +25,13 @@ var PlayGraphPlayer = (function() {
     function progress(args, trigger) {
         PlayGraph.player.data.trigger = trigger;
 
-        args.$holder.html("");
+        args.holder.innerHTML = "";
         PlayGraph.player.update(PlayGraph.player.data, function(_status) {
             status = _status;
             if (status === "continue") {
                 loadPage(args);
             } else {
-                args.$holder.html("This playlist is finished. You will automatically be taken back.");
+                args.holder.innerHTML = "This playlist is finished. You will automatically be taken back.";
                 window.setTimeout(function() {
                     window.location = new RegExp("(.*)/play").exec(window.location)[1];
                 }, 3000);
@@ -43,16 +43,16 @@ var PlayGraphPlayer = (function() {
         triggerCounter++;
         var triggerId = triggerCounter;
         if (settings.click) {
-            $("body").click(function () {
+            document.body.addEventListener('click', function(){
                 if (triggerId === triggerCounter) {
                     progress(args, "click");
                 }
-            });
+            }, false);
         }
         if (settings.button) {
-            var $button = $(buttonTemplate);
-            $button.click(progress.bind(null, args, "button"));
-            args.$holder.append($button);
+            var button = Ayamel.utils.parseHTML(buttonTemplate);
+            button.addEventListener('click',progress.bind(null, args, "button"),false);
+            args.holder.appendChild(button);
         }
         if (settings.media && callbackData.videoPlayer) {
             callbackData.videoPlayer.addEventListener("ended", progress.bind(null, args, "media"));
@@ -83,7 +83,7 @@ var PlayGraphPlayer = (function() {
         ContentRenderer.render({
             content: +content,
             courseId: 0,
-            holder: args.$holder[0],
+            holder: args.holder,
             annotate: true,
             inPlaylist: true,
             screenAdaption: {

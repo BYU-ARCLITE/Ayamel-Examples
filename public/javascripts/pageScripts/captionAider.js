@@ -61,16 +61,16 @@ $(function() {
         enabledCaptionTracks: content.settings.enabledCaptionTracks,
         includeTranscriptions: "true"
     };
-    var $contentHolder = $("#contentHolder");
-    var contentHolder = $contentHolder[0];
+
+    var contentHolder = document.getElementById("contentHolder");
 
     // Figure out what size the video player needs to be so that the timeline and tools don't spill over
-    var paddingTop = $contentHolder.offset().top;
+    var paddingTop = contentHolder.offsetTop;
     // 61px for player controls. 252px for timeline and tools.
     var paddingBottom = 313;
 
     function updateSpacing() {
-        $("#bottomSpacer").css("margin-top", $("#bottomContainer").height() + "px");
+        document.getElementById("bottomSpacer").style.marginTop = document.getElementById("bottomContainer").clientHeight + "px";
         ScreenAdapter.scrollTo(document.body.scrollHeight - window.innerHeight);
     }
 
@@ -427,11 +427,11 @@ $(function() {
                 contentId: content.id,
                 holder: contentHolder,
                 permission: "edit",
-				screenAdaption: {
-					fit: true,
-					scroll: true,
-					padding: 61
-				},
+                screenAdaption: {
+                    fit: true,
+                    scroll: true,
+                    padding: 61
+                },
                 startTime: 0,
                 endTime: -1,
                 renderCue: renderCue,
@@ -440,7 +440,7 @@ $(function() {
             };
         });
     }).then(VideoRenderer.render);
-    
+
     function vidcallback(vplayer, tplayer) {
         var renderer,
             transcript = tplayer;
@@ -519,7 +519,7 @@ $(function() {
                 //  1. We aren't in an input
                 //  2. A modal isn't open
                 var inputFocused = ["TEXTAREA", "INPUT"].indexOf(document.activeElement.nodeName) > -1,
-                    modalOpen = $(".modal:visible").length;
+                    modalOpen = document.querySelectorAll(".modal:visible").length;
                 if (!inputFocused && !modalOpen){ timeline.currentTool = tool; }
             });
         });

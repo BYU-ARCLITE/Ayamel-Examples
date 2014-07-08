@@ -26,44 +26,44 @@ var ImageAnnotation = (function(){
         var x2 = this.location[1][0];
         var y2 = this.location[1][1];
         var box = canvas.drawBox(x1, y1, x2, y2, ["annotationBox"]);
+        var element = box.element;
+
         box.annotation = this;
 
         // Fill the contents appropriately
         if (this.data.type === "image") {
-            box.$element
-                .html("")
-                .css("background-size", "contain")
-                .css("background-position", "center")
-                .css("background-repeat", "no-repeat")
-                .css("background-image", "url('" + this.data.value + "')")
+
+            element.innerHTML = "";
+            element.style.backgroundSize = "contain";
+            element.style.backgroundPosition = "center";
+            element.style.backgroundRepeat = "no-repeat";
+            element.style.backgroundImage = "url('" + thumbnail + "')";
 
             if (open) {
-                box.$element
-                    .css("cursor", "pointer")
-                    .click(function() {
-                        window.open(box.annotation.data.value);
-                    });
+                element.style.cursor = "pointer";
+                element.addEventListener('click', function(){
+                    window.open(box.annotation.data.value);
+                }, false);
             }
         }
         if (this.data.type === "text") {
-            box.$element.html(this.data.value);
+            element.innerHTML = this.data.value;
         }
         if (this.data.type === "content") {
             ContentCache.load(this.data.value, function(content) {
                 var thumbnail = ContentThumbnails.resolve(content);
-                box.$element
-                    .html("")
-                    .css("background-size", "contain")
-                    .css("background-position", "center")
-                    .css("background-repeat", "no-repeat")
-                    .css("background-image", "url('" + thumbnail + "')");
+
+                element.innerHTML = "";
+                element.style.backgroundSize = "contain";
+                element.style.backgroundPosition = "center";
+                element.style.backgroundRepeat = "no-repeat";
+                element.style.backgroundImage = "url('" + thumbnail + "')";
 
                 if (open) {
-                    box.$element
-                        .css("cursor", "pointer")
-                        .click(function() {
-                            window.location = "/content/" + content.id;
-                        });
+                    element.style.cursor = "pointer";
+                    element.addEventListener('click', function(){
+                        window.location = "/content/" + content.id;
+                    }, false);
                 }
             });
         }

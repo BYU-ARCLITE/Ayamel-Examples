@@ -1,32 +1,32 @@
 @(content: models.Content, possibleCourses: List[Course])(implicit user: User)
 <div id="addToCourseModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="addToCourseModalLabel" aria-hidden="true">
-	<div class="modal-header">
-		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-		<h3 id="addToCourseModalLabel">Add to Course</h3>
-	</div>
-	<div class="modal-body">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="addToCourseModalLabel">Add to Course</h3>
+    </div>
+    <div class="modal-body">
 
-		<form id="addToCourseForm" method="post" enctype="application/x-www-form-urlencoded" action="@routes.CourseContent.addToCourse(content.id.get)">
-			<label for="course">Select which course this content will be added to:</label>
-			<select name="course" id="course">
-				@for(course <- possibleCourses) {
-					<option value="@course.id.get">@course.name</option>
-				}
-			</select>
-			<input type="submit" style="position: absolute; left: -9999px; width: 1px; height: 1px;"/>
-		</form>
+        <form id="addToCourseForm" method="post" enctype="application/x-www-form-urlencoded" action="@routes.CourseContent.addToCourse(content.id.get)">
+            <label for="course">Select which course this content will be added to:</label>
+            <select name="course" id="course">
+                @for(course <- possibleCourses) {
+                    <option value="@course.id.get">@course.name</option>
+                }
+            </select>
+            <input type="submit" style="position: absolute; left: -9999px; width: 1px; height: 1px;"/>
+        </form>
 
-	</div>
-	<div class="modal-footer">
-		<button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
-		<button class="btn btn-blue" id="addToCourseButton">Add</button>
-	</div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+        <button class="btn btn-blue" id="addToCourseButton">Add</button>
+    </div>
 </div>
 
 <script type="text/javascript">
-	$(function() {
-		$("#addToCourseButton").click(function() {
-			$("#addToCourseForm").submit();
-		});
-	});
+    $(function() {
+        document.getElementById("addToCourseButton").addEventListener('click', function(){
+            $("#addToCourseForm").submit();
+        }, false);
+    });
 </script>

@@ -27,7 +27,7 @@
                         $(function() {
                             ContentItemRenderer.renderAll({
                                 content: [@Html(contentList.map(_.toJson).mkString(","))],
-                                $holder: $("#searchContent"),
+                                holder: document.getElementById("searchContent"),
                                 format: "auto",
                                 sizing: true,
                                 sorting: true,

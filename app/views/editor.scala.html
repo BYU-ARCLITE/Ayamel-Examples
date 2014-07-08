@@ -167,23 +167,23 @@
                 var $headerDropdowns = $(".headerDropdown").hide();
 
                 $(".headerDropdownLink").click(function(event) {
-                    $($(this).attr("data-target")).toggle();
+                    $(this.dataset["target"]).toggle();
 //                    event.stopPropagation();
                     return false;
                 });
-                $("body").click(function() {
+                document.body.addEventListener('click', function(){
                     $headerDropdowns.hide();
-                });
+                }, false);
                 $headerDropdowns.click(function(event) {
                     event.stopPropagation();
                 });
 
                 // Set up the search box
-                $("#searchBox").keypress(function(event){
+                document.getElementById("searchBox").addEventListener('keypress', function(event){
                     if (event.which == 13) {
                         window.location = "/search?query=" + this.value;
                     }
-                });
+                }, false);
 
                 setTimeout(function() {
                     $(".alert").fadeOut(500, function() {

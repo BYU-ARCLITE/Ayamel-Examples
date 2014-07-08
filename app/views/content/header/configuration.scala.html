@@ -44,7 +44,7 @@
                 owner: owner,
                 userId: userId,
                 resource: resource,
-                $holder: document.getElementById("personalSettings"),
+                holder: document.getElementById("personalSettings"),
                 action: "@routes.ContentEditing.setSettings(content.id.get)"
             });
 
@@ -53,7 +53,7 @@
                     content: content,
                     courseId: courseId,
                     resource: resource,
-                    $holder: document.getElementById("courseSettings"),
+                    holder: document.getElementById("courseSettings"),
                     action: "@{routes.ContentEditing.setCourseSettings(content.id.get, course.map(_.id.get).getOrElse(0))}"
                 });
             }

@@ -88,26 +88,22 @@
 <script type="text/javascript">
     $(function() {
         var $content = $(".feedbackContent").hide();
-        $("#feedback").click(function() {
+        document.getElementById("feedback").addEventListener('click', function(){
             $('#feedbackModal').modal('show');
-        });
+        }, false);
 
         $(".feedbackCategory").click(function() {
             $content.hide();
-            $($(this).attr("data-target")).show();
+            $(this.dataset["target"]).show();
         });
 
         $(".starTool").click(function(event) {
-            var target = $(this).attr("data-target");
-            var level = Number($(this).attr("data-level"));
+            var target = this.dataset["target"];
+            var level = +this.dataset["level"];
             event.stopPropagation();
-            $(target).val(level);
-            $(".starTool[data-target='" + target + "']").each(function() {
-                if (level >= $(this).attr("data-level")) {
-                    $(this).addClass("selected");
-                } else {
-                    $(this).removeClass("selected");
-                }
+            document.querySelector(target).value = level;
+            [].forEach.call(document.querySelectorAll(".starTool[data-target='" + target + "']"), function(node){
+                node.classList[(level >= node.dataset["level"])?"add":"remove"]("selected");
             });
         });
 
@@ -118,10 +114,10 @@
         }
 
         $("#thoughtButton").click(function() {
-            var navigate = $("#navigate").val();
-            var find = $("#find").val();
-            var useful = $("#useful").val();
-            var comments = $("#comments").val();
+            var navigate = document.getElementById("navigate").value;
+            var find = document.getElementById("find").value;
+            var useful = document.getElementById("useful").value;
+            var comments = document.getElementById("comments").value;
             var description = "Navigate: " + navigate + ", Find: " + find + ", Useful: " + useful + ", Comments: " + comments;
 
             $.ajax("/feedback", {
@@ -139,15 +135,15 @@
                 type: "post",
                 data: {
                     category: "suggestion",
-                    description: "Feature: " + $("#feature").val()
+                    description: "Feature: " + $("#feature").value
                 }
             });
             done();
         });
 
         $("#problemButton").click(function() {
-            var problem = $("#problem").val();
-            var reproduce = $("#reproduce").val();
+            var problem = document.getElementById("problem").value;
+            var reproduce = document.getElementById("reproduce").value;
             var description = "Problem: " + problem + ", Reproduce: " + reproduce + ", User Agent: " + navigator.userAgent;
 
             $.ajax("/feedback", {
