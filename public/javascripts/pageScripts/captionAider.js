@@ -71,7 +71,7 @@ $(function() {
 
     function updateSpacing() {
         document.getElementById("bottomSpacer").style.marginTop = document.getElementById("bottomContainer").clientHeight + "px";
-        ScreenAdapter.scrollTo(document.body.scrollHeight - window.innerHeight);
+		$('html,body').animate({scrollTop: document.body.scrollHeight - window.innerHeight}, 1000,'swing');
     }
 
     //Create New Track From Scratch

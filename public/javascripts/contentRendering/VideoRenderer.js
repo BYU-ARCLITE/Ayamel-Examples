@@ -256,12 +256,9 @@ var VideoRenderer = (function(){
             Ayamel.prioritizedPlugins.video = ["html5", "flash", "brightcove", "youtube"];
             Ayamel.prioritizedPlugins.audio = ["html5"];
 
-            // Make sure the element will be contained on the page if it's a video
-            if (args.screenAdaption && args.screenAdaption.fit) {
-                ScreenAdapter.containByHeight(args.layout.player, Ayamel.aspectRatios.hdVideo, args.screenAdaption.padding);
-                //TODO: Dynamically check the actual control bar height
-                args.layout.player.style.paddingBottom = "61px"; // padding for the control bar
-            }
+            // padding to account for the control bar
+            //TODO: Dynamically check the actual control bar height
+            args.layout.player.style.paddingBottom = "61px";
 
             // Deactivate Space Features and set focus video to play/pause video
             window.addEventListener("keydown", function(e) {
@@ -272,16 +269,15 @@ var VideoRenderer = (function(){
                 }
             });
 
-             window.onresize = function(event) {
-                if (args.screenAdaption && args.screenAdaption.fit && !Ayamel.utils.FullScreen.isFullScreen) {
-                    ScreenAdapter.containByHeight(args.layout.player, Ayamel.aspectRatios.hdVideo, args.screenAdaption.padding);
-                    $(".videoBox").height(args.layout.player.offsetHeight);
-                    $(".transcriptContent").css("max-height", $(".ayamelPlayer").height()-($("#videoTabs").height() + 57));
+             window.addEventListener('resize', function(event){
+                if(!args.screenAdaption || !args.screenAdaption.fit || Ayamel.utils.FullScreen.isFullScreen){ return; }
 
-                    $("#Definitions, #Annotations").css("height", $(".ayamelPlayer").height()-($("#videoTabs").height() + 27));
-                    $(" #Definitions, #Annotations").css("max-height", $(".ayamelPlayer").height()-($("#videoTabs").height() + 27));
-                }
-            };
+                videoPlayer.resetSize();
+
+                var sidebarHeight = videoPlayer.height - $("#videoTabs").height();
+                $(".transcriptContent").css("max-height", sidebarHeight - 57);
+                $("#Definitions, #Annotations").css("height", sidebarHeight - 27);
+            }, false);
 
             videoPlayer = new Ayamel.classes.AyamelPlayer({
                 components: components,
@@ -327,15 +323,6 @@ var VideoRenderer = (function(){
                 aspectRatio: Ayamel.aspectRatios.hdVideo,
                 captionTrackCallback: args.captionTrackCallback
             });
-
-            if (args.screenAdaption && args.screenAdaption.scroll) {
-                videoPlayer.addEventListener("durationchange", function () {
-                    // The video is loaded. Scroll the window to see it
-                    if (!ScreenAdapter.isEntirelyVisible(args.layout.player, args.screenAdaption.padding)) {
-                        ScreenAdapter.scrollTo(args.layout.player.offsetTop - 10);
-                    }
-                });
-            }
 
             var registerPlay = true;
             videoPlayer.addEventListener("play", function (event) {
