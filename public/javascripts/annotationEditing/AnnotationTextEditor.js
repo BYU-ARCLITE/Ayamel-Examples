@@ -5,9 +5,9 @@
  * Time: 3:39 PM
  * To change this template use File | Settings | File Templates.
  */
-var AnnotationTextEditor = (function() {
+var AnnotationTextEditor = (function(){
 
-    function loadTracks(content, callback) {
+    function loadTracks(content, callback){
         // TODO: Determine which course we're operating in
         ResourceLibrary.load(content.resourceId).then(function(resource){
             ContentRenderer.getTranscripts({
@@ -15,12 +15,12 @@ var AnnotationTextEditor = (function() {
                 contentId: content.id,
                 resource: resource,
                 permission: "view"
-            }, function(transcripts) {
+            }).then(function(transcripts){
                 Promise.all(transcripts.map(function(transcript){
                     return new Promise(function(resolve){
 						Ayamel.utils.loadCaptionTrack(transcript, resolve);
 					});
-                }).then(callback);
+                })).then(callback);
             });
         });
     }
