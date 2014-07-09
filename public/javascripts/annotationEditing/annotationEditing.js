@@ -24,7 +24,8 @@ $(function() {
             // Load the annotation document
             ResourceLibrary.load(docId, function (resource) {
                 var docUrl = resource.content.files[0].downloadUri;
-                AnnotationLoader.load(docUrl, function(manifest) {
+                AnnotationLoader.loadURL(docUrl, resource.languages.iso639_3[0])
+				.then(function(manifest){
                     callback({
                         manifest: manifest,
                         resource: resource,

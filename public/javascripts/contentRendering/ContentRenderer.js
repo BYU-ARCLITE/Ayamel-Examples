@@ -60,7 +60,7 @@ var ContentRenderer = (function () {
 				resolve([]);
 			}
 		}).then(function(data){
-			// Now turn those IDs into resources then into annotation manifests
+			// Now turn those IDs into resources then into an annotation manifest
 			return Promise.all(data.map(function(id){
 				ResourceLibrary.load(id).then(function(resource){
 					var url = resource.content.files[0].downloadUri,
@@ -68,17 +68,29 @@ var ContentRenderer = (function () {
 					if(idx === -1){ url += "?"; }
 					else if(idx !== url.length-1){ url += '&nocache='; }
 					url += Date.now().toString(36);
-					// Now get the actual annotation manifest
-					return $.ajax(url,{ dataType: "json" });
-				}).then(function(data){
-					return new Promise(function(resolve){
-						AnnotationLoader.load(data, function(manifest){
-							if(manifest){ manifest.resourceId = resource.id; }
-							resolve(manifest);
-						});
+					return AnnotationLoader.loadURL(url, resource.languages.iso639_3[0]).then(function(manifest){
+						if(manifest){ manifest.resourceId = resource.id; }
+						return manifest;
+					}, function(err){ return null; });
+				});
+			})).then(function(manifests){
+				if(manifests.length === 0){ return null; }
+				var manifest = {};
+				manifests.forEach(function(mobj){
+					Object.keys(mobj).forEach(function(lang){
+						var mlang, langobj = mobj[lang];
+						if(manifest.hasOwnProperty(lang)){
+							mlang = manifest[lang];
+							Object.keys(langobj).forEach(function(word){
+								mlang[word] = langobj[word];
+							});
+						}else{
+							manifest[lang] = langobj;
+						}
 					});
-				}, function(err){ return null; });
-			}));
+				});
+				return manifest;
+			});
 		});
     }
 

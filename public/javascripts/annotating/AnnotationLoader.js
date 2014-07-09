@@ -4,43 +4,35 @@
  */
 var AnnotationLoader = (function(){
 
-    function loadDocument(doc) {
-        var target = doc.meta.target;
-        var annotations;
-
-        if (target === "text") {
-            annotations = doc.annotations.map(function (obj) {
-                var regex = new RegExp(obj.regex);
-                return new TextAnnotation(regex, obj.data);
+    function parseDocument(doc, lang){
+		var langobj = {}, wordobj = {};
+        switch(doc.meta.target){
+		case "text":
+			doc.annotations.forEach(function(obj){
+                wordobj[obj.regex] = {
+					global: {
+						className: "annotation",
+						data: obj.data
+					}
+				};
             });
-        }else if (target === "image") {
-            annotations = doc.annotations.map(function (obj) {
+			langobj[lang] = wordobj;
+            return langobj;
+		case "image":
+			return new AnnotationManifest(doc.meta.target, doc.annotations.map(function(obj){
                 return new ImageAnnotation(obj.location, obj.data);
-            });
-        }
-
-        return new AnnotationManifest(target, annotations);
+            }));
+		}
+        return null;
     }
 
     return {
-
-        /**
-         * Loads an annotation manifest from a source
-         * @param source Either a URL or an object
-         * @param callback A callback where the newly generated AnnotationManifest will be passed
-         */
-        load: function(source, callback) {
-            if (typeof source === "object") {
-                callback(loadDocument(source));
-            }
-            if (typeof source === "string") {
-                $.ajax(source, {
-                    dataType: "json",
-                    success: function (data) {
-                        callback(loadDocument(data));
-                    }
-                })
-            }
+		parseDocument: parseDocument,
+        loadURL: function(source, lang, callback){
+			return Promise.resolve($.ajax(source, { dataType: "json" }))
+			.then(function(data){
+				return parseDocument(data, lang);
+			});
         }
     };
 }());
