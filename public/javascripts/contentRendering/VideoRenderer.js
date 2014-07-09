@@ -172,61 +172,47 @@ var VideoRenderer = (function(){
         }
     }
 
-    function createAnnotator(content, layout, manifests){
+    function setupAnnotator(player, layout){
+        player.addEventListener("annotation", function(event){
+            player.pause();
 
-        if(getLevel(content) >= 4){
-            var textAnnotator = new TextAnnotator(manifests,null);
-            textAnnotator.addEventListener("textAnnotationClick", function(event){
+            if(event.detail.data.type === "text"){
+                layout.annotations.innerHTML = event.detail.data.value;
+            }
 
-                videoPlayer.pause();
+            if(event.detail.data.type === "image"){
+                layout.annotations.innerHTML = '<img src="' + event.detail.data.value + '">';
+            }
 
-                if(event.annotation.data.type === "text"){
-                    layout.annotations.innerHTML = event.annotation.data.value;
-                }
+            if(event.detail.data.type === "content"){
+                ContentCache.load(event.annotation.data.value, function(content){
 
-                if(event.annotation.data.type === "image"){
-                    layout.annotations.innerHTML = '<img src="' + event.annotation.data.value + '">';
-                }
+                    // Don't allow annotations, level 3+, transcriptions, or certain controls
+                    content.settings.level = 2;
+                    content.settings.includeTranscriptions = false;
 
-                if(event.annotation.data.type === "content"){
-                    ContentCache.load(event.annotation.data.value, function(content){
-
-                        // Don't allow annotations, level 3+, transcriptions, or certain controls
-                        content.settings.level = 2;
-                        content.settings.includeTranscriptions = false;
-
-                        ContentRenderer.render({
-                            content: content,
-                            holder: layout.annotations,
-                            annotate: false,
-                            screenAdaption: {
-                                fit: false
-                            },
-                            aspectRatio: Ayamel.aspectRatios.hdVideo,
-                            components: {
-                                left: ["play"],
-                                right: ["captions", "timeCode"]
-                            }
-                        });
-                    });
-                }
-
-                // Find the annotation doc
-                var annotationDocId = "unknown";
-                manifests.forEach(function(manifest){
-                    manifest.annotations.forEach(function(annotation){
-                        if(annotation.isEqualTo(event.annotation))
-                            annotationDocId = manifest.resourceId;
+                    ContentRenderer.render({
+                        content: content,
+                        holder: layout.annotations,
+                        annotate: false,
+                        screenAdaption: {
+                            fit: false
+                        },
+                        aspectRatio: Ayamel.aspectRatios.hdVideo,
+                        components: {
+                            left: ["play"],
+                            right: ["captions", "timeCode"]
+                        }
                     });
                 });
-                ActivityStreams.predefined.viewTextAnnotation(annotationDocId, event.sourceElement.textContent);
+            }
 
-                $(layout.annotationsTab).tab("show");
+            // Find the annotation doc
+            var annotationDocId = "Unknown";
+            ActivityStreams.predefined.viewTextAnnotation(annotationDocId, event.detail.text);
 
-            });
-            return textAnnotator;
-        }
-        return null;
+            $(layout.annotationsTab).tab("show");
+        });
     }
 
     /* args: components, transcripts, content, screenAdaption, layout, resource,
@@ -360,6 +346,7 @@ var VideoRenderer = (function(){
                     contentId: args.contentId,
                     permission: args.permission
                 }),
+                getLevel(content) < 4 ? null :
                 ContentRenderer.getAnnotations({
                     resource: args.resource,
                     courseId: args.courseId,
@@ -368,10 +355,9 @@ var VideoRenderer = (function(){
                 })
             ]).then(function(arr){
                 var transcripts = arr[0],
-                    manifests = arr[1],
+                    manifest = arr[1],
                     content = args.content,
                     layout = createLayout(content, args.holder),
-                    annotator = createAnnotator(content, layout, manifests),
                     transcriptPlayer = null;
 
                 // Set up the video player
@@ -385,8 +371,8 @@ var VideoRenderer = (function(){
                     renderCue: args.renderCue,
                     layout: layout,
                     translate: getLevel(content) >= 3,
-                    transcripts: transcripts,
-                    annotator: annotator
+                    annotations: manifest,
+                    transcripts: transcripts
                 });
 
                 videoPlayer.addEventListener('loadtexttracks', function(event){
@@ -398,6 +384,9 @@ var VideoRenderer = (function(){
                         videoPlayer.addEventListener("timeupdate", function(){
                             transcriptPlayer.currentTime = videoPlayer.currentTime;
                         });
+                    }
+                    if(manifest){
+                        setupAnnotator(videoPlayer, layout);
                     }
                     if(typeof args.vidcallback === 'function'){
                         args.vidcallback(videoPlayer, transcriptPlayer);
