@@ -12,8 +12,7 @@ var VideoRenderer = (function(){
         trackResourceMap,
         translationHighlight,
         captionTrackId,
-        cueNumber,
-        destLang = "en";
+        cueNumber;
 
     function getLevel(content){
         return +content.settings.level || 1;
@@ -78,99 +77,99 @@ var VideoRenderer = (function(){
         }
     }
 
-    function createTranslator(content, layout){
-        var translator;
-        if(getLevel(content) >= 3){
-            translator = new Ayamel.utils.Translator(translationEndpoint,translationKey);
-
-            // Add translation listeners
-            // Translation started
-            translator.addEventListener("translate", function(event){
-                var detail = event.detail,
-                    data = detail.data;
-                ActivityStreams.predefined[data.sourceType](data.captionTrackId, data.cueIndex, detail.text);
-                videoPlayer.pause();
-            });
-
-            function engineToHTML(detail){
-                var logoURL,
-                    engine = detail.engine,
-                    src = Ayamel.utils.downgradeLangCode(detail.srcLang),
-                    dest = Ayamel.utils.downgradeLangCode(detail.destLang);
-                if(engine === "WordReference"){
-                    return '<a href="http://www.wordreference.com/' +
-                        src +
-                        dest +
-                        '/' + detail.text + '" target="wordreference">' +
-                        detail.text + ' at WordReference.com</a> © WordReference.com';
-                }
-                if(engine === "Merriam-Webster Inc."){
-                    logoURL="http://www.dictionaryapi.com/images/info/branding-guidelines/mw-logo-light-background-50x50.png";
-                    if((src==="es") || (dest==="es")){
-                        return '<a href="http://www.spanishcentral.com/translate/' + detail.text + '" target="Merriam-Webster">'
-                            + detail.text +' at SpanishCentral.com </a>'
-                            + '<br/>Merriam-Webster\'s Spanish-English Dictionary '
-                            + '<div class="merriamLogo"><a href="http://www.spanishcentral.com/translate/'
-                            + detail.text + '" target="Merriam-Webster"> <img src="' + logoURL + '"></img></a></div>';
-                    }
-                    if((src==="en") && (dest==="en")){
-                        return '<a href="http://www.merriam-webster.com/dictionary/' + detail.text + '" target="Merriam-Webster">'
-                            + detail.text +' at Merriam-Webster.com </a>'
-                            + '<br/> Merriam-Webster\'s Collegiate® Dictionary <br/>'
-                            + '<div class="merriamLogo"><a href="http://www.merriam-webster.com/dictionary/'
-                            + detail.text + '" target="Merriam-Webster"><img src="' + logoURL + '"></img></a></div>';
-                    }
-                }
-                return engine;
+    function setupTranslator(player, layout, resourceMap){
+        // Add translation listeners
+        // Translation started
+        player.addEventListener("translate", function(event){
+            var detail = event.detail,
+                data = detail.data,
+                activityType;
+            switch(data.sourceType){
+            case "caption": activityType = "captionTranslation";
+                break;
+            case "transcript": activityType = "transcriptionTranslation";
+                break;
+            default: return;
             }
+            ActivityStreams.predefined[activityType](resourceMap.get(data.cue.track).id, data.cue.id, detail.text);
+            player.pause();
+        });
 
-            // Translation succeeded
-            translator.addEventListener("translation", function(event){
-                var detail = event.detail,
-                    translations = detail.translations,
-                    wordList = !document.body.classList.contains("share")? // Only allow saving words if the user is logged in (not sharing)
-                        '<div class="addToWordList"><button class="btn btn-small"><i class="icon-paste"></i> Add to Word List</button></div>':"",
-                    html = Ayamel.utils.parseHTML('<div class="translationResult">\
-                        <div class="sourceText">' + detail.text + '</div>\
-                        <div class="translations">' + translations.join(",<br/>") + '</div>\
-                        <div class="engine">' + engineToHTML(detail) + '</div>' + wordList +
-                    '</div>');
+        // Translation succeeded
+        player.addEventListener("translation", function(event){
+            var detail = event.detail,
+                translations = detail.translations,
+                wordList = !document.body.classList.contains("share")? // Only allow saving words if the user is logged in (not sharing)
+                    '<div class="addToWordList"><button class="btn btn-small"><i class="icon-paste"></i> Add to Word List</button></div>':"",
+                html = Ayamel.utils.parseHTML('<div class="translationResult">\
+                    <div class="sourceText">' + detail.text + '</div>\
+                    <div class="translations">' + translations.join(",<br/>") + '</div>\
+                    <div class="engine">' + engineToHTML(detail) + '</div>' + wordList +
+                '</div>');
 
-                html.querySelector("button").addEventListener('click', function(){
-                    var addWord = this.parentNode;
-                    $.ajax("/words", {
-                        type: "post",
-                        data: {
-                            language: event.srcLang,
-                            word: sourceText
-                        },
-                        success: function(){
-                            addWord.innerHTML = "<span class='color-blue'>Added to word list.</span>";
-                        },
-                        error: function(){
-                            alert("Error adding to word list");
-                            addWord.parentNode.removeChild(addWord);
-                        }
-                    });
+            html.querySelector("button").addEventListener('click', function(){
+                var addWord = this.parentNode;
+                $.ajax("/words", {
+                    type: "post",
+                    data: {
+                        language: event.srcLang,
+                        word: sourceText
+                    },
+                    success: function(){
+                        addWord.innerHTML = "<span class='color-blue'>Added to word list.</span>";
+                    },
+                    error: function(){
+                        alert("Error adding to word list");
+                        addWord.parentNode.removeChild(addWord);
+                    }
                 });
+            });
 
-                layout.definitions.appendChild(html);
+            layout.definitions.appendChild(html);
+            layout.definitions.scrollTop = layout.definitions.scrollHeight;
+
+            if(layout.definitionsTab){
+                $(layout.definitionsTab).tab("show");
                 layout.definitions.scrollTop = layout.definitions.scrollHeight;
+            }
+        });
 
-                if(layout.definitionsTab){
-                    $(layout.definitionsTab).tab("show");
-                    layout.definitions.scrollTop = layout.definitions.scrollHeight;
+        // Handle errors
+        player.addEventListener("translationError", function(event){
+            alert("We couldn't translate \"" + event.detail.text + "\" for you.");
+        });
+
+        function engineToHTML(detail){
+            var logoURL,
+                engine = detail.engine,
+                src = Ayamel.utils.downgradeLangCode(detail.srcLang),
+                dest = Ayamel.utils.downgradeLangCode(detail.destLang);
+            if(engine === "WordReference"){
+                return '<a href="http://www.wordreference.com/' +
+                    src +
+                    dest +
+                    '/' + detail.text + '" target="wordreference">' +
+                    detail.text + ' at WordReference.com</a> © WordReference.com';
+            }
+            if(engine === "Merriam-Webster Inc."){
+                logoURL="http://www.dictionaryapi.com/images/info/branding-guidelines/mw-logo-light-background-50x50.png";
+                if((src==="es") || (dest==="es")){
+                    return '<a href="http://www.spanishcentral.com/translate/' + detail.text + '" target="Merriam-Webster">'
+                        + detail.text +' at SpanishCentral.com </a>'
+                        + '<br/>Merriam-Webster\'s Spanish-English Dictionary '
+                        + '<div class="merriamLogo"><a href="http://www.spanishcentral.com/translate/'
+                        + detail.text + '" target="Merriam-Webster"> <img src="' + logoURL + '"></img></a></div>';
                 }
-            });
-
-            // Handle errors
-            translator.addEventListener("error", function(event){
-                alert("We couldn't translate \"" + event.detail.text + "\" for you.");
-            });
-
-            return translator;
+                if((src==="en") && (dest==="en")){
+                    return '<a href="http://www.merriam-webster.com/dictionary/' + detail.text + '" target="Merriam-Webster">'
+                        + detail.text +' at Merriam-Webster.com </a>'
+                        + '<br/> Merriam-Webster\'s Collegiate® Dictionary <br/>'
+                        + '<div class="merriamLogo"><a href="http://www.merriam-webster.com/dictionary/'
+                        + detail.text + '" target="Merriam-Webster"><img src="' + logoURL + '"></img></a></div>';
+                }
+            }
+            return engine;
         }
-        return null;
     }
 
     function createAnnotator(content, layout, manifests){
@@ -231,7 +230,7 @@ var VideoRenderer = (function(){
     }
 
     /* args: components, transcripts, content, screenAdaption, layout, resource,
-        startTime, endTime, renderCue, translator, annotator */
+        startTime, endTime, renderCue, annotator, translate */
     function setupVideoPlayer(args){
         var player,
             components = args.components || {
@@ -285,39 +284,8 @@ var VideoRenderer = (function(){
 //            components: components,
             startTime: args.startTime,
             endTime: args.endTime,
-            renderCue: args.renderCue || function(renderedCue, area){ // Check to use a different renderer
-                var trackID,
-                    cue = renderedCue.cue,
-                    txt = new Ayamel.Text({
-                        content: cue.getCueAsHTML(renderedCue.kind === 'subtitles')
-                    });
-
-                // Attach the translator
-                if(args.translator){
-                    trackID = trackResourceMap?trackResourceMap.get(renderedCue.cue.track).id:
-                        "Unknown";
-                    txt.addEventListener('selection',function(event){
-                        args.translator.translate({
-                            srcLang: cue.track.language,
-                            destLang: destLang,
-                            text: event.detail.fragment.textContent.trim(),
-                            data: {
-                                captionTrackId: trackID,
-                                cueIndex: renderedCue.cue.id,
-                                sourceType: "captionTranslation" //"transcriptionTranslation":
-                            }
-                        });
-                    },false);
-                }
-
-                // Add annotations
-                if(args.annotator){
-                    //Yuck
-                    args.annotator.annotate(txt.displayElement);
-                }
-
-                renderedCue.node = txt.displayElement;
-            },
+			translate: args.translate,
+            renderCue: args.renderCue,
             aspectRatio: Ayamel.aspectRatios.hdVideo
         });
 
@@ -361,7 +329,7 @@ var VideoRenderer = (function(){
         return null;
     }
 
-    function setupDefinitionsPane(pane){
+    function setupDefinitionsPane(pane, player){
         var selectHolder = document.createElement('div');
         (new EditorWidgets.SuperSelect({
             el: selectHolder,
@@ -376,7 +344,7 @@ var VideoRenderer = (function(){
                     return {value: code, text: Ayamel.utils.getLangName(code)};
                 }).sort(function(a,b){ return a.text.localeCompare(b.text); })
             }
-        })).observe('selection', function(newValue){ destLang = newValue; });
+        })).observe('selection', function(newValue){ player.targetLang = newValue; });
         pane.appendChild(selectHolder);
     }
 
@@ -400,56 +368,44 @@ var VideoRenderer = (function(){
                     permission: args.permission
                 }, function(manifests){
                     var loaded = false,
-                        layout = createLayout(args.content, args.holder),
-                        translator = createTranslator(args.content, layout),
-                        annotator = createAnnotator(args.content, layout, manifests),
+                        content = args.content,
+                        layout = createLayout(content, args.holder),
+                        annotator = createAnnotator(content, layout, manifests),
                         transcriptPlayer = null;
 
                     // Set up the video player
                     videoPlayer = setupVideoPlayer({
+                        content: content,
                         components: args.components,
-                        content: args.content,
                         screenAdaption: args.screenAdaption,
                         resource: args.resource,
                         startTime: args.startTime,
                         endTime: args.endTime,
                         renderCue: args.renderCue,
                         layout: layout,
+                        translate: getLevel(content) >= 3,
                         transcripts: transcripts,
-                        translator: translator,
                         annotator: annotator
                     });
 
-                    setupTranscriptWithPlayer();
-
-                    // Resize the panes' content to be correct size onload
-                    $("#Definitions, #Annotations").css("height", videoPlayer.height-($("#videoTabs").height() + 27));
-
                     videoPlayer.addEventListener('loadtexttracks', function(event){
                         trackResourceMap = event.detail.resources;
-                        transcriptPlayer = setupTranscripts(args.content, layout, event.detail.tracks);
-                        if(layout.definitions){ setupDefinitionsPane(layout.definitions); }
-                        setupTranscriptWithPlayer();
-                    }, false);
-
-                    function setupTranscriptWithPlayer(){
-                        // Make sure that
-                        //  1. The video player is loaded
-                        //  2. The transcript player is loaded or you don't need it
-                        //  3. We haven't already called the callback
-                        var needsTranscript = (transcripts && transcripts.length && showTranscript(args.content));
-                        if(!(transcriptPlayer || !needsTranscript) || loaded){ return; }
-                        if(transcriptPlayer){
+                        if(getLevel(content) >= 3){ setupTranslator(videoPlayer, layout, trackResourceMap); }
+                        if(layout.definitions){ setupDefinitionsPane(layout.definitions, videoPlayer); }
+                        if(transcripts && transcripts.length && showTranscript(content)){
+                            transcriptPlayer = setupTranscripts(content, layout, event.detail.tracks);
                             videoPlayer.addEventListener("timeupdate", function(){
                                 transcriptPlayer.currentTime = videoPlayer.currentTime;
                             });
                         }
-
                         if(typeof args.vidcallback === 'function'){
                             args.vidcallback(videoPlayer, transcriptPlayer);
                         }
-                        loaded = true;
-                    }
+                    }, false);
+
+                    // Resize the panes' content to be correct size onload
+                    $("#Definitions, #Annotations").css("height", videoPlayer.height-($("#videoTabs").height() + 27));
+
                 });
             });
         }
