@@ -112,8 +112,8 @@ var VideoRenderer = (function(){
                 $.ajax("/words", {
                     type: "post",
                     data: {
-                        language: event.srcLang,
-                        word: sourceText
+                        language: detail.srcLang,
+                        word: detail.text
                     },
                     success: function(){
                         addWord.innerHTML = "<span class='color-blue'>Added to word list.</span>";
@@ -284,7 +284,7 @@ var VideoRenderer = (function(){
 //            components: components,
             startTime: args.startTime,
             endTime: args.endTime,
-			translate: args.translate,
+            translate: args.translate,
             renderCue: args.renderCue,
             aspectRatio: Ayamel.aspectRatios.hdVideo
         });
