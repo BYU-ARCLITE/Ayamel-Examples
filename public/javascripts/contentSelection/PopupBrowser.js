@@ -17,9 +17,9 @@ var PopupBrowser = (function() {
             <div class="modal-body">\
                 <ul class="nav nav-pills">\
                     <li><a href="#popupBrowserMine" data-load="mine">My Content</a></li>\
-                    <li><a href="#popupBrowserCourse" data-load="course">Course Content</a></li>\
-                    <li><a href="#popupBrowserPublic" data-load="public">Public</a></li>\
-                    <li><a href="#popupBrowserSearch" data-load="search">Search</a></li>\
+                    <li><a href="#popupBrowserCourse" name="#popupBrowserCourse" data-load="course">Course Content</a></li>\
+                    <li><a href="#popupBrowserPublic" name="#popupBrowserPublic" data-load="public">Public</a></li>\
+                    <li><a href="#popupBrowserSearch" name="#popupBrowserSearch" data-load="search">Search</a></li>\
                 </ul>\
                 <div class="tab-content">\
                     <div class="tab-pane" id="popupBrowserMine"></div>\
@@ -48,7 +48,7 @@ var PopupBrowser = (function() {
 
     function click(content, courseId, element) {
         [].forEach.call(document.querySelectorAll(".selectedContent"),function(n){n.classList.remove("selectedContent");});
-        element.classList.add("selectedContent");
+        element[0].classList.add("selectedContent");
         document.getElementById("popupBrowserSelectButton").classList.remove("disabled");
         selectedContent = content;
     }
@@ -133,7 +133,7 @@ var PopupBrowser = (function() {
             $selectButton.addClass("disabled");
 
             // Run the loading mechanism
-            loadingMechanisms[this.dataset["load"](document.querySelector(this.href));
+            loadingMechanisms[this.dataset["load"]](document.querySelector(this.name));
         });
         $modal.on("show", function () {
             apply = false;
