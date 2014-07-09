@@ -21,10 +21,10 @@ var TextRenderer = (function(){
 
     return {
         /* args: resource, courseId, contentId, holder, annotate, txtcallback */
-        render: function(args) {
+        render: function(args){
 
             // Load all important information
-            var file = ContentRenderer.findFile(args.resource, function (file) {
+            var file = ContentRenderer.findFile(args.resource, function(file){
                 return file.representation.substring(0,8) === "original";
             });
 
@@ -34,7 +34,7 @@ var TextRenderer = (function(){
                 courseId: args.courseId,
                 contentId: args.contentId,
                 permission: "view"
-            }, function (manifests) {
+            }).then(function(manifests){
                 var url = file.downloadUri,
                     idx = url.indexOf('?'),
                     layout = createLayout(args.holder);
@@ -45,11 +45,11 @@ var TextRenderer = (function(){
 
                 // Load the text document
                 $.ajax(file.downloadUri, {
-                    success: function(text) {
+                    success: function(text){
                         layout.textHolder.textContent = text;
 
                         // Annotate the document
-                        if (args.annotate) {
+                        if(args.annotate){
                             (new TextAnnotator(manifests, function(element, annotation){
 
                                 // Show the annotations in a popover
@@ -68,7 +68,7 @@ var TextRenderer = (function(){
                             })).annotate(layout.textHolder);
                         }
 
-                        if (typeof args.txtcallback === 'function') {
+                        if(typeof args.txtcallback === 'function'){
                             args.txtcallback(layout);
                         }
                     }
