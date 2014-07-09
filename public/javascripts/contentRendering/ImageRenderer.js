@@ -40,7 +40,7 @@ var ImageRenderer = (function(){
     
         //args: drawable, filter, open, resource, annotate, imgcallback
         // courseId, contentId, holder
-        render: function(args) {
+        render: function(args){
 
             // Load all important information
             var file = ContentRenderer.findFile(args.resource, function(file) {
@@ -48,13 +48,12 @@ var ImageRenderer = (function(){
             });
 
             // Load annotations
-            
             ContentRenderer.getAnnotations({
                 resource: args.resource,
                 courseId: args.courseId,
                 contentId: args.contentId,
                 permission: "view"
-            }, function(manifests) {
+            }).then(function(manifests){
                 // Create the layout
                 var layout = createLayout(args.holder);
 

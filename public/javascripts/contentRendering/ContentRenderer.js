@@ -15,67 +15,71 @@ var ContentRenderer = (function () {
         return file;
     }
 
-    /* args: resource, courseId, contentId, permission, */
-    function getTranscripts(args, callback) {
+    /* args: resource, courseId, contentId, permission */
+    function getTranscripts(args){
         var captionTrackIds = args.resource.relations
             .filter(function(r){return r.type==="transcript_of";})
             .map(function(r){return r.subjectId;}).join(',');
-        if(captionTrackIds.length){
-            $.ajax("/ajax/permissionChecker", {
-                type: "post",
-                data: {
-                    courseId: args.courseId,
-                    contentId: args.contentId,
-                    permission: args.permission || "view",
-                    documentType: "captionTrack",
-                    ids: captionTrackIds
-                },
-                success: function(data){
-                    // Now turn those IDs into resources
-                    Promise.all(data.map(ResourceLibrary.load)).then(callback);
-                }
-            });
-        } else { callback([]); }
+        return new Promise(function(resolve, reject){
+            if(captionTrackIds.length){
+                resolve($.ajax("/ajax/permissionChecker", {
+                    type: "post",
+                    data: {
+                        courseId: args.courseId,
+                        contentId: args.contentId,
+                        permission: args.permission || "view",
+                        documentType: "captionTrack",
+                        ids: captionTrackIds
+                    }
+                }));
+            } else { resolve([]); }
+        }).then(function(data){
+            // Now turn those IDs into resources
+            return Promise.all(data.map(ResourceLibrary.load));
+        });
     }
 
     /* args: resource, courseId, contentId, permission */
-    function getAnnotations(args, callback) {
+    function getAnnotations(args){
         var annotationIds = args.resource.relations
             .filter(function(r){return r.type==="references";})
             .map(function(r){return r.subjectId;}).join(',');
-        if(annotationIds.length){
-            $.ajax("/ajax/permissionChecker", {
-                type: "post",
-                data: {
-                    courseId: args.courseId,
-                    contentId: args.contentId,
-                    permission: args.permission || "view",
-                    documentType: "annotations",
-                    ids: annotationIds
-                },
-                success: function(data) {
-                    // Now turn those IDs into resources then into annotation manifests
-                    Promise.all(data.map(function(id){
-                        ResourceLibrary.load(id).then(function(resource){
-                            var url = resource.content.files[0].downloadUri,
-                                idx = url.indexOf('?');
-                            if(idx === -1){ url += "?"; }
-                            else if(idx !== url.length-1){ url += '&nocache='; }
-                            url += Date.now().toString(36);
-                            // Now get the actual annotation manifest
-                            return $.ajax(url,{ dataType: "json" });
-                        }).then(function(data){
-							return new Promise(function(resolve){
-								AnnotationLoader.load(data, function(manifest){
-									if(manifest){ manifest.resourceId = resource.id; }
-									resolve(manifest);
-								});
-							});
-                        }, function(err){ return null; });
-                    })).then(callback);
-                }
-            });
-        } else { callback([]); }
+		return new Promise(function(resolve, reject){
+			if(annotationIds.length){
+				resolve($.ajax("/ajax/permissionChecker", {
+					type: "post",
+					data: {
+						courseId: args.courseId,
+						contentId: args.contentId,
+						permission: args.permission || "view",
+						documentType: "annotations",
+						ids: annotationIds
+					}
+				}));
+			}else{
+				resolve([]);
+			}
+		}).then(function(data){
+			// Now turn those IDs into resources then into annotation manifests
+			return Promise.all(data.map(function(id){
+				ResourceLibrary.load(id).then(function(resource){
+					var url = resource.content.files[0].downloadUri,
+						idx = url.indexOf('?');
+					if(idx === -1){ url += "?"; }
+					else if(idx !== url.length-1){ url += '&nocache='; }
+					url += Date.now().toString(36);
+					// Now get the actual annotation manifest
+					return $.ajax(url,{ dataType: "json" });
+				}).then(function(data){
+					return new Promise(function(resolve){
+						AnnotationLoader.load(data, function(manifest){
+							if(manifest){ manifest.resourceId = resource.id; }
+							resolve(manifest);
+						});
+					});
+				}, function(err){ return null; });
+			}));
+		});
     }
 
     function renderContent(args) {
@@ -117,7 +121,7 @@ var ContentRenderer = (function () {
                             holder: args.holder
                         });
                         break;
-					case "document":
+                    case "document":
                     case "text":
                         TextRenderer.render({
                             resource: resource,

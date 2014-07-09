@@ -353,60 +353,59 @@ var VideoRenderer = (function(){
             screenAdaption, startTime, endTime, renderCue, permission, vidcallback */
         render: function(args){
             // Load the caption tracks
-            ContentRenderer.getTranscripts({
-                resource: args.resource,
-                courseId: args.courseId,
-                contentId: args.contentId,
-                permission: args.permission
-            }, function(transcripts){
-
-                // Load the annotations
+            Promise.all([
+                ContentRenderer.getTranscripts({
+                    resource: args.resource,
+                    courseId: args.courseId,
+                    contentId: args.contentId,
+                    permission: args.permission
+                }),
                 ContentRenderer.getAnnotations({
                     resource: args.resource,
                     courseId: args.courseId,
                     contentId: args.contentId,
                     permission: args.permission
-                }, function(manifests){
-                    var loaded = false,
-                        content = args.content,
-                        layout = createLayout(content, args.holder),
-                        annotator = createAnnotator(content, layout, manifests),
-                        transcriptPlayer = null;
+                })
+            ]).then(function(arr){
+                var transcripts = arr[0],
+                    manifests = arr[1],
+                    content = args.content,
+                    layout = createLayout(content, args.holder),
+                    annotator = createAnnotator(content, layout, manifests),
+                    transcriptPlayer = null;
 
-                    // Set up the video player
-                    videoPlayer = setupVideoPlayer({
-                        content: content,
-                        components: args.components,
-                        screenAdaption: args.screenAdaption,
-                        resource: args.resource,
-                        startTime: args.startTime,
-                        endTime: args.endTime,
-                        renderCue: args.renderCue,
-                        layout: layout,
-                        translate: getLevel(content) >= 3,
-                        transcripts: transcripts,
-                        annotator: annotator
-                    });
-
-                    videoPlayer.addEventListener('loadtexttracks', function(event){
-                        trackResourceMap = event.detail.resources;
-                        if(getLevel(content) >= 3){ setupTranslator(videoPlayer, layout, trackResourceMap); }
-                        if(layout.definitions){ setupDefinitionsPane(layout.definitions, videoPlayer); }
-                        if(transcripts && transcripts.length && showTranscript(content)){
-                            transcriptPlayer = setupTranscripts(content, layout, event.detail.tracks);
-                            videoPlayer.addEventListener("timeupdate", function(){
-                                transcriptPlayer.currentTime = videoPlayer.currentTime;
-                            });
-                        }
-                        if(typeof args.vidcallback === 'function'){
-                            args.vidcallback(videoPlayer, transcriptPlayer);
-                        }
-                    }, false);
-
-                    // Resize the panes' content to be correct size onload
-                    $("#Definitions, #Annotations").css("height", videoPlayer.height-($("#videoTabs").height() + 27));
-
+                // Set up the video player
+                videoPlayer = setupVideoPlayer({
+                    content: content,
+                    components: args.components,
+                    screenAdaption: args.screenAdaption,
+                    resource: args.resource,
+                    startTime: args.startTime,
+                    endTime: args.endTime,
+                    renderCue: args.renderCue,
+                    layout: layout,
+                    translate: getLevel(content) >= 3,
+                    transcripts: transcripts,
+                    annotator: annotator
                 });
+
+                videoPlayer.addEventListener('loadtexttracks', function(event){
+                    trackResourceMap = event.detail.resources;
+                    if(getLevel(content) >= 3){ setupTranslator(videoPlayer, layout, trackResourceMap); }
+                    if(layout.definitions){ setupDefinitionsPane(layout.definitions, videoPlayer); }
+                    if(transcripts && transcripts.length && showTranscript(content)){
+                        transcriptPlayer = setupTranscripts(content, layout, event.detail.tracks);
+                        videoPlayer.addEventListener("timeupdate", function(){
+                            transcriptPlayer.currentTime = videoPlayer.currentTime;
+                        });
+                    }
+                    if(typeof args.vidcallback === 'function'){
+                        args.vidcallback(videoPlayer, transcriptPlayer);
+                    }
+                }, false);
+
+                // Resize the panes' content to be correct size onload
+                $("#Definitions, #Annotations").css("height", videoPlayer.height-($("#videoTabs").height() + 27));
             });
         }
     };
