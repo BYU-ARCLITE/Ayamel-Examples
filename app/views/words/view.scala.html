@@ -73,7 +73,7 @@
                 if (translationCache[language][text])
                     callback(translationCache[language][text]);
                 else {
-                    translator.translate(text, language, "en").then(function(results) {
+                    translator.translate({srcLang: language, destLang: "en", text: text}).then(function(results) {
                         translationCache[language][text] = results;
                         callback(results);
                     });
