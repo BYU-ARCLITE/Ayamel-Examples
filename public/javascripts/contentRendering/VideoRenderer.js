@@ -9,7 +9,6 @@
 var VideoRenderer = (function(){
 
     var videoPlayer,
-        trackResourceMap,
         translationHighlight,
         captionTrackId,
         cueNumber;
@@ -303,8 +302,7 @@ var VideoRenderer = (function(){
 
             // Cue clicking
             transcriptPlayer.addEventListener("cueclick", function(event){
-                var trackID = trackResourceMap?trackResourceMap.get(event.detail.track).id:
-                    "Unknown";
+                var trackID = videoPlayer.textTrackResources.get(event.detail.track).id;
 
                 videoPlayer.currentTime = event.detail.cue.startTime;
                 ActivityStreams.predefined.transcriptCueClick(trackID, event.detail.cue.id);
@@ -376,8 +374,7 @@ var VideoRenderer = (function(){
                 });
 
                 videoPlayer.addEventListener('loadtexttracks', function(event){
-                    trackResourceMap = event.detail.resources;
-                    if(getLevel(content) >= 3){ setupTranslator(videoPlayer, layout, trackResourceMap); }
+                    if(getLevel(content) >= 3){ setupTranslator(videoPlayer, layout, videoPlayer.textTrackResources); }
                     if(layout.definitions){ setupDefinitionsPane(layout.definitions, videoPlayer); }
                     if(transcripts && transcripts.length && showTranscript(content)){
                         transcriptPlayer = setupTranscripts(content, layout, event.detail.tracks);

@@ -489,7 +489,7 @@ $(function() {
         videoPlayer.addEventListener("enabletrack", function(event) {
             var track = event.detail.track;
             if (timeline.hasTextTrack(track.label)) { return; }
-            timeline.addTextTrack(track, track.mime);
+            timeline.addTextTrack(track, videoPlayer.textTrackMimes.get(track));
             updateSpacing();
         });
 
