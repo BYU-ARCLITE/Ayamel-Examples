@@ -55,9 +55,10 @@ object WordLists extends Controller {
         val termLanguage = request.body.dataParts("lang_terms")(0)
         val definitionLanguage = request.body.dataParts("lang_definitions")(0)
         val terms = request.body.dataParts("terms[]").zip(request.body.dataParts("definitions[]")).toList
+        val termsMinusAudio : List[(String,String)] = for ( term <- terms ) yield { (term._1, term._2.split(", <audio")(0))}
 
         Async {
-          Quizlet.createSet(token, title, terms, termLanguage, definitionLanguage).map(url => Ok(url))
+          Quizlet.createSet(token, title, termsMinusAudio, termLanguage, definitionLanguage).map(url => Ok(url))
         }
   }
 
