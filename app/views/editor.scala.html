@@ -66,7 +66,7 @@
                                         <a href="@routes.Courses.view(course.id.get)"><i class="icon-book"></i> @course.name</a>
                                     </div>
                                 }
-                                @if(user.canCreateCourse) {
+                                @if(user.hasSitePermission("createCourse")) {
                                     <div class="dropdownItem">
                                         <a href="@routes.Courses.createPage()"><i class="icon-plus"></i> Create a new course</a>
                                     </div>
@@ -75,7 +75,7 @@
                         </div>
                     }
 
-                    @if(user.role != User.roles.guest) {
+                    @if(user.hasSitePermission("createContent")) {
                         <div class="link">
                             <a href="@routes.ContentController.mine()">
                                 <i class="icon-folder-open"></i> My Content
@@ -105,7 +105,7 @@
                                         }
                                     </a>
                                 </div>
-                                @if(user.role == User.roles.admin) {
+                                @if(user.hasSitePermission("admin")) {
                                     <div class="dropdownItem">
                                         <a href="@routes.Administration.admin()"><i class="icon-wrench"></i> Admin Dashboard</a>
                                     </div>

@@ -1,6 +1,6 @@
 @(user: User, course: Course)(implicit request: RequestHeader)
 
-@if(user.canEdit(course)) {
+@if(user.hasCoursePermission(course, "teacher")) {
     <div id="studentInfoModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="studentInfoModalLabel" aria-hidden="true">
         <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
@@ -31,7 +31,7 @@
                     <tr>
                         <th>Name</th>
                         <th>Email</th>
-                        <th>Actions</th>
+                        @if(user.hasCoursePermission(course, "teacher")){ <th>Actions</th> }
                     </tr>
                 </thead>
                 <tbody>
@@ -39,7 +39,9 @@
                         <tr>
                             <td>@student.displayName</td>
                             <td>@Html(student.email.getOrElse("<em>None</em>"))</td>
-                            <td><a href="/course/@{course.id.get}/remove/@{student.id.get}" class="btn btn-magenta"><i class="icon-trash"></i> Remove</a></td>
+                            @if(user.hasCoursePermission(course, "teacher")){
+                                <td><a href="/course/@{course.id.get}/remove/@{student.id.get}" class="btn btn-magenta"><i class="icon-trash"></i> Remove</a></td>
+                            }
                         </tr>
                     }
                 </tbody>

@@ -81,33 +81,13 @@
             </div>
             <div class="span6">
 
-                <h2>Account Level</h2>
+                <h2>Permissions</h2>
                 <p>
-                        Your account level is:
-                    @if(user.role == User.roles.guest) {
-                        <span class="label label-magenta">Guest</span>
-                    }
-                    @if(user.role == User.roles.student) {
-                        <span class="label label-magenta">Student</span>
-                    }
-                    @if(user.role == User.roles.teacher) {
-                        <span class="label label-magenta">Teacher</span>
-                    }
-                    @if(user.role == User.roles.admin) {
-                        <span class="label label-magenta">Administrator</span>
-                    }
+                    <!-- Build Permissions Display -->
                 </p>
-                @if(user.role == User.roles.student) {
-                    <p>
-                            If you need to create a course page, then you'll need to be approved as a teacher. To request
-                            teacher status, you must submit a teacher request form.
-                    </p>
-                    <div>
-                        <a href="@routes.Users.teacherRequestPage()" class="btn btn-blue">Fill out form</a>
-                    </div>
+				@if(user.hasSitePermission("requestPermission")) {
+                  <a href="@routes.Users.permissionRequestPage()" class="btn btn-blue">Request Additional Permissions</a>
                 }
-
-
                 <h2>Merge accounts</h2>
                 <p>
                     There are many ways to log on to Ayamel, all provided for your convenience. You can combine these accounts

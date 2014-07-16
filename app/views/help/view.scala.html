@@ -32,7 +32,7 @@
             </div>
 
             <div class="pull-right">
-                @if(user.isDefined && user.get.role == User.roles.admin) {
+                @if(user.isDefined && user.get.hasSitePermission("admin")) {
                     <div class="pad-top-med">
                         <a class="btn btn-yellow" href="@routes.HelpPages.edit(helpPage.id.get)"><i class="icon-edit"></i> Edit</a>
                         <a class="btn btn-magenta" href="@routes.HelpPages.delete(helpPage.id.get)"><i class="icon-trash"></i> Delete</a>

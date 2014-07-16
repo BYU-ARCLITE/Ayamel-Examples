@@ -63,7 +63,7 @@
                                         <a href="@routes.Courses.view(course.id.get)"><i class="icon-book"></i> @course.name</a>
                                     </div>
                                 }
-                                @if(user.canCreateCourse) {
+                                @if(user.hasSitePermission("createCourse")) {
                                     <div class="dropdownItem">
                                         <a href="@routes.Courses.createPage()"><i class="icon-plus"></i> Create a new course</a>
                                     </div>
@@ -72,7 +72,7 @@
                         </div>
                     }
 
-                    @if(user.role != User.roles.guest) {
+                    @if(user.hasSitePermission("createContent")) {
                         <div class="link">
                             <a href="@routes.ContentController.mine()">
                                 <i class="icon-folder-open"></i> My Content
@@ -103,7 +103,7 @@
                                         }
                                     </a>
                                 </div>
-                                @if(user.role == User.roles.admin) {
+                                @if(user.hasSitePermission("admin")) {
                                     <div class="dropdownItem">
                                         <a href="@routes.Administration.admin()"><i class="icon-wrench"></i> Admin Dashboard</a>
                                     </div>
@@ -119,6 +119,10 @@
                             <input type="text" class="searchBox" id="searchBox" />
                         </div>
                     } else {
+                        <div class="link">
+                            <i class="icon-search"></i>
+                            <input type="text" class="searchBox" id="searchBox" />
+                        </div>
                         <div class="link">
                             <a href="@controllers.authentication.routes.Authentication.logout()"><i class="icon-off"></i> Log out</a>
                         </div>
@@ -137,7 +141,7 @@
                             <div class="span10 offset1">
                                 <div class="row-fluid">
                                     <div class="span3">
-                                        @if(user.role != User.roles.guest) {
+                                        @if(user.hasSitePermission("joinCourse")) {
                                             <div><a href="@routes.Courses.list()">Course Directory</a></div>
                                         }
                                         <div><a href="@routes.ContentController.public()">Public Content Listing</a></div>

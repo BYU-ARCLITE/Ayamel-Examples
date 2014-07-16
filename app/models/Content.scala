@@ -89,13 +89,13 @@ case class Content(id: Pk[Long], name: String, contentType: Symbol, thumbnail: S
    */
   def isVisibleBy(user: User): Boolean = {
     // Always true if the user is an admin or the owner
-    if (user.role == User.roles.admin || user.getContent.contains(this))
+    if (user.hasSitePermission("admin") || user.getContent.contains(this))
       true
     else
       // Check the visibility attribute of the content object
       visibility match {
         case Content.visibility.tightlyRestricted => user.getEnrollment.flatMap(_.getContent).contains(this)
-        case Content.visibility.looselyRestricted => user.role == User.roles.teacher || user.getEnrollment.flatMap(_.getContent).contains(this)
+        case Content.visibility.looselyRestricted => user.hasSitePermission("viewRestricted") || user.getEnrollment.flatMap(_.getContent).contains(this)
         case Content.visibility.public => true
         case _ => false
       }
@@ -123,7 +123,7 @@ case class Content(id: Pk[Long], name: String, contentType: Symbol, thumbnail: S
    * @return Can edit or not
    */
   def isEditableBy(user: User): Boolean =
-    user.role == User.roles.admin || user.getContent.contains(this)
+    user.hasSitePermission("admin") || user.getContent.contains(this)
 
   def level = settings.get("level").getOrElse(Content.defaultSettings.video.level)
 

@@ -168,28 +168,22 @@ object ContentEditing extends Controller {
   /**
    * Sets settings for content in the context of a particular course
    * @param id The ID of the content
-   * @param courseId The ID of the course
    */
   def setCourseSettings(id: Long, courseId: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
-        ContentController.getContent(id) {
-          content =>
-            Courses.getCourse(courseId) {  course =>
-              // Make sure the user is able to edit the course
-              if (user canEdit course) {
-                val contentType = Symbol(request.body("contentType")(0))
-                if (contentType == 'video || contentType == 'audio)
-                  setAudioVideoSettings(content, request.body, Some(course))
-                else if (contentType == 'image)
-                  setImageSettings(content, request.body, Some(course))
-                else if (contentType == 'text)
-                  setTextSettings(content, request.body, Some(course))
+        Courses.getCourse(id) { course =>
+          ContentController.getContent(id) { content =>
+            val contentType = Symbol(request.body("contentType")(0))
+            if (contentType == 'video || contentType == 'audio)
+              setAudioVideoSettings(content, request.body, Some(course))
+            else if (contentType == 'image)
+              setImageSettings(content, request.body, Some(course))
+            else if (contentType == 'text)
+              setTextSettings(content, request.body, Some(course))
 
-                Redirect(routes.CourseContent.viewInCourse(id, course.id.get)).flashing("success" -> "Settings updated.")
-              } else
-                Errors.forbidden
-            }
+            Redirect(routes.CourseContent.viewInCourse(id, course.id.get)).flashing("success" -> "Settings updated.")
+          }
         }
   }
 

@@ -50,8 +50,7 @@ object ContentController extends Controller {
   def createPage(page: String = "file") = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-      // Guests cannot create content
-        Authentication.enforceNotRole(User.roles.guest) {
+        Authentication.enforcePermission("createContent") {
           page match {
             case "url" => Ok(views.html.content.create.url())
             case "batch" => Ok(views.html.content.create.batchUrl())
@@ -86,8 +85,7 @@ object ContentController extends Controller {
     implicit request =>
       implicit user =>
 
-      // Guests cannot create content
-        Authentication.enforceNotRole(User.roles.guest) {
+        Authentication.enforcePermission("createContent") {
 
           // Collect the information
           val data = request.body
@@ -132,8 +130,7 @@ object ContentController extends Controller {
     implicit request =>
       implicit user =>
 
-      // Guests cannot create content
-        Authentication.enforceNotRole(User.roles.guest) {
+        Authentication.enforcePermission("createContent") {
 
           val file = request.body.file("file").get.ref.file
           val data = io.Source.fromFile(file).getLines().toList
@@ -177,8 +174,7 @@ object ContentController extends Controller {
     implicit request =>
       implicit user =>
 
-      // Guests cannot create content
-        Authentication.enforceNotRole(User.roles.guest) {
+        Authentication.enforcePermission("createContent") {
 
           // Collect the information
           val data = request.body.dataParts
@@ -224,8 +220,7 @@ object ContentController extends Controller {
     implicit request =>
       implicit user =>
 
-      // Guests cannot create content
-        Authentication.enforceNotRole(User.roles.guest) {
+        Authentication.enforcePermission("createContent") {
 
           // Create from resource
           val resourceId = request.body("resourceId")(0)
@@ -260,8 +255,7 @@ object ContentController extends Controller {
     implicit request =>
       implicit user =>
 
-      // Guests cannot create content
-        Authentication.enforceNotRole(User.roles.guest) {
+        Authentication.enforcePermission("createContent") {
 
           Async {
             // Create the node content
@@ -299,8 +293,7 @@ object ContentController extends Controller {
     implicit request =>
       implicit user =>
 
-      // Guests cannot create content
-        Authentication.enforceNotRole(User.roles.guest) {
+        Authentication.enforcePermission("createContent") {
 
           val title = request.body("title")(0)
           val labels = request.body.get("labels").map(_.toList).getOrElse(Nil)
@@ -452,10 +445,11 @@ object ContentController extends Controller {
     implicit request =>
       implicit user =>
 
-      // Guests cannot create content
-        Authentication.enforceNotRole(User.roles.guest) {
-          Ok(views.html.content.mine())
-        }
+      if (user.getContent.isEmpty) {
+		Errors.notFound
+	  } else {
+        Ok(views.html.content.mine())
+      }
   }
 
   /**

@@ -76,7 +76,7 @@ object AdditionalDocumentAdder {
   }
 
   private def getPrefix(content: Content, course: Option[Course])(implicit user: User): String = {
-    if (course.isDefined && user.canEdit(course.get))
+    if (course.isDefined)
       "course_" + course.get.id.get + ":"
     else if (content.isEditableBy(user))
       ""

@@ -48,17 +48,13 @@ object CourseContent extends Controller {
   def statsInCourse(id: Long, courseId: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        ContentController.getContent(id) {
-          content =>
-            Courses.getCourse(courseId) {
-              course =>
-
-              // Only teachers can view stats
-                if (user canEdit course) {
-                  Ok(views.html.content.stats(content, ResourceController.baseUrl, Some(course)))
-                } else
-                  Errors.forbidden
+        Courses.getCourse(courseId) { course =>
+          if (user.hasCoursePermission(course, "teacher")) {
+            ContentController.getContent(id) { content =>
+              Ok(views.html.content.stats(content, ResourceController.baseUrl, Some(course)))
             }
+          } else
+            Errors.forbidden
         }
   }
 
@@ -69,24 +65,20 @@ object CourseContent extends Controller {
   def downloadStatsInCourse(id: Long, courseId: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        ContentController.getContent(id) {
-          content =>
-            Courses.getCourse(courseId) {
-              course =>
-
-              // Only teachers can view stats
-                if (user canEdit course) {
-                  val coursePrefix = "course_" + course.id.get + ":"
-                  val activity = content.getActivity(coursePrefix)
-                  val byteStream = ExcelWriter.writeActivity(activity)
-                  val output = Enumerator.fromStream(byteStream)
-                  SimpleResult(
-                    header = ResponseHeader(200),
-                    body = output
-                  ).withHeaders("Content-Type" -> "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-                } else
-                  Errors.forbidden
+        Courses.getCourse(courseId) { course =>
+          if (user.hasCoursePermission(course, "teacher")) {
+            ContentController.getContent(id) { content =>
+              val coursePrefix = "course_" + course.id.get + ":"
+              val activity = content.getActivity(coursePrefix)
+              val byteStream = ExcelWriter.writeActivity(activity)
+              val output = Enumerator.fromStream(byteStream)
+              SimpleResult(
+                header = ResponseHeader(200),
+                body = output
+              ).withHeaders("Content-Type" -> "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
             }
+          } else
+            Errors.forbidden
         }
   }
 
@@ -97,20 +89,16 @@ object CourseContent extends Controller {
   def clearStatsInCourse(id: Long, courseId: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        ContentController.getContent(id) {
-          content =>
-            Courses.getCourse(courseId) {
-              course =>
-
-              // Only teachers can clear stats
-                if (user canEdit course) {
-                  val coursePrefix = "course_" + course.id.get + ":"
-                  content.getActivity(coursePrefix).foreach(_.delete())
-                  Redirect(routes.CourseContent.statsInCourse(content.id.get, course.id.get))
-                    .flashing("info" -> "Data cleared")
-                } else
-                  Errors.forbidden
+        Courses.getCourse(courseId) { course =>
+          if (user.hasCoursePermission(course, "teacher")) {
+            ContentController.getContent(id) { content =>
+              val coursePrefix = "course_" + course.id.get + ":"
+              content.getActivity(coursePrefix).foreach(_.delete())
+              Redirect(routes.CourseContent.statsInCourse(content.id.get, course.id.get))
+               .flashing("info" -> "Data cleared")
             }
+          } else
+              Errors.forbidden
         }
   }
 
@@ -144,22 +132,17 @@ object CourseContent extends Controller {
   def addToCourse(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
-        ContentController.getContent(id) {
-          content =>
-
-            val courseId = request.body("course")(0).toLong
-            Courses.getCourse(courseId) {
-              course =>
-
-              // Make sure the user is allowed to edit the course
-                if (user canEdit course) {
-                  course.addContent(content)
-                  val courseLink = "<a href=\"" + routes.Courses.view(course.id.get).toString() + "\">" + course.name + "</a>"
-                  Redirect(routes.CourseContent.viewInCourse(content.id.get, course.id.get))
-                    .flashing("success" -> ("Content added to course " + courseLink))
-                } else
-                  Errors.forbidden
+        val courseId = request.body("course")(0).toLong
+        Courses.getCourse(courseId) { course =>
+          if (user.hasCoursePermission(course, "addContent")) {
+            ContentController.getContent(id) { content =>
+              course.addContent(content)
+              val courseLink = "<a href=\"" + routes.Courses.view(course.id.get).toString() + "\">" + course.name + "</a>"
+              Redirect(routes.CourseContent.viewInCourse(content.id.get, course.id.get))
+                .flashing("success" -> ("Content added to course " + courseLink))
             }
+          } else
+            Errors.forbidden
         }
   }
 
@@ -171,18 +154,14 @@ object CourseContent extends Controller {
   def removeFromCourse(id: Long, courseId: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        ContentController.getContent(id) {
-          content =>
-            Courses.getCourse(courseId) {
-              course =>
-
-                // Make user the user is allowed to do this
-                if (user.canEdit(course) || content.isEditableBy(user)) {
-                  ContentListing.listByContent(content).find(_.courseId == courseId).map(_.delete())
-                  Redirect(routes.Courses.view(courseId)).flashing("info" -> "Content removed")
-                } else
-                  Errors.forbidden
+        Courses.getCourse(courseId) { course =>
+          if (user.hasCoursePermission(course, "removeContent")) {
+            ContentController.getContent(id) { content =>
+              ContentListing.listByContent(content).find(_.courseId == courseId).map(_.delete())
+              Redirect(routes.Courses.view(courseId)).flashing("info" -> "Content removed")
             }
+          } else
+              Errors.forbidden
         }
   }
 }

@@ -4,7 +4,7 @@
     user.getContent.filterNot(c => course.getContent.contains(c))
 }
 
-@if(user canAddContentTo course) {
+@if(user.hasCoursePermission(course, "addContent")) {
     <div id="addContentModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="addContentModalLabel" aria-hidden="true">
         <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
@@ -13,7 +13,7 @@
 
         <div class="modal-body">
             <p>You can add content that you have uploaded to this course.</p>
-            @if(user canEdit course) {
+            @if(user.hasCoursePermission(course, "addContent")) {
                 <p>
                     If you want to add other content to this course, then view that content and click the "Add to
                     Course" button.

@@ -96,7 +96,7 @@ object Courses extends Controller {
     implicit request =>
       implicit user =>
         getCourse(id) { course =>
-          if (user canView course)
+          if (user.hasCoursePermission(course, "viewCourse"))
             Ok(views.html.courses.view(course))
           else
             Redirect(routes.Courses.courseRequestPage(id))
@@ -110,7 +110,7 @@ object Courses extends Controller {
     implicit request =>
       implicit user =>
         getCourse(id) { course =>
-          if (user canEdit course) {
+          if (user.hasCoursePermission(course, "editCourse")) {
             val name = request.body("courseName")(0)
             val enrollment = Symbol(request.body("courseEnrollment")(0))
             course.copy(name = name, enrollment = enrollment).save
@@ -130,7 +130,7 @@ object Courses extends Controller {
         getCourse(id) { course =>
 
           // Only non-guest members and admins can add content
-          if (user canAddContentTo course) {
+          if (user.hasCoursePermission(course, "addContent")) {
 
             // Add the content to the course
             request.body("addContent").foreach(id => {
@@ -152,7 +152,7 @@ object Courses extends Controller {
         getCourse(id) { course =>
 
           // Only non-guest members and admins can add content
-          if (user canAddContentTo course) {
+          if (user.hasCoursePermission(course, "addContent")) {
 
             // Add the content to the course
             val announcement = request.body("announcement")(0)
@@ -170,8 +170,8 @@ object Courses extends Controller {
     request =>
       user =>
 
-      // Check if the user is allowed to create a course
-        if (user.canCreateCourse) {
+        // Check if the user is allowed to create a course
+        if (user.hasSitePermission("createCourse")) {
 
           // Collect info
           val courseName = request.body("courseName")(0)
@@ -195,7 +195,7 @@ object Courses extends Controller {
       implicit user =>
 
       // Check if the user is allowed to create a course
-        if (user.canCreateCourse)
+        if (user.hasSitePermission("createCourse"))
           Ok(views.html.courses.create())
         else
           Errors.forbidden
@@ -207,11 +207,8 @@ object Courses extends Controller {
   def list = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-
-        // Guests cannot browse
-        Authentication.enforceNotRole(User.roles.guest) {
-          val courses = Course.list
-          Ok(views.html.courses.list(courses))
+        Authentication.enforcePermission("joinCourse") {
+          Ok(views.html.courses.list(Course.list))
         }
   }
 
@@ -222,10 +219,8 @@ object Courses extends Controller {
   def courseRequestPage(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        getCourse(id) { course =>
-
-          // Guests cannot request courses
-          Authentication.enforceNotRole(User.roles.guest) {
+        Authentication.enforcePermission("joinCourse") {
+          getCourse(id) { course =>
             AddCourseRequest.listByCourse(course).find(req => req.userId == user.id.get) match {
             case Some(_) => Ok(views.html.courses.pending(course))
             case _ => Ok(views.html.courses.request(course))
@@ -241,10 +236,8 @@ object Courses extends Controller {
   def submitCourseRequest(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
-        getCourse(id) { course =>
-
-          // Make sure it's not a guest
-          Authentication.enforceNotRole(User.roles.guest) {
+        Authentication.enforcePermission("joinCourse") {
+          getCourse(id) { course =>
 
             // Check to see what kind of enrollment the course is
             if (course.enrollment == 'closed) {
@@ -284,7 +277,7 @@ object Courses extends Controller {
     implicit request =>
       implicit user =>
         getCourse(id) { course =>
-          if (user canEdit course)
+          if (user.hasCoursePermission(course, "addStudent"))
             Ok(views.html.courses.approveRequests(course))
           else
             Errors.forbidden
@@ -293,50 +286,46 @@ object Courses extends Controller {
 
   /**
    * Approves a certain join request
-   * @param id The ID of the course
    * @param requestId The ID of the join request
    */
-  def approveRequest(id: Long, requestId: Long) = Authentication.authenticatedAction() {
+  def approveRequest(ignore: Long, requestId: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        getCourse(id) { course =>
-          // Get the request
-          AddCourseRequest.findById(requestId) match {
-          case Some(courseRequest) =>
-            // Make sure the user is allowed to approve
-            if (user.canApprove(courseRequest, course)) {
-              courseRequest.approve()
-              Redirect(routes.Courses.approvePage(course.id.get)).flashing("info" -> "Course request approved")
-            } else
-              Errors.forbidden
-          case _ =>
-            Errors.notFound
-          }
+        // Get the request
+        AddCourseRequest.findById(requestId) match {
+        case Some(courseRequest) =>
+          // Make sure the user is allowed to approve
+          val courseId = courseRequest.courseId
+          if (user.hasCoursePermission(Course.findById(courseId).get, "addStudent")) {
+            courseRequest.approve()
+            Redirect(routes.Courses.approvePage(courseId)).flashing("info" -> "Course request approved")
+          } else
+            Errors.forbidden
+        case _ =>
+          Errors.notFound
         }
   }
 
   /**
    * Denies a particular join request
-   * @param id The ID of the course
    * @param requestId The ID of the join request
    */
-  def denyRequest(id: Long, requestId: Long) = Authentication.authenticatedAction() {
+  def denyRequest(ignore: Long, requestId: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        getCourse(id) { course =>
-          // Get the request
-          AddCourseRequest.findById(requestId) match {
-          case Some(courseRequest) =>
-            // Make sure the user is allowed to approve
-            if (user.canApprove(courseRequest, course)) {
-              courseRequest.deny()
-              Redirect(routes.Courses.approvePage(course.id.get)).flashing("info" -> "Course request denied")
-            } else
-              Errors.forbidden
-          case _ =>
-            Errors.notFound
-          }
-      }
+        // Get the request
+        AddCourseRequest.findById(requestId) match {
+        case Some(courseRequest) =>
+          // Make sure the user is allowed to approve
+		  val courseId = courseRequest.courseId
+          if (user.hasCoursePermission(Course.findById(courseId).get, "addStudent")) {
+            courseRequest.deny()
+            Redirect(routes.Courses.approvePage(courseId)).flashing("info" -> "Course request denied")
+          } else
+            Errors.forbidden
+        case _ =>
+          Errors.notFound
+        }
   }
 
   /**
@@ -348,7 +337,7 @@ object Courses extends Controller {
     implicit request =>
       implicit user =>
         getCourse(id) { course =>
-          if (user.canRemoveFrom(course)) {
+          if (user.hasCoursePermission(course, "removeStudent")) {
             User.findById(studentId) match {
             case Some(student) =>
               student.unenroll(course)

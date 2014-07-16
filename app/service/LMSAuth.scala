@@ -2,7 +2,7 @@ package service
 
 import joshmonson.oauth.{OAuthKey, OAuthRequest}
 import play.api.mvc.{AnyContent, Request}
-import models.{Course, User}
+import models.{Course, User, SitePermissions}
 import anorm.NotAssigned
 import play.core.parsers.FormUrlEncodedParser
 
@@ -23,9 +23,11 @@ object LMSAuth {
       User.findByAuthInfo(id, 'ltiAuth) match {
       case Some(user) => user
       case _ =>
-//        User(NotAssigned, id, 'ltiAuth, "user" + id, userInfo._1, userInfo._3, User.roles.student, userInfo._4).save // This one load the picture from LTI
-        User(NotAssigned, id, 'ltiAuth, "user" + id, userInfo._1, userInfo._3, User.roles.student).save
+        val user = User(NotAssigned, id, 'ltiAuth, "user" + id, userInfo._1, userInfo._3).save
           .enroll(course, teacher = false)
+        SitePermissions.assignRole(user, 'student)
+        //TODO: add course permissions
+        user
       }
     } else
       getGuestAccount(course)
@@ -85,7 +87,10 @@ object LMSAuth {
     User.findByAuthInfo(course.id.get.toString, 'keyAuth) match {
     case Some(user) => user
     case _ =>
-      User(NotAssigned, course.id.get.toString, 'keyAuth, "guest", Some("Guest"), role = User.roles.guest).save.enroll(course, teacher = false)
+      val user = User(NotAssigned, course.id.get.toString, 'keyAuth, "guest", Some("Guest")).save.enroll(course, teacher = false)
+	  SitePermissions.assignRole(user, 'student)
+      //TODO: add course permissions
+	  user
     }
   }
 }

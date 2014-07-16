@@ -21,61 +21,53 @@ object Administration extends Controller {
   def admin = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        Authentication.enforceRole(User.roles.admin) {
+        Authentication.enforcePermission("admin") {
           Ok(views.html.admin.dashboard())
         }
   }
 
   /**
-   * Teacher request approval view
+   * Request approval view
    */
-  def teacherApprovalPage = Authentication.authenticatedAction() {
+  def approvalPage = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        Authentication.enforceRole(User.roles.admin) {
-          val requests = TeacherRequest.list
-          Ok(views.html.admin.teacherRequests(requests))
+        Authentication.enforcePermission("admin") {
+          val requests = SitePermissionRequest.list
+          Ok(views.html.admin.permissionRequests(requests))
         }
   }
 
   /**
-   * Helper function for finding the teacher request
-   * @param id The ID of the teacher request
-   * @param f The function to execute with the teacher request
+   * Approves a request
+   * @param id The ID of the request
    */
-  def getTeacherRequest(id: Long)(f: TeacherRequest => Result)(implicit request: Request[_]) = {
-    TeacherRequest.findById(id).map( tr => f(tr) ).getOrElse(Errors.notFound)
-  }
-
-  /**
-   * Approves a teacher request
-   * @param id The ID of the teacher request
-   */
-  def approveTeacher(id: Long) = Authentication.authenticatedAction() {
+  def approveRequest(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        Authentication.enforceRole(User.roles.admin) {
-          getTeacherRequest(id) {
-            teacherRequest =>
-              teacherRequest.approve()
-              Redirect(routes.Administration.teacherApprovalPage()).flashing("info" -> "Teacher request approved")
+        Authentication.enforcePermission("admin") {
+          SitePermissionRequest.findById(id) match {
+            case Some(req) => req.approve()
+              Redirect(routes.Administration.approvalPage()).flashing("info" -> (req.getDescription + " request approved"))
+            case None =>
+              Errors.notFound
           }
         }
   }
 
   /**
-   * Denies a teacher request
-   * @param id The ID of the teacher request
+   * Denies a request
+   * @param id The ID of the request
    */
-  def denyTeacher(id: Long) = Authentication.authenticatedAction() {
+  def denyRequest(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-
-        Authentication.enforceRole(User.roles.admin) {
-          getTeacherRequest(id) {
-            teacherRequest =>
-              teacherRequest.deny()
-              Redirect(routes.Administration.teacherApprovalPage()).flashing("info" -> "Teacher request denied")
+        Authentication.enforcePermission("admin") {
+          SitePermissionRequest.findById(id) match {
+            case Some(req) => req.deny()
+              Redirect(routes.Administration.approvalPage()).flashing("info" -> (req.getDescription + " request denied"))
+            case None =>
+                Errors.notFound
           }
         }
   }
@@ -86,7 +78,7 @@ object Administration extends Controller {
   def manageUsers = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        Authentication.enforceRole(User.roles.admin) {
+        Authentication.enforcePermission("admin") {
           Ok(views.html.admin.users(User.list))
         }
   }
@@ -97,7 +89,7 @@ object Administration extends Controller {
   def logins = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        Authentication.enforceRole(User.roles.admin) {
+        Authentication.enforcePermission("admin") {
           Ok(views.html.admin.logins(User.list))
         }
   }
@@ -115,20 +107,15 @@ object Administration extends Controller {
   }
 
   /**
-   * Sets the role of the user
+   * Give a permission to a user
    */
-  def setRole() = Authentication.authenticatedAction(parse.urlFormEncoded) {
+  def setPermission() = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
-        Authentication.enforceRole(User.roles.admin) {
-          val id = request.body("userId")(0).toLong
-          getUser(id) {
-            targetUser =>
-
-            // Set the user's role
-              val role = request.body("role")(0).toInt
-              targetUser.copy(role = role).save
-              Redirect(routes.Administration.manageUsers()).flashing("info" -> "User role update")
+        Authentication.enforcePermission("admin") {
+          getUser(request.body("userId")(0).toLong) { targetUser =>
+            targetUser.addSitePermission(request.body("permission")(0))
+            Redirect(routes.Administration.manageUsers()).flashing("info" -> "User permissions updated")
           }
         }
   }
@@ -140,18 +127,20 @@ object Administration extends Controller {
     //There may be a better way to control the way the user is redirected than with an Integer...
     implicit request =>
       implicit user =>
-        Authentication.enforceRole(User.roles.admin) {
+        Authentication.enforcePermission("admin") {
           val id = request.body("userId")(0).toLong
-          getUser(id) {
-            targetUser =>
+          getUser(id) { targetUser =>
 
             // Send a notification to the user
-              val message = request.body("message")(0)
-              targetUser.sendNotification(message)
-              if(currentPage == 0) {Redirect(routes.Administration.manageUsers()).flashing("info" -> "Notification sent to user")
-              } else if (currentPage == 1) {
-                Redirect(routes.Administration.manageCourses()).flashing("info" -> "Notification sent to user")
-                } else {Redirect(routes.Application.home).flashing("info" -> "Notification sent to user")}
+            val message = request.body("message")(0)
+            targetUser.sendNotification(message)
+            if(currentPage == 0) {
+              Redirect(routes.Administration.manageUsers()).flashing("info" -> "Notification sent to user")
+            } else if (currentPage == 1) {
+              Redirect(routes.Administration.manageCourses()).flashing("info" -> "Notification sent to user")
+            } else {
+              Redirect(routes.Application.home).flashing("info" -> "Notification sent to user")
+            }
           }
         }
   }
@@ -163,7 +152,7 @@ object Administration extends Controller {
   def delete(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        Authentication.enforceRole(User.roles.admin) {
+        Authentication.enforcePermission("admin") {
           getUser(id) {
             targetUser =>
 
@@ -180,7 +169,7 @@ object Administration extends Controller {
   def manageCourses = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        Authentication.enforceRole(User.roles.admin) {
+        Authentication.enforcePermission("admin") {
           val courses = Course.list
           Ok(views.html.admin.courses(courses))
         }
@@ -193,7 +182,7 @@ object Administration extends Controller {
   def editCourse(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
-        Authentication.enforceRole(User.roles.admin) {
+        Authentication.enforcePermission("admin") {
           Courses.getCourse(id) {
             course =>
 
@@ -212,18 +201,15 @@ object Administration extends Controller {
   def deleteCourse(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-         {
-          Courses.getCourse(id) {
-            course =>
-              if(user.role == User.roles.admin){
-                course.delete()
-                Redirect(routes.Administration.manageCourses()).flashing("info" -> "Course deleted")
-              } else if (user.role == User.roles.teacher){
-                course.delete()
-                Redirect(routes.Application.home).flashing("info" -> "Course deleted")
-              } else {Errors.forbidden}
-          }
-        }
+        Courses.getCourse(id) { course =>
+          if (user.hasCoursePermission(course, "deleteCourse")) {
+            course.delete()
+            Redirect(routes.Application.home).flashing("info" -> "Course deleted")
+          } else if(user.hasSitePermission("admin")) {
+            course.delete()
+            Redirect(routes.Administration.manageCourses()).flashing("info" -> "Course deleted")
+          } else Errors.forbidden
+      }
   }
 
   /**
@@ -232,7 +218,7 @@ object Administration extends Controller {
   def manageContent = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        Authentication.enforceRole(User.roles.admin) {
+        Authentication.enforcePermission("admin") {
           val content = Content.list
           Ok(views.html.admin.content(content))
         }
@@ -244,7 +230,7 @@ object Administration extends Controller {
   def batchUpdateContent = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
-        Authentication.enforceRole(User.roles.admin) {
+        Authentication.enforcePermission("admin") {
           val redirect = Redirect(routes.Administration.manageContent())
           try {
             val params = request.body.mapValues(_(0))
@@ -270,7 +256,7 @@ object Administration extends Controller {
   def homePageContent = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        Authentication.enforceRole(User.roles.admin) {
+        Authentication.enforcePermission("admin") {
           Ok(views.html.admin.homePageContent())
         }
   }
@@ -281,7 +267,7 @@ object Administration extends Controller {
   def createHomePageContent = Authentication.authenticatedAction(parse.multipartFormData) {
     implicit request =>
       implicit user =>
-        Authentication.enforceRole(User.roles.admin) {
+        Authentication.enforcePermission("admin") {
           val redirect = Redirect(routes.Administration.homePageContent())
           try {
             val data = request.body.dataParts.mapValues(_(0))
@@ -323,7 +309,7 @@ object Administration extends Controller {
   def toggleHomePageContent(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        Authentication.enforceRole(User.roles.admin) {
+        Authentication.enforcePermission("admin") {
 
           HomePageContent.findById(id).map {
             homePageContent =>
@@ -345,7 +331,7 @@ object Administration extends Controller {
   def deleteHomePageContent(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        Authentication.enforceRole(User.roles.admin) {
+        Authentication.enforcePermission("admin") {
 
           HomePageContent.findById(id).map {
             homePageContent =>
@@ -363,7 +349,7 @@ object Administration extends Controller {
   def feedback = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        Authentication.enforceRole(User.roles.admin) {
+        Authentication.enforcePermission("admin") {
           Ok(views.html.admin.feedback(Feedback.list))
         }
   }
@@ -375,7 +361,7 @@ object Administration extends Controller {
   def deleteFeedback(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        Authentication.enforceRole(User.roles.admin) {
+        Authentication.enforcePermission("admin") {
           Feedback.findById(id).foreach(_.delete())
           Redirect(routes.Administration.feedback()).flashing("info" -> "Feedback deleted")
         }
@@ -387,7 +373,7 @@ object Administration extends Controller {
   def siteSettings = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        Authentication.enforceRole(User.roles.admin) {
+        Authentication.enforcePermission("admin") {
           Ok(views.html.admin.settings(Setting.list))
         }
   }
@@ -398,7 +384,7 @@ object Administration extends Controller {
   def saveSiteSettings = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
-        Authentication.enforceRole(User.roles.admin) {
+        Authentication.enforcePermission("admin") {
           request.body.mapValues(_(0)).foreach(data => Setting.findByName(data._1).get.copy(value = data._2).save)
           request.body.mapValues(_(0)).foreach(data => Logger.debug(data._1 + ": " + data._2))
           Redirect(routes.Administration.siteSettings()).flashing("info" -> "Settings updated")
@@ -412,7 +398,7 @@ object Administration extends Controller {
   def proxy(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        Authentication.enforceRole(User.roles.admin) {
+        Authentication.enforcePermission("admin") {
 
           User.findById(id) match {
           case Some(proxyUser) =>

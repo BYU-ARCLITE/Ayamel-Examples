@@ -11,19 +11,19 @@ object Fixtures {
   object data {
     val passwordHash = HashTools.sha256Base64("test123")
     val users = List(
-      (passwordHash, 'password, "student1", Some("Student 1"), Some("s1@ayamel.byu.edu"), User.roles.student),
-      (passwordHash, 'password, "student2", Some("Student 2"), Some("s2@ayamel.byu.edu"), User.roles.student),
-      (passwordHash, 'password, "student3", Some("Student 3"), Some("s3@ayamel.byu.edu"), User.roles.student),
-      (passwordHash, 'password, "student4", Some("Student 4"), Some("s4@ayamel.byu.edu"), User.roles.student),
-      (passwordHash, 'password, "student5", Some("Student 5"), Some("s5@ayamel.byu.edu"), User.roles.student),
-      (passwordHash, 'password, "student6", Some("Student 6"), Some("s6@ayamel.byu.edu"), User.roles.student),
-      (passwordHash, 'password, "teacher1", Some("Teacher 1"), Some("t1@ayamel.byu.edu"), User.roles.teacher),
-      (passwordHash, 'password, "teacher2", Some("Teacher 2"), Some("t2@ayamel.byu.edu"), User.roles.teacher),
-      (passwordHash, 'password, "teacher3", Some("Teacher 3"), Some("t3@ayamel.byu.edu"), User.roles.teacher),
-      (passwordHash, 'password, "teacher4", Some("Teacher 4"), Some("t4@ayamel.byu.edu"), User.roles.teacher),
-      (passwordHash, 'password, "teacher5", Some("Teacher 5"), Some("t5@ayamel.byu.edu"), User.roles.teacher),
-      (passwordHash, 'password, "teacher6", Some("Teacher 6"), Some("t6@ayamel.byu.edu"), User.roles.teacher),
-      (passwordHash, 'password, "admin", Some("Admin"), Some("admin@ayamel.byu.edu"), User.roles.admin)
+      (passwordHash, 'password, "student1", Some("Student 1"), Some("s1@ayamel.byu.edu"), 'student),
+      (passwordHash, 'password, "student2", Some("Student 2"), Some("s2@ayamel.byu.edu"), 'student),
+      (passwordHash, 'password, "student3", Some("Student 3"), Some("s3@ayamel.byu.edu"), 'student),
+      (passwordHash, 'password, "student4", Some("Student 4"), Some("s4@ayamel.byu.edu"), 'student),
+      (passwordHash, 'password, "student5", Some("Student 5"), Some("s5@ayamel.byu.edu"), 'student),
+      (passwordHash, 'password, "student6", Some("Student 6"), Some("s6@ayamel.byu.edu"), 'student),
+      (passwordHash, 'password, "teacher1", Some("Teacher 1"), Some("t1@ayamel.byu.edu"), 'teacher),
+      (passwordHash, 'password, "teacher2", Some("Teacher 2"), Some("t2@ayamel.byu.edu"), 'teacher),
+      (passwordHash, 'password, "teacher3", Some("Teacher 3"), Some("t3@ayamel.byu.edu"), 'teacher),
+      (passwordHash, 'password, "teacher4", Some("Teacher 4"), Some("t4@ayamel.byu.edu"), 'teacher),
+      (passwordHash, 'password, "teacher5", Some("Teacher 5"), Some("t5@ayamel.byu.edu"), 'teacher),
+      (passwordHash, 'password, "teacher6", Some("Teacher 6"), Some("t6@ayamel.byu.edu"), 'teacher),
+      (passwordHash, 'password, "admin", Some("Admin"), Some("admin@ayamel.byu.edu"), 'admin)
     )
 
     val content = List(

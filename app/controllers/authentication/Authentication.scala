@@ -1,13 +1,13 @@
 package controllers.authentication
 
 import play.api.mvc._
-import models.User
+import models.{User, SitePermissions}
 import anorm.NotAssigned
 import controllers.Errors
 import service.TimeTools
 
 /**
- * This controller does logging out and has a bunch of helpers for dealing with authentication and roles.
+ * This controller does logging out and has a bunch of helpers for dealing with authentication and permissions.
  */
 object Authentication extends Controller {
 
@@ -74,9 +74,11 @@ object Authentication extends Controller {
   def getAuthenticatedUser(username: String, authScheme: Symbol, name: Option[String] = None, email: Option[String] = None): User = {
     // Check if the user is already created
     val user = User.findByAuthInfo(username, authScheme)
-    user.getOrElse(
-      User(NotAssigned, username, authScheme, username, name, email, User.roles.student).save
-    )
+    user.getOrElse {
+      val user = User(NotAssigned, username, authScheme, username, name, email).save
+	  SitePermissions.assignRole(user, 'student)
+	  user
+    }
   }
 
 
@@ -88,15 +90,8 @@ object Authentication extends Controller {
   // ==========================
 
 
-  def enforceRole(role: Int)(result: Result)(implicit request: Request[_], user: User): Result = {
-    if (user.role == role)
-      result
-    else
-      Errors.forbidden
-  }
-
-  def enforceNotRole(role: Int)(result: Result)(implicit request: Request[_], user: User): Result = {
-    if (user.role != role)
+  def enforcePermission(permission: String)(result: Result)(implicit request: Request[_], user: User): Result = {
+    if (user.hasSitePermission(permission))
       result
     else
       Errors.forbidden

@@ -20,7 +20,7 @@ import service.{EmailTools, TimeTools}
  * @param role The permissions of the user
  */
 case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: String, name: Option[String] = None,
-                email: Option[String] = None, role: Int = 0, picture: Option[String] = None, accountLinkId: Long = -1,
+                email: Option[String] = None, picture: Option[String] = None, accountLinkId: Long = -1,
                 created: String = TimeTools.now(), lastLogin: String = TimeTools.now())
   extends SQLSavable with SQLDeletable {
 
@@ -31,12 +31,12 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
   def save: User = {
     if (id.isDefined) {
       update(User.tableName, 'id -> id, 'authId -> authId, 'authScheme -> authScheme.name, 'username -> username,
-        'name -> name.getOrElse(""), 'email -> email.getOrElse(""), 'role -> role, 'picture -> picture,
+        'name -> name.getOrElse(""), 'email -> email.getOrElse(""), 'picture -> picture,
         'accountLinkId -> accountLinkId, 'created -> created, 'lastLogin -> lastLogin)
       this
     } else {
       val id = insert(User.tableName, 'authId -> authId, 'authScheme -> authScheme.name, 'username -> username,
-        'name -> name.getOrElse(""), 'email -> email.getOrElse(""), 'role -> role, 'picture -> picture,
+        'name -> name.getOrElse(""), 'email -> email.getOrElse(""), 'picture -> picture,
         'accountLinkId -> accountLinkId, 'created -> created, 'lastLogin -> lastLogin)
       this.copy(id)
     }
@@ -65,8 +65,8 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
     // Delete add course requests
     AddCourseRequest.listByUser(this).foreach(_.delete())
 
-    // Delete teacher request
-    TeacherRequest.findByUser(this).foreach(_.delete())
+    // Delete permission requests
+    SitePermissionRequest.listByUser(this).foreach(_.delete())
 
     // Delete all linked accounts
     getAccountLink.map { accountLink =>
@@ -134,7 +134,7 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
    * @param reason The reason for the request
    * @return The teacher request
    */
-  def requestTeacherStatus(reason: String): TeacherRequest = TeacherRequest(NotAssigned, this.id.get, reason).save
+  def requestPermission(permission: String, reason: String): SitePermissionRequest = SitePermissionRequest(NotAssigned, this.id.get, permission, reason).save
 
   /**
    * Sends a notification to this user
@@ -179,11 +179,16 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
         membership.copy(userId = thisid).save
     }
 
-    // Merge teacher requests
-    if (TeacherRequest.findByUser(this).isDefined)
-      TeacherRequest.findByUser(user).foreach { _.delete() }
-    else
-      TeacherRequest.findByUser(user).foreach { _.copy(userId = id.get) }
+    // Merge permission requests
+    val otherRequests = SitePermissionRequest.listByUser(user)
+    val newRequests = (otherRequests.map(_.copy(userId = thisid)).toSet
+      -- SitePermissionRequest.listByUser(this))
+      
+    // Merge permissions
+    user.getPermissions.foreach { p => addSitePermission(p) }
+
+    otherRequests.foreach { _.delete() }
+    newRequests.foreach { _.save }
   }
 
   /**
@@ -194,7 +199,6 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
   //They will only fail if data is corrupted, and it's not immediately clear
   //what should be done in those cases
   def merge(user: User) {
-    val newRole = Math.max(role, user.role)
     val thisid = this.id.get
 
     /*
@@ -209,20 +213,19 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
         val accountLink = AccountLink(NotAssigned, Set(thisid, user.id.get), thisid).save
 
         val linkId = accountLink.id.get
-        this.copy(role = newRole, accountLinkId = linkId).save
-        user.copy(role = newRole, accountLinkId = linkId).save
+        this.copy(accountLinkId = linkId).save
+        user.copy(accountLinkId = linkId).save
 
         consolidateOwnership(user)
       } else {
         //Case 2: Make this the primary of the existing account link
         val accountLink = AccountLink.findById(user.accountLinkId).get
 
-        accountLink.getUsers foreach { user => user.copy(role = newRole).save }
         accountLink.addUser(this)
 
         consolidateOwnership(accountLink.getPrimaryUser.get)
 
-        this.copy(role = newRole, accountLinkId = accountLink.id.get).save
+        this.copy(accountLinkId = accountLink.id.get).save
         accountLink.copy(primaryAccount = thisid).save
       }
     } else {
@@ -232,7 +235,6 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
         val accountLink = AccountLink.findById(this.accountLinkId).get
 
         accountLink.addUser(user)
-        accountLink.getUsers foreach { user => user.copy(role = newRole).save }
 
         consolidateOwnership(user)
       } else {
@@ -243,7 +245,7 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
         val linkId = newLink.id.get
 
         consolidateOwnership(userLink.getPrimaryUser.get)
-        newLink.getUsers foreach { user => user.copy(role = newRole, accountLinkId = linkId).save }
+        newLink.getUsers foreach { user => user.copy(accountLinkId = linkId).save }
         userLink.delete()
       }
     }
@@ -421,37 +423,16 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
   def getScorings(content: Content) = cache.getScorings.filter(_.contentId == content.id.get)
 
   def getWordList = cache.getWordList
+  
+  def getPermissions = SitePermissions.listByUser(this)
+  
+  def getCoursePermissions(course: Course) = course.getUserPermissions(this)
 
-  // =======================
-  //   Permission checkers
-  // =======================
+  def hasSitePermission(permission: String): Boolean = 
+    SitePermissions.userHasPermission(this, permission) || SitePermissions.userHasPermission(this, "admin")
 
-  /**
-   * Check's the user's permission level to see if he/she can create a course.
-   * @return
-   */
-//  def canCreateCourse: Boolean = role == User.roles.teacher || role == User.roles.admin
-  def canCreateCourse: Boolean = role != User.roles.guest
-
-  /**
-   * Admins and non-guest members can add content to a course
-   * @param course The course to check against
-   * @return Can or cannot add content
-   */
-  def canAddContentTo(course: Course): Boolean =
-    role == User.roles.admin || (role != User.roles.guest && course.getMembers.contains(this))
-
-  def canView(course: Course): Boolean =
-    role == User.roles.admin || course.getMembers.contains(this)
-
-  def canApprove(request: AddCourseRequest, course: Course): Boolean =
-    role == User.roles.admin || (canEdit(course) && request.courseId == course.id.get)
-
-  def canRemoveFrom(course: Course): Boolean =
-    role == User.roles.admin || canEdit(course)
-
-  def canEdit(course: Course): Boolean =
-    role == User.roles.admin || course.getTeachers.contains(this)
+  def hasCoursePermission(course: Course, permission: String): Boolean = 
+    course.userHasPermission(this, permission) || SitePermissions.userHasPermission(this, "admin")
 
 
   //       _____      _   _
@@ -464,20 +445,16 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
   // |______|______|______|______|______|______|______|______|______|
   //
 
+  def addSitePermission(permission: String) = 
+    SitePermissions.addUserPermission(this, permission)
 
+  def addCoursePermission(course: Course, permission: String) = 
+    course.addUserPermission(this, permission)
 
 }
 
 object User extends SQLSelectable[User] {
   val tableName = "userAccount"
-
-  // User roles
-  object roles {
-    val guest = 0
-    val student = 1
-    val teacher = 2
-    val admin = 3
-  }
 
   val simple = {
     get[Pk[Long]](tableName + ".id") ~
@@ -486,15 +463,14 @@ object User extends SQLSelectable[User] {
       get[String](tableName + ".username") ~
       get[String](tableName + ".name") ~
       get[String](tableName + ".email") ~
-      get[Int](tableName + ".role") ~
       get[Option[String]](tableName + ".picture") ~
       get[Long](tableName + ".accountLinkId") ~
       get[String](tableName + ".created") ~
       get[String](tableName + ".lastLogin") map {
-      case id ~ authId ~ authScheme ~ username ~ name ~ email ~ role ~ picture ~ accountLinkId ~ created ~ lastLogin => {
+      case id ~ authId ~ authScheme ~ username ~ name ~ email ~ picture ~ accountLinkId ~ created ~ lastLogin => {
         val _name = if (name.isEmpty) None else Some(name)
         val _email = if (email.isEmpty) None else Some(email)
-        User(id, authId, Symbol(authScheme), username, _name, _email, role, picture, accountLinkId, created, lastLogin)
+        User(id, authId, Symbol(authScheme), username, _name, _email, picture, accountLinkId, created, lastLogin)
       }
     }
   }
@@ -545,6 +521,9 @@ object User extends SQLSelectable[User] {
    * @param data Fixture data
    * @return The user
    */
-  def fromFixture(data: (String, Symbol, String, Option[String], Option[String], Int)): User =
-    User(NotAssigned, data._1, data._2, data._3, data._4, data._5, data._6)
+  def fromFixture(data: (String, Symbol, String, Option[String], Option[String], Symbol)): User = {
+    val user = User(NotAssigned, data._1, data._2, data._3, data._4, data._5)
+    SitePermissions.assignRole(user, data._6)
+    user
+  }
 }

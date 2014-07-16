@@ -177,6 +177,10 @@ case class Course(id: Pk[Long], name: String, startDate: String, endDate: String
    * @return The add course request list
    */
   def getRequests: List[AddCourseRequest] = AddCourseRequest.listByCourse(this)
+  
+  def getUserPermissions(user: User): List[String] = CoursePermissions.listByUser(this, user)
+  def addUserPermission(user: User, permission: String) = CoursePermissions.addUserPermission(this, user, permission)
+  def userHasPermission(user: User, permission: String) = CoursePermissions.userHasPermission(this, user, permission)
 }
 
 object Course extends SQLSelectable[Course] {

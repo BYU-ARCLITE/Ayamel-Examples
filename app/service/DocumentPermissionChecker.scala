@@ -71,19 +71,7 @@ class DocumentPermissionChecker(user: User, content: Content, course: Option[Cou
    * Checks if the user is allowed to enable this particular resource
    */
   def canEnable(resource: JsObject): Boolean = {
-    personalFilter(resource) || {
-      course match { // Are we in the context of a course?
-        // Yes. Is the user allowed to edit the course?
-        case Some(_) =>
-          if (user canEdit course.get) // Yes. Is it a course document
-            courseFilter(resource) || (globalFilter(resource) && enabled(resource, ""))
-          else // No. Allow it if the user can edit the content and it's global (owner or admin)
-            globalFilter(resource) && (content isEditableBy user)
-        // No. Allow it if the user can edit the content and it's global (owner or admin)
-        case None =>
-          globalFilter(resource) && (content isEditableBy user)
-      }
-    }
+    personalFilter(resource) || content.isEditableBy(user)
   }
 
   /**
@@ -98,7 +86,7 @@ class DocumentPermissionChecker(user: User, content: Content, course: Option[Cou
       else { // No. Are we in the context of a course
         course match {
           // Yes. Allow it if the user is a teacher and the doc is a course doc
-          case Some(_) => courseFilter(resource) && (user canEdit course.get)
+          case Some(_) => courseFilter(resource)
           // No. Then don't allow it
           case None => false
         }

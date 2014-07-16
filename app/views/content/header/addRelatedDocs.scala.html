@@ -5,7 +5,7 @@
     <script type="text/javascript">
         var courseId = @course.map(_.id.get).getOrElse(0);
         var owner = @content.isEditableBy(user);
-        var teacher = @course.exists(c => user.canEdit(c));
+        var teacher = @course.exists(c => user.hasCoursePermission(c, "teacher"));
         var userId = @user.id.get;
     </script>
 

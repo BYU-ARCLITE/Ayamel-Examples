@@ -1,6 +1,6 @@
 @(user: User, course: Course)(implicit request: RequestHeader)
 
-@if(user.canEdit(course)) {
+@if(user.hasCoursePermission(course, "editCourse")) {
     <div id="editCourseModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="editCourseModalLabel" aria-hidden="true">
         <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>

@@ -68,7 +68,7 @@
                                         <a href="@routes.Courses.view(course.id.get)"><i class="icon-book"></i> @course.name</a>
                                     </div>
                                 }
-                                @if(user.canCreateCourse) {
+                                @if(user.hasSitePermission("createCourse")) {
                                     <div class="dropdownItem">
                                         <a href="@routes.Courses.createPage()"><i class="icon-plus"></i> Create a new course</a>
                                     </div>
@@ -107,7 +107,7 @@
                     content: content,
                     userId: "@user.id.get",
                     owner: @content.isEditableBy(user),
-                    teacher: @course.map(c => user.canEdit(c)).getOrElse(false),
+                    teacher: @course.map(c => user.hasCoursePermission(c, "teacher")).getOrElse(false),
                     courseId: @course.map(_.id.get).getOrElse(0),
                     holder: document.getElementById("contentHolder"),
                     annotate: true,

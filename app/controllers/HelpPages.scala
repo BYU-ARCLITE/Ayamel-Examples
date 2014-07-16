@@ -40,7 +40,7 @@ object HelpPages extends Controller {
   def edit(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        Authentication.enforceRole(User.roles.admin) {
+        Authentication.enforcePermission("admin") {
 
           val helpPage = HelpPage.findById(id)
           Ok(views.html.help.edit(helpPage))
@@ -54,7 +54,7 @@ object HelpPages extends Controller {
   def delete(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        Authentication.enforceRole(User.roles.admin) {
+        Authentication.enforcePermission("admin") {
 
           HelpPage.findById(id).map(_.delete())
           Redirect(routes.HelpPages.tableOfContents()).flashing("info" -> "Help page deleted.")
@@ -68,7 +68,7 @@ object HelpPages extends Controller {
   def save(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
-        Authentication.enforceRole(User.roles.admin) {
+        Authentication.enforcePermission("admin") {
 
           val helpPage = HelpPage.findById(id)
           val title = request.body("title")(0)

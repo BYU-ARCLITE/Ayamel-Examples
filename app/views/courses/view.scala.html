@@ -24,17 +24,23 @@
     <div class="courseBackground">
         <div class="courseTitle">
             <h1>@course.name</h1>
-            @if(user canEdit course) {
-                <div class="btn-group">
+            <div class="btn-group">
+                @if(user.hasCoursePermission(course, "teacher")) {
                     <a href="#lmsModal" role="button" class="btn" data-toggle="modal"><i class="icon-book"></i> Add to an LMS</a>
                     <a href="#studentInfoModal" role="button" class="btn" data-toggle="modal"><i class="icon-user"></i> Course members</a>
-                    <a href="#joinLinkModal" role="button" class="btn" data-toggle="modal"><i class="icon-link"></i> Join Url</a>
-                </div>
-                <a href="#editCourseModal" role="button" class="btn btn-yellow" data-toggle="modal"><i class="icon-pencil"></i> Edit</a>
-                <a href="#deleteCourseModal" role="button" class="btn btn-magenta deleteCourse" data-toggle="modal" data-id="@course.id.get"><i class="icon-trash"></i> Delete</a>
-                @if(!course.getRequests.isEmpty) {
-                    <a href="@routes.Courses.approvePage(course.id.get)" class="btn btn-blue"><i class="icon-check"></i> Student Requests</a>
                 }
+                @if(user.hasCoursePermission(course, "addStudent")) {
+                    <a href="#joinLinkModal" role="button" class="btn" data-toggle="modal"><i class="icon-link"></i> Join Url</a>
+                }
+            </div>
+            @if(user.hasCoursePermission(course, "editCourse")) {
+                <a href="#editCourseModal" role="button" class="btn btn-yellow" data-toggle="modal"><i class="icon-pencil"></i> Edit</a>
+            }
+            @if(user.hasCoursePermission(course, "deleteCourse")) {
+                <a href="#deleteCourseModal" role="button" class="btn btn-magenta deleteCourse" data-toggle="modal" data-id="@course.id.get"><i class="icon-trash"></i> Delete</a>
+            }
+            @if(user.hasCoursePermission(course, "addStudent") && !course.getRequests.isEmpty) {
+                <a href="@routes.Courses.approvePage(course.id.get)" class="btn btn-blue"><i class="icon-check"></i> Student Requests</a>
             }
         </div>
 
@@ -51,21 +57,18 @@
     <div class="padded">
         <div class="row-fluid">
             <div class="span8">
-                @if(user.role != User.roles.guest) {
+                @if(user.hasCoursePermission(course, "addContent")) {
                     <div class="pull-right">
-                        @if(user canEdit course) {
-                            <div class="btn-group">
-                                <button type="button" class="btn btn-inverse dropdown-toggle" data-toggle="dropdown">
-                                    <i class="icon-plus"></i> Add content <span class="caret"></span>
-                                </button>
-                                <ul class="dropdown-menu">
-                                    <li><a id="browseContent" href="#">Browse</a></li>
-                                    <li><a id="addByLabel" href="#">Add by label</a></li>
-                                </ul>
-                            </div>
-                        } else {
-                            <a href="#addContentModal" role="button" class="btn btn-inverse" data-toggle="modal"><i class="icon-plus"></i> Add my content</a>
-                        }
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-inverse dropdown-toggle" data-toggle="dropdown">
+                                <i class="icon-plus"></i> Add content <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a id="browseContent" href="#">Browse</a></li>
+                                <li><a id="addByLabel" href="#">Add by label</a></li>
+                            </ul>
+                        </div>
+                        <a href="#addContentModal" role="button" class="btn btn-inverse" data-toggle="modal"><i class="icon-plus"></i> Add my content</a>
                     </div>
                 }
                 <div id="courseContent"></div>

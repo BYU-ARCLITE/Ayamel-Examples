@@ -135,55 +135,39 @@ object Users extends Controller {
   }
 
   /**
-   * The teacher request page.
+   * The permission request page.
    */
-  def teacherRequestPage = Authentication.authenticatedAction() {
+  def permissionRequestPage = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-
-      // Check that the user is a student (not guest, teacher, or admin)
-        Authentication.enforceRole(User.roles.student) {
-
-          // Check to see if the user has already submitted a request
-          if(TeacherRequest.findByUser(user).isDefined)
-            Ok(views.html.users.teacherRequest.status())
-          else
-            Ok(views.html.users.teacherRequest.requestForm())
-
+        Authentication.enforcePermission("requestPermission") {
+          Ok(views.html.users.permissionRequest.requestForm())
         }
   }
 
   /**
-   * Creates and submits a teacher request for the active user
+   * Creates and submits a permission request for the active user
    */
-  def submitTeacherRequest = Authentication.authenticatedAction(parse.urlFormEncoded) {
+  def submitPermissionRequest = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
+        Authentication.enforcePermission("requestPermission") {
+          val permission = request.body("permission")(0)
+          val reason = request.body("reason")(0)
+          val desc = SitePermissions.getDescription(permission)
 
-      // Check that the user is a student (not guest, teacher, or admin)
-        Authentication.enforceRole(User.roles.student) {
-
-          // Check to see if the user has already submitted a request
-          val teacherRequest = TeacherRequest.findByUser(user)
-          if (teacherRequest.isEmpty) {
-
-            // Collect the information
-            val name = request.body("name")(0)
-            val email = request.body("email")(0)
-            val reason = request.body("reason")(0)
-
-            // Try to update user information
-            var updatedUser = user
-            if (user.name.isEmpty)
-              updatedUser = user.copy(name = Some(name)).save
-            if (user.email.isEmpty)
-              updatedUser = user.copy(email = Some(email)).save
-
-            // Create the request
-            updatedUser.requestTeacherStatus(reason)
-            Redirect(routes.Application.home()).flashing("success" -> "Your teacher request has been submitted.")
-          } else
-            Ok(views.html.users.teacherRequest.status())
+          // Check to see if the user already has the requested permission
+          // or has already submitted a request
+          if (user.hasSitePermission(permission)) {
+            val msg = "You already have " + desc + " permission"
+            Ok(views.html.users.permissionRequest.requestForm()).flashing("info" -> msg)
+          } else {
+            if (SitePermissionRequest.findByUser(user, permission).isEmpty) {
+              user.requestPermission(permission, reason)
+            }
+            val msg = "Your request for " + desc + " permission has been submitted."
+            Redirect(routes.Application.home()).flashing("success" -> msg)
+          }
         }
   }
 }

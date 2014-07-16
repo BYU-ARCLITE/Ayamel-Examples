@@ -102,7 +102,7 @@
                                 }
                             </ul>
 
-                            @if(user.canCreateCourse) {
+                            @if(user.hasSitePermission("createCourse")) {
                                 <a href="@routes.Courses.create()" class="btn btn-magenta"><i class="icon-group"></i> Create a new course</a>
                             }
                         </div>

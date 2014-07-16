@@ -9,17 +9,13 @@
         <div style="position: relative">
             <ul class="nav nav-pills">
                 <li><a href="#personalSettings" data-toggle="pill">Personal</a></li>
-                @if(course.isDefined && user.canEdit(course.get)) {
-                    <li><a href="#courseSettings" data-toggle="pill">Course</a></li>
-                }
+                <li><a href="#courseSettings" data-toggle="pill">Course</a></li>
             </ul>
         </div>
         <div class="clearfix"></div>
         <div class="tab-content">
             <div class="tab-pane" id="personalSettings"></div>
-            @if(course.isDefined && user.canEdit(course.get)) {
-                <div class="tab-pane" id="courseSettings"></div>
-            }
+            <div class="tab-pane" id="courseSettings"></div>
         </div>
     </div>
     <div class="modal-footer">
@@ -37,7 +33,7 @@
         var owner = @content.isEditableBy(user);
         var userId = @user.id.get;
         var courseId = @course.map(_.id.get).getOrElse(0);
-        var teacher = @course.exists(c => user.canEdit(course.get));
+        var teacher = @course.exists(c => user.hasCoursePermission(c, "teacher"));
         ResourceLibrary.load("@content.resourceId", function(resource) {
             new ContentSettings({
                 content: content,

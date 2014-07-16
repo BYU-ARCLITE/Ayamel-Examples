@@ -34,7 +34,7 @@
                 <th>Username</th>
                 <th>Name</th>
                 <th>Email</th>
-                <th>Role</th>
+                <th>Permissions</th>
                 <th>Merged?</th>
                 <th>Actions</th>
             </tr>
@@ -46,21 +46,7 @@
                     <td>@optStr(_user.name)</td>
                     <td>@optStr(_user.email)</td>
                     <td>
-                        @if(_user.role == User.roles.guest) {
-                            Guest
-                        }
-                        @if(_user.role == User.roles.student) {
-                            Student
-                        }
-                        @if(_user.role == User.roles.teacher) {
-                            Teacher
-                        }
-                        @if(_user.role == User.roles.admin) {
-                            Admin
-                        }
-                        @if(user != _user) {
-                            <a href="#roleModal" role="button" class="btn btn-small btn-blue pull-right setRole" data-toggle="modal" data-role="@_user.role" data-id="@_user.id.get">Set</a>
-                        }
+                        <a href="#permModal" role="button" class="btn btn-small btn-blue pull-right" data-toggle="modal" data-id="@_user.id.get">Set</a>
                     </td>
                     <td>
                         @if(_user.accountLinkId == -1) {
@@ -82,27 +68,17 @@
 
     </div>
 
-    <div id="roleModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="roleModalLabel" aria-hidden="true">
+    <div id="permModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="permModalLabel" aria-hidden="true">
         <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-            <h3 id="roleModalLabel">Set user role</h3>
+            <h3 id="permModalLabel">Set user permissions</h3>
         </div>
         <div class="modal-body">
-            <label for="role">Set the role for user #<span id="roleUserIdDisplay"></span>:</label>
-            <form id="userRoleForm" method="post" action="@routes.Administration.setRole()">
-                <select id="role" name="role">
-                    <option value="@User.roles.guest">Guest</option>
-                    <option value="@User.roles.student">Student</option>
-                    <option value="@User.roles.teacher">Teacher</option>
-                    <option value="@User.roles.admin">Admin</option>
-                </select>
-                <input type="hidden" name="userId" id="roleUserId" value="">
-                <input type="submit" style="position: absolute; left: -9999px; width: 1px; height: 1px;"/>
-            </form>
+            <!-- Build permissions form -->
         </div>
         <div class="modal-footer">
             <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
-            <button class="btn btn-blue formSubmitter" data-target="#userRoleForm">Save changes</button>
+            <button class="btn btn-blue formSubmitter" data-target="#userPermForm">Save changes</button>
         </div>
     </div>
 
@@ -112,7 +88,7 @@
             <h3 id="notificationModalLabel">Send a notification</h3>
         </div>
         <div class="modal-body">
-            <label for="role">Send a notification to user #<span id="noteUserIdDisplay"></span>:</label>
+            <label>Send a notification to user #<span id="noteUserIdDisplay"></span>:</label>
 
             <form id="notificationForm" class="form-horizontal" method="post" action="@routes.Administration.sendNotification(0)">
                 <div class="control-group">
@@ -153,12 +129,12 @@
                 $(this.dataset["target"]).submit();
             });
 
-            $(".setRole").click(function() {
+            /*$(".setRole").click(function() {
                 var id = this.dataset["id"];
                 $("#roleUserId").val(id);
                 $("#roleUserIdDisplay").text(id);
                 $("#role").val(this.dataset["role"]);
-            });
+            });*/
 
             $(".sendNote").click(function() {
                 var id = this.dataset["id"];

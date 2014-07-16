@@ -1,20 +1,20 @@
 @()(implicit request: RequestHeader, user: User)
 
-@main("Ayamel - Teacher Request Form", Local(CSS("stylesheets/teacher.css"))) {
+@main("Ayamel - Permission Request Form", Local(CSS("stylesheets/permission.css"))) {
 
     <div class="teacherRequestBackground">
     </div>
 
     <div class="padded">
 
-        <h1>Teacher Request Form</h1>
+        <h1>Permission Request Form</h1>
 
         <p>
             Please fill out and submit the following form. Your request will be evaluated and, if approved, you will be
-            granted teacher status. As a teacher more content will be available to you.
+            notified of the additional permissions.
         </p>
 
-        <form class="form-horizontal" method="post" action="@routes.Users.submitTeacherRequest()">
+        <form class="form-horizontal" method="post" action="@routes.Users.submitPermissionRequest()">
             <div class="control-group">
                 <label class="control-label" for="name">Name</label>
                 <div class="controls">
@@ -38,7 +38,17 @@
                 </div>
             </div>
             <div class="control-group">
-                <label class="control-label" for="reason">Reason for needing to be a teacher</label>
+                <label class="control-label" for="permission">Permission</label>
+                <div class="controls">
+                    <select name="permission" id="permission">
+                      @SitePermissions.permissionList.map { p =>
+                        <option value="@p">@SitePermissions.getDescription(p)</option>
+                      }
+                    </select>
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="reason">Reason for needing the permission</label>
                 <div class="controls">
                     <textarea name="reason" id="reason"></textarea>
                 </div>

@@ -1,0 +1,43 @@
+@(requests: List[SitePermissionRequest])(implicit request: RequestHeader, user: User)
+
+@main("Ayamel - Permission Request Approval", Local(CSS("stylesheets/permission.css"))) {
+
+    <div class="permissionRequestBackground">
+    </div>
+
+    <div class="padded">
+
+        @views.html.admin.navbar("permissionRequests")
+
+        <h1>Permission Request Approval</h1>
+
+        <table class="table table-bordered table-striped">
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Permission</th>
+                <th>Reason</th>
+                <th>Actions</th>
+            </tr>
+            @{ /* TODO: Fix, if user is empty then notify a system admin */ }
+            @for(permissionRequest <- requests) {
+                @defining(permissionRequest.getUser){ user =>
+                    @if(!user.isEmpty) {
+                        <tr>
+                            <td>@user.get.displayName</td>
+                            <td>@user.get.email.getOrElse("None")</td>
+                            <td>@permissionRequest.getDescription</td>
+                            <td>@permissionRequest.reason</td>
+                            <td>
+                                <a href="@routes.Administration.approveRequest(permissionRequest.id.get)" class="btn btn-blue">Approve</a>
+                                <a href="@routes.Administration.denyRequest(permissionRequest.id.get)" class="btn btn-magenta">Deny</a>
+                            </td>
+                        </tr>
+                    }
+                }
+            }
+        </table>
+
+    </div>
+
+}
