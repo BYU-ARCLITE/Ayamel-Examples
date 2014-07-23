@@ -14,8 +14,8 @@ var PopupLabelBrowser = (function() {
             </div>\
             <div class="modal-body">\
                 <ul class="nav nav-pills">\
-                    <li><a href="#popupLabelBrowserMine" data-load="mine">My Content</a></li>\
-                    <li><a href="#popupLabelBrowserPublic" data-load="public">Public</a></li>\
+                    <li><a href="#popupLabelBrowserMine" name="#popupLabelBrowserMine" data-load="mine">My Content</a></li>\
+                    <li><a href="#popupLabelBrowserPublic" name="#popupLabelBrowserPublic" data-load="public">Public</a></li>\
                 </ul>\
                 <div class="tab-content">\
                     <div class="tab-pane" id="popupLabelBrowserMine"></div>\
@@ -32,7 +32,7 @@ var PopupLabelBrowser = (function() {
 
     var itemTemplate =
         '<div class="contentItem tableFormat">\
-            <div class="contentBadge {{contentType}}" {{#thumbnail}}style="background:url(\'{{thumbnail}}\') center no-repeat;background-size: cover;"{{/thumbnail}}></div>\
+            <div class="contentBadge {{contentType}}" style="{{#thumbnail}}background:url(\'{{thumbnail}}\') center no-repeat;background-size: cover;{{/thumbnail}}"></div>\
             <div class="contentName">{{name}}</div>\
             <div class="contentStats">{{views}} Views</div>\
             <div class="contentIcons">\
@@ -86,7 +86,7 @@ var PopupLabelBrowser = (function() {
                 renderLabels(data, container);
             });
         },
-        "public": function($container) {
+        "public": function(container) {
             $.ajax("/ajax/content/public").then(function(data) {
                 renderLabels(data, container);
             });
@@ -114,7 +114,7 @@ var PopupLabelBrowser = (function() {
             $selectButton.addClass("disabled");
 
             // Run the loading mechanism
-            loadingMechanisms[this.dataset.load](document.querySelector(this.href));
+            loadingMechanisms[this.dataset["load"]](document.querySelector(this.name));
         });
         $modal.on("show", function () {
             apply = false;

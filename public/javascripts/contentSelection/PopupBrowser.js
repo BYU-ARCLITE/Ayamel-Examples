@@ -16,7 +16,7 @@ var PopupBrowser = (function() {
             </div>\
             <div class="modal-body">\
                 <ul class="nav nav-pills">\
-                    <li><a href="#popupBrowserMine" data-load="mine">My Content</a></li>\
+                    <li><a href="#popupBrowserMine" name="#popupBrowserMine" data-load="mine">My Content</a></li>\
                     <li><a href="#popupBrowserCourse" name="#popupBrowserCourse" data-load="course">Course Content</a></li>\
                     <li><a href="#popupBrowserPublic" name="#popupBrowserPublic" data-load="public">Public</a></li>\
                     <li><a href="#popupBrowserSearch" name="#popupBrowserSearch" data-load="search">Search</a></li>\
