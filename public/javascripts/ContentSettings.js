@@ -216,10 +216,10 @@ var ContentSettings = (function() {
 
     function getPermittedResources(data,cb){
         if(data.ids.length){
-            return $.ajax("/ajax/permissionChecker", {
+            return Promise.resolve($.ajax("/ajax/permissionChecker", {
                 type: "post",
                 data: data
-            }).then(function(data) {
+            })).then(function(data) {
                 // Now turn those IDs into resources
                 var rps = data.map(function(id){
                     return ResourceLibrary.load(id);
