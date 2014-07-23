@@ -46,7 +46,7 @@
                     <td>@optStr(_user.name)</td>
                     <td>@optStr(_user.email)</td>
                     <td>
-                        <a href="#permModal" role="button" class="btn btn-small btn-blue pull-right" data-toggle="modal" data-id="@_user.id.get">Set</a>
+                        <a href="#permModal" role="button" class="btn btn-small btn-blue pull-right" data-toggle="modal" data-id="@_user.id.get" data-permlist="@_user.getPermissions.mkString(",")">Set</a>
                     </td>
                     <td>
                         @if(_user.accountLinkId == -1) {
@@ -74,7 +74,12 @@
             <h3 id="permModalLabel">Set user permissions</h3>
         </div>
         <div class="modal-body">
-            <!-- Build permissions form -->
+			<form method="POST" action="@routes.Administration.setPermission()" id="userPermForm">
+				<input type="hidden" name="userId" id="permUserId">
+				@for((perm, desc) <- SitePermissions.descriptionMap){
+					<label><input type="checkbox" name="permission" value="@perm">@desc</label>
+				}
+			</form>
         </div>
         <div class="modal-footer">
             <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
@@ -129,12 +134,13 @@
                 $(this.dataset["target"]).submit();
             });
 
-            /*$(".setRole").click(function() {
-                var id = this.dataset["id"];
-                $("#roleUserId").val(id);
-                $("#roleUserIdDisplay").text(id);
-                $("#role").val(this.dataset["role"]);
-            });*/
+            $("a[href='#permModal']").click(function() {
+                var permissionList = this.dataset['permlist'].split(",");
+				document.getElementById("permUserId").value = this.dataset["id"];
+                [].forEach.call(document.querySelectorAll("#userPermForm input[type='checkbox']"),function(box){
+					box.checked = permissionList.indexOf(box.value) > -1;
+				});
+            });
 
             $(".sendNote").click(function() {
                 var id = this.dataset["id"];

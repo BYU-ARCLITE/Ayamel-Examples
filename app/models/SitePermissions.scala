@@ -19,6 +19,7 @@ object SitePermissions {
 
   def permissionList = desc_map.keys.toList
   def descriptionList = desc_map.values.toList
+  def descriptionMap = desc_map
 
   def listByUser(user: User): List[String] =
     DB.withConnection {
@@ -40,7 +41,7 @@ object SitePermissions {
       implicit connection =>
         if (anorm.SQL("select 1 from " + tableName + " where userId = {uid} and permission = {permission}")
             .on('uid -> user.id.get, 'permission -> permission).list.isEmpty) {
-          anorm.SQL("insert into " + tableName + " (user, permission) values ({uid}, {permission})")
+          anorm.SQL("insert into " + tableName + " (userId, permission) values ({uid}, {permission})")
             .on('uid -> user.id.get, 'permission -> permission).executeUpdate()
         }
     }

@@ -22,7 +22,7 @@
             @{ /* TODO: Fix, if user is empty then notify a system admin */ }
             @for(permissionRequest <- requests) {
                 @defining(permissionRequest.getUser){ user =>
-                    @if(!user.isEmpty) {
+                    @if(user.isDefined) {
                         <tr>
                             <td>@user.get.displayName</td>
                             <td>@user.get.email.getOrElse("None")</td>

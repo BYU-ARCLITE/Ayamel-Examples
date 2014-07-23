@@ -114,7 +114,9 @@ object Administration extends Controller {
       implicit user =>
         Authentication.enforcePermission("admin") {
           getUser(request.body("userId")(0).toLong) { targetUser =>
-            targetUser.addSitePermission(request.body("permission")(0))
+            request.body("permission").foreach { permission =>
+			  targetUser.addSitePermission(permission)
+			}
             Redirect(routes.Administration.manageUsers()).flashing("info" -> "User permissions updated")
           }
         }
