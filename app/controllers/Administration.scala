@@ -107,7 +107,7 @@ object Administration extends Controller {
   }
 
   /**
-   * Give a permission to a user
+   * Give permissions to a user
    */
   def setPermission() = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
@@ -115,8 +115,8 @@ object Administration extends Controller {
         Authentication.enforcePermission("admin") {
           getUser(request.body("userId")(0).toLong) { targetUser =>
             request.body("permission").foreach { permission =>
-			  targetUser.addSitePermission(permission)
-			}
+              targetUser.addSitePermission(permission)
+            }
             Redirect(routes.Administration.manageUsers()).flashing("info" -> "User permissions updated")
           }
         }

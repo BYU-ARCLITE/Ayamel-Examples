@@ -21,6 +21,7 @@ object CoursePermissions {
 
   def permissionList = desc_map.keys.toList
   def descriptionList = desc_map.values.toList
+  def descriptionMap = desc_map
 
   def listByUser(course: Course, user: User): List[String] =
     DB.withConnection {
@@ -42,7 +43,7 @@ object CoursePermissions {
       implicit connection =>
         if (anorm.SQL("select 1 from " + tableName + " where courseId = {cid} and userId = {uid} and permission = {permission}")
             .on('cid -> course.id.get, 'uid -> user.id.get, 'permission -> permission).list.isEmpty) {
-		  anorm.SQL("insert into " + tableName + " (course, user, permission) values ({cid}, {uid}, {permission})")
+		  anorm.SQL("insert into " + tableName + " (courseId, userId, permission) values ({cid}, {uid}, {permission})")
 		    .on('cid -> course.id.get, 'uid -> user.id.get, 'permission -> permission).executeUpdate()
 		}
 	}

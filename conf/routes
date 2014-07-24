@@ -46,6 +46,7 @@ GET     /course/:id/request/:requestId/approve          controllers.Courses.appr
 GET     /course/:id/request/:requestId/deny             controllers.Courses.denyRequest(id: Long, requestId: Long)
 GET     /course/:id/join/:key                           controllers.Courses.joinLink(id: Long, key: String)
 GET     /course/:id/remove/:studentId                   controllers.Courses.removeStudent(id: Long, studentId: Long)
+POST    /course/:id/setPermission                       controllers.Courses.setPermission(id: Long)
 GET     /course/:courseId/content/:id                   controllers.CourseContent.viewInCourse(id: Long, courseId: Long)
 POST    /course/:courseId/content/:id/lti               controllers.CourseContent.viewLms(id: Long, courseId: Long)
 GET     /course/:courseId/content/:id/stats             controllers.CourseContent.statsInCourse(id: Long, courseId: Long)

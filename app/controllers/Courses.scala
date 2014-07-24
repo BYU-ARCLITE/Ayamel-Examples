@@ -2,7 +2,7 @@ package controllers
 
 import authentication.Authentication
 import play.api.mvc._
-import models.{AddCourseRequest, User, Content, Course}
+import models._
 import service.{TimeTools, LMSAuth}
 import anorm.NotAssigned
 
@@ -317,7 +317,7 @@ object Courses extends Controller {
         AddCourseRequest.findById(requestId) match {
         case Some(courseRequest) =>
           // Make sure the user is allowed to approve
-		  val courseId = courseRequest.courseId
+          val courseId = courseRequest.courseId
           if (user.hasCoursePermission(Course.findById(courseId).get, "addStudent")) {
             courseRequest.deny()
             Redirect(routes.Courses.approvePage(courseId)).flashing("info" -> "Course request denied")
@@ -350,6 +350,27 @@ object Courses extends Controller {
         }
   }
 
+  /**
+   * Give permissions to a user
+   */
+  def setPermission(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
+    implicit request =>
+      implicit user =>
+        //Authentication.enforcePermission("admin") {
+            getCourse(id) { course =>
+              User.findById(request.body("userId")(0).toLong) match {
+              case Some(user) => 
+                request.body("permission").foreach { permission =>
+                  user.addCoursePermission(course, permission)
+                }
+                Redirect(routes.Courses.view(course.id.get)).flashing("info" -> "User permissions updated")
+              case None =>
+                Redirect(routes.Courses.view(course.id.get)).flashing("error" -> "User not found")
+              }
+            }
+        //}
+  }
+  
   /**
    * Teachers can share a link with student which, when visited, will cause the user to join the course.
    * This has an authenticated action so if the user doesn't have an account, as I imagine most students won't, they

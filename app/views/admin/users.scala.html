@@ -74,12 +74,12 @@
             <h3 id="permModalLabel">Set user permissions</h3>
         </div>
         <div class="modal-body">
-			<form method="POST" action="@routes.Administration.setPermission()" id="userPermForm">
-				<input type="hidden" name="userId" id="permUserId">
-				@for((perm, desc) <- SitePermissions.descriptionMap){
-					<label><input type="checkbox" name="permission" value="@perm">@desc</label>
-				}
-			</form>
+            <form method="POST" action="@routes.Administration.setPermission()" id="userPermForm">
+                <input type="hidden" name="userId" id="permUserId">
+                @for((perm, desc) <- SitePermissions.descriptionMap){
+                    <label><input type="checkbox" name="permission" value="@perm">@desc</label>
+                }
+            </form>
         </div>
         <div class="modal-footer">
             <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
@@ -136,10 +136,10 @@
 
             $("a[href='#permModal']").click(function() {
                 var permissionList = this.dataset['permlist'].split(",");
-				document.getElementById("permUserId").value = this.dataset["id"];
+                document.getElementById("permUserId").value = this.dataset["id"];
                 [].forEach.call(document.querySelectorAll("#userPermForm input[type='checkbox']"),function(box){
-					box.checked = permissionList.indexOf(box.value) > -1;
-				});
+                    box.checked = permissionList.indexOf(box.value) > -1;
+                });
             });
 
             $(".sendNote").click(function() {

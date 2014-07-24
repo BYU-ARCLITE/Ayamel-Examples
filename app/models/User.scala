@@ -432,7 +432,7 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
     SitePermissions.userHasPermission(this, permission) || SitePermissions.userHasPermission(this, "admin")
 
   def hasCoursePermission(course: Course, permission: String): Boolean = 
-    course.userHasPermission(this, permission) || SitePermissions.userHasPermission(this, "admin")
+    course.userHasPermission(this, permission) || course.getTeachers.contains(this) || SitePermissions.userHasPermission(this, "admin")
 
 
   //       _____      _   _
