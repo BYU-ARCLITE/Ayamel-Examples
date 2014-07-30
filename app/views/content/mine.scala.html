@@ -18,8 +18,13 @@
             <a href="@routes.HelpPages.tableOfContents()">help pages</a>.
         </p>
 
+        
+        @if(user.getContent.isEmpty) {
+            <h3>You Have No Content</h3>
+        } else {
         <div id="myContent" class="pad-top-high pad-bottom-high"></div>
         <script type="text/javascript">
+
             $(function() {
                 ContentItemRenderer.renderAll({
                     content: [@Html(user.getContent.map(_.toJson).mkString(","))],
@@ -31,8 +36,9 @@
                     filters: ContentItemRenderer.standardFilters
                 });
             });
+       
         </script>
-
+        }
         <a href="@routes.ContentController.createPage("file")" class="btn btn-blue">Add Content</a>
     </div>
 }

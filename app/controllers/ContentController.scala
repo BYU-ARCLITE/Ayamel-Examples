@@ -444,12 +444,7 @@ object ContentController extends Controller {
   def mine = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-
-      if (user.getContent.isEmpty) {
-		Errors.notFound
-	  } else {
         Ok(views.html.content.mine())
-      }
   }
 
   /**
