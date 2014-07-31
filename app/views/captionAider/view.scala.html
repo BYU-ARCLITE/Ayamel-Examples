@@ -63,7 +63,7 @@
         var courseId = @course.map(_.id.get).getOrElse(0);
         var userId = @user.id.get;
         var owner = @content.isEditableBy(user);
-        var teacher = @course.exists(c => user.hasCoursePermission(c, "teacher")));
+        var teacher = @course.exists(c => user.hasCoursePermission(c, "teacher"));
         ResourceLibrary.setBaseUrl("@resourceLibraryUrl");
     </script>
 	<script id='createTrackTemplate' type='text/ractive'>
