@@ -2,21 +2,10 @@
 
 <div id="configurationModal" class="modal bigModal hide fade" tabindex="-1" role="dialog" aria-labelledby="configurationModalLabel" aria-hidden="true">
     <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">X</button>
         <h3 id="configurationModalLabel">Edit Configuration</h3>
     </div>
-    <div class="modal-body">
-        <div style="position: relative">
-            <ul class="nav nav-pills">
-                <li><a href="#personalSettings" data-toggle="pill">Personal</a></li>
-                <li><a href="#courseSettings" data-toggle="pill">Course</a></li>
-            </ul>
-        </div>
-        <div class="clearfix"></div>
-        <div class="tab-content">
-            <div class="tab-pane" id="personalSettings"></div>
-            <div class="tab-pane" id="courseSettings"></div>
-        </div>
+    <div class="modal-body" id="settingsBox">
     </div>
     <div class="modal-footer">
         <div>
@@ -28,31 +17,18 @@
 <script type="text/javascript">
     $(function() {
 
-        $('#configurationModal a[href="#personalSettings"]').tab('show');
-
         var owner = @content.isEditableBy(user);
         var userId = @user.id.get;
         var courseId = @course.map(_.id.get).getOrElse(0);
-        var teacher = @course.exists(c => user.hasCoursePermission(c, "teacher"));
         ResourceLibrary.load("@content.resourceId", function(resource) {
             new ContentSettings({
                 content: content,
                 owner: owner,
                 userId: userId,
                 resource: resource,
-                holder: document.getElementById("personalSettings"),
+                holder: document.getElementById("settingsBox"),
                 action: "@routes.ContentEditing.setSettings(content.id.get)"
             });
-
-            if (teacher) {
-                new ContentSettings({
-                    content: content,
-                    courseId: courseId,
-                    resource: resource,
-                    holder: document.getElementById("courseSettings"),
-                    action: "@{routes.ContentEditing.setCourseSettings(content.id.get, course.map(_.id.get).getOrElse(0))}"
-                });
-            }
         });
     });
 </script>

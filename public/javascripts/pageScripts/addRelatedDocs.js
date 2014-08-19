@@ -245,7 +245,7 @@ $(function() {
                 data: {
                     contentId: content.id,
                     permission: "edit",
-                    documentType: "annotations",
+                    documentType: "annotationDocument",
                     ids: annotationIds
                 }
             }).then(function(data) {

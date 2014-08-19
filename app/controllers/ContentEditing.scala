@@ -97,47 +97,29 @@ object ContentEditing extends Controller {
   /**
    * Helper function which sets audio/video settings
    * @param content The content whose settings are being set
-   * @param course If set, then course settings are being set for this course
-   * @param user If set, then personal settings are being set for this user
    */
-  def setAudioVideoSettings(content: Content, data: Map[String, Seq[String]], course: Option[Course] = None, user: Option[User] = None) {
-    val prefix = course.map(c => "course_" + c.id.get + ":")
-      .getOrElse(user.map(u => "user_" + u.id.get + ":").getOrElse(""))
-    val level = data("level")(0)
-    val enabledCaptionTracks = data.get("captionTracks").map(_.mkString(",")).getOrElse("")
-    val enabledAnnotationDocuments = data.get("annotationDocs").map(_.mkString(",")).getOrElse("")
-    val includeTranscriptions = data.get("includeTranscriptions").map(_(0)).getOrElse("false")
-
-    content.setSetting(prefix + "level", level)
-      .setSetting(prefix + "enabledCaptionTracks", enabledCaptionTracks)
-      .setSetting(prefix + "enabledAnnotationDocuments", enabledAnnotationDocuments)
-      .setSetting(prefix + "includeTranscriptions", includeTranscriptions).save
+  def setAudioVideoSettings(content: Content, data: Map[String, Seq[String]]) {
+    //data.get("level").foreach { levels => content.setSetting("level", List(levels(0))) }
+    data.get("captionTracks").foreach { tracklist => content.setSetting("captionTrack", tracklist) }
+    data.get("annotationDocs").foreach { doclist => content.setSetting("annotationDocument", doclist) }
+    content.setSetting("showTranscripts", List(data.get("showTranscripts").map(_(0)).getOrElse("false")))
   }
 
   /**
    * Helper function which sets image settings
    * @param content The content whose settings are being set
-   * @param course If set, then course settings are being set for this course
-   * @param user If set, then personal settings are being set for this user
    */
-  def setImageSettings(content: Content, data: Map[String, Seq[String]], course: Option[Course] = None, user: Option[User] = None) {
-    val prefix = course.map(c => "course_" + c.id.get + ":")
-      .getOrElse(user.map(u => "user_" + u.id.get + ":").getOrElse(""))
-    val enabledAnnotationDocuments = data.get("annotationDocs").map(_.mkString(",")).getOrElse("")
-    content.setSetting(prefix + "enabledAnnotationDocuments", enabledAnnotationDocuments).save
+  def setImageSettings(content: Content, data: Map[String, Seq[String]]) {
+    data.get("captionTracks").foreach { tracklist => content.setSetting("captionTrack", tracklist) }
+    data.get("annotationDocs").foreach { doclist => content.setSetting("annotationDocument", doclist) }
   }
 
   /**
    * Helper function which sets text settings
    * @param content The content whose settings are being set
-   * @param course If set, then course settings are being set for this course
-   * @param user If set, then personal settings are being set for this user
    */
-  def setTextSettings(content: Content, data: Map[String, Seq[String]], course: Option[Course] = None, user: Option[User] = None) {
-    val prefix = course.map(c => "course_" + c.id.get + ":")
-      .getOrElse(user.map(u => "user_" + u.id.get + ":").getOrElse(""))
-    val enabledAnnotationDocuments = data.get("annotationDocs").map(_.mkString(",")).getOrElse("")
-    content.setSetting(prefix + "enabledAnnotationDocuments", enabledAnnotationDocuments).save
+  def setTextSettings(content: Content, data: Map[String, Seq[String]]) {
+    data.get("annotationDocs").foreach { doclist => content.setSetting("annotationDocument", doclist) }
   }
 
   /**
@@ -162,49 +144,6 @@ object ContentEditing extends Controller {
             Redirect(routes.ContentController.view(id)).flashing("success" -> "Settings updated.")
           } else
             Errors.forbidden
-        }
-  }
-
-  /**
-   * Sets settings for content in the context of a particular course
-   * @param id The ID of the content
-   */
-  def setCourseSettings(id: Long, courseId: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
-    implicit request =>
-      implicit user =>
-        Courses.getCourse(id) { course =>
-          ContentController.getContent(id) { content =>
-            val contentType = Symbol(request.body("contentType")(0))
-            if (contentType == 'video || contentType == 'audio)
-              setAudioVideoSettings(content, request.body, Some(course))
-            else if (contentType == 'image)
-              setImageSettings(content, request.body, Some(course))
-            else if (contentType == 'text)
-              setTextSettings(content, request.body, Some(course))
-
-            Redirect(routes.CourseContent.viewInCourse(id, course.id.get)).flashing("success" -> "Settings updated.")
-          }
-        }
-  }
-
-  /**
-   * Sets personal settings for content
-   * @param id The ID of the content
-   */
-  def setPersonalSettings(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
-    implicit request =>
-      implicit user =>
-        ContentController.getContent(id) { content =>
-          // Make sure the user is able to edit the course
-          val contentType = Symbol(request.body("contentType")(0))
-          if (contentType == 'video || contentType == 'audio)
-            setAudioVideoSettings(content, request.body, None, Some(user))
-          else if (contentType == 'image)
-            setImageSettings(content, request.body, None, Some(user))
-          else if (contentType == 'text)
-            setTextSettings(content, request.body, None, Some(user))
-
-          Redirect(routes.ContentController.view(id)).flashing("success" -> "Settings updated.")
         }
   }
 

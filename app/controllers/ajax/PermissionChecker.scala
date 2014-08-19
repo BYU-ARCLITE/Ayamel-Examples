@@ -14,12 +14,6 @@ import play.api.libs.json.JsArray
  */
 object PermissionChecker extends Controller {
 
-  // Helper for document types
-  val documentTypeMap = Map(
-    "captionTrack" -> DocumentPermissionChecker.documentTypes.captionTrack,
-    "annotations" -> DocumentPermissionChecker.documentTypes.annotations
-  )
-
   /**
    * AJAX endpoint which checks a user's permissions to see if he/she is allowed to do things with content
    * Expected parameters
@@ -37,10 +31,9 @@ object PermissionChecker extends Controller {
           // Collect data
           val permission = Symbol(request.body("permission")(0))
           val course = Course.findById(request.body.get("courseId").map(_(0).toLong).getOrElse(0))
-          val documentType = documentTypeMap(request.body("documentType")(0))
           val ids = request.body("ids")(0).split(",").toList.filter(!_.isEmpty)
           if(ids.length == 0) BadRequest
-          val checker = new DocumentPermissionChecker(user, content, course, documentType)
+          val checker = new DocumentPermissionChecker(user, content, course, request.body("documentType")(0))
 
           // Look at the permission and call the appropriate function
           Async {
@@ -48,7 +41,6 @@ object PermissionChecker extends Controller {
               case 'view => checker.checkViewable(ids)
               case 'enable => checker.checkEnableable(ids)
               case 'edit => checker.checkEditable(ids)
-              case 'publish => checker.checkPublishable(ids)
               case _ => Future(Nil)
             }).map { resources =>
               //possible room for request minimization if this just returns complete resources instead

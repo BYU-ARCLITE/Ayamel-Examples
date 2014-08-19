@@ -59,7 +59,7 @@ $(function() {
     content.settings = {
         level: 2,
         enabledCaptionTracks: content.settings.enabledCaptionTracks,
-        includeTranscriptions: "true"
+        showTranscripts: "true"
     };
 
     var contentHolder = document.getElementById("contentHolder");

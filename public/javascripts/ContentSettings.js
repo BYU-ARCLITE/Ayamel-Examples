@@ -87,12 +87,12 @@ var ContentSettings = (function() {
         showTranscriptions: {
             type: "checkbox",
             label: "Show transcripts?",
-            name: "includeTranscriptions",
+            name: "showTranscripts",
             include: function(context, content){
                 return !!content.enableableCaptionTracks.length;
             },
             setting: function(context, content) {
-                return content.settings.includeTranscriptions === "true";
+                return content.settings.showTranscripts === "true";
             },
             items: function(){}
         },
@@ -252,7 +252,7 @@ var ContentSettings = (function() {
             contentId: content.id,
             courseId: context.courseId,
             permission: "enable",
-            documentType: "annotations",
+            documentType: "annotationDocument",
             ids: annotationIds
         });
     }

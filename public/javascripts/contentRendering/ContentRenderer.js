@@ -52,7 +52,7 @@ var ContentRenderer = (function () {
 						courseId: args.courseId,
 						contentId: args.contentId,
 						permission: args.permission || "view",
-						documentType: "annotations",
+						documentType: "annotationDocument",
 						ids: annotationIds
 					}
 				}));

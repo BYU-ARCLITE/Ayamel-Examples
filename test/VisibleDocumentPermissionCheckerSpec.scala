@@ -42,8 +42,8 @@ class VisibleDocumentPermissionCheckerSpec extends Specification {
       val content1 = Content(NotAssigned, "", 'a, "", "")
       val content2 = Content(NotAssigned, "", 'a, "", "", settings = Map("user_5:enabledCaptionTracks" -> "asdf,qwer-234"))
 
-      val checker1 = new DocumentPermissionChecker(user, content1, None, DocumentPermissionChecker.documentTypes.captionTrack)
-      val checker2 = new DocumentPermissionChecker(user, content2, None, DocumentPermissionChecker.documentTypes.captionTrack)
+      val checker1 = new DocumentPermissionChecker(user, content1, None, "captionTrack")
+      val checker2 = new DocumentPermissionChecker(user, content2, None, "captionTrack")
 
       checker1.canView(personalResource) shouldEqual false
       checker2.canView(personalResource) shouldEqual false
@@ -51,7 +51,7 @@ class VisibleDocumentPermissionCheckerSpec extends Specification {
 
     "allow enabled personal documents" in {
       val content = Content(NotAssigned, "", 'a, "", "", settings = Map("user_5:enabledCaptionTracks" -> "asdf,josh1,qwer-234"))
-      val checker = new DocumentPermissionChecker(user, content, None, DocumentPermissionChecker.documentTypes.captionTrack)
+      val checker = new DocumentPermissionChecker(user, content, None, "captionTrack")
 
       checker.canView(personalResource) shouldEqual true
     }
@@ -60,8 +60,8 @@ class VisibleDocumentPermissionCheckerSpec extends Specification {
       val content1 = Content(NotAssigned, "", 'a, "", "")
       val content2 = Content(NotAssigned, "", 'a, "", "", settings = Map("course_8:enabledCaptionTracks" -> "asdf,qwer-234"))
 
-      val checker1 = new DocumentPermissionChecker(user, content1, Some(course), DocumentPermissionChecker.documentTypes.captionTrack)
-      val checker2 = new DocumentPermissionChecker(user, content2, Some(course), DocumentPermissionChecker.documentTypes.captionTrack)
+      val checker1 = new DocumentPermissionChecker(user, content1, Some(course), "captionTrack")
+      val checker2 = new DocumentPermissionChecker(user, content2, Some(course), "captionTrack")
 
       checker1.canView(courseResource) shouldEqual false
       checker2.canView(courseResource) shouldEqual false
@@ -69,7 +69,7 @@ class VisibleDocumentPermissionCheckerSpec extends Specification {
 
     "allow enabled course documents" in {
       val content = Content(NotAssigned, "", 'a, "", "", settings = Map("course_8:enabledCaptionTracks" -> "asdf,josh2,qwer-234"))
-      val checker = new DocumentPermissionChecker(user, content, Some(course), DocumentPermissionChecker.documentTypes.captionTrack)
+      val checker = new DocumentPermissionChecker(user, content, Some(course), "captionTrack")
 
       checker.canView(courseResource) shouldEqual true
     }
@@ -84,9 +84,9 @@ class VisibleDocumentPermissionCheckerSpec extends Specification {
         "course_8:enabledCaptionTracks" -> "asdf,qwer-234"
       ))
 
-      val checker1 = new DocumentPermissionChecker(user, content1, Some(course), DocumentPermissionChecker.documentTypes.captionTrack)
-      val checker2 = new DocumentPermissionChecker(user, content2, Some(course), DocumentPermissionChecker.documentTypes.captionTrack)
-      val checker3 = new DocumentPermissionChecker(user, content3, Some(course), DocumentPermissionChecker.documentTypes.captionTrack)
+      val checker1 = new DocumentPermissionChecker(user, content1, Some(course), "captionTrack")
+      val checker2 = new DocumentPermissionChecker(user, content2, Some(course), "captionTrack")
+      val checker3 = new DocumentPermissionChecker(user, content3, Some(course), "captionTrack")
 
       checker1.canView(globalResource) shouldEqual false
       checker2.canView(globalResource) shouldEqual false
@@ -95,7 +95,7 @@ class VisibleDocumentPermissionCheckerSpec extends Specification {
 
     "allow enabled global documents in course" in {
       val content = Content(NotAssigned, "", 'a, "", "", settings = Map("course_8:enabledCaptionTracks" -> "asdf,josh3,qwer-234"))
-      val checker = new DocumentPermissionChecker(user, content, Some(course), DocumentPermissionChecker.documentTypes.captionTrack)
+      val checker = new DocumentPermissionChecker(user, content, Some(course), "captionTrack")
 
       checker.canView(globalResource) shouldEqual true
     }
@@ -104,8 +104,8 @@ class VisibleDocumentPermissionCheckerSpec extends Specification {
       val content1 = Content(NotAssigned, "", 'a, "", "")
       val content2 = Content(NotAssigned, "", 'a, "", "", settings = Map("enabledCaptionTracks" -> "asdf,qwer-234"))
 
-      val checker1 = new DocumentPermissionChecker(user, content1, None, DocumentPermissionChecker.documentTypes.captionTrack)
-      val checker2 = new DocumentPermissionChecker(user, content2, None, DocumentPermissionChecker.documentTypes.captionTrack)
+      val checker1 = new DocumentPermissionChecker(user, content1, None, "captionTrack")
+      val checker2 = new DocumentPermissionChecker(user, content2, None, "captionTrack")
 
       checker1.canView(globalResource) shouldEqual false
       checker2.canView(globalResource) shouldEqual false
@@ -113,7 +113,7 @@ class VisibleDocumentPermissionCheckerSpec extends Specification {
 
     "allow enabled global documents" in {
       val content = Content(NotAssigned, "", 'a, "", "", settings = Map("enabledCaptionTracks" -> "asdf,josh3,qwer-234"))
-      val checker = new DocumentPermissionChecker(user, content, None, DocumentPermissionChecker.documentTypes.captionTrack)
+      val checker = new DocumentPermissionChecker(user, content, None, "captionTrack")
 
       checker.canView(globalResource) shouldEqual true
     }

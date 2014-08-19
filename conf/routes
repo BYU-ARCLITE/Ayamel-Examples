@@ -53,7 +53,6 @@ GET     /course/:courseId/content/:id/stats             controllers.CourseConten
 GET     /course/:courseId/content/:id/stats/download    controllers.CourseContent.downloadStatsInCourse(id: Long, courseId: Long)
 GET     /course/:courseId/content/:id/stats/clear       controllers.CourseContent.clearStatsInCourse(id: Long, courseId: Long)
 GET     /course/:courseId/content/:id/remove            controllers.CourseContent.removeFromCourse(id: Long, courseId: Long)
-POST    /course/:courseId/content/:id/settings          controllers.ContentEditing.setCourseSettings(id: Long, courseId: Long)
 
 # Content pages
 GET     /content                        controllers.ContentController.public
@@ -76,7 +75,6 @@ POST    /content/:id/addToCourse        controllers.CourseContent.addToCourse(id
 POST    /content/:id/visibility         controllers.ContentEditing.setVisibility(id: Long)
 POST    /content/:id/shareability       controllers.ContentEditing.setShareability(id: Long)
 POST    /content/:id/settings           controllers.ContentEditing.setSettings(id: Long)
-POST    /content/:id/settings/personal  controllers.ContentEditing.setPersonalSettings(id: Long)
 POST    /content/:id/metadata           controllers.ContentEditing.setMetadata(id: Long)
 POST    /content/:id/thumbnail          controllers.ContentEditing.changeThumbnail(id: Long)
 GET     /content/:id/edit               controllers.ContentEditing.editImage(id: Long)

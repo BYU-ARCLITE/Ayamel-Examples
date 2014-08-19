@@ -274,8 +274,8 @@ object ContentController extends Controller {
                   val title = request.body("title")(0)
                   val labels = request.body.get("labels").map(_.toList).getOrElse(Nil)
                   val description = request.body("description")(0)
-                  val content = Content(NotAssigned, title, 'playlist, "", graphId.toString, labels = labels,
-                    settings = Map("description" -> description)).save
+                  val content = Content(NotAssigned, title, 'playlist, "", graphId.toString, labels = labels).save
+                  content.setSetting("description", List(description))
                   user.addContent(content)
 
                   Redirect(routes.Playlists.about(content.id.get))
@@ -301,8 +301,8 @@ object ContentController extends Controller {
 
           Async {
             GoogleFormScripts.createForm(title, user.email.get).map(formId => {
-              val content = Content(NotAssigned, title, 'questions, "", formId, labels = labels,
-                settings = Map("description" -> description)).save
+              val content = Content(NotAssigned, title, 'questions, "", formId, labels = labels).save
+			  content.setSetting("description", List(description))
               user.addContent(content)
 
               Redirect(routes.QuestionSets.about(content.id.get))

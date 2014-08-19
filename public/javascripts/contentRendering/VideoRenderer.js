@@ -18,7 +18,7 @@ var VideoRenderer = (function(){
     }
 
     function showTranscript(content){
-        return content.settings.includeTranscriptions === "true";
+        return content.settings.showTranscripts === "true";
     }
 
     function createLayout(content, holder){
@@ -188,7 +188,7 @@ var VideoRenderer = (function(){
 
                     // Don't allow annotations, level 3+, transcriptions, or certain controls
                     content.settings.level = 2;
-                    content.settings.includeTranscriptions = false;
+                    content.settings.showTranscripts = "false";
 
                     ContentRenderer.render({
                         content: content,

@@ -16,8 +16,9 @@ import dataAccess.ResourceController
  * @param resourceId The id of the resource
  */
 case class Content(id: Pk[Long], name: String, contentType: Symbol, thumbnail: String, resourceId: String,
-                   dateAdded: String = TimeTools.now(), visibility: Int = Content.visibility.tightlyRestricted,
-                   shareability: Int = Content.shareability.shareable, settings: Map[String, String] = Map(),
+                   dateAdded: String = TimeTools.now(),
+                   visibility: Int = Content.visibility.tightlyRestricted,
+                   shareability: Int = Content.shareability.shareable,
                    authKey: String = HashTools.md5Hex(util.Random.nextString(16)), labels: List[String] = Nil)
   extends SQLSavable with SQLDeletable {
 
@@ -29,12 +30,12 @@ case class Content(id: Pk[Long], name: String, contentType: Symbol, thumbnail: S
     if (id.isDefined) {
       update(Content.tableName, 'id -> id, 'name -> name, 'contentType -> contentType.name, 'thumbnail -> thumbnail,
         'resourceId -> resourceId, 'dateAdded -> dateAdded, 'visibility -> visibility, 'shareability -> shareability,
-        'settings -> SerializationTools.serializeMap(settings), 'authKey -> authKey, 'labels -> labels.mkString(","))
+        'authKey -> authKey, 'labels -> labels.mkString(","))
       this
     } else {
       val id = insert(Content.tableName, 'name -> name, 'contentType -> contentType.name, 'thumbnail -> thumbnail,
         'resourceId -> resourceId, 'dateAdded -> dateAdded, 'visibility -> visibility, 'shareability -> shareability,
-        'settings -> SerializationTools.serializeMap(settings), 'authKey -> authKey, 'labels -> labels.mkString(","))
+        'authKey -> authKey, 'labels -> labels.mkString(","))
       this.copy(id)
     }
   }
@@ -64,8 +65,20 @@ case class Content(id: Pk[Long], name: String, contentType: Symbol, thumbnail: S
   // |______|______|______|______|______|______|______|______|______|
   //
 
-  def setSetting(key: String, value: String): Content =
-    copy(settings = settings.updated(key, value))
+  def setSetting(setting: String, argument: Seq[String]): Content = {
+    Content.setSetting(this, setting, argument)
+    this
+  }
+
+  def addSetting(setting: String, argument: Seq[String]): Content = {
+    Content.addSetting(this, setting, argument)
+    this
+  }
+
+  def removeSetting(setting: String, argument: Seq[String]): Content = {
+    Content.removeSetting(this, setting, argument)
+    this
+  }
 
   //       _____      _   _
   //      / ____|    | | | |
@@ -81,8 +94,8 @@ case class Content(id: Pk[Long], name: String, contentType: Symbol, thumbnail: S
   /**
    * Visibility has four levels:
    * 1. Private - Only the owner can see this.
-   * 2. Tightly Restricted - The owner and courses he/she add this to can see this.
-   * 3. Loosely Restricted - The owner, teachers, and courses they add this to can see this.
+   * 2. Tightly Restricted - The owner and course members can see this.
+   * 3. Loosely Restricted - The owner, teachers, and course members can see this.
    * 4. Public - Everybody can see this.
    * @param user The user to be checked
    * @return Visible or not
@@ -94,6 +107,7 @@ case class Content(id: Pk[Long], name: String, contentType: Symbol, thumbnail: S
     else
       // Check the visibility attribute of the content object
       visibility match {
+        //super inefficient; at some point, we should re-vamp the storage of content->course membership
         case Content.visibility.tightlyRestricted => user.getEnrollment.flatMap(_.getContent).contains(this)
         case Content.visibility.looselyRestricted => user.hasSitePermission("viewRestricted") || user.getEnrollment.flatMap(_.getContent).contains(this)
         case Content.visibility.public => true
@@ -119,31 +133,26 @@ case class Content(id: Pk[Long], name: String, contentType: Symbol, thumbnail: S
 
   /**
    * Checks if the user is authorized to edit this content. Owners and admins can edit.
-   * @param user The to check
+   * @param user The user to check
    * @return Can edit or not
    */
   def isEditableBy(user: User): Boolean =
     user.hasSitePermission("admin") || user.getContent.contains(this)
 
-  def level = settings.get("level").getOrElse(Content.defaultSettings.video.level)
+  def getSetting(setting: String) = Content.getSetting(this, setting)
+  
+  //for backwards compatibility
+  def settings(setting: String) = Content.getSetting(this, setting).mkString(",")
 
-  def enabledCaptionTracks: List[String] =
-    if (settings.get("enabledCaptionTracks").isDefined)
-      settings("enabledCaptionTracks").split(",").toList
-    else
-      Nil
+  def enabledCaptionTracks = getSetting("captionTrack")
 
-  def enabledAnnotationDocuments: List[String] =
-    if (settings.get("enabledAnnotationDocuments").isDefined)
-      settings("enabledAnnotationDocuments").split(",").toList
-    else
-      Nil
+  def enabledAnnotationDocuments = getSetting("annotationDocument")
 
-  def includeTranscriptions: String = settings.get("includeTranscriptions").getOrElse("false")
+  def showTranscripts: String = getSetting("showTranscripts").lift(0).getOrElse("false")
 
   def embedClass: String =
     if (contentType == 'audio || contentType == 'video)
-      contentType.name + {if (level.toInt >= 3 || includeTranscriptions == "true") 2 else 1}
+      contentType.name + {if (showTranscripts == "true") 2 else 1}
     else
       "generic"
 
@@ -156,7 +165,7 @@ case class Content(id: Pk[Long], name: String, contentType: Symbol, thumbnail: S
     "dateAdded" -> dateAdded,
     "visibility" -> visibility,
     "shareability" -> shareability,
-    "settings" -> settings,
+    "settings" -> Content.getSettingMap(this).mapValues(_.mkString(",")),
     "authKey" -> authKey,
     "views" -> views("").size,
     "labels" -> labels
@@ -204,6 +213,7 @@ case class Content(id: Pk[Long], name: String, contentType: Symbol, thumbnail: S
 
 object Content extends SQLSelectable[Content] {
   val tableName = "content"
+  val settingTable = "contentSetting"
 
   /* Visibility levels */
   object visibility {
@@ -220,27 +230,6 @@ object Content extends SQLSelectable[Content] {
     val shareable = 3
   }
 
-  /* Default settings */
-  object defaultSettings {
-    object video {
-      val level = "1"
-    }
-
-    object image {
-      val allowAnnotations = "true"
-    }
-
-    val preset = Map(
-      'video -> Map(
-        "level" -> video.level
-      ),
-      'image -> Map("allowAnnotations" -> image.allowAnnotations),
-      'audio -> Map("blah" -> "blah"),
-      'playlist -> Map("blah" -> "blah"),
-      'activity -> Map("blah" -> "blah")
-    )
-  }
-
   val simple = {
     get[Pk[Long]](tableName + ".id") ~
       get[String](tableName + ".name") ~
@@ -250,12 +239,10 @@ object Content extends SQLSelectable[Content] {
       get[String](tableName + ".dateAdded") ~
       get[Int](tableName + ".visibility") ~
       get[Int](tableName + ".shareability") ~
-      get[String](tableName + ".settings") ~
       get[String](tableName + ".authKey") ~
       get[String](tableName + ".labels") map {
-      case id ~ name ~ contentType ~ thumbnail ~ resourceId ~ dateAdded ~ visibility ~ shareability ~ settings ~ authKey ~ labels =>
+      case id ~ name ~ contentType ~ thumbnail ~ resourceId ~ dateAdded ~ visibility ~ shareability ~ authKey ~ labels =>
         Content(id, name, Symbol(contentType), thumbnail, resourceId, dateAdded, visibility, shareability,
-          if (settings.isEmpty) defaultSettings.preset(Symbol(contentType)) else SerializationTools.deserializeMap(settings),
           authKey, labels.split(",").toList.filterNot(_.isEmpty))
     }
   }
@@ -300,5 +287,59 @@ object Content extends SQLSelectable[Content] {
         // TODO: Search the resource library metadata. Issue # 51
         anorm.SQL("SELECT * from " + tableName + " where name like {query} and visibility = {public}")
           .on('query -> sqlQuery, 'public -> visibility.public).as(simple *)
+    }
+
+  def setSetting(content: Content, setting: String, argument: Seq[String]) =
+    DB.withConnection {
+      implicit connection =>
+        anorm.SQL("DELETE from " +  settingTable + " where contentId = {cid} and setting = {setting}")
+          .on('cid -> content.id, 'setting -> setting)
+        argument.foreach { arg =>
+          anorm.SQL("INSERT into " +  settingTable + " (contentId, setting, argument) SELECT {cid}, {setting}, {argument} FROM dual WHERE NOT EXISTS (SELECT * FROM " +  settingTable + " WHERE contentId = {cid} and setting = {setting} and argument = {argument})")
+          .on('cid -> content.id, 'setting -> setting, 'argument -> arg)
+        }
+    }
+
+  def addSetting(content: Content, setting: String, argument: Seq[String]) =
+    DB.withConnection {
+      implicit connection =>
+        argument.foreach { arg =>
+          anorm.SQL("INSERT into " +  settingTable + " (contentId, setting, argument) SELECT {cid}, {setting}, {argument} FROM dual WHERE NOT EXISTS (SELECT * FROM " +  settingTable + " WHERE contentId = {cid} and setting = {setting} and argument = {argument})")
+          .on('cid -> content.id, 'setting -> setting, 'argument -> arg)
+        }
+    }
+
+  def removeSetting(content: Content, setting: String, argument: Seq[String]) =
+    DB.withConnection {
+      implicit connection =>
+        argument.foreach { arg =>
+          anorm.SQL("DELETE from " +  settingTable + " where contentId = {cid} and setting = {setting} and argument = {argument}")
+          .on('cid -> content.id, 'setting -> setting, 'argument -> arg)
+        }
+    }
+
+  def getSetting(content: Content, setting: String): List[String] =
+    DB.withConnection {
+      implicit connection =>
+        anorm.SQL("SELECT argument from " +  settingTable + " where contentId = {cid} and setting = {setting}")
+          .on('cid -> content.id, 'setting -> setting).as(get[String](settingTable + ".argument") *)
+    }
+
+  def getSettingMap(content: Content): Map[String, List[String]] =
+    DB.withConnection {
+      implicit connection =>
+        val plist: List[(String, String)] = anorm.SQL("SELECT setting, argument from " +  settingTable + " where contentId = {cid}")
+          .on('cid -> content.id).as(
+            get[String](settingTable + ".setting") ~
+            get[String](settingTable + ".argument") map {
+            case setting ~ argument => setting -> argument
+          } *)
+        (Map[String, List[String]]() /: plist) { (acc, next) =>
+          next match {
+            case (setting, argument) =>
+              if(acc.contains(setting)) acc + (setting -> (argument :: acc(setting)))
+              else acc + (setting -> List(argument))
+          }
+        }
     }
 }
