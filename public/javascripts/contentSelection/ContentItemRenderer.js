@@ -13,7 +13,7 @@ var ContentItemRenderer = (function() {
                     <div class="contentIcons">\
                         {{#annotations}}<i class="icon-bookmark" title="This {{type}} has annotations."></i>{{/annotations}}\
                         {{#captions}}&nbsp;<img src="/assets/images/videos/captions.png" alt="This {{type}} has captions." title="This {{type}} has captions."/>{{/captions}}\
-                        {{#isVideo}}&nbsp;<span class="badge badge-magenta" title="This video is set to level {{level}}.">{{level}}</span>{{/isVideo}}\
+                        {{#definitions}}&nbsp;<span class="badge badge-magenta" title="This {{type}} has automatic translations.">T</span>{{/definitions}}\
                     </div>\
                 </div>\
             </div>',
@@ -26,7 +26,7 @@ var ContentItemRenderer = (function() {
                 <div class="contentIcons">\
                     {{#annotations}}<i class="icon-bookmark" title="This {{type}} has annotations."></i>{{/annotations}}\
                     {{#captions}}&nbsp;<img src="/assets/images/videos/captions.png" alt="This {{type}} has captions." title="This {{type}} has captions."/>{{/captions}}\
-                    {{#isVideo}}&nbsp;<span class="badge badge-magenta" title="This video is set to level {{level}}.">{{level}}</span>{{/isVideo}}\
+                    {{#definitions}}&nbsp;<span class="badge badge-magenta" title="This {{type}} has automatic translations.">T</span>{{/definitions}}\
                 </div>\
             </div>',
 
@@ -40,30 +40,24 @@ var ContentItemRenderer = (function() {
             <div class="inline-block pad-left-high pull-right">\
                 {{#annotations}}<i class="icon-bookmark" title="This {{type}} has annotations."></i>{{/annotations}}\
                 {{#captions}}&nbsp;<img src="/assets/images/videos/captions.png" alt="This {{type}} has captions." title="This {{type}} has captions."/>{{/captions}}\
-                {{#isVideo}}&nbsp;<span class="badge badge-magenta" title="This video is set to level {{level}}.">{{level}}</span>{{/isVideo}}\
+                {{#definitions}}&nbsp;<span class="badge badge-magenta" title="This {{type}} has automatic translations.">T</span>{{/definitions}}\
             </div>\
             <div class="clearfix pad-top-low"></div>'
     };
 
     var templateConditions = {
         captions: function (content) {
-            if (templateConditions.isTimedMedia(content) && content.settings.level < 2)
+            if (content.contentType === "text" || content.settings.showCaptions !== 'true')
                 return false;
-            return !!content.settings.enabledCaptionTracks;
+            return !!content.settings.captionTrack;
         },
         annotations: function (content) {
-            if (templateConditions.isTimedMedia(content) && content.settings.level < 4)
+            if (content.settings.showAnnotations !== 'true')
                 return false;
-            return content.settings.enabledAnnotationDocuments;
+            return !!content.settings.annotationDocument;
         },
-        isVideo: function (content) {
-            return content.contentType === "video";
-        },
-        isAudio: function (content) {
-            return content.contentType === "audio";
-        },
-        isTimedMedia: function (content) {
-            return (content.contentType === "video") || (content.contentType === "audio");
+        definitions: function (content) {
+            return (content.contentType === "text" || content.settings.showCaptions === 'true') && content.settings.allowDefinitions === 'true';
         }
     }
 
@@ -81,10 +75,9 @@ var ContentItemRenderer = (function() {
                 type: content.contentType,
                 thumbnail: content.thumbnail,
                 views: content.views,
-                level: content.settings.level || 1,
                 annotations: templateConditions.annotations(content),
                 captions: templateConditions.captions(content),
-                isVideo: templateConditions.isVideo(content)
+                definitions: templateConditions.definitions(content)
             }
         });
 
@@ -111,10 +104,9 @@ var ContentItemRenderer = (function() {
             data: {
                 type: content.contentType,
                 views: content.views,
-                level: content.settings.level || 1,
                 annotations: templateConditions.annotations(content),
                 captions: templateConditions.captions(content),
-                isVideo: templateConditions.isVideo(content)
+                definitions: templateConditions.definitions(content)
             }
         });
 
