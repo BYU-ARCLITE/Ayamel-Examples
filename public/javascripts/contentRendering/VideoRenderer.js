@@ -13,66 +13,45 @@ var VideoRenderer = (function(){
         captionTrackId,
         cueNumber;
 
-    function getLevel(content){
-        return +content.settings.level || 1;
-    }
-
     function showTranscript(content){
         return content.settings.showTranscripts === "true";
     }
 
-    function createLayout(content, holder){
-        var panes;
+    function showCaptions(content){
+        return content.settings.showCaptions === "true";
+    }
 
-        switch(getLevel(content)){
-        default:
+    function showAnnotations(content){
+        return content.settings.showAnnotations === "true";
+    }
+
+    function allowDefinitions(content){
+        return content.settings.allowDefinitions === "true";
+    }
+
+    function createLayout(content, holder){
+        var panes, obj, slideOuts = [];
+
+        if(showTranscript(content)){ slideOuts.push("Transcript"); }
+        if(allowDefinitions(content)){ slideOuts.push("Definitions"); }
+        if(showAnnotations(content)){ slideOuts.push("Annotations"); }
+        
+        switch(slideOuts.length){
+        case 0:
+            return ContentLayoutManager.onePanel(holder);
         case 1:
-            return ContentLayoutManager.onePanel(holder);
-        case 2:
-            if(showTranscript(content)){
-                panes = ContentLayoutManager.twoPanel(holder, ["Transcript"]);
-                return {
-                    player: panes.player,
-                    transcript: panes.Transcript.content
-                };
-            }
-            return ContentLayoutManager.onePanel(holder);
-        case 3:
-            if(showTranscript(content)){
-                panes = ContentLayoutManager.twoPanel(holder, ["Transcript", "Definitions"]);
-                return {
-                    player: panes.player,
-                    definitions: panes.Definitions.content,
-                    definitionsTab: panes.Definitions.tab,
-                    transcript: panes.Transcript.content
-                };
-            }
-            panes = ContentLayoutManager.twoPanel(holder, ["Definitions"]);
-            return {
-                player: panes.player,
-                definitions: panes.Definitions.content
-            };
-        case 4:
-        case 5:
-            if(showTranscript(content)){
-                panes = ContentLayoutManager.twoPanel(holder, ["Transcript", "Definitions", "Annotations"]);
-                return {
-                    player: panes.player,
-                    definitions: panes.Definitions.content,
-                    definitionsTab: panes.Definitions.tab,
-                    annotations: panes.Annotations.content,
-                    annotationsTab: panes.Annotations.tab,
-                    transcript: panes.Transcript.content
-                };
-            }
-            panes = ContentLayoutManager.twoPanel(holder, ["Definitions", "Annotations"]);
-            return {
-                player: panes.player,
-                definitions: panes.Definitions.content,
-                definitionsTab: panes.Definitions.tab,
-                annotations: panes.Annotations.content,
-                annotationsTab: panes.Annotations.tab
-            };
+            panes = ContentLayoutManager.twoPanel(holder, slideOuts);
+            obj = { player: panes.player };
+            obj[slideOuts[0]] = panes[slideOuts[0]].content
+            return obj;
+        default:
+            panes = ContentLayoutManager.twoPanel(holder, slideOuts);
+            obj = { player: panes.player };
+            slideOuts.forEach(function(tab){
+                obj[tab] = panes[tab].content;
+                obj[tab+"Tab"] = panes[tab].tab;
+            });
+            return obj;
         }
     }
 
@@ -124,12 +103,12 @@ var VideoRenderer = (function(){
                 });
             });
 
-            layout.definitions.appendChild(html);
-            layout.definitions.scrollTop = layout.definitions.scrollHeight;
+            layout.Definitions.appendChild(html);
+            layout.Definitions.scrollTop = layout.Definitions.scrollHeight;
 
-            if(layout.definitionsTab){
-                $(layout.definitionsTab).tab("show");
-                layout.definitions.scrollTop = layout.definitions.scrollHeight;
+            if(layout.DefinitionsTab){
+                $(layout.DefinitionsTab).tab("show");
+                layout.Definitions.scrollTop = layout.Definitions.scrollHeight;
             }
         });
 
@@ -176,23 +155,23 @@ var VideoRenderer = (function(){
             player.pause();
 
             if(event.detail.data.type === "text"){
-                layout.annotations.innerHTML = event.detail.data.value;
+                layout.Annotations.innerHTML = event.detail.data.value;
             }
 
             if(event.detail.data.type === "image"){
-                layout.annotations.innerHTML = '<img src="' + event.detail.data.value + '">';
+                layout.Annotations.innerHTML = '<img src="' + event.detail.data.value + '">';
             }
 
             if(event.detail.data.type === "content"){
                 ContentCache.load(event.annotation.data.value, function(content){
 
-                    // Don't allow annotations, level 3+, transcriptions, or certain controls
-                    content.settings.level = 2;
+                    // Don't allow annotations, transcriptions, or certain controls
                     content.settings.showTranscripts = "false";
+                    content.settings.showAnnotations = "false";
 
                     ContentRenderer.render({
                         content: content,
-                        holder: layout.annotations,
+                        holder: layout.Annotations,
                         annotate: false,
                         screenAdaption: {
                             fit: false
@@ -210,7 +189,7 @@ var VideoRenderer = (function(){
             var annotationDocId = "Unknown";
             ActivityStreams.predefined.viewTextAnnotation(annotationDocId, event.detail.text);
 
-            $(layout.annotationsTab).tab("show");
+            $(layout.AnnotationsTab).tab("show");
         });
     }
 
@@ -224,7 +203,7 @@ var VideoRenderer = (function(){
         };
         var captions = args.transcripts;
 
-        if(getLevel(args.content) === 1){
+        if(!showCaptions(args.content)){
             ["left", "right"].forEach(function(side){
                 ["lastCaption", "captions"].forEach(function(control){
                     var index = components[side].indexOf(control);
@@ -294,7 +273,7 @@ var VideoRenderer = (function(){
             var transcriptPlayer = new TranscriptPlayer({
                 //requires the actual TextTrack objects; should be fixed up to take resource IDs, I think
                 captionTracks: captionTracks,
-                holder: layout.transcript,
+                holder: layout.Transcript,
                 syncButton: true
                 //noUpdate: args.noUpdate
                 //TODO: Add links to translator & annotator
@@ -338,19 +317,20 @@ var VideoRenderer = (function(){
         render: function(args){
             // Load the caption tracks
             Promise.all([
+                (showCaptions(content) || showTranscript(content)) ?
                 ContentRenderer.getTranscripts({
                     resource: args.resource,
                     courseId: args.courseId,
                     contentId: args.contentId,
                     permission: args.permission
-                }),
-                getLevel(content) < 4 ? null :
+                }) : null,
+                showAnnotations(content) ?
                 ContentRenderer.getAnnotations({
                     resource: args.resource,
                     courseId: args.courseId,
                     contentId: args.contentId,
                     permission: args.permission
-                })
+                }) : null
             ]).then(function(arr){
                 var transcripts = arr[0],
                     manifest = arr[1],
@@ -368,14 +348,14 @@ var VideoRenderer = (function(){
                     endTime: args.endTime,
                     renderCue: args.renderCue,
                     layout: layout,
-                    translate: getLevel(content) >= 3,
+                    translate: allowDefinitions(content),
                     annotations: manifest,
                     transcripts: transcripts
                 });
 
                 videoPlayer.addEventListener('loadtexttracks', function(event){
-                    if(getLevel(content) >= 3){ setupTranslator(videoPlayer, layout, videoPlayer.textTrackResources); }
-                    if(layout.definitions){ setupDefinitionsPane(layout.definitions, videoPlayer); }
+                    if(allowDefinitions(content)){ setupTranslator(videoPlayer, layout, videoPlayer.textTrackResources); }
+                    if(layout.Definitions){ setupDefinitionsPane(layout.Definitions, videoPlayer); }
                     if(transcripts && transcripts.length && showTranscript(content)){
                         transcriptPlayer = setupTranscripts(content, layout, event.detail.tracks);
                         videoPlayer.addEventListener("timeupdate", function(){

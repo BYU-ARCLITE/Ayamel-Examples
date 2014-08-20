@@ -7,6 +7,7 @@ import service.{HashTools, SerializationTools, TimeTools}
 import play.api.db.DB
 import play.api.Play.current
 import play.api.libs.json.{Json, JsValue}
+import play.api.Logger
 import concurrent.Future
 import dataAccess.ResourceController
 
@@ -293,10 +294,10 @@ object Content extends SQLSelectable[Content] {
     DB.withConnection {
       implicit connection =>
         anorm.SQL("DELETE from " +  settingTable + " where contentId = {cid} and setting = {setting}")
-          .on('cid -> content.id, 'setting -> setting)
+          .on('cid -> content.id, 'setting -> setting).execute()
         argument.foreach { arg =>
-          anorm.SQL("INSERT into " +  settingTable + " (contentId, setting, argument) SELECT {cid}, {setting}, {argument} FROM dual WHERE NOT EXISTS (SELECT * FROM " +  settingTable + " WHERE contentId = {cid} and setting = {setting} and argument = {argument})")
-          .on('cid -> content.id, 'setting -> setting, 'argument -> arg)
+          anorm.SQL("INSERT into " +  settingTable + " (contentId, setting, argument) values ({cid}, {setting}, {argument})")
+          .on('cid -> content.id, 'setting -> setting, 'argument -> arg).execute()
         }
     }
 
@@ -304,8 +305,8 @@ object Content extends SQLSelectable[Content] {
     DB.withConnection {
       implicit connection =>
         argument.foreach { arg =>
-          anorm.SQL("INSERT into " +  settingTable + " (contentId, setting, argument) SELECT {cid}, {setting}, {argument} FROM dual WHERE NOT EXISTS (SELECT * FROM " +  settingTable + " WHERE contentId = {cid} and setting = {setting} and argument = {argument})")
-          .on('cid -> content.id, 'setting -> setting, 'argument -> arg)
+          anorm.SQL("INSERT into " +  settingTable + " (contentId, setting, argument) values ({cid}, {setting}, {argument})")
+          .on('cid -> content.id, 'setting -> setting, 'argument -> arg).execute()
         }
     }
 
@@ -314,7 +315,7 @@ object Content extends SQLSelectable[Content] {
       implicit connection =>
         argument.foreach { arg =>
           anorm.SQL("DELETE from " +  settingTable + " where contentId = {cid} and setting = {setting} and argument = {argument}")
-          .on('cid -> content.id, 'setting -> setting, 'argument -> arg)
+          .on('cid -> content.id, 'setting -> setting, 'argument -> arg).execute()
         }
     }
 

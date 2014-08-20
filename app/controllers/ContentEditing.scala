@@ -99,9 +99,12 @@ object ContentEditing extends Controller {
    * @param content The content whose settings are being set
    */
   def setAudioVideoSettings(content: Content, data: Map[String, Seq[String]]) {
-    //data.get("level").foreach { levels => content.setSetting("level", List(levels(0))) }
-    data.get("captionTracks").foreach { tracklist => content.setSetting("captionTrack", tracklist) }
-    data.get("annotationDocs").foreach { doclist => content.setSetting("annotationDocument", doclist) }
+    content.setSetting("captionTrack", data.get("captionTracks").getOrElse(Nil))
+    content.setSetting("annotationDocument", data.get("annotationDocs").getOrElse(Nil))
+
+    content.setSetting("showCaptions", List(data.get("showCaptions").map(_(0)).getOrElse("false")))
+    content.setSetting("showAnnotations", List(data.get("showAnnotations").map(_(0)).getOrElse("false")))
+    content.setSetting("allowDefinitions", List(data.get("allowDefinitions").map(_(0)).getOrElse("false")))
     content.setSetting("showTranscripts", List(data.get("showTranscripts").map(_(0)).getOrElse("false")))
   }
 
@@ -133,15 +136,16 @@ object ContentEditing extends Controller {
           val data = request.body.dataParts
           // Make sure the user is able to edit
           if (content isEditableBy user) {
-            val contentType = Symbol(data("contentType")(0))
-            if (contentType == 'video || contentType == 'audio)
+            data("contentType")(0) match {
+            case "video" | "audio" =>
               setAudioVideoSettings(content, data)
-            else if (contentType == 'image)
+            case "image" =>
               setImageSettings(content, data)
-            else if (contentType == 'text)
+            case "text" =>
               setTextSettings(content, data)
-
-            Redirect(routes.ContentController.view(id)).flashing("success" -> "Settings updated.")
+            case _ => Errors.forbidden
+            }
+            Ok
           } else
             Errors.forbidden
         }

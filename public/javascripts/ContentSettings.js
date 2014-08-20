@@ -45,12 +45,6 @@ var ContentSettings = (function() {
         {{/controls}}\
     </form>';
 
-    function getPermissionLevel(context) {
-        if(context.owner){ return "global"; }
-        if(context.courseId){ return "course"; }
-        return "personal";
-    }
-
     var predefined = {
         saveButton: {
             type: "button",
@@ -61,32 +55,45 @@ var ContentSettings = (function() {
             setting: function(context, content) {},
             items: function(){}
         },
-        playbackLevel: {
-            type: "radio",
-            label: "Playback level",
-            name: "level",
-            include: function(context, content) { return true; },
-            setting: function(context, content) {
-                return content.settings.level || 1;
-            },
-            items: function(context, content) {
-                var all = [
-                    {value: 1, text: "1 - Video playback"},
-                    {value: 2, text: "2 - Video playback with subtitles"},
-                    {value: 3, text: "3 - Video, subtitles, and interaction"},
-                    {value: 4, text: "4 - Video, subtitles, interactions, and annotations"},
-                    {value: 5, text: "5 - Video, subtitles, interactions, annotations, and auto-generated activities"}
-                ];
-                if (context.courseId) {
-                    // Get the course level
-                    return all.splice(0, (+content.settings.level) || 1);
-                }
-                return all;
-            }
-        },
-        showTranscriptions: {
+        showCaptions: {
             type: "checkbox",
-            label: "Show transcripts?",
+            label: "Show Captions?",
+            name: "showCaptions",
+            include: function(context, content){
+                return !!content.enableableCaptionTracks.length;
+            },
+            setting: function(context, content) {
+                return content.settings.showCaptions === "true";
+            },
+            items: function(){}
+        },
+        showAnnotations: {
+            type: "checkbox",
+            label: "Show text annotations?",
+            name: "showAnnotations",
+            include: function(context, content){
+                return !!content.enableableCaptionTracks.length;
+            },
+            setting: function(context, content) {
+                return content.settings.showAnnotations === "true";
+            },
+            items: function(){}
+        },
+        allowDefinitions: {
+            type: "checkbox",
+            label: "Allow automatic definitions?",
+            name: "allowDefinitions",
+            include: function(context, content){
+                return !!content.enableableCaptionTracks.length;
+            },
+            setting: function(context, content) {
+                return content.settings.allowDefinitions === "true";
+            },
+            items: function(){}
+        },
+        showTranscripts: {
+            type: "checkbox",
+            label: "Show Transcripts?",
             name: "showTranscripts",
             include: function(context, content){
                 return !!content.enableableCaptionTracks.length;
@@ -104,7 +111,7 @@ var ContentSettings = (function() {
                 return !!content.enableableCaptionTracks.length;
             },
             setting: function(context, content) {
-                return (content.settings.enabledCaptionTracks || "")
+                return (content.settings.captionTrack || "")
                     .split(",").filter(function(s){return !!s;});
             },
             items: function(context, content) {
@@ -127,7 +134,7 @@ var ContentSettings = (function() {
                 return !!content.enableableAnnotationDocuments.length;
             },
             setting: function(context, content) {
-                return (content.settings.enabledAnnotationDocuments || "")
+                return (content.settings.annotationDocument || "")
                     .split(",").filter(function(s){return !!s;});
             },
             items: function(context, content) {
@@ -145,73 +152,39 @@ var ContentSettings = (function() {
     };
 
     var settings = {
-        personal: {
-            video: [
-                predefined.enabledCaptionTracks,
-                predefined.enabledAnnotations,
-                predefined.saveButton
-            ],
-            audio: [
-                predefined.enabledCaptionTracks,
-                predefined.enabledAnnotations
-            ],
-            image: [
-                predefined.enabledAnnotations,
-                predefined.saveButton
-            ],
-            text: [
-                predefined.enabledAnnotations,
-                predefined.saveButton
-            ]
-        },
-        course: {
-            video: [
-                predefined.playbackLevel,
-                predefined.showTranscriptions,
-                predefined.enabledCaptionTracks,
-                predefined.enabledAnnotations,
-                predefined.saveButton
-            ],
-            audio: [
-                predefined.playbackLevel,
-                predefined.showTranscriptions,
-                predefined.enabledCaptionTracks,
-                predefined.enabledAnnotations,
-                predefined.saveButton
-            ],
-            image: [
-                predefined.enabledAnnotations,
-                predefined.saveButton
-            ],
-            text: [
-                predefined.enabledAnnotations,
-                predefined.saveButton
-            ]
-        },
-        global: {
-            video: [
-                predefined.playbackLevel,
-                predefined.showTranscriptions,
-                predefined.enabledCaptionTracks,
-                predefined.enabledAnnotations,
-                predefined.saveButton
-            ],
-            audio: [
-                predefined.playbackLevel,
-                predefined.showTranscriptions,
-                predefined.enabledCaptionTracks,
-                predefined.enabledAnnotations,
-                predefined.saveButton
-            ],
-            image: [
-                predefined.enabledAnnotations,
-                predefined.saveButton
-            ],
-            text: [
-                predefined.enabledAnnotations,
-                predefined.saveButton
-            ]
-        }
+        video: [
+            predefined.showCaptions,
+            predefined.allowDefinitions,
+            predefined.showAnnotations,
+            predefined.showTranscripts,
+            predefined.enabledCaptionTracks,
+            predefined.enabledAnnotations,
+            predefined.saveButton
+        ],
+        audio: [
+            predefined.showCaptions,
+            predefined.allowDefinitions,
+            predefined.showAnnotations,
+            predefined.showTranscripts,
+            predefined.enabledCaptionTracks,
+            predefined.enabledAnnotations,
+            predefined.saveButton
+        ],
+        image: [
+            predefined.showCaptions,
+            predefined.allowDefinitions,
+            predefined.showAnnotations,
+            predefined.showTranscripts,
+            predefined.enabledCaptionTracks,
+            predefined.enabledAnnotations,
+            predefined.saveButton
+        ],
+        text: [
+            predefined.allowDefinitions,
+            predefined.showAnnotations,
+            predefined.enabledAnnotations,
+            predefined.saveButton
+        ]
     };
 
     function getPermittedResources(data,cb){
@@ -272,14 +245,13 @@ var ContentSettings = (function() {
     /* args: courseId, owner, userId, content, resource, holder, action */
     function ContentSettings(args) {
 
-        // Determine what content type and at what permission level we are dealing with
+        // Determine what content type we are dealing with
         var context = {
             courseId: args.courseId || 0,
             owner: args.owner || false,
             userId: args.userId || 0
         };
 
-        var permissionLevel = getPermissionLevel(context);
         var captionTracks = getCaptionTracks(args.content, args.resource, context);
         var annotationDocs = getAnnotationDocs(args.content, args.resource, context);
 
@@ -291,7 +263,7 @@ var ContentSettings = (function() {
             args.content.enableableAnnotationDocuments = data[1];
 
             // Create the form
-            controls = settings[permissionLevel][args.content.contentType];
+            controls = settings[args.content.contentType];
             controls = controls.filter(function(config){ return config.include(context, args.content); });
             controls = controls.map(function(config) {
                 return createControls(config, context, args.content);
@@ -315,12 +287,12 @@ var ContentSettings = (function() {
                     var setting = ractive.get('controls['+index+'].setting'),
                         name = control.name;
                     (setting instanceof Array?setting:[setting]).forEach(function(value){
-                        fd.append(name, value);
+                        fd.append(name, ""+value);
                     });
                 });
 
                 xhr.addEventListener('load', function(event){
-                    $('#configurationModal').modal('hide');
+                    document.location.reload(true);
                 });
 
                 xhr.addEventListener('error', function(event){
