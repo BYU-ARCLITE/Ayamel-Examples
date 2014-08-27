@@ -188,7 +188,7 @@
             document.getElementById("saveThumbnail").addEventListener('click', function(){
                 $("#thumbnailForm").submit();
             }, false);
-
+            @if(content.contentType == 'video) {
             document.getElementById("makeThumbnail").addEventListener('click', function(){
                 // Get the time
                 var limit = 300;
@@ -199,12 +199,9 @@
                     alert("Please select a time within the first five minutes.")
                 }
             }, false);
+            }
         });
     </script>
-
-
-
-
 
     @*
     * ==========================================================================================================
