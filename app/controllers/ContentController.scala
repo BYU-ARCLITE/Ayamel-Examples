@@ -317,24 +317,22 @@ object ContentController extends Controller {
   def view(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        getContent(id) {
-          content =>
-
+        getContent(id) { content =>
           // Check for playlists
-            if (content.contentType == 'playlist) {
-              Redirect(routes.Playlists.about(id))
-            } else if (content.contentType == 'questions) {
-              Redirect(routes.QuestionSets.about(id))
-            } else {
-              // Check that the user can view the content
-              if (content isVisibleBy user) {
-                if (MobileDetection.isMobile())
-                  Ok(views.html.content.viewMobile(content, ResourceController.baseUrl))
-                else
-                  Ok(views.html.content.view(content, ResourceController.baseUrl))
-              } else
-                Errors.forbidden
-            }
+          if (content.contentType == 'playlist) {
+            Redirect(routes.Playlists.about(id))
+          } else if (content.contentType == 'questions) {
+            Redirect(routes.QuestionSets.about(id))
+          } else {
+            // Check that the user can view the content
+            if (content isVisibleBy user) {
+              if (MobileDetection.isMobile())
+                Ok(views.html.content.viewMobile(content, ResourceController.baseUrl))
+              else
+                Ok(views.html.content.view(content, ResourceController.baseUrl))
+            } else
+              Errors.forbidden
+          }
         }
   }
 
@@ -345,14 +343,12 @@ object ContentController extends Controller {
   def stats(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        getContent(id) {
-          content =>
-
+        getContent(id) { content =>
           // Only owners can view stats
-            if (content isEditableBy user) {
-              Ok(views.html.content.stats(content, ResourceController.baseUrl))
-            } else
-              Errors.forbidden
+          if (content isEditableBy user) {
+            Ok(views.html.content.stats(content, ResourceController.baseUrl))
+          } else
+            Errors.forbidden
         }
   }
 
@@ -363,20 +359,18 @@ object ContentController extends Controller {
   def downloadStats(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        getContent(id) {
-          content =>
-
+        getContent(id) { content =>
           // Only owners can view stats
-            if (content isEditableBy user) {
-              val activity = content.getActivity("")
-              val byteStream = ExcelWriter.writeActivity(activity)
-              val output = Enumerator.fromStream(byteStream)
-              SimpleResult(
-                header = ResponseHeader(200),
-                body = output
-              ).withHeaders("Content-Type" -> "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-            } else
-              Errors.forbidden
+          if (content isEditableBy user) {
+            val activity = content.getActivity("")
+            val byteStream = ExcelWriter.writeActivity(activity)
+            val output = Enumerator.fromStream(byteStream)
+            SimpleResult(
+              header = ResponseHeader(200),
+              body = output
+            ).withHeaders("Content-Type" -> "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+          } else
+            Errors.forbidden
         }
   }
 
@@ -387,15 +381,13 @@ object ContentController extends Controller {
   def clearStats(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        getContent(id) {
-          content =>
-
+        getContent(id) { content =>
           // Only owners can clear stats
-            if (content isEditableBy user) {
-              content.getActivity("").foreach(_.delete())
-              Redirect(routes.ContentController.stats(content.id.get)).flashing("info" -> "Data cleared")
-            } else
-              Errors.forbidden
+          if (content isEditableBy user) {
+            content.getActivity("").foreach(_.delete())
+            Redirect(routes.ContentController.stats(content.id.get)).flashing("info" -> "Data cleared")
+          } else
+            Errors.forbidden
         }
   }
 
@@ -407,15 +399,13 @@ object ContentController extends Controller {
    */
   def shareAccess(id: Long, authKey: String) = Action {
     implicit request =>
-      getContent(id) {
-        content =>
-
+      getContent(id) { content =>
         // Check that everything is in place to view the content
-          if (content.authKey == authKey && content.shareability != Content.shareability.notShareable) {
-            val embed = request.queryString.get("embed").exists(_(0).toBoolean)
-            Ok(views.html.content.share.view(content, ResourceController.baseUrl, embed))
-          } else
-            Ok("You are not allowed to view this content")
+        if (content.authKey == authKey && content.shareability != Content.shareability.notShareable) {
+          val embed = request.queryString.get("embed").exists(_(0).toBoolean)
+          Ok(views.html.content.share.view(content, ResourceController.baseUrl, embed))
+        } else
+          Ok("You are not allowed to view this content")
       }
   }
 
@@ -426,15 +416,13 @@ object ContentController extends Controller {
   def delete(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        getContent(id) {
-          content =>
-
+        getContent(id) { content =>
           // Make sure the user is able to edit
-            if (content isEditableBy user) {
-              content.delete()
-              Redirect(routes.ContentController.mine()).flashing("success" -> "Content deleted.")
-            } else
-              Errors.forbidden
+          if (content isEditableBy user) {
+            content.delete()
+            Redirect(routes.ContentController.mine()).flashing("success" -> "Content deleted.")
+          } else
+            Errors.forbidden
         }
   }
 

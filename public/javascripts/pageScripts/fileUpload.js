@@ -74,6 +74,7 @@ function capitalize(str) {
 $(function() {
     var selectedFile = null,
         maxFileSize = 20971520, // 20 MB
+        uploadbtn = document.getElementById('uploadbtn'),
         $fileInfo = $("#fileInfo");
 
     // Set up the continue button and sliding panels
@@ -93,9 +94,12 @@ $(function() {
         setFile(this.files[0]);
     },false);
 
-    document.getElementById('uploadbtn').addEventListener('click',function(e){
-		e.preventDefault();
-		var data = new FormData();
+    uploadbtn.addEventListener('click',uploadHandler,false);
+
+    function uploadHandler(e){
+        e.preventDefault();
+        uploadbtn.disabled = true;
+        var data = new FormData();
         data.append("file", selectedFile, selectedFile.name);
         data.append("contentType", document.getElementById('contentType').value);
         data.append("title", document.getElementById('title').value);
@@ -118,14 +122,15 @@ $(function() {
             type: "post",
             dataType: "text"
         })).then(function(data){
-			//replace current page with returned page
+            //replace current page with returned page
             document.open();
             document.write(data);
             document.close();
         },function(error){
             alert("Error occurred while uploading.");
+            uploadbtn.disabled = false;
         });
-    },false);
+    }
 
     function setFile(file) {
         $fileInfo.slideDown(300);
