@@ -286,46 +286,36 @@ object Courses extends Controller {
 
   /**
    * Approves a certain join request
-   * @param requestId The ID of the join request
+   * @param courseId The ID of the course
    */
-  def approveRequest(ignore: Long, requestId: Long) = Authentication.authenticatedAction() {
+  def approveRequest(courseId: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
-        // Get the request
-        AddCourseRequest.findById(requestId) match {
-        case Some(courseRequest) =>
-          // Make sure the user is allowed to approve
-          val courseId = courseRequest.courseId
-          if (user.hasCoursePermission(Course.findById(courseId).get, "addStudent")) {
-            courseRequest.approve()
-            Redirect(routes.Courses.approvePage(courseId)).flashing("info" -> "Course request approved")
-          } else
+        if (user.hasCoursePermission(Course.findById(courseId).get, "addStudent")) {
+            for( id <- request.body("reqid");
+                 req <- AddCourseRequest.findById(id.toLong);
+                 if req.courseId == courseId
+            ) { req.approve() }
+            Ok
+        } else
             Errors.forbidden
-        case _ =>
-          Errors.notFound
-        }
   }
 
   /**
    * Denies a particular join request
-   * @param requestId The ID of the join request
+   * @param courseId The ID of the course
    */
-  def denyRequest(ignore: Long, requestId: Long) = Authentication.authenticatedAction() {
+  def denyRequest(courseId: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
-        // Get the request
-        AddCourseRequest.findById(requestId) match {
-        case Some(courseRequest) =>
-          // Make sure the user is allowed to approve
-          val courseId = courseRequest.courseId
-          if (user.hasCoursePermission(Course.findById(courseId).get, "addStudent")) {
-            courseRequest.deny()
-            Redirect(routes.Courses.approvePage(courseId)).flashing("info" -> "Course request denied")
-          } else
+        if (user.hasCoursePermission(Course.findById(courseId).get, "addStudent")) {
+            for( id <- request.body("reqid");
+                 req <- AddCourseRequest.findById(id.toLong);
+                 if req.courseId == courseId
+            ) { req.deny() }
+            Ok
+        } else
             Errors.forbidden
-        case _ =>
-          Errors.notFound
-        }
   }
 
   /**
@@ -359,7 +349,7 @@ object Courses extends Controller {
         //Authentication.enforcePermission("admin") {
             getCourse(id) { course =>
               User.findById(request.body("userId")(0).toLong) match {
-              case Some(user) => 
+              case Some(user) =>
                 request.body("permission").foreach { permission =>
                   user.addCoursePermission(course, permission)
                 }
@@ -370,7 +360,7 @@ object Courses extends Controller {
             }
         //}
   }
-  
+
   /**
    * Teachers can share a link with student which, when visited, will cause the user to join the course.
    * This has an authenticated action so if the user doesn't have an account, as I imagine most students won't, they
