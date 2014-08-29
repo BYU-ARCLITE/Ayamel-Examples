@@ -109,8 +109,8 @@ POST    /user/permission/request        controllers.Users.submitPermissionReques
 # Admin pages
 GET     /admin                              controllers.Administration.admin
 GET     /admin/permission                   controllers.Administration.approvalPage
-GET     /admin/permission/:id/approve       controllers.Administration.approveRequest(id: Long)
-GET     /admin/permission/:id/deny          controllers.Administration.denyRequest(id: Long)
+POST    /admin/permission/approve           controllers.Administration.approveRequest()
+POST    /admin/permission/deny              controllers.Administration.denyRequest()
 GET     /admin/users                        controllers.Administration.manageUsers
 POST    /admin/users/setPermission          controllers.Administration.setPermission
 POST    /admin/users/notify                 controllers.Administration.sendNotification(currentPage: Int)

@@ -18,6 +18,7 @@
                 <th>Permission</th>
                 <th>Reason</th>
                 <th>Actions</th>
+                <th></th>
             </tr>
             @{ /* TODO: Fix, if user is empty then notify a system admin */ }
             @for(permissionRequest <- requests) {
@@ -29,15 +30,62 @@
                             <td>@permissionRequest.getDescription</td>
                             <td>@permissionRequest.reason</td>
                             <td>
-                                <a href="@routes.Administration.approveRequest(permissionRequest.id.get)" class="btn btn-blue">Approve</a>
-                                <a href="@routes.Administration.denyRequest(permissionRequest.id.get)" class="btn btn-magenta">Deny</a>
+                                <form action="@routes.Administration.approveRequest()" method="POST">
+                                    <input type="hidden" name="reqid" value="@{permissionRequest.id.get}"/>
+                                    <button class="btn btn-blue">Approve</button>
+                                </form>
+                                <form action="@routes.Administration.denyRequest()" method="POST">
+                                    <input type="hidden" name="reqid" value="@{permissionRequest.id.get}"/>
+                                    <button class="btn btn-blue">Deny</button>
+                                </form>
                             </td>
+                            <td><input type="checkbox" name="selections" value="@permissionRequest.id.get"/></td>
                         </tr>
                     }
                 }
             }
+            <tr><td colspan="6">
+                <a href="#" id="selectbtn" class="btn btn-yellow">Select All</a>
+                <a href="#" id="deselbtn" class="btn btn-yellow">Deselect All</a>
+                <a href="#" id="appbtn" class="btn btn-blue">Approve Selected</a>
+                <a href="#" id="denybtn" class="btn btn-magenta">Deny Selected</a>
+            </td></tr>
         </table>
+        <script>
+            var checks = [].slice.call(document.querySelectorAll("input[name=selections]"));
 
+            document.getElementById("selectbtn").addEventListener('click',function(){
+                checks.forEach(function(check){ check.selected = true; });
+            },false);
+
+            document.getElementById("deselbtn").addEventListener('click',function(){
+                checks.forEach(function(check){ check.selected = false; });
+            },false);
+
+            document.getElementById("appbtn").addEventListener('click',resolveRequests.bind(null,@{routes.Administration.approveRequest()}),false);
+            document.getElementById("denybtn").addEventListener('click',resolveRequests.bind(null,@{routes.Administration.denyRequest()}),false);
+
+            function resolveRequests(url){
+				if(!checks.length){ return; }
+                var data = new FormData();
+                checks.forEach(function(check){
+                    if(check.selected){ data.append("reqid", check.value); }
+                });
+                $.ajax({
+                    url: url,
+                    data: data,
+                    cache: false,
+                    contentType: false,
+                    processData: false,
+                    type: "post",
+                    dataType: "text"
+                }).then(function(data){
+                    window.location.reload();
+                },function(xhr, status, error){
+                    alert("An error occurred:\n"+status)
+                });
+            }
+        </script>
     </div>
 
 }

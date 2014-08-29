@@ -42,16 +42,14 @@ object Administration extends Controller {
    * Approves a request
    * @param id The ID of the request
    */
-  def approveRequest(id: Long) = Authentication.authenticatedAction() {
+  def approveRequest() = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
         Authentication.enforcePermission("admin") {
-          SitePermissionRequest.findById(id) match {
-            case Some(req) => req.approve()
-              Redirect(routes.Administration.approvalPage()).flashing("info" -> (req.getDescription + " request approved"))
-            case None =>
-              Errors.notFound
-          }
+		  for( id <- request.body("reqid");
+		       req <- SitePermissionRequest.findById(id.toLong)
+		  ) { req.approve() }
+		  Ok
         }
   }
 
@@ -59,16 +57,14 @@ object Administration extends Controller {
    * Denies a request
    * @param id The ID of the request
    */
-  def denyRequest(id: Long) = Authentication.authenticatedAction() {
+  def denyRequest() = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
         Authentication.enforcePermission("admin") {
-          SitePermissionRequest.findById(id) match {
-            case Some(req) => req.deny()
-              Redirect(routes.Administration.approvalPage()).flashing("info" -> (req.getDescription + " request denied"))
-            case None =>
-                Errors.notFound
-          }
+		  for( id <- request.body("reqid");
+		       req <- SitePermissionRequest.findById(id.toLong)
+		  ) { req.deny(); }
+		  Ok
         }
   }
 
