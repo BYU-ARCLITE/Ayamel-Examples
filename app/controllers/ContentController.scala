@@ -12,6 +12,8 @@ import dataAccess.{GoogleFormScripts, PlayGraph, ResourceController}
 import java.net.{URLDecoder, URI, URL}
 import play.api.libs.ws.WS
 import play.api.libs.iteratee.Enumerator
+import java.text.SimpleDateFormat;
+import java.util.Calendar
 
 /**
  * The controller for dealing with content.
@@ -365,10 +367,17 @@ object ContentController extends Controller {
             val activity = content.getActivity("")
             val byteStream = ExcelWriter.writeActivity(activity)
             val output = Enumerator.fromStream(byteStream)
+			val downloadURI = {
+				val format = new SimpleDateFormat("yyyy-M-d")
+				val contentName = content.name
+				"attachment; filename=" + format.format(Calendar.getInstance().getTime()) +
+				"." + contentName.replaceAll(" ","-") +".xlsx"
+			}
             SimpleResult(
               header = ResponseHeader(200),
               body = output
             ).withHeaders("Content-Type" -> "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+			.withHeaders(CONTENT_DISPOSITION -> downloadURI)
           } else
             Errors.forbidden
         }

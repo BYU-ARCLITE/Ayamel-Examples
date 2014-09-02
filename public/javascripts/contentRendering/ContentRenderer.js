@@ -62,14 +62,14 @@ var ContentRenderer = (function () {
 		}).then(function(data){
 			// Now turn those IDs into resources then into an annotation manifest
 			return Promise.all(data.map(function(id){
-				ResourceLibrary.load(id).then(function(resource){
+				return ResourceLibrary.load(id).then(function(resource){
 					var url = resource.content.files[0].downloadUri,
 						idx = url.indexOf('?');
 					if(idx === -1){ url += "?"; }
 					else if(idx !== url.length-1){ url += '&nocache='; }
 					url += Date.now().toString(36);
 					return AnnotationLoader.loadURL(url, resource.languages.iso639_3[0]).then(function(manifest){
-						if(manifest){ manifest.resourceId = resource.id; }
+						//if(manifest){ manifest.resourceId = resource.id; } //this line breaks stuff
 						return manifest;
 					}, function(err){ return null; });
 				});
