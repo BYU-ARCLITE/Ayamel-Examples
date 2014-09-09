@@ -35,7 +35,7 @@ var VideoRenderer = (function(){
         if(showTranscript(content)){ slideOuts.push("Transcript"); }
         if(allowDefinitions(content)){ slideOuts.push("Definitions"); }
         if(showAnnotations(content)){ slideOuts.push("Annotations"); }
-        
+
         switch(slideOuts.length){
         case 0:
             return ContentLayoutManager.onePanel(holder);
@@ -85,24 +85,25 @@ var VideoRenderer = (function(){
                     <div class="engine">' + engineToHTML(detail) + '</div>' + wordList +
                 '</div>');
 
-            html.querySelector("button").addEventListener('click', function(){
-                var addWord = this.parentNode;
-                $.ajax("/words", {
-                    type: "post",
-                    data: {
-                        language: detail.srcLang,
-                        word: detail.text
-                    },
-                    success: function(){
-                        addWord.innerHTML = "<span class='color-blue'>Added to word list.</span>";
-                    },
-                    error: function(){
-                        alert("Error adding to word list");
-                        addWord.parentNode.removeChild(addWord);
-                    }
+            if (wordList != "" ) {
+                html.querySelector("button").addEventListener('click', function(){
+                    var addWord = this.parentNode;
+                    $.ajax("/words", {
+                        type: "post",
+                        data: {
+                            language: detail.srcLang,
+                            word: detail.text
+                        },
+                        success: function(){
+                            addWord.innerHTML = "<span class='color-blue'>Added to word list.</span>";
+                        },
+                        error: function(){
+                            alert("Error adding to word list");
+                            addWord.parentNode.removeChild(addWord);
+                        }
+                    });
                 });
-            });
-
+            }
             layout.Definitions.appendChild(html);
             layout.Definitions.scrollTop = layout.Definitions.scrollHeight;
 
@@ -245,7 +246,7 @@ var VideoRenderer = (function(){
             holder: args.layout.player,
             resource: args.resource,
             captionTracks: captions,
-			annotations: args.annotations,
+            annotations: args.annotations,
 //            components: components,
             startTime: args.startTime,
             endTime: args.endTime,
@@ -318,14 +319,14 @@ var VideoRenderer = (function(){
         render: function(args){
             // Load the caption tracks
             Promise.all([
-                (showCaptions(content) || showTranscript(content)) ?
+                (showCaptions(args.content) || showTranscript(args.content)) ?
                 ContentRenderer.getTranscripts({
                     resource: args.resource,
                     courseId: args.courseId,
                     contentId: args.contentId,
                     permission: args.permission
                 }) : null,
-                showAnnotations(content) ?
+                showAnnotations(args.content) ?
                 ContentRenderer.getAnnotations({
                     resource: args.resource,
                     courseId: args.courseId,

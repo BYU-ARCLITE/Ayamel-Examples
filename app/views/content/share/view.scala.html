@@ -27,9 +27,15 @@
             Rel("javascripts/",
               Rel("libraries/",
                 JS("jquery-1.9.0.min.js"),
-                JS("bootstrap.min.js")),
+                JS("bootstrap.min.js"),
+                JS("Ractive.min.js"),
+                JS("Ractive-events-tap.js")),
+              JS("Map.js"),
               JS("contentSelection/ContentItemRenderer.js"),
-              JS("ActivityStreams.js"))))
+              JS("ActivityStreams.js"))),
+          Extern("EditorWidgets",
+            CSS("css/Superselect.css"),
+            JS("js/SuperSelect.js"))
         )
 
         @views.html.content.header.includes()
