@@ -2,7 +2,7 @@
  * For usage, see https://github.com/BYU-ARCLITE/Ayamel-Examples/wiki/Improving-forms
  */
 $(function() {
-    [].forEach.call(document.querySelector("input[type='labels']"),function(node){
+    [].forEach.call(document.querySelectorAll("input[type='labels']"),function(node){
         // Put a container adjacent
         var element = document.createElement('div');
         node.parentNode.insertBefore(element, node.nextSibling);
@@ -48,7 +48,7 @@ $(function() {
                 <button class="btn">Add</button>\
             </div>'
         );
-        var labelInputText = labelInputHolder.querySelector$('input');
+        var labelInputText = labelInputHolder.querySelector('input');
         var labelInputButton = labelInputHolder.querySelector('button');
 
         element.appendChild(labelInputHolder);
