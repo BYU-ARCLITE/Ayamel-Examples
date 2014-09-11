@@ -169,7 +169,7 @@ var ContentRenderer = (function () {
                 content: args.content,
                 holder: args.holder,
                 inPlaylist: args.inPlaylist,
-                qcallback: callback
+                qcallback: args.callback
             });
         }
     }
