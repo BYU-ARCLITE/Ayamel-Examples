@@ -12,7 +12,7 @@ import dataAccess.{GoogleFormScripts, PlayGraph, ResourceController}
 import java.net.{URLDecoder, URI, URL}
 import play.api.libs.ws.WS
 import play.api.libs.iteratee.Enumerator
-import java.text.SimpleDateFormat;
+import java.text.SimpleDateFormat
 import java.util.Calendar
 
 /**
@@ -233,11 +233,17 @@ object ContentController extends Controller {
                 if (code == 200) {
                   val title = (json \ "resource" \ "title").as[String]
                   val contentType = (json \ "resource" \ "type").as[String]
-                  val content = Content(NotAssigned, title, Symbol(contentType), "", resourceId).save
-                  user.addContent(content)
 
-                  Redirect(routes.ContentController.view(content.id.get))
-                    .flashing("success" -> "Content added.")
+                  //TODO: Make this a whitelist instead of a blacklist
+                  if (contentType == "data") {
+                     Redirect(routes.ContentController.createPage("resource"))
+                    .flashing("error" -> "Can't create content from a data resource.")
+                  } else {
+                    val content = Content(NotAssigned, title, Symbol(contentType), "", resourceId).save
+                    user.addContent(content)
+                    Redirect(routes.ContentController.view(content.id.get))
+                      .flashing("success" -> "Content added.")
+                  }
                 } else
                   Redirect(routes.ContentController.createPage("resource"))
                     .flashing("error" -> "That resource doesn't exist")
@@ -304,7 +310,7 @@ object ContentController extends Controller {
           Async {
             GoogleFormScripts.createForm(title, user.email.get).map(formId => {
               val content = Content(NotAssigned, title, 'questions, "", formId, labels = labels).save
-			  content.setSetting("description", List(description))
+              content.setSetting("description", List(description))
               user.addContent(content)
 
               Redirect(routes.QuestionSets.about(content.id.get))
@@ -325,7 +331,8 @@ object ContentController extends Controller {
             Redirect(routes.Playlists.about(id))
           } else if (content.contentType == 'questions) {
             Redirect(routes.QuestionSets.about(id))
-          } else {
+          } else if (content.contentType != 'data) {
+            //TODO: make this a whitelist instead of blacklist
             // Check that the user can view the content
             if (content isVisibleBy user) {
               if (MobileDetection.isMobile())
@@ -334,6 +341,9 @@ object ContentController extends Controller {
                 Ok(views.html.content.view(content, ResourceController.baseUrl))
             } else
               Errors.forbidden
+          } else {
+            Redirect(routes.ContentController.public)
+              .flashing("error" -> "Requested content uses invalid resource")
           }
         }
   }
@@ -367,17 +377,17 @@ object ContentController extends Controller {
             val activity = content.getActivity("")
             val byteStream = ExcelWriter.writeActivity(activity)
             val output = Enumerator.fromStream(byteStream)
-			val downloadURI = {
-				val format = new SimpleDateFormat("yyyy-M-d")
-				val contentName = content.name
-				"attachment; filename=" + format.format(Calendar.getInstance().getTime()) +
-				"." + contentName.replaceAll(" ","-") +".xlsx"
-			}
+            val downloadURI = {
+                val format = new SimpleDateFormat("yyyy-M-d")
+                val contentName = content.name
+                "attachment; filename=" + format.format(Calendar.getInstance().getTime()) +
+                "." + contentName.replaceAll(" ","-") +".xlsx"
+            }
             SimpleResult(
               header = ResponseHeader(200),
               body = output
             ).withHeaders("Content-Type" -> "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-			.withHeaders(CONTENT_DISPOSITION -> downloadURI)
+            .withHeaders(CONTENT_DISPOSITION -> downloadURI)
           } else
             Errors.forbidden
         }
