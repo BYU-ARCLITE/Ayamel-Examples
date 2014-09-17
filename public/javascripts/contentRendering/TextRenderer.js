@@ -13,7 +13,7 @@ var TextRenderer = (function(){
 
         var textHolder = document.createElement('pre');
         textHolder.id = "textHolder";
-        panes.$player.append(textHolder);
+        panes.player.appendChild(textHolder);
         return {
             textHolder: textHolder
         };
