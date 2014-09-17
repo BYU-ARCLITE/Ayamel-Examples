@@ -104,7 +104,9 @@ $(function() {
         data.append("contentType", document.getElementById('contentType').value);
         data.append("title", document.getElementById('title').value);
         data.append("description", document.getElementById('description').value);
-        data.append("labels", document.getElementById('labels').value);
+        [].forEach.call(document.getElementById('labels').options,function(option){
+            data.append("labels", option.value);
+        });
 
         [].forEach.call(document.getElementById('languages').options,function(option){
             if(option.selected){ data.append('languages', option.value); }

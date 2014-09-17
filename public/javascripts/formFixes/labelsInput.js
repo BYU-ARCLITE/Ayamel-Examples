@@ -54,10 +54,15 @@ $(function() {
         element.appendChild(labelInputHolder);
 
         // Setup the add functionality
-        labelInputButton.addEventListener('click', clickHandler, false);
+        labelInputButton.addEventListener('click', function(event){
+            event.stopPropagation();
+            event.preventDefault();
+            clickHandler();
+        }, false);
         labelInputText.addEventListener('keypress', function(event){
             if(event.which !== 13){ return true; }
             event.stopPropagation();
+            event.preventDefault();
             clickHandler();
             return false;
         }, false);
