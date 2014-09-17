@@ -53,7 +53,9 @@ $(function() {
 
         element.appendChild(labelInputHolder);
 
-        // Setup the add functionality
+        //Setup the add functionality
+		//Can't deduplicate the stopPropagation/preventDefault code
+		//Some browsers ignore them if they are not called in the top scope
         labelInputButton.addEventListener('click', function(event){
             event.stopPropagation();
             event.preventDefault();
@@ -63,8 +65,7 @@ $(function() {
             if(event.which !== 13){ return true; }
             event.stopPropagation();
             event.preventDefault();
-            clickHandler();
-            return false;
+            return clickHandler();
         }, false);
 
         function clickHandler(){
