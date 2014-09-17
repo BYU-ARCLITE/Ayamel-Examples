@@ -5,9 +5,10 @@
 $(function() {
     var template = '<button class="btn">Choose File</button><span>No file chosen</span>';
     [].forEach.call(document.querySelectorAll("input[type='file']"), function(node){
-		node.parentNode.insertBefore(Ayamel.utils.parseHTML(template), node.nextSibling);
+        node.parentNode.insertBefore(Ayamel.utils.parseHTML(template), node.nextSibling);
         node.nextSibling.addEventListener('click', function(event){
             event.stopPropagation();
+            event.preventDefault();
             node.click();
             return false;
         });
@@ -16,6 +17,6 @@ $(function() {
             node.nextSibling.nextSibling.textContent = filename;
         }, false);
         node.style.width = "1px";
-		node.style.opacity = "0";
+        node.style.opacity = "0";
     });
 });
