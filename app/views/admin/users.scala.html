@@ -1,22 +1,11 @@
 @(users: List[User])(implicit request: RequestHeader, user: User)
+@import models.SitePermissions.descriptionMap
 
-@optStr(str: Option[String]) = {
-    @if(str.isDefined) {
-        @shorten(str.get)
-    } else {
-        <em>Not set</em>
-    }
-}
-
-@shorten(str: String) = {
-    @if(str.length > 15) {
-        <a href="#" class="shortened" data-toggle="tooltip" title="@str">@{str.substring(0, 12) + "..."}</a>
-    } else {
-        @str
-    }
-}
-
-@main("Ayamel - User Accounts", Local(CSS("stylesheets/admin.css"))) {
+@main("Ayamel - User Accounts",
+    Local(
+        CSS("stylesheets/admin.css"),
+        JS("javascripts/pageScripts/userAccounts.js"))
+) {
 
     <div class="adminBackground">
     </div>
@@ -26,70 +15,12 @@
         @views.html.admin.navbar("userAccounts")
 
         <h1>Users Accounts</h1>
-
-        <table class="table table-bordered table-striped table-condensed">
-            <tr>
-                <th>Id</th>
-                <th>Auth Scheme</th>
-                <th>Username</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Permissions</th>
-                <th>Merged?</th>
-                <th>Actions</th>
-            </tr>
-            @for(_user <- users) {
-                <tr>
-                    <td>@_user.id.get</td>
-                    <td>@_user.authScheme.name</td>
-                    <td>@shorten(_user.username)</td>
-                    <td>@optStr(_user.name)</td>
-                    <td>@optStr(_user.email)</td>
-                    <td>
-                        <a href="#permModal" role="button" class="btn btn-small btn-blue pull-right" data-toggle="modal" data-id="@_user.id.get" data-permlist="@_user.getPermissions.mkString(",")">Set</a>
-                    </td>
-                    <td>
-                        @if(_user.accountLinkId == -1) {
-                            No
-                        } else {
-                            Yes. (#@_user.getAccountLink.get.primaryAccount)
-                        }
-                    </td>
-                    <td>
-                        @if(user != _user) {
-                            <a href="@routes.Administration.proxy(_user.id.get)" class="btn btn-small btn-yellow">Proxy</a>
-                            <a href="#notificationModal" role="button" data-toggle="modal" class="btn btn-small btn-blue sendNote" data-id="@_user.id.get">Notify</a>
-                            <a href="#deleteModal" role="button" data-toggle="modal" class="btn btn-small btn-magenta deleteUser" data-id="@_user.id.get">Delete</a>
-                        }
-                    </td>
-                </tr>
-            }
-        </table>
-
-    </div>
-
-    <div id="permModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="permModalLabel" aria-hidden="true">
-        <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-            <h3 id="permModalLabel">Set user permissions</h3>
-        </div>
-        <div class="modal-body">
-            <form method="POST" action="@routes.Administration.setPermission()" id="userPermForm">
-                <input type="hidden" name="userId" id="permUserId">
-                @for((perm, desc) <- SitePermissions.descriptionMap){
-                    <label><input type="checkbox" name="permission" value="@perm">@desc</label>
-                }
-            </form>
-        </div>
-        <div class="modal-footer">
-            <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
-            <button class="btn btn-blue formSubmitter" data-target="#userPermForm">Save changes</button>
-        </div>
+        <span id="usertable"></span>
     </div>
 
     <div id="notificationModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="notificationModalLabel" aria-hidden="true">
         <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">X</button>
             <h3 id="notificationModalLabel">Send a notification</h3>
         </div>
         <div class="modal-body">
@@ -114,7 +45,7 @@
 
     <div id="deleteModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
         <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">X</button>
             <h3 id="deleteModalLabel">Delete user</h3>
         </div>
         <div class="modal-body">
@@ -126,37 +57,28 @@
         </div>
     </div>
 
-    <script type="text/javascript">
+    <script>
+        var viewer_id = @{user.id.get};
+        var permUrl = "@{routes.Administration.setPermission()}";
+        var userPermissionList = [@for((k,v) <- descriptionMap) {
+            {value: "@k", text: "@v"},
+        }];
+        var userList = [@for(_user <- users) {
+            {
+                id: @{_user.id.get},
+                authScheme: "@{_user.authScheme.name}",
+                username: "@{_user.username}",
+                name: "@{_user.name.getOrElse("")}",
+                email: "@{_user.email.getOrElse("")}",
+                linked: @{_user.getAccountLink.map(_.primaryAccount).getOrElse(-1)},
+                permissions: [@for(p <- _user.getPermissions){ "@p", }]
+            },
+        }];
         $(function() {
             $(".shortened").tooltip();
 
             $(".formSubmitter").click(function() {
                 $(this.dataset["target"]).submit();
-            });
-
-            $("a[href='#permModal']").click(function() {
-                var permissionList = this.dataset['permlist'].split(",");
-                document.getElementById("permUserId").value = this.dataset["id"];
-                [].forEach.call(document.querySelectorAll("#userPermForm input[type='checkbox']"),function(box){
-                    box.checked = permissionList.indexOf(box.value) > -1;
-                });
-            });
-
-            $(".sendNote").click(function() {
-                var id = this.dataset["id"];
-                $("#noteUserId").val(id);
-                $("#noteUserIdDisplay").text(id);
-            });
-
-            $(".deleteUser").click(function() {
-                var id = this.dataset["id"];
-                $("#deleteUserId").text(id);
-                $("#deleteButton").attr("data-id", id);
-            });
-
-            $("#deleteButton").click(function() {
-                var id = this.dataset["id"];
-                window.location = "/admin/users/" + id + "/delete";
             });
         });
     </script>

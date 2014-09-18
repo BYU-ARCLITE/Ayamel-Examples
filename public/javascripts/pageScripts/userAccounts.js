@@ -1,0 +1,183 @@
+$(function(){
+    "use strict";
+
+    var userTemplate = '<superselect\
+        icon="" text="Select Permissions"\
+		button="left"\
+        selection="{{activePermissions}}"\
+        multiple="true"\
+        options="{{permissionList}}"\
+    />\
+    <table class="table table-bordered table-condensed">\
+        <tr>\
+            <th>Id</th><th>Auth Scheme</th><th>Username</th><th>Name</th><th>Email</th>\
+            <th>Merged?</th><th>Permissions</th><th>Actions</th>\
+        </tr>\
+        {{#users:index}}\
+            <tr style="background: {{calc_color(.permissions, activePermissions)}};" id="uid{{.id}}">\
+                <td><label><input type="checkbox" name="{{selectedUsers}}" value="{{index}}"/>{{.id}}</label></td>\
+				<td>{{.authScheme}}</td><td>{{shorten(.username)}}</td>\
+                <td>{{{(.name?shorten(.name):"<em>Not set</em>")}}}</td>\
+                <td>{{{(.email?shorten(.email):"<em>Not set</em>")}}}</td>\
+                <td>{{{(.linked === -1 ? "No" : "Yes: #"+.linked)}}}</td>\
+                <td>\
+                    {{#is_missing(.permissions, activePermissions)}}<a proxy-tap="add:{{index}}" class="btn btn-small btn-yellow">Add Missing</a>{{/missing}}\
+                    {{#has_extra(.permissions, activePermissions)}}<a proxy-tap="remove:{{index}}" class="btn btn-small btn-yellow">Remove Extra</a>{{/extra}}\
+                    {{#(is_missing(.permissions, activePermissions) && has_extra(.permissions, activePermissions))}}\
+						<a proxy-tap="match:{{index}}" class="btn btn-small btn-yellow">Match Filter</a>\
+					{{/match}}\
+                </td><td>\
+                    {{#(.id !== viewer_id)}}\
+                        <a proxy-tap="proxy:{{.id}}" class="btn btn-small btn-yellow">Proxy</a>\
+                        <a proxy-tap="notify:{{.id}}" class="btn btn-small btn-blue sendNote">Notify</a>\
+                        <a proxy-tap="delete:{{.id}}" class="btn btn-small btn-magenta deleteUser">Delete</a>\
+                    {{/is_viewer}}\
+                </td>\
+            </tr>\
+        {{/users}}\
+        <tr><td colspan="8">\
+            <b>For selected:</b>\
+            <!--<a proxy-tap="deletesel" class="btn btn-small btn-magenta deleteUser">Delete</a>-->\
+            <a proxy-tap="addsel" class="btn btn-small btn-yellow">Add Permissions</a>\
+            <a proxy-tap="removesel" class="btn btn-small btn-yellow">Remove Permissions</a>\
+            <a proxy-tap="matchsel" class="btn btn-small btn-yellow">Match Filter</a>\
+        </td></tr>\
+    </table>';
+
+	/* Add back when setting the selection outside of superselect works:
+                    {{#(is_missing(.permissions, activePermissions) || has_extra(.permissions, activePermissions))}}\
+						<a proxy-tap="select:{{index}}" class="btn btn-small btn-yellow">Select Permissions</a>\
+					{{/match}}\
+	*/
+	
+    var utable = new Ractive({
+        el: document.getElementById('usertable'),
+        components: { superselect:  EditorWidgets.SuperSelect },
+        template: userTemplate,
+        data: {
+            activePermissions: ["admin"],
+            permissionList: userPermissionList,
+            selectedUsers: [],
+            users: userList,
+            viewer_id: viewer_id,
+            shorten: function(str) {
+                return str.length < 16?str:
+                    '<span title="'+str+'">'+str.substr(0,12)+'...</span>';
+            },
+			is_missing: function(uperm, aperm){
+				return aperm.some(function(p){ return uperm.indexOf(p) === -1; });
+			},
+			has_extra: function(uperm, aperm){
+				return uperm.some(function(p){ return aperm.indexOf(p) === -1; });
+			},
+            calc_color: function(uperm, aperm){
+                var missing = aperm.some(function(p){ return uperm.indexOf(p) === -1; }),
+                    extra = uperm.some(function(p){ return aperm.indexOf(p) === -1; });
+                return missing?
+                    (extra?"#FF00FF":"#FFFFFF"):
+                    (extra?"#AAAAFF":"#AAFFAA");
+            }
+        }
+    });
+
+    utable.on('add', function(e,index){
+        addUserPermissions(index).then(null,function(e){
+            alert("Error updating permissions");
+        });
+    });
+    utable.on('remove', function(e,index){
+        removeUserPermissions(index).then(null,function(e){
+            alert("Error updating permissions");
+        });
+    });
+    utable.on('match', function(e,index){
+        matchUserPermissions(index).then(null,function(e){
+            alert("Error updating permissions");
+        });
+    });
+	
+    /*utable.on('select', function(e,index){
+        utable.set('activePermissions', utable.data.users[index].permissions);
+    });*/
+
+    utable.on('proxy', function(e,id){
+        window.location = "/admin/proxy/"+id;
+    });
+    utable.on('notify', function(e,id){
+        $("#noteUserId").val(id);
+        $("#noteUserIdDisplay").text(id);
+        $("#notificationModal").show();
+    });
+    utable.on('delete', function(e,id){
+        $("#deleteUserId").text(id);
+        $("#deleteButton").click(function() {
+            //HOLY COW INSECURE! WHY IS THIS NOT A POST!?
+            window.location = "/admin/users/" + id + "/delete";
+        });
+        $("#deleteModal").show();
+    });
+
+    utable.on('addsel', function(){
+        Promise.all(utable.data.selectedUsers.map(addUserPermissions))
+        .then(null,function(e){
+            alert("Error updating permissions");
+        });
+    });
+    utable.on('removesel', function(){
+        utable.data.selectedUsers.map(removeUserPermissions)
+        .then(null,function(e){
+            alert("Error updating permissions");
+        });
+    });
+    utable.on('matchsel', function(){
+        utable.data.selectedUsers.map(matchUserPermissions)
+        .then(null,function(e){
+            alert("Error updating permissions");
+        });
+    });
+    //utable.on('deletesel', function(){alert("Unimplemented");});
+
+    function updateUserPermissions(index, perms){
+        var data = new FormData();
+        data.append("userId", utable.data.users[index].id);
+        perms.forEach(function(p){ data.append("permission", p); });
+        return Promise.resolve($.ajax({
+            url: permUrl,
+            data: data,
+            cache: false,
+            contentType: false,
+            processData: false,
+            type: "post",
+            dataType: "text"
+        })).then(function(data){
+            utable.set('users['+index+'].permissions', perms);
+        });
+    }
+
+    function addUserPermissions(index){
+        var aperm = utable.get('activePermissions'),
+            uperm = utable.get('users['+index+'].permissions'),
+            nperm = aperm.filter(function(p){ return uperm.indexOf(p) === -1; });
+        if(nperm.length === 0){ return Promise.resolve(true); }
+        [].push.apply(nperm, uperm);
+        return updateUserPermissions(index, nperm);
+    }
+
+    function removeUserPermissions(index){
+        var aperm = utable.get('activePermissions'),
+            uperm = utable.get('users['+index+'].permissions'),
+			nperm = aperm.filter(function(p){ return uperm.indexOf(p) > -1; });
+		if(nperm.length === uperm.length){ return Promise.resolve(true); }
+        return updateUserPermissions(index, nperm);
+    }
+
+    function matchUserPermissions(index){
+		var aperm = utable.get('activePermissions'),
+            uperm = utable.get('users['+index+'].permissions');
+		if(aperm.length === uperm.length &&
+			aperm.every(function(p){ return uperm.indexOf(p) > -1; }) &&
+			uperm.every(function(p){ return aperm.indexOf(p) > -1; })
+		){ return Promise.resolve(true); }
+        return updateUserPermissions(index, aperm);
+    }
+});

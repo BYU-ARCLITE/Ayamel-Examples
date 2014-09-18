@@ -1,6 +1,8 @@
 @(user: User, course: Course)(implicit request: RequestHeader)
+@import models.CoursePermissions.descriptionMap
 
 @if(user.hasCoursePermission(course, "teacher")) {
+    @Dependencies(Local(JS("javascripts/pageScripts/coursePermissions.js")))
     <div id="studentInfoModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="studentInfoModalLabel" aria-hidden="true">
         <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
@@ -26,66 +28,34 @@
             </table>
 
             <h4>Students</h4>
-            <table class="table table-bordered">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-						<th>Permissions</th>
-                        @if(user.hasCoursePermission(course, "teacher")){ <th>Actions</th> }
-                    </tr>
-                </thead>
-                <tbody>
-                    @for(student <- course.getStudents) {
-                        <tr>
-                            <td>@student.displayName</td>
-                            <td>@Html(student.email.getOrElse("<em>None</em>"))</td>
-							<td>
-								<a href="#permModal" role="button" class="btn btn-small btn-blue pull-right" data-toggle="modal" data-id="@student.id.get" data-permlist="@student.getCoursePermissions(course).mkString(",")">Set</a>
-							</td>
-                            @if(user.hasCoursePermission(course, "teacher")){
-                                <td><a href="/course/@{course.id.get}/remove/@{student.id.get}" class="btn btn-magenta"><i class="icon-trash"></i> Remove</a></td>
-                            }
-                        </tr>
-                    }
-                </tbody>
-            </table>
+			<span id="membertable"></span>
         </div>
         <div class="modal-footer">
             <button class="btn btn-blue" data-dismiss="modal" aria-hidden="true">Close</button>
         </div>
     </div>
-	
-    <div id="permModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="permModalLabel" aria-hidden="true">
-        <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-            <h3 id="permModalLabel">Set permissions</h3>
-        </div>
-        <div class="modal-body">
-            <form method="POST" action="@routes.Courses.setPermission(course.id.get)" id="userPermForm">
-                <input type="hidden" name="userId" id="permUserId">
-                @for((perm, desc) <- CoursePermissions.descriptionMap){
-                    <label><input type="checkbox" name="permission" value="@perm">@desc</label>
-                }
-            </form>
-        </div>
-        <div class="modal-footer">
-            <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
-            <button class="btn btn-blue formSubmitter" data-target="#userPermForm">Save changes</button>
-        </div>
-    </div>
-	<script type="text/javascript">
+
+	<script>
+        var viewer_id = @{user.id.get};
+        var permUrl = "@{routes.Courses.setPermission(course.id.get)}";
+		var isTeacher = @if(user.hasCoursePermission(course, "teacher")){ "true" } else { "false" };
+        var memberPermissionList = [@for((k,v) <- descriptionMap) {
+            {value: "@k", text: "@v"},
+        }];
+        var memberList = [@for(student <- course.getStudents) {
+            {
+                id: @{student.id.get},
+                username: "@{student.username}",
+                name: "@{student.name.getOrElse("")}",
+                email: "@{student.email.getOrElse("")}",
+                permissions: [@for(p <- student.getCoursePermissions(course)){ "@p", }]
+            },
+        }];
         $(function() {
+            $(".shortened").tooltip();
+
             $(".formSubmitter").click(function() {
                 $(this.dataset["target"]).submit();
-            });
-
-            $("a[href='#permModal']").click(function() {
-                var permissionList = this.dataset['permlist'].split(",");
-                document.getElementById("permUserId").value = this.dataset["id"];
-                [].forEach.call(document.querySelectorAll("#userPermForm input[type='checkbox']"),function(box){
-                    box.checked = permissionList.indexOf(box.value) > -1;
-                });
             });
         });
     </script>

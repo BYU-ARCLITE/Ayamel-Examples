@@ -4,16 +4,13 @@
     <div class="face" data-toggle="tooltip" title="@user.displayName" style="background: url('@user.getPicture'); background-size: cover;"></div>
 }
 
-@moreStyles =  @{
-
-}
+@moreStyles =  @{}
 
 @main("Ayamel - " + course.name, Local(
   Rel("stylesheets/", CSS("course.css"), CSS("content.css")),
-  Rel("javascripts/",
-    Rel("contentSelection/",
-      JS("PopupBrowser.js"),
-      JS("PopupLabelBrowser.js"))))
+  Rel("javascripts/contentSelection/",
+    JS("PopupBrowser.js"),
+    JS("PopupLabelBrowser.js")))
 ) {
 
     <script type="text/javascript">
@@ -80,7 +77,7 @@
                             sorting: true,
                             labels: [@Html(course.getContent.flatMap(_.labels).map(s => "\"" + s + "\"").mkString(","))],
                             filters: ContentItemRenderer.standardFilters,
-                            courseId: @{course.id.get}
+                            courseId: courseId
                         });
                     });
                 </script>
