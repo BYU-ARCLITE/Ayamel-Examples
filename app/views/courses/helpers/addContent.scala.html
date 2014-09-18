@@ -5,6 +5,7 @@
 }
 
 @if(user.hasCoursePermission(course, "addContent")) {
+    <script type="text/javascript" src='@routes.Assets.at("javascripts/pageScripts/viewCourse.js")'></script>
     <div id="addContentModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="addContentModalLabel" aria-hidden="true">
         <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
@@ -13,12 +14,10 @@
 
         <div class="modal-body">
             <p>You can add content that you have uploaded to this course.</p>
-            @if(user.hasCoursePermission(course, "addContent")) {
-                <p>
-                    If you want to add other content to this course, then view that content and click the "Add to
-                    Course" button.
-                </p>
-            }
+            <p>
+                If you want to add other content to this course, then view that content and click the "Add to
+                Course" button.
+            </p>
 
             @if(availableContent.isEmpty) {
                 <strong><em>All your content has been added to this course.</em></strong>
@@ -73,9 +72,11 @@
 
     <script type="text/javascript">
         $(function() {
-            document.getElementById("addContentButton").addEventListener('click', function(){
-                $("#addContentForm").submit();
-            }, false);
+            @if(!availableContent.isEmpty) {
+                document.getElementById("addContentButton").addEventListener('click', function(){
+                    $("#addContentForm").submit();
+                }, false);
+            }
             document.getElementById("announcementButton").addEventListener('click', function(){
                 $("#announcementForm").submit();
             }, false);

@@ -13,8 +13,7 @@
   Rel("javascripts/",
     Rel("contentSelection/",
       JS("PopupBrowser.js"),
-      JS("PopupLabelBrowser.js")),
-    JS("pageScripts/viewCourse.js")))
+      JS("PopupLabelBrowser.js"))))
 ) {
 
     <script type="text/javascript">
@@ -43,7 +42,6 @@
                 <a href="@routes.Courses.approvePage(course.id.get)" class="btn btn-blue"><i class="icon-check"></i> Student Requests</a>
             }
         </div>
-
 
         <div class="faces">
             @for(member <- course.getMembers) {
@@ -84,17 +82,14 @@
                             filters: ContentItemRenderer.standardFilters,
                             courseId: @{course.id.get}
                         });
-
-                        document.getElementById("deleteButton").addEventListener('click', function(){
-                            window.location = "/admin/courses/" + courseId + "/delete";
-                        }, false);
                     });
                 </script>
-
             </div>
             <div class="span4">
                 <h3><i class="icon-bullhorn"></i> Announcements</h3>
-                <a href="#announcementModal" role="button" class="btn btn-blue" data-toggle="modal"><i class="icon-comment"></i> Make an announcement</a>
+                @if(user.hasCoursePermission(course, "addContent")) {
+                    <a href="#announcementModal" role="button" class="btn btn-blue" data-toggle="modal"><i class="icon-comment"></i> Make an announcement</a>
+                }
 
                 @for(announcement <- course.getSortedAnnouncements) {
                     @courses.announcement(announcement)
@@ -108,8 +103,6 @@
     @views.html.courses.helpers.deleteCourse(user, course)
     @views.html.courses.helpers.studentInfo(user, course)
     @views.html.courses.helpers.joinLink(user, course)
-
     @views.html.courses.helpers.addContent(user, course)
-
 
 }

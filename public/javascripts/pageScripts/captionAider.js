@@ -519,7 +519,7 @@ $(function() {
                 //  1. We aren't in an input
                 //  2. A modal isn't open
                 var inputFocused = ["TEXTAREA", "INPUT"].indexOf(document.activeElement.nodeName) > -1,
-                    modalOpen = document.querySelectorAll(".modal:visible").length;
+                    modalOpen = document.querySelectorAll(".modal\\:visible").length;
                 if (!inputFocused && !modalOpen){ timeline.currentTool = tool; }
             });
         });

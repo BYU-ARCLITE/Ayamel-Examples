@@ -14,4 +14,11 @@
             <button class="btn btn-magenta" id="deleteButton" data-id="">Yes, Delete</button>
         </div>
     </div>
+    <script type="text/javascript">
+        $(function() {
+            document.getElementById("deleteButton").addEventListener('click', function(){
+               window.location = "/admin/courses/" + courseId + "/delete";
+            }, false);
+        });
+    </script>
 }

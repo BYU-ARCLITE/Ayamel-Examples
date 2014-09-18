@@ -96,7 +96,9 @@ object Courses extends Controller {
     implicit request =>
       implicit user =>
         getCourse(id) { course =>
-          if (user.hasCoursePermission(course, "viewCourse"))
+          // TODO: Once the users get the "viewCourse" permission, use 
+          //       if (user.hasCoursePermission(course, "viewCourse")) instead
+          if (course.getMembers.contains(user) ||  SitePermissions.userHasPermission(user, "admin"))
             Ok(views.html.courses.view(course))
           else
             Redirect(routes.Courses.courseRequestPage(id))
