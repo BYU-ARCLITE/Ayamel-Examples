@@ -223,9 +223,13 @@ object Courses extends Controller {
       implicit user =>
         Authentication.enforcePermission("joinCourse") {
           getCourse(id) { course =>
-            AddCourseRequest.listByCourse(course).find(req => req.userId == user.id.get) match {
-            case Some(_) => Ok(views.html.courses.pending(course))
-            case _ => Ok(views.html.courses.request(course))
+            if(course.getMembers.contains(user)) {  // Make sure the user isn't already in the course
+              Redirect(routes.Courses.view(id)).flashing("error" -> "You are already in this course")
+            } else {
+              AddCourseRequest.listByCourse(course).find(req => req.userId == user.id.get) match {
+              case Some(_) => Ok(views.html.courses.pending(course))
+              case _ => Ok(views.html.courses.request(course))
+              }
             }
           }
         }
@@ -374,7 +378,9 @@ object Courses extends Controller {
     implicit request =>
       implicit user =>
         getCourse(id) { course =>
-          if (key == course.lmsKey) {
+          if(course.getMembers.contains(user)) {  // Make sure the user isn't already in the course
+            Redirect(routes.Courses.view(id)).flashing("error" -> "You are already in this course")
+          } else if (key == course.lmsKey) {
             user.enroll(course)
             Redirect(routes.Courses.view(id)).flashing("info" -> ("Welcome to the course \"" + course.name + "\"."))
           } else {
