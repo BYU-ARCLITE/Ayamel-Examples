@@ -110,13 +110,12 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
     // First, find the membership
     val membership = CourseMembership.listByUser(this).filter(_.courseId == course.id.get)
 
-    // Check the number or results
-    if (membership.size == 1)
-    // One membership. So delete it
-      membership(0).delete()
-    else
-    // We didn't get exactly one membership so don't do anything, but warn
+    if (membership.size > 1)
+    // We didn't get exactly one membership warn
       Logger.warn("Multiple (or zero) memberships for user #" + id.get + " in course #" + course.id.get)
+
+    // Delete all found
+    membership.foreach(_.delete)
 
     this
   }
