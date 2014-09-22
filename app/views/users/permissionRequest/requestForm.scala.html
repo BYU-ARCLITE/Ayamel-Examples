@@ -9,57 +9,66 @@
 
         <h1>Permission Request Form</h1>
 
-        <p>
-            Please fill out and submit the following form. Your request will be evaluated and, if approved, you will be
-            notified of the additional permissions.
-        </p>
+        @defining(SitePermissions.permissionList.filter { p =>
+          !user.hasSitePermission(p)
+        }) { permissions =>
+          @if(permissions.isEmpty) {
+            <p>
+                You already have all possible permissions.
+            </p>
+          } else {
+            <p>
+                Please fill out and submit the following form. Your request will be evaluated and, if approved, you will be
+                notified of the additional permissions.
+            </p>
 
-        <form class="form-horizontal" method="post" action="@routes.Users.submitPermissionRequest()">
-            <div class="control-group">
-                <label class="control-label" for="name">Name</label>
-                <div class="controls">
-                    @if(user.name.isDefined) {
-                        <span class="input-medium uneditable-input">@user.name.get</span>
-                        <input type="hidden" name="name" id="name" value="@user.name.get">
-                    } else {
-                        <input type="text" id="name" name="name" placeholder="Name">
-                    }
+            <form class="form-horizontal" method="post" action="@routes.Users.submitPermissionRequest()">
+                <div class="control-group">
+                    <label class="control-label" for="name">Name</label>
+                    <div class="controls">
+                        @if(user.name.isDefined) {
+                            <span class="input-medium uneditable-input">@user.name.get</span>
+                            <input type="hidden" name="name" id="name" value="@user.name.get">
+                        } else {
+                            <input type="text" id="name" name="name" placeholder="Name">
+                        }
+                    </div>
                 </div>
-            </div>
-            <div class="control-group">
-                <label class="control-label" for="email">Email</label>
-                <div class="controls">
-                    @if(user.email.isDefined) {
-                        <span class="input-medium uneditable-input">@user.email.get</span>
-                        <input type="hidden" name="email" id="email" value="@user.email.get">
-                    } else {
-                        <input type="text" id="email" name="email" placeholder="Email">
-                    }
+                <div class="control-group">
+                    <label class="control-label" for="email">Email</label>
+                    <div class="controls">
+                        @if(user.email.isDefined) {
+                            <span class="input-medium uneditable-input">@user.email.get</span>
+                            <input type="hidden" name="email" id="email" value="@user.email.get">
+                        } else {
+                            <input type="text" id="email" name="email" placeholder="Email">
+                        }
+                    </div>
                 </div>
-            </div>
-            <div class="control-group">
-                <label class="control-label" for="permission">Permission</label>
-                <div class="controls">
-                    <select name="permission" id="permission">
-                      @SitePermissions.permissionList.map { p =>
-                        <option value="@p">@SitePermissions.getDescription(p)</option>
-                      }
-                    </select>
+                <div class="control-group">
+                    <label class="control-label" for="permission">Permission</label>
+                    <div class="controls">
+                        <select name="permission" id="permission">
+                          @permissions.map { p =>
+                            <option value="@p">@SitePermissions.getDescription(p)</option>
+                          }
+                        </select>
+                    </div>
                 </div>
-            </div>
-            <div class="control-group">
-                <label class="control-label" for="reason">Reason for needing the permission</label>
-                <div class="controls">
-                    <textarea name="reason" id="reason"></textarea>
+                <div class="control-group">
+                    <label class="control-label" for="reason">Reason for needing the permission</label>
+                    <div class="controls">
+                        <textarea name="reason" id="reason"></textarea>
+                    </div>
                 </div>
-            </div>
-            <div class="control-group">
-                <div class="controls">
-                    <button type="submit" class="btn btn-blue">Submit request</button>
+                <div class="control-group">
+                    <div class="controls">
+                        <button type="submit" class="btn btn-blue">Submit request</button>
+                    </div>
                 </div>
-            </div>
-        </form>
-
+            </form>
+          }
+        }
     </div>
 
 }
