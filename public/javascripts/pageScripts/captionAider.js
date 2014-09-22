@@ -82,7 +82,7 @@ $(function() {
             data: {
                 dialogTitle: "Create a new track",
                 languages: langList,
-                trackLang: "zxx",
+                trackLang: ["zxx"],
                 trackKind: "subtitles",
                 trackName: "",
                 trackMime: "text/vtt",
@@ -98,7 +98,7 @@ $(function() {
                         switch(key){
                         case 'kind': return data.trackKind;
                         case 'name': return data.trackName || "Untitled";
-                        case 'lang': return data.trackLang;
+                        case 'lang': return data.trackLang[0];
                         case 'mime': return data.trackMime;
                         case 'overwrite': return true;
                         case 'handler':
@@ -131,7 +131,7 @@ $(function() {
             data: {
                 dialogTitle: "Edit tracks",
                 languages: langList,
-                trackLang: "zxx",
+                trackLang: ["zxx"],
                 trackKind: "subtitles",
                 trackName: "",
                 buttons: [{event:"save",label:"Save"}]
@@ -154,7 +154,7 @@ $(function() {
                         case 'tid': return data.trackToEdit;
                         case 'kind': return data.trackKind;
                         case 'name': return data.trackName || "Untitled";
-                        case 'lang': return data.trackLang;
+                        case 'lang': return data.trackLang[0];
                         case 'overwrite': return true;
                         }
                     }));
@@ -176,7 +176,7 @@ $(function() {
             ractive.set({
                 trackName: trackName,
                 trackKind: track.kind,
-                trackLang: track.language
+                trackLang: [track.language]
             });
         });
 
@@ -316,7 +316,7 @@ $(function() {
             data: {
                 dialogTitle: "Load Track",
                 languages: langList,
-                trackLang: "zxx",
+                trackLang: ["zxx"],
                 trackKind: "subtitles",
                 sources: Object.keys(sources).map(function(key){ return {name: key, label: sources[key].label}; }),
                 buttons: [{event:"load",label:"Load"}]
@@ -337,7 +337,7 @@ $(function() {
                             switch(key){
                             case 'tracksrc': return fileObj;
                             case 'kind': return data.trackKind;
-                            case 'lang': return data.trackLang;
+                            case 'lang': return data.trackLang[0];
                             case 'overwrite': return true;
                             case 'handler':
                                 return function(trackp){
