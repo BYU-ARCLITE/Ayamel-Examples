@@ -231,6 +231,20 @@ var VideoRenderer = (function(){
             }
         });
 
+        // Need to remove the players css so that the fullscreen css can happen
+        window.addEventListener('enterfullscreen', function(event){
+            if (Ayamel.utils.FullScreen.isFullScreen){
+                player.element.style.removeProperty("width");
+                player.element.style.removeProperty("height");
+                return;
+            }
+        }, false);
+
+        // Call a resize event so that it resizes after
+        window.addEventListener(Ayamel.utils.FullScreen.fullScreenEvent, function(event){
+            window.dispatchEvent(new Event('resize',{bubbles:true,cancealble:true}));
+        }, false);
+        
          window.addEventListener('resize', function(event){
             if(!args.screenAdaption || !args.screenAdaption.fit || Ayamel.utils.FullScreen.isFullScreen){ return; }
 

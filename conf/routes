@@ -11,22 +11,22 @@ GET     /terms                          controllers.Application.terms
 GET     /policy                         controllers.Application.policy
 
 # Authentication
-GET     /auth/google                                    controllers.authentication.Google.login(action: String = "login", path: String = "")
+GET     /auth/google                                   controllers.authentication.Google.login(action: String = "login", path: String = "")
 GET     /auth/google/redirect*path                     controllers.authentication.Google.login(action: String = "login", path: String)
-GET     /auth/google/merge                              controllers.authentication.Google.login(action: String = "merge", path: String = "")
-GET     /auth/google/callback/:action                   controllers.authentication.Google.callback(action: String, path: String = "")
+GET     /auth/google/merge                             controllers.authentication.Google.login(action: String = "merge", path: String = "")
+GET     /auth/google/callback/:action                  controllers.authentication.Google.callback(action: String, path: String = "")
 GET     /auth/google/callback/:action/redirect*path    controllers.authentication.Google.callback(action: String, path: String)
-GET     /auth/cas                                       controllers.authentication.Cas.login(action: String = "login", path: String = "")
+GET     /auth/cas                                      controllers.authentication.Cas.login(action: String = "login", path: String = "")
 GET     /auth/cas/redirect*path                        controllers.authentication.Cas.login(action: String = "login", path: String)
-GET     /auth/cas/merge                                 controllers.authentication.Cas.login(action: String = "merge", path: String = "")
-GET     /auth/cas/callback/:action                      controllers.authentication.Cas.callback(action: String, path: String = "")
+GET     /auth/cas/merge                                controllers.authentication.Cas.login(action: String = "merge", path: String = "")
+GET     /auth/cas/callback/:action                     controllers.authentication.Cas.callback(action: String, path: String = "")
 GET     /auth/cas/callback/:action/redirect*path       controllers.authentication.Cas.callback(action: String, path: String)
-POST    /auth/password                                  controllers.authentication.Password.login(action: String = "login", path: String = "")
+POST    /auth/password                                 controllers.authentication.Password.login(action: String = "login", path: String = "")
 POST    /auth/password/redirect*path                   controllers.authentication.Password.login(action: String = "login", path: String)
-POST    /auth/password/merge                            controllers.authentication.Password.login(action: String = "merge", path: String = "")
-POST    /auth/createAccount                             controllers.authentication.Password.createAccount(path: String = "")
+POST    /auth/password/merge                           controllers.authentication.Password.login(action: String = "merge", path: String = "")
+POST    /auth/createAccount                            controllers.authentication.Password.createAccount(path: String = "")
 POST    /auth/createAccount/redirect*path              controllers.authentication.Password.createAccount(path: String)
-GET     /auth/logout                                    controllers.authentication.Authentication.logout
+GET     /auth/logout                                   controllers.authentication.Authentication.logout
 
 # Course pages
 GET     /course                                         controllers.Courses.list
@@ -155,13 +155,13 @@ POST    /help/:id/edit                      controllers.HelpPages.save(id: Long)
 GET     /help/:id/delete                    controllers.HelpPages.delete(id: Long)
 
 # Ajax utilities
-POST    /ajax/activity                                      controllers.ajax.ActivitySaver.save
-POST    /ajax/permissionChecker                             controllers.ajax.PermissionChecker.check
-GET     /ajax/content/mine                                  controllers.ajax.ContentLister.mine
-GET     /ajax/content/course                                controllers.ajax.ContentLister.course
-GET     /ajax/content/public                                controllers.ajax.ContentLister.public
-GET     /ajax/content/:id                                   controllers.ajax.ContentLister.get(id: Long)
-GET     /ajax/questions/:id/grade/:index                    controllers.QuestionSets.gradeAjax(id: Long, index: Int)
+POST    /ajax/activity                      controllers.ajax.ActivitySaver.save
+POST    /ajax/permissionChecker             controllers.ajax.PermissionChecker.check
+GET     /ajax/content/mine                  controllers.ajax.ContentLister.mine
+GET     /ajax/content/course                controllers.ajax.ContentLister.course
+GET     /ajax/content/public                controllers.ajax.ContentLister.public
+GET     /ajax/content/:id                   controllers.ajax.ContentLister.get(id: Long)
+GET     /ajax/questions/:id/grade/:index    controllers.QuestionSets.gradeAjax(id: Long, index: Int)
 
 # Feedback
 POST    /feedback                       controllers.Application.saveFeedback
