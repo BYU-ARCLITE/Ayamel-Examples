@@ -372,6 +372,12 @@ var VideoRenderer = (function(){
                     }
                 }, false);
 
+                // Handle thumbnail making
+                document.addEventListener('makeThumbnail',function (e) {
+                    e.stopPropagation();
+                    document.getElementById("makeThumbnail").dispatchEvent(new CustomEvent('timeUpdate',{bubbles:true, detail : { currentTime : videoPlayer.currentTime }}));
+                },false);
+
                 // Resize the panes' content to be correct size onload
                 $("#Definitions, #Annotations").css("height", videoPlayer.height-($("#videoTabs").height() + 27));
             });

@@ -286,8 +286,27 @@ object ContentEditing extends Controller {
                     }.map { videoObject =>
                       (videoObject \ "downloadUri") match {
                         case videoUrl:JsString => Async {
-                          // Generate the thumbnail for that video
-                          VideoTools.generateThumbnail(videoUrl.value, time).map {
+                        /* 
+                            The "-protocols" command will list your version of ffmpeg
+
+                            List of supported Protocols:
+                                applehttp, concat, crypto, file, gopher, http, httpproxy
+                                mmsh, mmst, pipe, rtmp, rtp, tcp, udp
+                            The default protocol is "file:" and you do not need to specify it in ffmpeg,
+                                so we can't check to see if we are using a supported protocol. However,
+                                we do know that "https:" is unsupported, so if we get one, try to convert it
+                                to "http:". If it doesn't work, we'll just get a message that the thumbnail
+                                could not be generated.
+                        */
+                         val url = {
+                            if (videoUrl.value.startsWith("https://"))
+                                JsString(videoUrl.value.replaceFirst("https://","http://"))
+                            else
+                                videoUrl
+                         }
+
+                         // Generate the thumbnail for that video
+                          VideoTools.generateThumbnail(url.value, time).map {
                             case Some(thumbnailUrl) =>
                               // Save it and be done
                               content.copy(thumbnail = thumbnailUrl).save

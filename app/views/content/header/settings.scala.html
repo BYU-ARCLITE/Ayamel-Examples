@@ -189,10 +189,19 @@
                 $("#thumbnailForm").submit();
             }, false);
             @if(content.contentType == 'video) {
+            // Get the time from the player - currently, there is no way to directly access 
+			// the videoPlayer to grab the actual currentTime, so send an event to the
+			// videoPlayer object itself to grab the video time
             document.getElementById("makeThumbnail").addEventListener('click', function(){
                 // Get the time
+                document.dispatchEvent(new CustomEvent('makeThumbnail',{bubbles:true, cancelable:true}));
+            }, false);
+            
+            // Recieved the current time from the videoPlayer, now create the thumbnail based off of the current time
+            document.getElementById("makeThumbnail").addEventListener('timeUpdate', function(e){
+                // Get the time
                 var limit = 300;
-                var time = Math.floor(ayamelPlayer.currentTime * 100) / 100;
+                var time = Math.floor(e.detail.currentTime * 100) / 100;
                 if (time <= limit){
                     window.location = "/content/@content.id.get/makeThumb/" + time;
                 }else{
