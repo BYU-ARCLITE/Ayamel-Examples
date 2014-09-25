@@ -184,6 +184,7 @@
 
                 // Show the metadata
                 ResourceLibrary.load(content.resourceId).then(function(resource){
+                    var title = resource.title;
                     document.getElementById("metadataDescription").textContent = resource.description;
                     document.getElementById("metadataLanguages").innerHTML =
                         resource.languages.iso639_3.map(function(langCode) {
@@ -200,7 +201,7 @@
                         resource.content.files
                         .filter(function(fobj){return fobj.downloadUri;})
                         .map(function(fobj){
-                            return '<li><a href="'+fobj.downloadUri+'" target="_blank">'+fobj.representation+': '+fobj.mime+' ('+(fobj.bytes/1024)+'KB)</a></li>';
+                            return '<li><a href="'+fobj.downloadUri+'" target="_blank" download="'+title+'">'+fobj.representation+': '+fobj.mime+' ('+(fobj.bytes/1024)+'KB)</a></li>';
                         }).join('') || '<li><a>No downloads available</a></li>';
                 });
             });
