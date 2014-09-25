@@ -290,7 +290,7 @@ var VideoRenderer = (function(){
                 //requires the actual TextTrack objects; should be fixed up to take resource IDs, I think
                 captionTracks: captionTracks,
                 holder: layout.Transcript,
-                syncButton: true
+                sync: true
                 //noUpdate: args.noUpdate
                 //TODO: Add links to translator & annotator
             });

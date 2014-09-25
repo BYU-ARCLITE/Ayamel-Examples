@@ -9,7 +9,7 @@ var TranscriptPlayer = (function(){
 
     // TODO: resizing
 
-	/* args: captionTracks, holder, syncButton */
+	/* args: captionTracks, holder, sync */
     function TranscriptPlayer(args) {
 
         var _this = this,
@@ -27,7 +27,7 @@ var TranscriptPlayer = (function(){
                     <select value="{{activeIndex}}">\
                         {{#transcripts:i}}<option value="{{i}}">{{.label}}</option>{{/transcripts}}\
                     </select>\
-                    <!--{{#allowsync}}<button on-tap="sync" type="button" class="{{sync?"btn active":"btn"}}" data-toggle="button" title="Sync with media"><i class="icon-refresh"></i></button>{{/allowsync}}-->\
+                    <button proxy-tap="sync" type="button" class="{{sync?"btn active":"btn"}}" title="Sync with media"><i class="icon-refresh"></i></button>\
                 </div>\
                 <div>\
                     {{#transcripts:ti}}\
@@ -42,8 +42,7 @@ var TranscriptPlayer = (function(){
             data: {
                 activeIndex: 0,
                 transcripts: tracks,
-                allowsync: args.syncButton || false,
-                sync: args.syncButton || false,
+                sync: args.sync || false,
                 direction: function(text){ return Ayamel.utils.getTextDirection(text); }
             }
         });

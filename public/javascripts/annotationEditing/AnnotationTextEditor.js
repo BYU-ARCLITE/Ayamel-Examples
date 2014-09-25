@@ -91,7 +91,7 @@ var AnnotationTextEditor = (function(){
                 var transcriptPlayer = new TranscriptPlayer({
                     holder: args.holder,
                     captionTracks: tracks,
-                    syncButton: true
+                    sync: true
                     /* filter: function(cue, $cue) {
                         setupTextAnnotations($cue);
                     } */
