@@ -60,7 +60,7 @@ object CaptionAider extends Controller {
             Async {
               if (resourceId.isEmpty) {
                 //TODO: This is where we need to edit stuff to use the proper Resource Library API
-                
+
                 // Create a new resource
                 // Upload the data
                 val name = FileUploader.uniqueFilename(tmpFile.filename)

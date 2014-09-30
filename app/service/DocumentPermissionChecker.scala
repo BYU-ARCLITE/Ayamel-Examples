@@ -19,8 +19,13 @@ class DocumentPermissionChecker(user: User, content: Content, course: Option[Cou
 
   // A document resource is personal if clientUser.id = "user:ID"
   def personalFilter(resource: JsObject): Boolean = try { //try block handles unchecked gets
-    val id = (resource \ "clientUser" \ "id").as[String]
-    id.startsWith("user") && id.split(":")(1).toLong == user.id.get
+    // At the moment, the clientId is not setup for all caption tracks.
+    // So if clientUser does not exist yet, use content.isEditableBy
+    val id = (resource \ "clientUser" \ "id").asOpt[String].getOrElse("")
+    if (id!="")
+      id.startsWith("user") && id.split(":")(1).toLong == user.id.get
+    else
+      content.isEditableBy(user)
   } catch {
     case _: Throwable => false
   }
@@ -48,7 +53,7 @@ class DocumentPermissionChecker(user: User, content: Content, course: Option[Cou
    * Checks if the user is allowed to edit this particular resource
    */
   def canEdit(resource: JsObject): Boolean = {
-    enabled(resource) && personalFilter(resource) //or user is admin
+    enabled(resource) && (personalFilter(resource) || user.hasSitePermission("admin"))//or user is admin
   }
 
   //TODO: update the content database so that this doesn't have to make resource requests

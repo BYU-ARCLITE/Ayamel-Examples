@@ -17,7 +17,11 @@ var VideoRenderer = (function(){
         return content.settings.showTranscripts === "true";
     }
 
+    // We use the captions button to load the captions which the transcript uses.
+	// CaptionAdier will break if the captions button is not present
     function showCaptions(content){
+	    if (window.location.pathname.indexOf("captionaider") > -1)
+            return "true";
         return content.settings.showCaptions === "true";
     }
 
