@@ -5,6 +5,7 @@ import play.api.mvc.Controller
 import models._
 import service.{FileUploader, ImageTools, HashTools}
 import scala.Some
+import scala.util.{Try, Success, Failure}
 import javax.imageio.ImageIO
 import scala.concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
@@ -114,20 +115,26 @@ object Users extends Controller {
         val redirect = Redirect(routes.Users.accountSettings())
 
         // Load the image from the file and make it into a thumbnail
-        request.body.file("file").map { picture =>
-          ImageTools.makeThumbnail(ImageIO.read(picture.ref.file)) match {
-            case Some(image) => Async { // Upload the file
-              FileUploader.uploadImage(image, picture.filename).map { url =>
-                if(url.isDefined) {
-                  // Save the user info about the profile picture
-                  user.copy(picture = url).save
-                  redirect.flashing("info" -> "Profile picture updated")
-                } else {
-                  redirect.flashing("error" -> "Failed to upload image")
+        request.body.file("file").flatMap { picture =>
+          Try(Option(ImageIO.read(picture.ref.file))) match {
+            case Success(imgOpt) =>
+              imgOpt.map { image =>
+                ImageTools.makeThumbnail(image) match {
+                  case Some(image) => Async { // Upload the file
+                    FileUploader.uploadImage(image, picture.filename).map { url =>
+                      if(url.isDefined) {
+                        // Save the user info about the profile picture
+                        user.copy(picture = url).save
+                        redirect.flashing("info" -> "Profile picture updated")
+                      } else {
+                        redirect.flashing("error" -> "Failed to upload image")
+                      }
+                    }
+                  }
+                  case None => redirect.flashing("error" -> "Unknown error while processing image")
                 }
               }
-            }
-            case None => redirect.flashing("error" -> "Unknown error while processing image")
+            case Failure(_) => Some(redirect.flashing("error" -> "Could not read image"))
           }
         }.getOrElse {
           redirect.flashing("error" -> "Missing file")
