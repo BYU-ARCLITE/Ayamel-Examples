@@ -488,3 +488,7 @@
     width:100%;
     text-align:right;
 }
+
+.form-horizontal .controls {
+    padding-top: 5px;
+}

@@ -420,7 +420,7 @@ $(function() {
     ContentRenderer.castContentObject(content).then(function(content){
         if(content.contentType !== 'video'){ throw new Error("Non-Video Content"); }
         else return ResourceLibrary.load(content.resourceId).then(function(resource){
-            content.settings.showCaptions === "true";
+            content.settings.showCaptions = "true";
             return {
                 content: content,
                 resource: resource,

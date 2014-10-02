@@ -8,39 +8,58 @@
 var ContentSettings = (function() {
 
     var settingsTemplate = '<form class="form-horizontal">\
-        {{#controls}}\
+        {{#controls:c}}\
         <div class="control-group">\
-            {{#(type == \'radio\')}}\
-            {{#label}}<span class="control-label">{{label}}</span>{{/label}}\
-            <div class="controls">\
-                {{#items}}\
-                <label>\
-                    <input type="radio" name="{{setting}}" value="{{.value}}">{{.text}}\
-                </label>\
-                {{/items}}\
-            </div>\
-            {{/type}}\
-            {{#(type == \'checkbox\')}}\
-            {{#label}}<span class="control-label">{{label}}</span>{{/label}}\
-            <div class="controls">\
-                <input type="checkbox" checked="{{setting}}">\
-            </div>\
-            {{/type}}\
-            {{#(type == \'multicheck\')}}\
-            {{#label}}<span class="control-label">{{label}}</span>{{/label}}\
-            <div class="controls">\
-                {{#items}}\
-                <label>\
-                    <input type="checkbox" name="{{setting}}" value="{{.value}}">{{.text}}\
-                </label>\
-                {{/items}}\
-            </div>\
-            {{/type}}\
-            {{#(type == \'button\')}}\
-            <div class="controls">\
-                <button class="btn {{classes}}" on-click="click:{{name}}">{{label}}</button>\
-            </div>\
-            {{/type}}\
+            {{#(controlsSettings[c].include(context, content))}}\
+                {{#(type == \'radio\')}}\
+                {{#label}}<span class="control-label">{{label}}</span>{{/label}}\
+                <div class="controls">\
+                    {{#items}}\
+                    <label>\
+                        <input type="radio" name="{{setting}}" value="{{.value}}">{{.text}}\
+                    </label>\
+                    {{/items}}\
+                </div>\
+                {{/type}}\
+                {{#(type == \'checkbox\')}}\
+                {{#label}}<span class="control-label">{{label}}</span>{{/label}}\
+                <div class="controls">\
+                    <input type="checkbox" checked="{{setting}}">\
+                </div>\
+                {{/type}}\
+                {{#(type == \'multicheck\')}}\
+                {{#label}}<span class="control-label">{{label}}</span>{{/label}}\
+                <div class="controls">\
+                    {{#items}}\
+                    <label>\
+                        <input type="checkbox" name="{{setting}}" value="{{.value}}">{{.text}}\
+                    </label>\
+                    {{/items}}\
+                </div>\
+                {{/type}}\
+                {{#(type == \'button\')}}\
+                <div class="controls">\
+                    <button class="btn {{classes}}" on-click="click:{{name}}">{{label}}</button>\
+                </div>\
+                {{/type}}\
+            {{/include}}\
+            {{^(controlsSettings[c].include(context, content))}}\
+                {{#(type == \'radio\')}}\
+                {{#label}}<span class="control-label">{{label}}</span>{{/label}}\
+                {{#none}}<div class="controls">\{{none}}</div>{{/none}}\
+                {{/type}}\
+                {{#(type == \'checkbox\')}}\
+                {{#label}}<span class="control-label">{{label}}</span>{{/label}}\
+                {{#none}}<div class="controls">\<i>{{none}}</i></div>{{/none}}\
+                {{/type}}\
+                {{#(type == \'multicheck\')}}\
+                {{#label}}<span class="control-label">{{label}}</span>{{/label}}\
+                {{#none}} <div class="controls"><i>{{none}}</i></div>{{/none}}\
+                {{/type}}\
+                {{#(type == \'button\')}}\
+                {{#none}}<span class="control-label"><i>{{none}}</i></span>{{/none}}\
+                {{/type}}\
+            {{/include}}\
         </div>\
         {{/controls}}\
     </form>';
@@ -50,15 +69,20 @@ var ContentSettings = (function() {
             type: "button",
             label: "Save",
             name: "save",
+            //none: "Save option not available",
             classes: "btn-blue",
-            include: function(context, content) { return true; },
+            include: function(context, content) {
+                 // Checks if there is anything that could allow configuration options
+                return (!!content.enableableCaptionTracks.length || !!content.enableableAnnotationDocuments.length);
+            },
             setting: function(context, content) {},
             items: function(){}
         },
         showCaptions: {
             type: "checkbox",
-            label: "Show Captions?",
+            label: "Show Captions:",
             name: "showCaptions",
+            none: "No captions to show",
             include: function(context, content){
                 return !!content.enableableCaptionTracks.length;
             },
@@ -69,10 +93,11 @@ var ContentSettings = (function() {
         },
         showAnnotations: {
             type: "checkbox",
-            label: "Show text annotations?",
+            label: "Show text annotations:",
             name: "showAnnotations",
+            none: "No annotations to show",
             include: function(context, content){
-                return !!content.enableableCaptionTracks.length;
+                return !!content.enableableAnnotationDocuments.length;
             },
             setting: function(context, content) {
                 return content.settings.showAnnotations === "true";
@@ -81,8 +106,9 @@ var ContentSettings = (function() {
         },
         allowDefinitions: {
             type: "checkbox",
-            label: "Allow automatic definitions?",
+            label: "Allow automatic definitions:",
             name: "allowDefinitions",
+            none: "No tracks available",
             include: function(context, content){
                 return !!content.enableableCaptionTracks.length;
             },
@@ -93,8 +119,9 @@ var ContentSettings = (function() {
         },
         showTranscripts: {
             type: "checkbox",
-            label: "Show Transcripts?",
+            label: "Show Transcripts:",
             name: "showTranscripts",
+            none: "No transcripts to show",
             include: function(context, content){
                 return !!content.enableableCaptionTracks.length;
             },
@@ -105,8 +132,9 @@ var ContentSettings = (function() {
         },
         enabledCaptionTracks: {
             type: "multicheck",
-            label: "Enabled Caption Tracks",
+            label: "Enabled Caption Tracks:",
             name: "captionTracks",
+            none: "No captions to enable",
             include: function(context, content){
                 return !!content.enableableCaptionTracks.length;
             },
@@ -128,8 +156,9 @@ var ContentSettings = (function() {
         },
         enabledAnnotations: {
             type: "multicheck",
-            label: "Enabled Annotations",
+            label: "Enabled Annotations:",
             name: "annotationDocs",
+            none: "No annotations to enable",
             include: function(context, content){
                 return !!content.enableableAnnotationDocuments.length;
             },
@@ -153,11 +182,11 @@ var ContentSettings = (function() {
 
     var settings = {
         video: [
-            predefined.showCaptions,
             predefined.allowDefinitions,
-            predefined.showAnnotations,
             predefined.showTranscripts,
+            predefined.showCaptions,
             predefined.enabledCaptionTracks,
+            predefined.showAnnotations,
             predefined.enabledAnnotations,
             predefined.saveButton
         ],
@@ -235,6 +264,7 @@ var ContentSettings = (function() {
             type: config.type,
             name: config.name,
             label: config.label,
+            none: config.none,
             classes: config.classes,
             setting: config.setting(context, content),
             items: config.items(context, content)
@@ -257,22 +287,21 @@ var ContentSettings = (function() {
 
         Promise.all([captionTracks,annotationDocs])
         .then(function(data){
-            var ractive, controls;
+            var ractive, controls, controlsSettings;
 
             args.content.enableableCaptionTracks = data[0];
             args.content.enableableAnnotationDocuments = data[1];
 
             // Create the form
-            controls = settings[args.content.contentType];
-            controls = controls.filter(function(config){ return config.include(context, args.content); });
-            controls = controls.map(function(config) {
+            controlsSettings = settings[args.content.contentType];
+            controls = controlsSettings.map(function(config) {
                 return createControls(config, context, args.content);
             });
 
             ractive = new Ractive({
                 el: args.holder,
                 template: settingsTemplate,
-                data: {controls: controls},
+                data: {controls: controls, content: args.content, context: context, controlsSettings: controlsSettings}
             });
             ractive.on('click',function(evt, which){
                 evt.original.preventDefault();
