@@ -71,7 +71,7 @@ $(function() {
 
     function updateSpacing() {
         document.getElementById("bottomSpacer").style.marginTop = document.getElementById("bottomContainer").clientHeight + "px";
-		$('html,body').animate({scrollTop: document.body.scrollHeight - window.innerHeight}, 1000,'swing');
+        $('html,body').animate({scrollTop: document.body.scrollHeight - window.innerHeight}, 1000,'swing');
     }
 
     //Create New Track From Scratch
@@ -420,6 +420,7 @@ $(function() {
     ContentRenderer.castContentObject(content).then(function(content){
         if(content.contentType !== 'video'){ throw new Error("Non-Video Content"); }
         else return ResourceLibrary.load(content.resourceId).then(function(resource){
+            content.settings.showCaptions === "true";
             return {
                 content: content,
                 resource: resource,
