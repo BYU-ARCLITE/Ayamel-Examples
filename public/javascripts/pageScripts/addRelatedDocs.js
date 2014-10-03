@@ -27,7 +27,7 @@ $(function() {
                     <option value="chapters">Chapters</option>\
                     <option value="metadata">Metadata</option>\
                 </select></td>\
-                <td><button on-tap="upload">Upload</button></td>\
+                <td><button on-tap="upload" id="uplCaptionsBtn">Upload</button></td>\
                 </tr>\
             </tbody>\
         </table>',
@@ -134,11 +134,14 @@ $(function() {
             return;
         }
 
+        document.getElementById("uplCaptionsBtn").disabled = true;
+
         file = files[0];
         mime = file.type || TimedText.inferType(file.name);
 
         if(!mime){
             alert('Could not determine file type.');
+            document.getElementById("uplCaptionsBtn").disabled = false;
             return;
         }
 
@@ -162,8 +165,15 @@ $(function() {
             ResourceLibrary.load(data).then(function(resource){
                 viewCapR.get('resources').push(resource);
             });
+
+            document.getElementById("uplCaptionsBtn").disabled = false;
+
+            // If it was saved correctly, reload the page when the user closes the modal
+            $('#captionTrackModal').on("hidden", function () { document.location.reload();});
+
         },function(xhr, status, error){
             alert("Error occurred while saving\n"+status)
+            document.getElementById("uplCaptionsBtn").disabled = false;
         });
     });
 
