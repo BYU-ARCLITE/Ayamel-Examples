@@ -157,6 +157,9 @@ var VideoRenderer = (function(){
 
             if(event.detail.data.type === "text"){
                 layout.Annotations.innerHTML = event.detail.data.value;
+                [].forEach.call(layout.Annotations.querySelectorAll('a'),function(link){
+                    link.target = "_blank";
+                });
             }
 
             if(event.detail.data.type === "image"){
