@@ -91,7 +91,7 @@
         JS("youtube.js")))))
 
 <script>
-	var translationEndpoint = "@{Play.configuration.getString("translation.endpoint").get}";
-	var translationKey = "@{Play.configuration.getString("translation.key").get}";
-	Ayamel.path = "@{Dependencies.config.getString("Ayamel.js").get}";
+	var translationEndpoint = "@{Play.configuration.getString("translation.endpoint").getOrElse("(function(){ throw \"Missing Translation Endpoint\";})()")}";
+	var translationKey = "@{Play.configuration.getString("translation.key").getOrElse("(function(){ throw \"Missing Translation Key\";})()")}";
+	Ayamel.path = "@{Dependencies.config.getString("Ayamel.js").getOrElse("(function(){ throw \"Missing Ayamel.js Path\";})()")}";
 </script>
