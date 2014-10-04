@@ -61,40 +61,6 @@ object ContentEditing extends Controller {
   }
 
   /**
-   * Set content visibility endpoint
-   */
-  def setVisibility(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
-    implicit request =>
-      implicit user =>
-        ContentController.getContent(id) {  content =>
-          // Make sure the user is able to edit
-          if (content isEditableBy user) {
-            val visibility = request.body("visibility")(0).toInt
-            content.copy(visibility = visibility).save
-            Redirect(routes.ContentController.view(id)).flashing("success" -> "Visibility updated.")
-          } else
-            Errors.forbidden
-        }
-  }
-
-  /**
-   * Set content shareability endpoint
-   */
-  def setShareability(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
-    implicit request =>
-      implicit user =>
-        ContentController.getContent(id) {  content =>
-          // Make sure the user is able to edit
-          if (content isEditableBy user) {
-            val shareability = request.body("shareability")(0).toInt
-            content.copy(shareability = shareability).save
-            Redirect(routes.ContentController.view(id)).flashing("success" -> "Shareability updated.")
-          } else
-            Errors.forbidden
-        }
-  }
-
-  /**
    * Helper function which sets audio/video settings
    * @param content The content whose settings are being set
    */
@@ -136,13 +102,18 @@ object ContentEditing extends Controller {
           val data = request.body.dataParts
           // Make sure the user is able to edit
           if (content isEditableBy user) {
+            val shareability = data("shareability").lift(0)
+              .map(_.toInt).getOrElse(content.shareability)
+            val visibility = data("visibility").lift(0)
+              .map(_.toInt).getOrElse(content.visibility)
+            val newcontent = content.copy(shareability = shareability, visibility = visibility).save
             data("contentType")(0) match {
             case "video" | "audio" =>
-              setAudioVideoSettings(content, data)
+              setAudioVideoSettings(newcontent, data)
             case "image" =>
-              setImageSettings(content, data)
+              setImageSettings(newcontent, data)
             case "text" =>
-              setTextSettings(content, data)
+              setTextSettings(newcontent, data)
             case _ => Errors.forbidden
             }
             Ok
@@ -286,7 +257,7 @@ object ContentEditing extends Controller {
                     }.map { videoObject =>
                       (videoObject \ "downloadUri") match {
                         case videoUrl:JsString => Async {
-                        /* 
+                        /*
                             The "-protocols" command will list your version of ffmpeg
 
                             List of supported Protocols:

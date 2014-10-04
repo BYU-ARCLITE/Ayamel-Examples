@@ -177,6 +177,51 @@ var ContentSettings = (function() {
                     };
                 });
             }
+        },
+        shareability: {
+            type: "radio",
+            label: "Shareability:",
+            name: "shareability",
+            include: function(context, content){ return true; },
+            setting: function(context, content) {
+                return content.settings.shareability || 1;
+            },
+            items: function(context, content) {
+                return [{
+                    text: "Not Shareable",
+                    value: 1
+                },{
+                    text: "Shareable by me only",
+                    value: 2
+                },{
+                    text: "Shareable by anybody",
+                    value: 3
+                }];
+            }
+        },
+        visibility: {
+            type: "radio",
+            label: "Visibility:",
+            name: "visibility",
+            include: function(context, content){ return true; },
+            setting: function(context, content) {
+                return content.settings.visibility || 1;
+            },
+            items: function(context, content) {
+                return [{
+                    text: "Private",
+                    value: 1
+                },{
+                    text: "Tightly Restricted (Me and courses I add this to can see this)",
+                    value: 2
+                },{
+                    text: "Loosely Restricted (Me, teachers, and courses we add this to can see this)",
+                    value: 3
+                },{
+                    text: "Public (Everybody can see this)",
+                    value: 4
+                }];
+            }
         }
     };
 
@@ -188,6 +233,8 @@ var ContentSettings = (function() {
             predefined.enabledCaptionTracks,
             predefined.showAnnotations,
             predefined.enabledAnnotations,
+            predefined.visibility,
+            predefined.shareability,
             predefined.saveButton
         ],
         audio: [
@@ -197,6 +244,8 @@ var ContentSettings = (function() {
             predefined.showTranscripts,
             predefined.enabledCaptionTracks,
             predefined.enabledAnnotations,
+            predefined.visibility,
+            predefined.shareability,
             predefined.saveButton
         ],
         image: [
@@ -206,12 +255,16 @@ var ContentSettings = (function() {
             predefined.showTranscripts,
             predefined.enabledCaptionTracks,
             predefined.enabledAnnotations,
+            predefined.visibility,
+            predefined.shareability,
             predefined.saveButton
         ],
         text: [
             predefined.allowDefinitions,
             predefined.showAnnotations,
             predefined.enabledAnnotations,
+            predefined.visibility,
+            predefined.shareability,
             predefined.saveButton
         ]
     };
