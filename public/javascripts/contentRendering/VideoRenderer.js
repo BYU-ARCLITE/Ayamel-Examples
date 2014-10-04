@@ -225,11 +225,10 @@ var VideoRenderer = (function(){
         //TODO: Dynamically check the actual control bar height
         args.layout.player.style.paddingBottom = "61px";
 
-        // Deactivate Space Features and set focus video to play/pause video
+        // Spacebar to play/pause video
         window.addEventListener("keydown", function(e){
             if(e.keyCode == 32 && document.querySelectorAll('input:focus').length === 0){
-                // There may be a better way to do this
-                document.querySelector(".videoBox").firstChild.focus();
+                player[player.paused?'play':'pause']();
                 e.preventDefault();
             }
         });
