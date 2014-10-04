@@ -5,7 +5,10 @@
 
         <div>
             <h1 class="pull-left">My Content</h1>
-            <a href="@routes.ContentController.createPage("file")" class="btn btn-blue pull-right pad-right-high pad-top-med">Add Content</a>
+            @if(user.hasSitePermission("createContent")) {
+              <!-- This should be a menu with all add methods, not just file upload -->
+              <a href="@routes.ContentController.createPage("file")" class="btn btn-blue pull-right pad-right-high pad-top-med">Add Content</a>
+            }
         </div>
 
         <div class="clearfix"></div>
