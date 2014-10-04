@@ -318,6 +318,7 @@ var VideoRenderer = (function(){
                 id: 'transLang',
                 selection: 'eng',
                 icon: 'icon-globe',
+                button: 'left',
                 text: 'Select Language',
                 multiple: false,
                 options: Object.keys(Ayamel.utils.p1map).map(function(p1){
