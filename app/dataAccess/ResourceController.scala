@@ -2,7 +2,7 @@ package dataAccess
 
 import play.api.{Logger, Play}
 import Play.current
-import play.api.libs.json.{JsObject, JsValue}
+import play.api.libs.json.{JsObject, JsValue, JsUndefined}
 import play.api.libs.ws.{WS, Response}
 import concurrent.Future
 import concurrent.ExecutionContext.Implicits.global
@@ -114,7 +114,12 @@ object ResourceController {
    */
   def setRemoteFiles(url: String, remoteFiles: JsValue): Future[Option[JsValue]] = WS.url(url + s"?_key=$apiKey").post(remoteFiles).map { r =>
     Logger.info("Resource Controller: set remote files")
-    decode(r)
+    decode(r).flatMap { json =>
+      (json \ "resource") match {
+        case _:JsUndefined => None
+        case _ => Some(json)
+      }
+    }
   }
 
   /**
