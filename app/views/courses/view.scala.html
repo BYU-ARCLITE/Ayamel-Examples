@@ -64,6 +64,7 @@
                             </ul>
                         </div>
                         <a href="#addContentModal" role="button" class="btn btn-inverse" data-toggle="modal"><i class="icon-plus"></i> Add my content</a>
+                        <a href="#removeContentModal" role="button" class="btn btn-inverse" data-toggle="modal"><i class="icon-minus"></i> Remove Content</a>
                     </div>
                 }
                 <div id="courseContent"></div>
@@ -101,5 +102,5 @@
     @views.html.courses.helpers.studentInfo(user, course)
     @views.html.courses.helpers.joinLink(user, course)
     @views.html.courses.helpers.addContent(user, course)
-
+    @views.html.courses.helpers.removeContent(user, course)
 }

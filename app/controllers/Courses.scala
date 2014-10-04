@@ -145,6 +145,28 @@ object Courses extends Controller {
   }
 
   /**
+   * Remove the content(s) from a specified course.
+   * @param id The ID of the course
+   */
+  def removeContent(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
+    implicit request =>
+      implicit user =>
+        getCourse(id) { course =>
+
+          // Only non-guest members and admins can remove content
+          if (user.hasCoursePermission(course, "removeContent")) {
+
+            // Remove the content to the course
+            request.body("removeContent").foreach(id => {
+              Content.findById(id.toLong).foreach(content => course.removeContent(content))
+            })
+            Redirect(routes.Courses.view(id)).flashing("success" -> "Content removed from course.")
+          } else
+            Errors.forbidden
+        }
+  }
+
+  /**
    * Makes an announcement in a course
    * @param id The ID of the course
    */

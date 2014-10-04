@@ -1,0 +1,61 @@
+@(user: User, course: Course)
+
+@availableContent = @{
+    course.getContent
+}
+
+@if(user.hasCoursePermission(course, "removeContent")) {
+    <script type="text/javascript" src='@routes.Assets.at("javascripts/pageScripts/viewCourse.js")'></script>
+    <div id="removeContentModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="removeContentModalLabel" aria-hidden="true">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3 id="removeContentModalLabel">Remove content from this course.</h3>
+        </div>
+
+        <div class="modal-body">
+
+            @if(availableContent.isEmpty) {
+                <strong><em>There is no content in this course.</em></strong>
+            } else {
+                <form class="form-horizontal" id="removeContentForm" method="post" action="@routes.Courses.removeContent(course.id.get)">
+                    <div class="control-group">
+                        <label class="control-label" for="removeContent">Content to remove:</label>
+                        <div class="controls">  
+                            <select id="removeContent" name="removeContent" multiple="multiple">
+                                @for(contentObj <- availableContent) {
+                                    <option value="@contentObj.id.get">@contentObj.name (@contentObj.contentType.name)</option>
+                                }
+                            </select>
+                        </div>
+                        <input type="submit" style="position: absolute; left: -9999px; width: 1px; height: 1px;"/>
+                    </div>
+                </form>
+            }
+        </div>
+        <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+            @if(!availableContent.isEmpty) {
+                <button class="btn btn-blue" id="removeContentButton" disabled="true">Remove Content</button>
+            }
+        </div>
+
+    </div>
+
+    <script type="text/javascript">
+        $(function() {
+            @if(!availableContent.isEmpty) {
+                var removeButton = document.getElementById("removeContentButton");
+                removeButton.addEventListener('click', function(){
+                    $("#removeContentForm").submit();
+                }, false);
+                document.getElementById("removeContent").addEventListener('change', function(){
+                    if (this.value == '') {
+                        removeButton.disabled = true;
+                    } else {
+                        removeButton.disabled = false;
+                    }
+                }, false);
+            }
+        });
+    </script>
+}

@@ -38,6 +38,7 @@ GET     /course/:id/config                              controllers.Courses.ltiC
 POST    /course/:id/ltiAuth                             controllers.Courses.ltiAuth(id: Long)
 GET     /course/:id/keyAuth                             controllers.Courses.keyAuth(id: Long)
 POST    /course/:id/addContent                          controllers.Courses.addContent(id: Long)
+POST	/course/:id/removeContent						controllers.Courses.removeContent(id: Long)
 POST    /course/:id/announce                            controllers.Courses.addAnnouncement(id: Long)
 GET     /course/:id/request                             controllers.Courses.courseRequestPage(id: Long)
 POST    /course/:id/request                             controllers.Courses.submitCourseRequest(id: Long)

@@ -40,7 +40,7 @@
         <div class="modal-footer">
             <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
             @if(!availableContent.isEmpty) {
-                <button class="btn btn-blue" id="addContentButton">Add Content</button>
+                <button class="btn btn-blue" id="addContentButton" disabled="true">Add Content</button>
             }
         </div>
 
@@ -73,8 +73,16 @@
     <script type="text/javascript">
         $(function() {
             @if(!availableContent.isEmpty) {
-                document.getElementById("addContentButton").addEventListener('click', function(){
+                var addButton = document.getElementById("addContentButton");
+                addButton.addEventListener('click', function(){
                     $("#addContentForm").submit();
+                }, false);
+                document.getElementById("addContent").addEventListener('change', function(){
+                    if (this.value == '') {
+                        addButton.disabled = true;
+                    } else {
+                        addButton.disabled = false;
+                    }
                 }, false);
             }
             document.getElementById("announcementButton").addEventListener('click', function(){
