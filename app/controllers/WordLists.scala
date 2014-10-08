@@ -45,6 +45,15 @@ object WordLists extends Controller {
   }
 
   /**
+   * HTML Sanitization
+   * Tuples is html that is likely to occur (these should be the only possibilities for our dictionary api)
+   * clean replaces the string's html tags with quizlet text format
+   * @param str The string that needs sanitizing
+   */
+  val tuples = List("<b>" -> "*", "</b>" -> "*", "<br>" -> "\\\n", "<i>" -> "", "</i>" -> "")
+  def clean(str: String) = tuples.foldLeft( str )( (s,t) => s.replaceAll(t._1,t._2) )
+  
+  /**
    * Exports the word list to quizlet
    */
   def export = Authentication.authenticatedAction(parse.multipartFormData) {
@@ -55,7 +64,7 @@ object WordLists extends Controller {
         val termLanguage = request.body.dataParts("lang_terms")(0)
         val definitionLanguage = request.body.dataParts("lang_definitions")(0)
         val terms = request.body.dataParts("terms[]").zip(request.body.dataParts("definitions[]")).toList
-        val termsMinusAudio : List[(String,String)] = for ( term <- terms ) yield { (term._1, term._2.split(", <audio")(0))}
+        val termsMinusAudio : List[(String,String)] = for ( term <- terms ) yield { (clean(term._1), clean(term._2.split(", <audio")(0)))}
 
         Async {
           Quizlet.createSet(token, title, termsMinusAudio, termLanguage, definitionLanguage).map(url => Ok(url))
