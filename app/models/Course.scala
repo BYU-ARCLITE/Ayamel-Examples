@@ -73,10 +73,11 @@ case class Course(id: Pk[Long], name: String, startDate: String, endDate: String
     if (listing.size == 1)
     // One membership. So delete it
       listing(0).delete()
-    else
+    else{
     // We didn't get exactly one listing so don't do anything, but warn
       Logger.warn("Multiple (or zero) content lists for content #" + content.id.get + " in course #" + id.get)
-
+      listing(0).delete()
+    }
     this
   }
 
