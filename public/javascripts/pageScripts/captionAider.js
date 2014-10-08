@@ -192,22 +192,14 @@ $(function() {
 
     //Save Tracks
     var saveTrackData = (function(){
-        var ractive, datalist, resolver, failer,
-            targets = EditorWidgets.Save.targets;
+        var ractive, datalist, resolver, failer;
         ractive = new Dialog({
             el: document.getElementById('saveTrackModal'),
             data: {
                 dialogTitle: "Save Tracks",
-                saveDestinations: Object.keys(targets).map(function(key){
-                    return {
-                        value: key,
-                        name: targets[key].label.replace("To ", "")
-                    };
-                }), saveDestination: "server",
                 buttons: [{event:"save",label:"Save"}]
             },
             partials:{ dialogBody: document.getElementById('saveTrackTemplate').textContent },
-            components:{ superselect: EditorWidgets.SuperSelect },
             actions: {
                 save: function(event){
                     var saver,
@@ -217,18 +209,19 @@ $(function() {
                     $("#saveTrackModal").modal("hide");
                     this.set({selectOpen: false});
                     if(!tracks.length) {
-                        failer('cancel');
+                        failer(new Error('Cancel Save'));
                         return;
                     }
 
                     resolver(datalist.map(function(key){
                         switch(key){
                         case 'tidlist': return data.tracksToSave;
+                        case 'location': return timeline.saveLocation;
                         case 'saver': return function(listp){ return listp.then(saver); };
                         }
                     }));
 
-                    if(data.saveDestination === "server") {
+                    if(timeline.saveLocation === "server") {
                         saver = function(exportedTracks){
                             var savep = Promise.all(exportedTracks.map(function(fObj){
                                 var data = new FormData(),
@@ -274,16 +267,18 @@ $(function() {
                     } else {
                         // Use one of the editor widget saving mechanisms
                         saver = function(exportedTracks){
-                            return new Promise(function(resolve, reject){
+                            var savep = new Promise(function(resolve, reject){
                                 EditorWidgets.Save(
-                                    exportedTracks, data.saveDestination,
-                                    function(){ resolve([]); }, // we don't want to mark things saved that were not saved-to-server
+                                    exportedTracks, timeline.saveLocation,
+                                    function(){ resolve(exportedTracks); },
                                     function(){
                                         alert("Error Saving; please try again.");
                                         reject(new Error("Error saving."));
                                     }
                                 );
                             });
+                            savep.then(function(){ alert("Saved Successfully"); });
+                            return savep;
                         };
                     }
                 }
@@ -292,8 +287,10 @@ $(function() {
         // Saving modal opening
         $("#saveTrackModal").on("show", function () {
             ractive.set({
-                trackList: timeline.trackNames.slice(),
-                tracksToSave: ""
+                trackList: timeline.trackNames.filter(function(name){
+					return !timeline.commandStack.isFileSaved(name, timeline.saveLocation);
+				}),
+                tracksToSave: []
             });
         });
 
@@ -394,6 +391,56 @@ $(function() {
         });
     }
 
+	//Set Save Location
+    var getLocation = (function(){
+        var ractive, datalist, resolver,
+            targets = EditorWidgets.Save.targets;
+        ractive = new Dialog({
+            el: document.getElementById('setLocModal'),
+            data: {
+                dialogTitle: "Set Save Location",
+                saveLocations: Object.keys(targets).map(function(key){
+                    return {
+                        value: key,
+                        name: targets[key].label
+                    };
+                }), saveLocation: "server",
+                buttons: [{event:"save",label:"Save"}]
+            },
+            partials:{ dialogBody: document.getElementById('setLocTemplate').textContent },
+            actions: {
+                save: function(event){
+					var data = this.data;
+				    $("#setLocModal").modal("hide");
+                    resolver(datalist.map(function(key){
+                        return key === 'location'?data.saveLocation:void 0;
+                    }));
+                }
+            }
+        });
+
+        return function(dl){
+            $('#setLocModal').modal('show');
+            datalist = dl;
+            return new Promise(function(resolve, reject){
+                resolver = resolve;
+            });
+        };
+    }());
+	
+    function getLocationNames(datalist){
+		var names = {server:"Server"},
+			targets = EditorWidgets.Save.targets;
+		Object.keys(targets).forEach(function(key){
+			names[key] = targets[key].label;
+		});
+        return new Promise(function(resolve,reject){
+            resolve(datalist.map(function(key){
+                return key === 'names'?names:void 0;
+            }));
+        });
+    }
+
     function getFor(whatfor, datalist){
         switch(whatfor){
         case 'newtrack': return newTrackData(datalist);
@@ -402,7 +449,10 @@ $(function() {
         case 'loadtrack': return loadTrackData(datalist);
         case 'loadlines': return loadTranscript(datalist);
         case 'loadaudio': return loadAudio(datalist);
+        case 'location': return getLocation(datalist);
+        case 'locationNames': return getLocationNames(datalist);
         }
+        return Promise.reject(new Error("Can't get data for "+whatfor));
     }
 
     function canGetFor(whatfor, datalist){
@@ -412,7 +462,9 @@ $(function() {
         case 'savetrack':
         case 'loadtrack':
         case 'loadlines':
-        case 'loadaudio': return true;
+        case 'loadaudio':
+        case 'location':
+        case 'locationNames': return true;
         }
         return false;
     }
@@ -453,6 +505,8 @@ $(function() {
         timeline = new Timeline(document.getElementById("timeline"), {
             stack: commandStack,
             syncWith: videoPlayer,
+            saveLocation: "server",
+			dropLocation: "file",
             width: document.body.clientWidth || window.innerWidth,
             length: 3600,
             start: 0,
@@ -474,7 +528,8 @@ $(function() {
         // Check for unsaved tracks before leaving
         window.addEventListener('beforeunload',function(e){
             var warning = "You have unsaved tracks. Your unsaved changes will be lost.";
-            if(!commandStack.saved){
+            //TODO: change "server" to access whatever the current viewing setting is.
+            if(!commandStack.isSavedAt("server")){
                 e.returnValue = warning;
                 return warning;
             }
@@ -490,7 +545,8 @@ $(function() {
         videoPlayer.addEventListener("enabletrack", function(event) {
             var track = event.detail.track;
             if (timeline.hasTextTrack(track.label)) { return; }
-            timeline.addTextTrack(track, videoPlayer.textTrackMimes.get(track));
+			//TODO: Separate these functions!
+            timeline.addTextTrack(track, videoPlayer.textTrackMimes.get(track), 'server');
             updateSpacing();
         });
 

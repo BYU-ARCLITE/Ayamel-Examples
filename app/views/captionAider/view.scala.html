@@ -55,6 +55,7 @@
     <div id="newTrackModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="newTrackModalLabel" aria-hidden="true"></div>
     <div id="cloneTrackModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="cloneTrackModalLabel" aria-hidden="true"></div>
     <div id="editTrackModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="editTrackModalLabel" aria-hidden="true"></div>
+    <div id="setLocModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="setLocModalLabel" aria-hidden="true"></div>
     <div id="saveTrackModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="saveTrackModalLabel" aria-hidden="true"></div>
     <div id="loadTrackModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="loadTrackModalLabel" aria-hidden="true"></div>
 
@@ -118,6 +119,25 @@
 			{{/(trackList)}}
 		</form>
 	</script>
+	<script id='setLocTemplate' type='text/ractive'>
+		<form class="form-horizontal">
+			<div class="control-group">
+				<label class="control-label">Current Save Location</label>
+				<div class="controls">
+					<div id="saveLocation">
+						<label class="radio">
+							<input type="radio" name="{{saveLocation}}" value="server">Server
+						</label>
+						{{#saveLocations}}
+						<label class="radio">
+							<input type="radio" name="{{saveLocation}}" value="{{.value}}">{{.name}}
+						</label>
+						{{/saveLocations}}
+					</div>
+				</div>
+			</div>
+		</form>
+	</script>
 	<script id='saveTrackTemplate' type='text/ractive'>
 		<form class="form-horizontal">
 			<div class="control-group">
@@ -126,21 +146,6 @@
 					<select value="{{tracksToSave}}" multiple="multiple">
 					{{#trackList}}<option value="{{.}}">{{.}}</option>{{/trackList}}
 					</select>
-				</div>
-			</div>
-			<div class="control-group">
-				<label class="control-label">Destination</label>
-				<div class="controls">
-					<div id="saveDestinations">
-						<label class="radio">
-							<input type="radio" name="{{saveDestination}}" value="server">Server
-						</label>
-						{{#saveDestinations}}
-						<label class="radio">
-							<input type="radio" name="{{saveDestination}}" value="{{.value}}">{{.name}}
-						</label>
-						{{/saveDestinations}}
-					</div>
 				</div>
 			</div>
 		</form>
