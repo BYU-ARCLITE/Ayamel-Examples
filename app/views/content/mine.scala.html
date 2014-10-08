@@ -1,6 +1,10 @@
 @()(implicit request: RequestHeader, user: User)
 
 @main("Ayamel - My Content", Local(CSS("stylesheets/content.css"))) {
+    @Dependencies(
+      Extern("Ayamel.js",
+        Rel("js/",
+          JS("Resource.js"))))
     <div class="padded">
 
         <div>
