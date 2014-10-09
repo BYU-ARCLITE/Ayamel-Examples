@@ -270,14 +270,15 @@ $(function() {
                             var savep = new Promise(function(resolve, reject){
                                 EditorWidgets.Save(
                                     exportedTracks, timeline.saveLocation,
-                                    function(){ resolve(exportedTracks); },
+                                    function(){
+										resolve(exportedTracks.map(function(fObj){ return fObj.track.label; }));
+									},
                                     function(){
                                         alert("Error Saving; please try again.");
                                         reject(new Error("Error saving."));
                                     }
                                 );
                             });
-                            savep.then(function(){ alert("Saved Successfully"); });
                             return savep;
                         };
                     }
@@ -543,6 +544,11 @@ $(function() {
         //Menu to load tracks into the editor:
         timeline.addMenuItem('Editor.Show Track',{
             name: "Show Track",
+			condition: function(){
+				return videoPlayer.textTracks.some(function(track){
+					return !timeline.hasTextTrack(track.label);
+				});
+			},
             calc: function(f){
                 videoPlayer.textTracks.forEach(function(track){
                     if(timeline.hasTextTrack(track.label)){ return; }
