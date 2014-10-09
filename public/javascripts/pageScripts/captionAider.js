@@ -288,8 +288,8 @@ $(function() {
         $("#saveTrackModal").on("show", function () {
             ractive.set({
                 trackList: timeline.trackNames.filter(function(name){
-					return !timeline.commandStack.isFileSaved(name, timeline.saveLocation);
-				}),
+                    return !timeline.commandStack.isFileSaved(name, timeline.saveLocation);
+                }),
                 tracksToSave: []
             });
         });
@@ -335,6 +335,7 @@ $(function() {
                             case 'tracksrc': return fileObj;
                             case 'kind': return data.trackKind;
                             case 'lang': return data.trackLang[0];
+                            case 'location': return data.loadSource;
                             case 'overwrite': return true;
                             case 'handler':
                                 return function(trackp){
@@ -391,7 +392,7 @@ $(function() {
         });
     }
 
-	//Set Save Location
+    //Set Save Location
     var getLocation = (function(){
         var ractive, datalist, resolver,
             targets = EditorWidgets.Save.targets;
@@ -410,8 +411,8 @@ $(function() {
             partials:{ dialogBody: document.getElementById('setLocTemplate').textContent },
             actions: {
                 save: function(event){
-					var data = this.data;
-				    $("#setLocModal").modal("hide");
+                    var data = this.data;
+                    $("#setLocModal").modal("hide");
                     resolver(datalist.map(function(key){
                         return key === 'location'?data.saveLocation:void 0;
                     }));
@@ -427,13 +428,13 @@ $(function() {
             });
         };
     }());
-	
+
     function getLocationNames(datalist){
-		var names = {server:"Server"},
-			targets = EditorWidgets.Save.targets;
-		Object.keys(targets).forEach(function(key){
-			names[key] = targets[key].label;
-		});
+        var names = {server:"Server"},
+            targets = EditorWidgets.Save.targets;
+        Object.keys(targets).forEach(function(key){
+            names[key] = targets[key].label;
+        });
         return new Promise(function(resolve,reject){
             resolve(datalist.map(function(key){
                 return key === 'names'?names:void 0;
@@ -506,7 +507,7 @@ $(function() {
             stack: commandStack,
             syncWith: videoPlayer,
             saveLocation: "server",
-			dropLocation: "file",
+            dropLocation: "file",
             width: document.body.clientWidth || window.innerWidth,
             length: 3600,
             start: 0,
@@ -539,16 +540,21 @@ $(function() {
             timeline.width = window.innerWidth;
         }, false);
 
-        // Set up listeners
-
-        // Track selection
-        videoPlayer.addEventListener("enabletrack", function(event) {
-            var track = event.detail.track;
-            if (timeline.hasTextTrack(track.label)) { return; }
-			//TODO: Separate these functions!
-            timeline.addTextTrack(track, videoPlayer.textTrackMimes.get(track), 'server');
-            updateSpacing();
+        //Menu to load tracks into the editor:
+        timeline.addMenuItem('Editor.Show Track',{
+            name: "Show Track",
+            calc: function(f){
+                videoPlayer.textTracks.forEach(function(track){
+                    if(timeline.hasTextTrack(track.label)){ return; }
+                    f({name: track.label,
+                        action: function(){ timeline.addTextTrack(track, videoPlayer.textTrackMimes.get(track), 'server'); }
+                    });
+                });
+            }
         });
+
+        //keep the editor and the player menu in sync
+        timeline.on('altertrack', function(){ videoPlayer.refreshCaptionMenu(); });
 
         //TODO: Integrate the next listener into the timeline editor
         timeline.on('activechange', function(){ renderer.rebuildCaptions(); });
@@ -558,11 +564,17 @@ $(function() {
             updateSpacing();
         });
 
-        timeline.on('removetrack', updateSpacing);
+        timeline.on('removetrack', function(evt){
+            var track = evt.track.textTrack;
+            if(!videoPlayer.textTrackMimes.has(track)){
+                videoPlayer.removeTextTrack(track);
+            }
+            updateSpacing();
+        });
 
         [   //Set up keyboard shortcuts
             [Ayamel.KeyBinder.keyCodes.a,Timeline.CREATE],  //a - Add
-            [Ayamel.KeyBinder.keyCodes.s,Timeline.SELECT],   //s - Select
+            [Ayamel.KeyBinder.keyCodes.s,Timeline.SELECT],  //s - Select
             [Ayamel.KeyBinder.keyCodes.d,Timeline.DELETE],  //d - Delete
             [Ayamel.KeyBinder.keyCodes.m,Timeline.MOVE],    //m - Move
             [Ayamel.KeyBinder.keyCodes.q,Timeline.SPLIT],   //q - Split
