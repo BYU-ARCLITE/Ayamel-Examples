@@ -43,7 +43,7 @@ var TranscriptPlayer = (function(){
                 activeIndex: 0,
                 transcripts: tracks,
                 sync: args.sync || false,
-                direction: function(text){ return Ayamel.utils.getTextDirection(text); }
+                direction: function(text){ return Ayamel.Text.getDirection(text); }
             }
         });
         ractive.on('sync',function(e){ ractive.set('sync',!ractive.data.sync); });
