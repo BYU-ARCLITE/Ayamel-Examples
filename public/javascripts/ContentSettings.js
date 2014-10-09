@@ -71,10 +71,7 @@ var ContentSettings = (function() {
             name: "save",
             //none: "Save option not available",
             classes: "btn-blue",
-            include: function(context, content) {
-                 // Checks if there is anything that could allow configuration options
-                return (!!content.enableableCaptionTracks.length || !!content.enableableAnnotationDocuments.length);
-            },
+            include: function(context, content) { return true; },
             setting: function(context, content) {},
             items: function(){}
         },
