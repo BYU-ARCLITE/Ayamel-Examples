@@ -42,11 +42,11 @@ object Administration extends Controller {
    * Approves a request
    * @param id The ID of the request
    */
-  def approveRequest() = Authentication.authenticatedAction(parse.urlFormEncoded) {
+  def approveRequest() = Authentication.authenticatedAction(parse.multipartFormData) {
     implicit request =>
       implicit user =>
         Authentication.enforcePermission("admin") {
-		  for( id <- request.body("reqid");
+		  for( id <- request.body.dataParts("reqid");
 		       req <- SitePermissionRequest.findById(id.toLong)
 		  ) { req.approve() }
 		  Ok
@@ -57,11 +57,11 @@ object Administration extends Controller {
    * Denies a request
    * @param id The ID of the request
    */
-  def denyRequest() = Authentication.authenticatedAction(parse.urlFormEncoded) {
+  def denyRequest() = Authentication.authenticatedAction(parse.multipartFormData) {
     implicit request =>
       implicit user =>
         Authentication.enforcePermission("admin") {
-		  for( id <- request.body("reqid");
+		  for( id <- request.body.dataParts("reqid");
 		       req <- SitePermissionRequest.findById(id.toLong)
 		  ) { req.deny(); }
 		  Ok
@@ -105,12 +105,13 @@ object Administration extends Controller {
   /**
    * Give permissions to a user
    */
-  def setPermission() = Authentication.authenticatedAction(parse.urlFormEncoded) {
+  def setPermission() = Authentication.authenticatedAction(parse.multipartFormData) {
     implicit request =>
       implicit user =>
         Authentication.enforcePermission("admin") {
-          getUser(request.body("userId")(0).toLong) { targetUser =>
-            request.body("permission").foreach { permission =>
+		  val data = request.body.dataParts
+          getUser(data("userId")(0).toLong) { targetUser =>
+            data("permission").foreach { permission =>
               targetUser.addSitePermission(permission)
             }
             Redirect(routes.Administration.manageUsers()).flashing("info" -> "User permissions updated")
