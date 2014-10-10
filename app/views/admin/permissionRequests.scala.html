@@ -30,14 +30,8 @@
                             <td>@permissionRequest.getDescription</td>
                             <td>@permissionRequest.reason</td>
                             <td>
-                                <form action="@routes.Administration.approveRequest()" method="POST">
-                                    <input type="hidden" name="reqid" value="@{permissionRequest.id.get}"/>
-                                    <button class="btn btn-blue">Approve</button>
-                                </form>
-                                <form action="@routes.Administration.denyRequest()" method="POST">
-                                    <input type="hidden" name="reqid" value="@{permissionRequest.id.get}"/>
-                                    <button class="btn btn-blue">Deny</button>
-                                </form>
+                                <button class="btn btn-blue approve" data-id="@{permissionRequest.id.get}">Approve</button>
+                                <button class="btn btn-blue deny" data-id="@{permissionRequest.id.get}">Deny</button>
                             </td>
                             <td><input type="checkbox" name="selections" value="@permissionRequest.id.get"/></td>
                         </tr>
@@ -55,22 +49,38 @@
             var checks = [].slice.call(document.querySelectorAll("input[name=selections]"));
 
             document.getElementById("selectbtn").addEventListener('click',function(){
-                checks.forEach(function(check){ check.selected = true; });
+                checks.forEach(function(check){ check.checked = true; });
             },false);
 
             document.getElementById("deselbtn").addEventListener('click',function(){
-                checks.forEach(function(check){ check.selected = false; });
+                checks.forEach(function(check){ check.checked = false; });
             },false);
 
-            document.getElementById("appbtn").addEventListener('click',resolveRequests.bind(null,@{routes.Administration.approveRequest()}),false);
-            document.getElementById("denybtn").addEventListener('click',resolveRequests.bind(null,@{routes.Administration.denyRequest()}),false);
+            [].forEach.call(document.querySelectorAll("button.approve"),function(btn){
+                btn.addEventListener("click",function(){
+                    resolveRequests("@{routes.Administration.approveRequest()}",[btn.dataset.id]);
+                },false);
+            });
+            [].forEach.call(document.querySelectorAll("button.deny"),function(btn){
+                btn.addEventListener("click",function(){
+                    resolveRequests("@{routes.Administration.denyRequest()}",[btn.dataset.id]);
+                },false);
+            });
 
-            function resolveRequests(url){
-				if(!checks.length){ return; }
+            document.getElementById("appbtn").addEventListener('click',resolveRequests.bind(null,"@{routes.Administration.approveRequest()}"),false);
+            document.getElementById("denybtn").addEventListener('click',resolveRequests.bind(null,"@{routes.Administration.denyRequest()}"),false);
+
+            function resolveBatch(url){
+                if(!checks.length){ return; }
+                var ids = checks
+                    .filter(function(check){ return check.checked; })
+                    .map(function(check){ return check.value; });
+                resolveRequests(url, ids);
+            }
+
+            function resolveRequests(url, ids){
                 var data = new FormData();
-                checks.forEach(function(check){
-                    if(check.selected){ data.append("reqid", check.value); }
-                });
+                ids.forEach(function(id){ data.append("reqid", id); });
                 $.ajax({
                     url: url,
                     data: data,
