@@ -181,7 +181,7 @@ var ContentSettings = (function() {
             name: "shareability",
             include: function(context, content){ return true; },
             setting: function(context, content) {
-                return content.settings.shareability || 1;
+                return content.shareability || 1;
             },
             items: function(context, content) {
                 return [{
@@ -202,7 +202,7 @@ var ContentSettings = (function() {
             name: "visibility",
             include: function(context, content){ return true; },
             setting: function(context, content) {
-                return content.settings.visibility || 1;
+                return content.visibility || 1;
             },
             items: function(context, content) {
                 return [{
