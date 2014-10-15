@@ -31,7 +31,7 @@ object VideoTools {
    * Create a thumbnail from a video.
    * We use FFMPEG to get an image from the video, turn it into a thumbnail, and upload it
    * The command is of the following form
-   * ffmpeg -i {video} -ss {timecode} -f image2 -vframes 1 {outfile}
+   * ffmpeg -ss {timeCode} -i {video} -f image2 -vframes 1 {outfile}
    * @param videoUrl The URL of the video
    * @param time The time, in seconds, of the frame to retrieve. Defaults to the time defined in the conf file.
    * @return A future containing the URL of the thumbnail
@@ -47,7 +47,7 @@ object VideoTools {
 
         // Execute ffmpeg to get the frame and wait for it to finish
         val timeCode = getTimeCodeFromSeconds(time)
-        val command = s"$ffmpeg -i $videoUrl -ss $timeCode -f image2 -vframes 1 $filename"
+        val command = s"$ffmpeg -ss $timeCode -i $videoUrl -f image2 -vframes 1 $filename"
         Logger.debug(s"Command: $command")
         val process = Runtime.getRuntime.exec(command)
         process.waitFor()
