@@ -46,13 +46,13 @@ var PopupBrowser = (function() {
         $.ajax(host + path, params);
     }
 
-    function click(content, courseId, element) {
+    function click(content, courseId, $element) {
         [].forEach.call(document.querySelectorAll(".selectedContent"),function(n){n.classList.remove("selectedContent");});
-        element[0].classList.add("selectedContent");
+        $element[0].firstChild.classList.add("selectedContent");
         document.getElementById("popupBrowserSelectButton").classList.remove("disabled");
         selectedContent = content;
-    }
 
+    }
     var loadingMechanisms = {
         "mine": function(container) {
             ajax("ajax/content/mine", function(data) {
