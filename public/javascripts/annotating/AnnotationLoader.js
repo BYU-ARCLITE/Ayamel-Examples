@@ -31,7 +31,11 @@ var AnnotationLoader = (function(){
         loadURL: function(source, lang, callback){
 			return Promise.resolve($.ajax(source, { dataType: "json" }))
 			.then(function(data){
-				return parseDocument(data, lang);
+				if(data.meta){
+					return parseDocument(data, lang);
+				}else{
+					return data;
+				}
 			});
         }
     };
