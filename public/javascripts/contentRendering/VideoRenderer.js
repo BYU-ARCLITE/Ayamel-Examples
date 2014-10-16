@@ -262,7 +262,10 @@ var VideoRenderer = (function(){
             holder: args.layout.player,
             resource: args.resource,
             captionTracks: captions,
-            annotations: args.annotations,
+            annotations: {
+				classList: ['annotation'],
+				data: args.annotations
+			},
 //            components: components,
             startTime: args.startTime,
             endTime: args.endTime,
