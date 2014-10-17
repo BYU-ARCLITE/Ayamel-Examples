@@ -96,7 +96,7 @@ object Courses extends Controller {
     implicit request =>
       implicit user =>
         getCourse(id) { course =>
-          // TODO: Once the users get the "viewCourse" permission, use 
+          // TODO: Once the users get the "viewCourse" permission, use
           //       if (user.hasCoursePermission(course, "viewCourse")) instead
           if (course.getMembers.contains(user) ||  SitePermissions.userHasPermission(user, "admin"))
             Ok(views.html.courses.view(course))
@@ -371,14 +371,15 @@ object Courses extends Controller {
   /**
    * Give permissions to a user
    */
-  def setPermission(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
+  def setPermission(id: Long) = Authentication.authenticatedAction(parse.multipartFormData) {
     implicit request =>
       implicit user =>
         //Authentication.enforcePermission("admin") {
+            val data = request.body.dataParts
             getCourse(id) { course =>
-              User.findById(request.body("userId")(0).toLong) match {
+              User.findById(data("userId")(0).toLong) match {
               case Some(user) =>
-                request.body("permission").foreach { permission =>
+                data("permission").foreach { permission =>
                   user.addCoursePermission(course, permission)
                 }
                 Redirect(routes.Courses.view(course.id.get)).flashing("info" -> "User permissions updated")
