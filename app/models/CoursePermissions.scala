@@ -12,6 +12,7 @@ object CoursePermissions {
     "teacher" -> "View Student Data and Analytics",
 	"editCourse" -> "Edit Course Information",
 	"addContent" -> "Add Content to Course",
+	"makeAnnouncement" -> "Make Course Announcements",
 	"removeContent" -> "Remove Content from Course",
 	"addStudent" -> "Add Students to Course",
 	"removeStudent" -> "Remove Students from Course",

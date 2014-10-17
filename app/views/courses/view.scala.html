@@ -85,7 +85,7 @@
             </div>
             <div class="span4">
                 <h3><i class="icon-bullhorn"></i> Announcements</h3>
-                @if(user.hasCoursePermission(course, "addContent")) {
+                @if(user.hasCoursePermission(course, "makeAnnouncement")) {
                     <a href="#announcementModal" role="button" class="btn btn-blue" data-toggle="modal"><i class="icon-comment"></i> Make an announcement</a>
                 }
 
@@ -102,5 +102,6 @@
     @views.html.courses.helpers.studentInfo(user, course)
     @views.html.courses.helpers.joinLink(user, course)
     @views.html.courses.helpers.addContent(user, course)
+    @views.html.courses.helpers.makeAnnouncement(user, course)
     @views.html.courses.helpers.removeContent(user, course)
 }
