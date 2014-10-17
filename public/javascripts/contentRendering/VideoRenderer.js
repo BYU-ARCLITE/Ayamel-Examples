@@ -319,7 +319,7 @@ var VideoRenderer = (function(){
             el: selectHolder,
             data:{
                 id: 'transLang',
-                selection: 'eng',
+                selection: ['eng'],
                 icon: 'icon-globe',
                 button: 'left',
                 text: 'Select Language',
@@ -329,7 +329,7 @@ var VideoRenderer = (function(){
                     return {value: code, text: Ayamel.utils.getLangName(code)};
                 }).sort(function(a,b){ return a.text.localeCompare(b.text); })
             }
-        })).observe('selection', function(newValue){ player.targetLang = newValue; });
+        })).observe('selection', function(newValue){ player.targetLang = newValue[0]; });
         pane.appendChild(selectHolder);
     }
 
