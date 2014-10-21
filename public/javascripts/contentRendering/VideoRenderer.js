@@ -214,7 +214,8 @@ var VideoRenderer = (function(){
                     if(~index){ components[side].splice(index, 1); }
                 });
             });
-            captions = null;
+            // Don't load any caption tracks if they're not enabled
+            if (!showTranscript(args.content)) captions = null;
         }
 
         // Set the priority of players
@@ -233,18 +234,15 @@ var VideoRenderer = (function(){
             }
         });
 
-        // Need to remove the players css so that the fullscreen css can happen
-        window.addEventListener('enterfullscreen', function(event){
+        window.addEventListener(Ayamel.utils.FullScreen.fullScreenEvent, function(event){
             if (Ayamel.utils.FullScreen.isFullScreen){
+                // Need to remove the player's css so that the fullscreen can resize properly
                 player.element.style.removeProperty("width");
                 player.element.style.removeProperty("height");
-                return;
+            } else {
+                // call a resize event so that css can be put back
+                window.dispatchEvent(new Event('resize',{bubbles:true,cancealble:true}));
             }
-        }, false);
-
-        // Call a resize event so that it resizes after
-        window.addEventListener(Ayamel.utils.FullScreen.fullScreenEvent, function(event){
-            window.dispatchEvent(new Event('resize',{bubbles:true,cancealble:true}));
         }, false);
         
          window.addEventListener('resize', function(event){
@@ -263,9 +261,9 @@ var VideoRenderer = (function(){
             resource: args.resource,
             captionTracks: captions,
             annotations: {
-				classList: ['annotation'],
-				data: args.annotations
-			},
+                classList: ['annotation'],
+                data: args.annotations
+            },
 //            components: components,
             startTime: args.startTime,
             endTime: args.endTime,
