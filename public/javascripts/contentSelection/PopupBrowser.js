@@ -3,10 +3,10 @@
  */
 var PopupBrowser = (function() {
 
-    var selectedContent = null;
-    var apply = false;
-    var crossDomain = false;
-    var host = "/";
+    var apply = false,
+        crossDomain = false,
+        host = "/",
+        selection = [];
 
     var template =
         '<div id="popupBrowserModal" class="modal bigModal hide fade" tabindex="-1" role="dialog" aria-labelledby="popupBrowserModalLabel" aria-hidden="true">\
@@ -47,14 +47,27 @@ var PopupBrowser = (function() {
     }
 
     function click(content, courseId, $element) {
-        [].forEach.call(document.querySelectorAll(".selectedContent"),function(n){n.classList.remove("selectedContent");});
-        $element[0].firstChild.classList.add("selectedContent");
-        document.getElementById("popupBrowserSelectButton").classList.remove("disabled");
-        selectedContent = content;
+        var indexOfContent;
+        if ($element[0].firstChild.classList.contains("selectedContent")){
+            $element[0].firstChild.classList.remove("selectedContent");
+            indexOfContent = selection.indexOf(content);
+            if (~indexOfContent)
+                selection.splice(indexOfContent,1);
+        } else {
+            $element[0].firstChild.classList.add("selectedContent");
+            selection.push(content);
+        }
 
+        if(!selection.length){
+            document.getElementById("popupBrowserSelectButton").classList.add("disabled");
+        }else{
+            document.getElementById("popupBrowserSelectButton").classList.remove("disabled");
+        }
     }
+
     var loadingMechanisms = {
         "mine": function(container) {
+            clearSelection();
             ajax("ajax/content/mine", function(data) {
                 var labels = [].concat.apply([], data.map(function(d){return d.labels;}));
                 ContentItemRenderer.renderAll({
@@ -71,6 +84,7 @@ var PopupBrowser = (function() {
             });
         },
         "course": function(container) {
+            clearSelection();
             ajax("ajax/content/course", function(data) {
                 container.innerHTML = "";
                 Object.keys(data).forEach(function(courseName, index) {
@@ -92,6 +106,7 @@ var PopupBrowser = (function() {
             });
         },
         "public": function(container) {
+            clearSelection();
             ajax("ajax/content/public", function(data) {
                 var labels = [].concat.apply([], data.map(function(d){return d.labels;}));
                 ContentItemRenderer.renderAll({
@@ -108,6 +123,7 @@ var PopupBrowser = (function() {
             });
         },
         "search": function(container) {
+            clearSelection();
             container.innerHTML = "search";
         }
     };
@@ -150,7 +166,7 @@ var PopupBrowser = (function() {
         // Add submission functionality
         $modal.on("hide", function() {
             if (apply)
-                callback(selectedContent);
+                callback(selection);
         });
         $selectButton.click(function() {
             if (!$(this).hasClass("disabled")) {
@@ -160,6 +176,11 @@ var PopupBrowser = (function() {
         });
 
         return $modal;
+    }
+
+    function clearSelection(){
+        selection = [];
+        document.getElementById("popupBrowserSelectButton").classList.add("disabled");
     }
 
     function selectContent(callback) {

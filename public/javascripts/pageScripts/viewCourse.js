@@ -18,11 +18,13 @@ $(function() {
             form.action = "/course/" + courseId + "/addContent";
 
             // Add the content id to the form
-            var input = document.createElement("input");
-            input.type = "hidden";
-            input.name = "addContent";
-            input.value = content.id;
-            form.appendChild(input);
+            [].forEach.call(content,function(c){
+                var input = document.createElement("input");
+                input.type = "hidden";
+                input.name = "addContent";
+                input.value = c.id;
+                form.appendChild(input);
+            });
 
             // Submit the form
             form.submit();
