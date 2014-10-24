@@ -184,12 +184,12 @@
                 ResourceLibrary.load(content.resourceId).then(function(resource){
                     var title = resource.title;
                     document.getElementById("metadataDescription").textContent = resource.description;
-                    document.getElementById("metadataLanguages").innerHTML =
+                    document.getElementById("metadataLanguages").firstChild.innerHTML =
                         resource.languages.iso639_3.map(function(langCode) {
                             return '<em class="pad-left-high">' + Ayamel.utils.getLangName(langCode) + '</em>';
                         }).join('');
 
-                    document.getElementById("metadataLabels").innerHTML =
+                    document.getElementById("metadataLabels").firstChild.innerHTML =
                         resource.keywords.split(",")
                         .filter(function(w){return !!w;})
                         .map(function(w){return "<span class='label label-info pad-left-med'>" + w + "</span>";})
