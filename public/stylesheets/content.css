@@ -321,7 +321,7 @@
 
 /* Transcript styling */
 
-.transcriptContent, #Definitions, #Annotations {
+#Transcript, #Definitions, #Annotations {
     max-height: 300px;
     overflow-y: auto;
 }

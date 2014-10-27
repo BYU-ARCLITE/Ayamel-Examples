@@ -244,15 +244,36 @@ var VideoRenderer = (function(){
                 window.dispatchEvent(new Event('resize',{bubbles:true,cancealble:true}));
             }
         }, false);
-        
+
          window.addEventListener('resize', function(event){
             if(!args.screenAdaption || !args.screenAdaption.fit || Ayamel.utils.FullScreen.isFullScreen){ return; }
 
+            var el, sidebarHeight, slideOuts = [];
+
             player.resetSize();
 
-            var sidebarHeight = videoPlayer.height - $("#videoTabs").height();
-            $(".transcriptContent").css("max-height", sidebarHeight - 57);
-            $("#Definitions, #Annotations").css("height", sidebarHeight - 27);
+            if(showTranscript(args.content)){ slideOuts.push("Transcript"); }
+            if(allowDefinitions(args.content)){ slideOuts.push("Definitions"); }
+            if(showAnnotations(args.content)){ slideOuts.push("Annotations"); }
+
+            switch(slideOuts.length){
+            case 0:
+                break;
+            case 1:
+                el = document.getElementById(slideOuts[0]);
+                sidebarHeight = document.getElementById("player").clientHeight - (el.parentNode.firstChild.clientHeight + 20);
+                el.style.maxHeight = sidebarHeight + "px";
+                el.style.height = sidebarHeight + "px";
+                break;
+            default:
+                sidebarHeight = document.getElementById("player").clientHeight - (document.getElementById("videoTabs").clientHeight + 20);
+                [].forEach.call(slideOuts, function(tab){
+                    el = document.getElementById(tab);
+                    el.style.maxHeight = sidebarHeight + "px";
+                    el.style.height = sidebarHeight + "px";
+                });
+                break;
+            }
         }, false);
 
         player = new Ayamel.classes.AyamelPlayer({
@@ -397,7 +418,7 @@ var VideoRenderer = (function(){
                 },false);
 
                 // Resize the panes' content to be correct size onload
-                $("#Definitions, #Annotations").css("height", videoPlayer.height-($("#videoTabs").height() + 27));
+                window.dispatchEvent(new Event('resize',{bubbles:true,cancealble:true}));
             });
         }
     };
