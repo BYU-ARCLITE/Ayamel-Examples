@@ -342,7 +342,7 @@ object ContentController extends Controller {
             } else
               Errors.forbidden
           } else {
-            Redirect(routes.ContentController.public)
+            Redirect(routes.Application.search)
               .flashing("error" -> "Requested content uses invalid resource")
           }
         }
@@ -454,13 +454,4 @@ object ContentController extends Controller {
         Ok(views.html.content.mine())
   }
 
-  /**
-   * Public content page
-   */
-  def public = Authentication.authenticatedAction() {
-    implicit request =>
-      implicit user =>
-        val content = Content.listPublic
-        Ok(views.html.content.public(content))
-  }
 }

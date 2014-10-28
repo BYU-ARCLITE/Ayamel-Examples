@@ -38,13 +38,12 @@ object Application extends Controller {
   def search = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-
-      // Search each applicable model
-        val query = request.queryString("query")(0)
-        val courses = Course.search(query)
-        val content = Content.search(query)
-
-        Ok(views.html.application.search(content, courses))
+        request.queryString.get("query").flatMap(_.headOption).map { query =>
+          (Content.search(query), Course.search(query))
+        }.getOrElse((Nil, Nil)) match {
+          case (content, courses) =>
+            Ok(views.html.application.search(content, courses))
+        }
   }
 
   /**
