@@ -116,17 +116,16 @@
                     return {value: code, text: Ayamel.utils.getLangName(code)};
                 }).sort(function(a,b){ return a.text.localeCompare(b.text); });
 
-            langList.unshift({value:'zxx',text:'No Linguistic Content'});
-
             new EditorWidgets.SuperSelect({
                 el: "langLocation",
                 data:{
                     id: 'languages',
-                    selection: ['zxx'],
+                    selection: [],
                     icon: 'icon-globe',
                     text: 'Select Language',
                     multiple: true,
-                    options: langList
+                    options: langList,
+                    defaultValue: {value:'zxx',text:'No Linguistic Content'}
                 }
             });
         });

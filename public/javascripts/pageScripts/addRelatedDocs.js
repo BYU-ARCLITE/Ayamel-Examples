@@ -19,7 +19,7 @@ $(function() {
                 <tr>\
                 <td><input type="file" value="{{files}}" /></td>\
                 <td><input type="text" value="{{label}}" /></td>\
-                <td><superselect icon="icon-globe" text="Select Language" selection="{{lang}}" open="{{selectOpen}}" multiple="false" options="{{languages}}"></td>\
+                <td><superselect icon="icon-globe" text="Select Language" selection="{{lang}}" open="{{selectOpen}}" multiple="false" options="{{languages}}" modalId="captionTrackModal"></td>\
                 <td><select value="{{kind}}">\
                     <option value="subtitles">Subtitles</option>\
                     <option value="captions">Captions</option>\
@@ -39,7 +39,7 @@ $(function() {
                 <tr>\
                 <td><input type="file" value="{{files}}" /></td>\
                 <td><input type="text" value="{{label}}" /></td>\
-                <td><superselect icon="icon-globe" text="Select Language" selection="{{lang}}" open="{{selectOpen}}" multiple="false" options="{{languages}}"></td>\
+                <td><superselect icon="icon-globe" text="Select Language" selection="{{lang}}" open="{{selectOpen}}" multiple="false" options="{{languages}}" modalId="annotationsModal"></td>\
                 <td><button on-tap="upload">Upload</button></td>\
                 </tr>\
             </tbody>\
@@ -121,7 +121,8 @@ $(function() {
             label: '',
             kind: 'subtitles',
             lang: 'zxx',
-            languages: langList
+            languages: langList,
+            modalId: 'captionTrackModal'
         }
     });
     addCapR.on('upload', function(){

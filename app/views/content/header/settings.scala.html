@@ -107,7 +107,7 @@
                     ResourceLibrary.load("@content.resourceId", function(resource) {
                         document.getElementById("title").value = resource.title;
                         document.getElementById("description").value = resource.description;
-                        document.getElementById("keywords").value = resource.keywords;
+                        document.getElementById("labels").value = resource.keywords;
                         new EditorWidgets.SuperSelect({
                             el: "langLocation",
                             data:{
@@ -115,8 +115,10 @@
                                 selection: resource.languages.iso639_3,
                                 icon: 'icon-globe',
                                 text: 'Select Language',
-                                multiple: false,
+                                modalId: metadataModal,
+                                multiple: true,
                                 options: langList
+								//defaultValue: {value:"zxx",text:"No Linguistic Content"}
                             }
                         });
                     });
