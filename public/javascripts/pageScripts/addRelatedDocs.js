@@ -19,7 +19,7 @@ $(function() {
                 <tr>\
                 <td><input type="file" value="{{files}}" /></td>\
                 <td><input type="text" value="{{label}}" /></td>\
-                <td><superselect icon="icon-globe" text="Select Language" selection="{{lang}}" open="{{selectOpen}}" multiple="false" options="{{languages}}" modalId="captionTrackModal"></td>\
+                <td><superselect icon="icon-globe" text="Select Language" selection="{{lang}}" button="left" open="{{selectOpen}}" multiple="false" options="{{languages}}" modalId="{{modalId}}" defaultValue="{{defaultValue}}"></td>\
                 <td><select value="{{kind}}">\
                     <option value="subtitles">Subtitles</option>\
                     <option value="captions">Captions</option>\
@@ -39,7 +39,7 @@ $(function() {
                 <tr>\
                 <td><input type="file" value="{{files}}" /></td>\
                 <td><input type="text" value="{{label}}" /></td>\
-                <td><superselect icon="icon-globe" text="Select Language" selection="{{lang}}" open="{{selectOpen}}" multiple="false" options="{{languages}}" modalId="annotationsModal"></td>\
+                <td><superselect icon="icon-globe" text="Select Language" selection="{{lang}}" button="left" open="{{selectOpen}}" multiple="false" options="{{languages}}" modalId="{{modalId}}" defaultValue="{{defaultValue}}"></td>\
                 <td><button on-tap="upload">Upload</button></td>\
                 </tr>\
             </tbody>\
@@ -79,7 +79,6 @@ $(function() {
         var code = Ayamel.utils.p1map[p1];
         return {value: code, text: Ayamel.utils.getLangName(code)};
     }).sort(function(a,b){ return a.text.localeCompare(b.text); });
-    langList.unshift({value:'zxx',text:'No Linguistic Content'});
 
     function getLanguage(resource) {
         var langs = resource.languages.iso639_3;
@@ -120,9 +119,10 @@ $(function() {
         data: {
             label: '',
             kind: 'subtitles',
-            lang: 'zxx',
+            lang: [],
             languages: langList,
-            modalId: 'captionTrackModal'
+            modalId: 'captionTrackModal',
+            defaultValue: {value:'zxx',text:'No Linguistic Content'}
         }
     });
     addCapR.on('upload', function(){
@@ -195,8 +195,10 @@ $(function() {
         components:{ superselect: EditorWidgets.SuperSelect },
         data: {
             label: '',
-            lang: 'zxx',
-            languages: langList
+            lang: [],
+            languages: langList,
+            modalId: 'annotationsModal',
+            defaultValue: {value:'zxx',text:'No Linguistic Content'}
         }
     });
     addAnnR.on('upload', function(){

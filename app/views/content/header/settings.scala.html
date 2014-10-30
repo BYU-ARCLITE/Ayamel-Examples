@@ -101,8 +101,6 @@
                         return {value: code, text: Ayamel.utils.getLangName(code)};
                     }).sort(function(a,b){ return a.text.localeCompare(b.text); });
 
-                langList.unshift({value:'zxx',text:'No Linguistic Content'});
-
                 if (!languagesLoaded) {
                     ResourceLibrary.load("@content.resourceId", function(resource) {
                         document.getElementById("title").value = resource.title;
@@ -115,10 +113,11 @@
                                 selection: resource.languages.iso639_3,
                                 icon: 'icon-globe',
                                 text: 'Select Language',
-                                modalId: metadataModal,
+                                button: 'left',
+                                modalId: "metadataModal",
                                 multiple: true,
-                                options: langList
-								//defaultValue: {value:"zxx",text:"No Linguistic Content"}
+                                options: langList,
+                                defaultValue: {value:"zxx",text:"No Linguistic Content"}
                             }
                         });
                     });

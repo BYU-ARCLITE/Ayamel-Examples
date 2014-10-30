@@ -8,11 +8,9 @@ $(function() {
             return {value: code, text: Ayamel.utils.getLangName(code)};
         }).sort(function(a,b){ return a.text.localeCompare(b.text); });
 
-    langList.unshift({value:'zxx',text:'No Linguistic Content'});
-
     Dialog = Ractive.extend({
         template: '<div class="modal-header">\
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>\
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">X</button>\
             <h3>{{dialogTitle}}</h3>\
         </div>\
         <div class="modal-body">{{>dialogBody}}</div>\
@@ -46,7 +44,7 @@ $(function() {
     Ractive.partials.trackLangSelect = '<div class="control-group">\
         <label class="control-label">Language</label>\
         <div class="controls">\
-            <superselect icon="icon-globe" text="Select Language" selection="{{trackLang}}" open="{{selectOpen}}" multiple="false" options="{{languages}}" modalId="editTrackModal">\
+            <superselect icon="icon-globe" text="Select Language" selection="{{trackLang}}" button="left" open="{{selectOpen}}" multiple="false" options="{{languages}}" modalId="{{modalId}}" defaultValue={{defaultValue}}>\
         </div>\
     </div>';
 
@@ -82,11 +80,13 @@ $(function() {
             data: {
                 dialogTitle: "Create a new track",
                 languages: langList,
-                trackLang: ["zxx"],
+                trackLang: [],
                 trackKind: "subtitles",
                 trackName: "",
                 trackMime: "text/vtt",
-                buttons: [{event:"create",label:"Create"}]
+                modalId: "newTrackModal",
+                buttons: [{event:"create",label:"Create"}],
+                defaultValue: {value:'zxx',text:'No Linguistic Content'}
             },
             partials:{ dialogBody: document.getElementById('createTrackTemplate').textContent },
             components:{ superselect: EditorWidgets.SuperSelect },
@@ -131,10 +131,12 @@ $(function() {
             data: {
                 dialogTitle: "Edit tracks",
                 languages: langList,
-                trackLang: ["zxx"],
+                trackLang: [],
                 trackKind: "subtitles",
                 trackName: "",
-                buttons: [{event:"save",label:"Save"}]
+                modalId: "editTrackModal",
+                buttons: [{event:"save",label:"Save"}],
+                defaultValue: {value:'zxx',text:'No Linguistic Content'}
             },
             partials:{ dialogBody: document.getElementById('editTrackTemplate').textContent },
             components:{ superselect: EditorWidgets.SuperSelect },
@@ -271,8 +273,8 @@ $(function() {
                                 EditorWidgets.Save(
                                     exportedTracks, timeline.saveLocation,
                                     function(){
-										resolve(exportedTracks.map(function(fObj){ return fObj.track.label; }));
-									},
+                                        resolve(exportedTracks.map(function(fObj){ return fObj.track.label; }));
+                                    },
                                     function(){
                                         alert("Error Saving; please try again.");
                                         reject(new Error("Error saving."));
@@ -544,11 +546,11 @@ $(function() {
         //Menu to load tracks into the editor:
         timeline.addMenuItem('Editor.Show Track',{
             name: "Show Track",
-			condition: function(){
-				return videoPlayer.textTracks.some(function(track){
-					return !timeline.hasTextTrack(track.label);
-				});
-			},
+            condition: function(){
+                return videoPlayer.textTracks.some(function(track){
+                    return !timeline.hasTextTrack(track.label);
+                });
+            },
             calc: function(f){
                 videoPlayer.textTracks.forEach(function(track){
                     if(timeline.hasTextTrack(track.label)){ return; }
