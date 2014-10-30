@@ -348,6 +348,14 @@ object ContentController extends Controller {
         }
   }
 
+  /**
+   * Content management page
+   */
+  def manageContent() = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+        Ok(views.html.content.batchEdit(user.getContent))
+  }
 
   /**
    * Content stats page

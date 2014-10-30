@@ -12,6 +12,7 @@ import javax.imageio.ImageIO
 import scala.concurrent.{ExecutionContext, Future}
 import ExecutionContext.Implicits.global
 import play.api.libs.json.JsArray
+import play.api.Logger
 import scala.Some
 
 /**
@@ -318,6 +319,36 @@ object ContentEditing extends Controller {
               }
             } else
               Errors.forbidden
+        }
+  }
+
+  /**
+   * Updates the settings of multiple content items
+   */
+  def batchUpdateContent = Authentication.authenticatedAction(parse.urlFormEncoded) {
+    implicit request =>
+      implicit user =>
+        val redirect = Redirect(routes.ContentController.manageContent())
+        try {
+          val params = request.body.mapValues(_(0))
+          val shareability = params("shareability").toInt
+          val visibility = params("visibility").toInt
+          val contentList = params("ids").split(",").collect {
+            case id:String if !id.isEmpty => Content.findById(id.toLong)
+          }.flatten
+
+          if(contentList.forall(_.isEditableBy(user))) {
+            for(content <- contentList) {
+              content.copy(shareability = shareability, visibility = visibility).save
+            }
+            redirect.flashing("info" -> "Content updated")
+          } else {
+            redirect.flashing("error" -> "You do not have permission to edit some of these items")
+          }
+        } catch {
+          case e: Throwable =>
+            Logger.debug(e.getMessage())
+            redirect.flashing("error" -> ("Error while updating: "+e.getMessage()))
         }
   }
 }

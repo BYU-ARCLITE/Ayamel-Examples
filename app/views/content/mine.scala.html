@@ -13,6 +13,7 @@
               <!-- This should be a menu with all add methods, not just file upload -->
               <a href="@routes.ContentController.createPage("file")" class="btn btn-blue pull-right pad-right-high pad-top-med">Add Content</a>
             }
+            <a href="@routes.ContentController.manageContent()" class="btn btn-blue pull-right pad-top-med">Manage Content</a>
         </div>
 
         <div class="clearfix"></div>
@@ -25,7 +26,7 @@
             <a href="@routes.HelpPages.tableOfContents()">help pages</a>.
         </p>
 
-        
+
         @if(user.getContent.isEmpty) {
             <h3>You Have No Content</h3>
         } else {
@@ -43,9 +44,8 @@
                     filters: ContentItemRenderer.standardFilters
                 });
             });
-       
+
         </script>
         }
-        <a href="@routes.ContentController.createPage("file")" class="btn btn-blue">Add Content</a>
     </div>
 }

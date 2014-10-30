@@ -8,15 +8,19 @@
     }
 }
 
-@main("Ayamel - Manage Content", Local(CSS("stylesheets/admin.css"))) {
-    <div class="adminBackground">
-    </div>
+@main("Ayamel - Manage My Content", Local(CSS("stylesheets/content.css"))) {
 
     <div class="padded">
 
-        @views.html.admin.navbar("content")
+        <div>
+            <h1 class="pull-left">Manage My Content</h1>
+            @if(user.hasSitePermission("createContent")) {
+              <!-- This should be a menu with all add methods, not just file upload -->
+              <a href="@routes.ContentController.createPage("file")" class="btn btn-blue pull-right pad-right-high pad-top-med">Add Content</a>
+            }
+        </div>
 
-        <h1>Manage Content</h1>
+        <div class="clearfix"></div>
 
         <a href="#batchEditModal" role="button" class="btn btn-blue pad-bottom-high" data-toggle="modal"><i class="icon-edit"></i> Batch edit</a>
 

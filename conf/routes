@@ -57,6 +57,8 @@ GET     /course/:courseId/content/:id/remove            controllers.CourseConten
 
 # Content pages
 GET     /content/mine                   controllers.ContentController.mine
+GET     /content/manage                 controllers.ContentController.manageContent
+POST    /content/manage                 controllers.ContentEditing.batchUpdateContent
 GET     /content/create/:page           controllers.ContentController.createPage(page: String)
 POST    /content/create/url             controllers.ContentController.createFromUrl
 POST    /content/create/batch           controllers.ContentController.createFromUrlBatch
