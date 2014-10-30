@@ -1,7 +1,7 @@
 /**
  * For usage, see https://github.com/BYU-ARCLITE/Ayamel-Examples/wiki/Content-selection
  */
-var ContentItemRenderer = (function() {
+var ContentItemRenderer = (function(){
 
     var contentTemplates = {
         block:
@@ -46,23 +46,23 @@ var ContentItemRenderer = (function() {
     };
 
     var templateConditions = {
-        captions: function (content) {
-            if (content.contentType === "text" || content.settings.showCaptions !== 'true')
+        captions: function(content){
+            if(content.contentType === "text" || content.settings.showCaptions !== 'true')
                 return false;
             return !!content.settings.captionTrack;
         },
-        annotations: function (content) {
-            if (content.settings.showAnnotations !== 'true')
+        annotations: function(content){
+            if(content.settings.showAnnotations !== 'true')
                 return false;
             return !!content.settings.annotationDocument;
         },
-        definitions: function (content) {
+        definitions: function(content){
             return (content.contentType === "text" || content.settings.showCaptions === 'true') && content.settings.allowDefinitions === 'true';
         }
     }
 
     /* args: content, format, click, courseId */
-    function renderContent(args) {
+    function renderContent(args){
         var ractive,
             content = args.content,
             el = document.createElement('span');
@@ -82,9 +82,9 @@ var ContentItemRenderer = (function() {
         });
 
         el.addEventListener('click', function(){
-            if (typeof args.click === 'function') {
+            if(typeof args.click === 'function'){
                 args.click(args.content, args.courseId, $(this));
-            } else {
+            }else{
                 window.open(
                     args.courseId?"/course/" + args.courseId + "/content/" + args.content.id:
                     args.content.courseId?"/course/" + args.content.courseId + "/content/" + args.content.id:
@@ -97,7 +97,7 @@ var ContentItemRenderer = (function() {
         return el;
     }
 
-    function enablePopover(content, element) {
+    function enablePopover(content, element){
         var ractive = new Ractive({
             el: 'container',
             template: contentTemplates.iconContent,
@@ -120,13 +120,13 @@ var ContentItemRenderer = (function() {
         });
     }
 
-    function adjustFormat(content) {
+    function adjustFormat(content){
         var tableThreshold = 20;
         return (content.length > tableThreshold)?"table":"block";
     }
 
     /* args: format, content, holder, sorting, organization, labels, filters, courseId, click */
-    function createSizer(args) {
+    function createSizer(args){
         var element = Ayamel.utils.parseHTML(
             '<div class="btn-group" data-toggle="buttons-radio">\
                 <button class="btn" data-format="block"><i class="icon-th-large"></i></button>\
@@ -154,7 +154,8 @@ var ContentItemRenderer = (function() {
                 labels: args.labels,
                 filters: args.filters,
                 courseId: args.courseId,
-                click: args.click
+                click: args.click,
+                clickHeader: args.clickHeader
             });
         }
 
@@ -162,7 +163,7 @@ var ContentItemRenderer = (function() {
     }
 
     /* args: format, content, holder, sorting, labels, filters, courseId, click */
-    function createOrganizer(args) {
+    function createOrganizer(args){
         var element = Ayamel.utils.parseHTML(
             '<div class="btn-group" data-toggle="buttons-radio">\
                 <button class="btn" data-organization="contentType"><i class="icon-play-circle"></i> Content Type</button>\
@@ -191,7 +192,8 @@ var ContentItemRenderer = (function() {
                 labels: args.labels,
                 filters: args.filters,
                 courseId: args.courseId,
-                click: args.click
+                click: args.click,
+                clickHeader: args.clickHeader
             });
         }
 
@@ -200,29 +202,29 @@ var ContentItemRenderer = (function() {
 
     return {
         /* args: content, format, click, courseId, holder */
-        render: function(args) {
+        render: function(args){
             var element = renderContent(args);
             args.holder.appendChild(element);
 
-            if (args.format === "icon") {
+            if(args.format === "icon"){
                 // Enable the popover
                 enablePopover(args.content, element);
             }
         },
 
         /* args: holder, format, sizing, content, sorting, organization, labels, filters, courseId, click */
-        renderAll: function(args) {
+        renderAll: function(args){
             // Clear out the holder
             args.holder.innerHTML = "";
 
             // Adjust args
             args.format = args.format || "block";
-            if (args.format === "auto") {
+            if(args.format === "auto"){
                 args.format = adjustFormat(args.content);
             }
 
             // Set up sizing
-            if (args.sizing) {
+            if(args.sizing){
                 args.holder.appendChild(createSizer({
                     format: args.format,
                     content: args.content,
@@ -232,13 +234,14 @@ var ContentItemRenderer = (function() {
                     labels: args.labels,
                     filters: args.filters,
                     courseId: args.courseId,
-                    click: args.click
+                    click: args.click,
+                    clickHeader: args.clickHeader
                 }));
             }
 
             // Set up organizing
             var filters = args.filters;
-            if (args.labels) {
+            if(args.labels){
                 args.organization = args.organization || "labels";
                 args.holder.appendChild(createOrganizer({
                     content: args.content,
@@ -249,76 +252,87 @@ var ContentItemRenderer = (function() {
                     labels: args.labels,
                     filters: args.filters,
                     courseId: args.courseId,
-                    click: args.click
+                    click: args.click,
+                    clickHeader: args.clickHeader
                 }));
-                if (args.organization === "labels") {
+                if(args.organization === "labels"){
                     filters = {};
-                    args.labels.forEach(function (label) {
-                        filters['<h3><i class="icon-tag"></i> ' + label + '</h3>'] = function (content) { // where the freak does this come from
+                    args.labels.forEach(function(label){
+                        filters['<h3><i class="icon-tag"></i> ' + label + '</h3>'] = function(content){ // where the freak does this come from
                             return content.labels.indexOf(label) >= 0;
                         };
 
                     });
-                    filters['<h3>Unlabeled</h3>'] = function (content) {
+                    filters['<h3>Unlabeled</h3>'] = function(content){
                         return content.labels.length === 0;
                     };
-                } else if (args.organization === "language") {
+                }else if(args.organization === "language"){
                     filters = {};
                     // for each content object, get the language from the resource library and add it to the filter
                     args.content.forEach(function(content){
                         ResourceLibrary.load(content.resourceId).then(function(resource){
-                            var lang = resource.languages.iso639_3.map(function(langCode) {
+                            var lang = resource.languages.iso639_3.map(function(langCode){
                                 return '<em class="pad-left-high">' + Ayamel.utils.getLangName(langCode) + '</em>';
                             }).join('');
-                            filters['<h3><i class="icon-globe"></i> ' + lang + '</h3>'] = true;             
+                            filters['<h3><i class="icon-globe"></i> ' + lang + '</h3>'] = true;
                         });
                     });
 
-                } else if (args.organization === "title") {
+                }else if(args.organization === "title"){
                     filters = {};
-                    args.content.forEach(function (obj) {
-                        filters['<h3> ' + obj.name[0] + '</h3>'] = function (content) {
+                    args.content.forEach(function(obj){
+                        filters['<h3> ' + obj.name[0] + '</h3>'] = function(content){
                             // filters the content by the first letter.
                             return (content.name[0] === obj.name[0]) ? true : false;
                         };
                     });
                 }
-            } else {
+            }else{
                 args.organization = "contentType";
             }
 
             // Set up sorting
-            if (args.sorting) {
+            if(args.sorting){
                 // TODO: Setup sorting
                 console.log("TODO: Setup sorting");
             }
 
             // Add the content to the holder
-            if (filters) {
+            if(filters){
 
                 // Filter the content into categories
                 // Also sorts the map so the filters will be sorted alphabetically
                 Object.keys(filters).sort().forEach(function(filterName){
                     // Filter the content
-                    var filteredContent = args.content.filter(filters[filterName]);
+                    var contentHolder, header,
+                        filteredContent = args.content.filter(filters[filterName]);
 
                     // Sort the content inside of the filter
-                    filteredContent.sort(function(a, b) {
+                    filteredContent.sort(function(a, b){
                         a = a.name;
                         b = b.name;
                         return b > a ? -1 : b < a ? 1 : 0;
                     });
 
                     // If there were results then show them
-                    if (filteredContent.length) {
+                    if(filteredContent.length){
 
-                        // Add the name of the filter
-                        args.holder.appendChild(Ayamel.utils.parseHTML(filterName));
+                        // Add the name of the filter as a header
+                        header = Ayamel.utils.parseHTML(filterName);
+                        args.holder.appendChild(header);
+
                         // Add the content
-                        var contentHolder = document.createElement('div');
+                        contentHolder = document.createElement('div');
                         contentHolder.className = "contentHolder " + args.format + "Format";
                         args.holder.appendChild(contentHolder);
-                        filteredContent.forEach(function (content) {
+
+                        if(typeof args.clickHeader === 'function'){
+                            header.addEventListener('click', function(){
+                                args.clickHeader(header, contentHolder, filteredContent);
+                            },false);
+                        }
+
+                        filteredContent.forEach(function(content){
                             ContentItemRenderer.render({
                                 content: content,
                                 holder: contentHolder,
@@ -329,13 +343,13 @@ var ContentItemRenderer = (function() {
                         });
                     }
                 });
-            } else {
+            }else{
 
                 // No filter, so just show everything
                 var contentHolder = document.createElement('div');
                 contentHolder.className = "contentHolder";
                 args.holder.appendChild(contentHolder);
-                args.content.forEach(function (content) {
+                args.content.forEach(function(content){
                     ContentItemRenderer.render({
                         content: content,
                         holder: contentHolder,
@@ -347,22 +361,22 @@ var ContentItemRenderer = (function() {
             }
         },
         standardFilters: {
-            '<h2 class="pad-top-high"><i class="icon-film"></i> Videos</h2>': function(content) {
+            '<h2 class="pad-top-high"><i class="icon-film"></i> Videos</h2>': function(content){
                 return content.contentType === "video";
             },
-            '<h2 class="pad-top-high"><i class="icon-picture"></i> Images</h2>': function(content) {
+            '<h2 class="pad-top-high"><i class="icon-picture"></i> Images</h2>': function(content){
                 return content.contentType === "image";
             },
-            '<h2 class="pad-top-high"><i class="icon-volume-up"></i> Audio</h2>': function(content) {
+            '<h2 class="pad-top-high"><i class="icon-volume-up"></i> Audio</h2>': function(content){
                 return content.contentType === "audio";
             },
-            '<h2 class="pad-top-high"><i class="icon-file"></i> Text</h2>': function(content) {
+            '<h2 class="pad-top-high"><i class="icon-file"></i> Text</h2>': function(content){
                 return content.contentType === "text";
             },
-            '<h2 class="pad-top-high"><i class="icon-list-ol"></i> Playlists</h2>': function(content) {
+            '<h2 class="pad-top-high"><i class="icon-list-ol"></i> Playlists</h2>': function(content){
                 return content.contentType === "playlist";
             },
-            '<h2 class="pad-top-high"><i class="icon-question-sign"></i> Question Sets</h2>': function(content) {
+            '<h2 class="pad-top-high"><i class="icon-question-sign"></i> Question Sets</h2>': function(content){
                 return content.contentType === "questions";
             }
         }

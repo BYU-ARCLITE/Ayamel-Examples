@@ -1,10 +1,9 @@
 /**
  * For usage see: https://github.com/BYU-ARCLITE/Ayamel-Examples/wiki/Content-selection
  */
-var PopupBrowser = (function() {
+var PopupBrowser = (function(){
 
-    var apply = false,
-        crossDomain = false,
+    var crossDomain = false,
         host = "/",
         selection = [];
 
@@ -17,15 +16,15 @@ var PopupBrowser = (function() {
             <div class="modal-body">\
                 <ul class="nav nav-pills">\
                     <li><a href="#popupBrowserMine" name="#popupBrowserMine" data-load="mine">My Content</a></li>\
-                    <li><a href="#popupBrowserCourse" name="#popupBrowserCourse" data-load="course">Course Content</a></li>\
+                    <!--<li><a href="#popupBrowserCourse" name="#popupBrowserCourse" data-load="course">Course Content</a></li>-->\
                     <li><a href="#popupBrowserPublic" name="#popupBrowserPublic" data-load="public">Public</a></li>\
-                    <li><a href="#popupBrowserSearch" name="#popupBrowserSearch" data-load="search">Search</a></li>\
+                    <!--<li><a href="#popupBrowserSearch" name="#popupBrowserSearch" data-load="search">Search</a></li>-->\
                 </ul>\
                 <div class="tab-content">\
                     <div class="tab-pane" id="popupBrowserMine"></div>\
-                    <div class="tab-pane" id="popupBrowserCourse"></div>\
+                    <!--<div class="tab-pane" id="popupBrowserCourse"></div>-->\
                     <div class="tab-pane" id="popupBrowserPublic"></div>\
-                    <div class="tab-pane" id="popupBrowserSearch"></div>\
+                    <!--<div class="tab-pane" id="popupBrowserSearch"></div>-->\
                 </div>\
             </div>\
             <div class="modal-footer">\
@@ -36,24 +35,34 @@ var PopupBrowser = (function() {
             </div>\
         </div>';
 
-    function ajax(path, success) {
+    function ajax(path, success){
         var params = {
             success: success
         };
-        if (crossDomain) {
+        if(crossDomain){
             params.xhrFields = {withCredentials: true};
         }
         $.ajax(host + path, params);
     }
 
-    function click(content, courseId, $element) {
+    function clickHeader(header, contentHolder, contents){
+        [].forEach.call(contentHolder.childNodes,function(node){
+            node.firstChild.classList.add("selectedContent");
+        });
+        contents.forEach(function(content){
+            if(selection.indexOf(content) === -1){
+                selection.push(content);
+            }
+        });
+    }
+
+    function click(content, courseId, $element){
         var indexOfContent;
-        if ($element[0].firstChild.classList.contains("selectedContent")){
+        if($element[0].firstChild.classList.contains("selectedContent")){
             $element[0].firstChild.classList.remove("selectedContent");
             indexOfContent = selection.indexOf(content);
-            if (~indexOfContent)
-                selection.splice(indexOfContent,1);
-        } else {
+            if(~indexOfContent){ selection.splice(indexOfContent,1); }
+        }else{
             $element[0].firstChild.classList.add("selectedContent");
             selection.push(content);
         }
@@ -66,9 +75,27 @@ var PopupBrowser = (function() {
     }
 
     var loadingMechanisms = {
-        "mine": function(container) {
+        "mine": function(container){
             clearSelection();
-            ajax("ajax/content/mine", function(data) {
+            ajax("ajax/content/mine", function(data){
+                var labels = [].concat.apply([], data.map(function(d){return d.labels;}));
+                ContentItemRenderer.renderAll({
+                    content: data,
+                    courseId: 0,
+                    holder: container,
+                    format: "table",
+                    sizing: true,
+                    sorting: true,
+                    labels: labels,
+                    filters: ContentItemRenderer.standardFilters,
+                    click: click,
+                    clickHeader: clickHeader
+                });
+            });
+        },
+        "public": function(container){
+            clearSelection();
+            ajax("ajax/content/public", function(data){
                 var labels = [].concat.apply([], data.map(function(d){return d.labels;}));
                 ContentItemRenderer.renderAll({
                     content: data,
@@ -82,53 +109,14 @@ var PopupBrowser = (function() {
                     click: click
                 });
             });
-        },
-        "course": function(container) {
-            clearSelection();
-            ajax("ajax/content/course", function(data) {
-                container.innerHTML = "";
-                Object.keys(data).forEach(function(courseName, index) {
-                    var id = "courseContent" + index;
-                    container.appendChild(Ayamel.utils.parseHTML("<h1>" + courseName + "</h1><div id='" + id + "'></div>"));
-                    var labels = [].concat.apply([], data[courseName].map(function(d){return d.labels;}));
-                    ContentItemRenderer.renderAll({
-                        content: data[courseName],
-                        courseId: index,
-                        holder: container.querySelector("#" + id),
-                        format: "table",
-                        sizing: true,
-                        sorting: true,
-                        labels: labels,
-                        filters: ContentItemRenderer.standardFilters,
-                        click: click
-                    });
-                });
-            });
-        },
-        "public": function(container) {
-            clearSelection();
-            ajax("ajax/content/public", function(data) {
-                var labels = [].concat.apply([], data.map(function(d){return d.labels;}));
-                ContentItemRenderer.renderAll({
-                    content: data,
-                    courseId: 0,
-                    holder: container,
-                    format: "table",
-                    sizing: true,
-                    sorting: true,
-                    labels: labels,
-                    filters: ContentItemRenderer.standardFilters,
-                    click: click
-                });
-            });
-        },
-        "search": function(container) {
+        }/*,
+        "search": function(container){
             clearSelection();
             container.innerHTML = "search";
-        }
+        }*/
     };
 
-    function createModal(callback) {
+    function createModal(callback){
         // Create the modal and add it to the document
         var $modal = $(template);
         var $selectButton = $modal.find("#popupBrowserSelectButton");
@@ -136,43 +124,37 @@ var PopupBrowser = (function() {
 
         // Prevent pill events from spilling into the modal
         $modal.find(".modal-body")
-            .on("show", function(e) {
+            .on("show", function(e){
                 e.stopPropagation();
-            }).on("shown", function(e) {
+            }).on("shown", function(e){
                 e.stopPropagation();
             });
 
         // Set up the pills
-        $modal.find(".nav-pills a").click(function (e) {
+        $modal.find(".nav-pills a").click(function(e){
             e.preventDefault();
             $(this).tab("show");
             $selectButton.addClass("disabled");
+            selection = [];
 
             // Run the loading mechanism
             loadingMechanisms[this.dataset["load"]](document.querySelector(this.name));
         });
-        $modal.on("show", function () {
-            apply = false;
+        $modal.on("show", function(){
             $selectButton.addClass("disabled");
         });
-        $modal.on("shown", function() {
+        $modal.on("shown", function(){
             // Enable the first tab
             var $pill = $modal.find(".nav-pills li:first-child a");
             $pill.tab("show");
             loadingMechanisms[$pill.attr("data-load")](document.querySelector($pill.attr("href")));
         });
 
-
-        // Add submission functionality
-        $modal.on("hide", function() {
-            if (apply)
-                callback(selection);
-        });
-        $selectButton.click(function() {
-            if (!$(this).hasClass("disabled")) {
-                apply = true;
-                $modal.modal("hide");
-            }
+        $selectButton.click(function(){
+            if(!selection.length){ return; }
+            $modal.modal("hide");
+            callback(selection);
+            selection = [];
         });
 
         return $modal;
@@ -183,12 +165,12 @@ var PopupBrowser = (function() {
         document.getElementById("popupBrowserSelectButton").classList.add("disabled");
     }
 
-    function selectContent(callback) {
+    function selectContent(callback){
         // Attempt to get the modal
         var $popupBrowserModal = $("#popupBrowserModal");
 
         // If it doesn't exist, create it
-        if (!$popupBrowserModal.length) {
+        if(!$popupBrowserModal.length){
             $popupBrowserModal = createModal(callback);
         }
 
@@ -197,13 +179,13 @@ var PopupBrowser = (function() {
 
     return {
         selectContent: selectContent,
-        setCrossDomain: function(value) {
+        setCrossDomain: function(value){
             crossDomain = value;
         },
-        setHost: function(value) {
+        setHost: function(value){
             host = value;
         },
-        getHost: function() {
+        getHost: function(){
             return host;
         }
     };

@@ -9,10 +9,12 @@
 @main("Ayamel - " + course.name, Local(
   Rel("stylesheets/", CSS("course.css"), CSS("content.css")),
   Rel("javascripts/contentSelection/",
-    JS("PopupBrowser.js"),
-    JS("PopupLabelBrowser.js")))
+    JS("PopupBrowser.js")))
 ) {
 
+@if(user.hasCoursePermission(course, "addContent")){
+    <script type="text/javascript" src='@routes.Assets.at("javascripts/pageScripts/viewCourse.js")'></script>
+}
     <script type="text/javascript">
         var courseId = @course.id.get;
     </script>
@@ -52,21 +54,14 @@
     <div class="padded">
         <div class="row-fluid">
             <div class="span8">
-                @if(user.hasCoursePermission(course, "addContent")) {
-                    <div class="pull-right">
-                        <div class="btn-group">
-                            <button type="button" class="btn btn-inverse dropdown-toggle" data-toggle="dropdown">
-                                <i class="icon-plus"></i> Add content <span class="caret"></span>
-                            </button>
-                            <ul class="dropdown-menu">
-                                <li><a id="browseContent" href="#">Browse</a></li>
-                                <li><a id="addByLabel" href="#">Add by label</a></li>
-                            </ul>
-                        </div>
-                        <a href="#addContentModal" role="button" class="btn btn-inverse" data-toggle="modal"><i class="icon-plus"></i> Add my content</a>
+                <div class="pull-right">
+                    @if(user.hasCoursePermission(course, "addContent")){
+				       <a id="browseContent" class="btn btn-inverse"><i class="icon-plus"></i> Add content</a>
+                    }
+                    @if(user.hasCoursePermission(course, "removeContent")){
                         <a href="#removeContentModal" role="button" class="btn btn-inverse" data-toggle="modal"><i class="icon-minus"></i> Remove Content</a>
-                    </div>
-                }
+                    }
+                </div>
                 <div id="courseContent"></div>
                 <script type="text/javascript">
                     $(function() {
@@ -101,7 +96,6 @@
     @views.html.courses.helpers.deleteCourse(user, course)
     @views.html.courses.helpers.studentInfo(user, course)
     @views.html.courses.helpers.joinLink(user, course)
-    @views.html.courses.helpers.addContent(user, course)
     @views.html.courses.helpers.makeAnnouncement(user, course)
     @views.html.courses.helpers.removeContent(user, course)
 }

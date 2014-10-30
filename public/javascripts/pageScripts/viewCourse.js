@@ -30,28 +30,4 @@ $(function() {
             form.submit();
         });
     },false);
-
-    document.getElementById("addByLabel").addEventListener('click',function(){
-        PopupLabelBrowser.selectContent(function(contents) {
-            // Create a form to add content
-            var form = document.createElement("form");
-            form.method = "post";
-            form.action = "/course/" + courseId + "/addContent";
-
-            // Add the content ids to the form
-            var select = document.createElement("select");
-            select.multiple = true;
-            select.name = "addContent";
-            contents.forEach(function(content) {
-                var option = document.createElement("option");
-                option.value = content.id;
-                option.selected = true;
-                select.appendChild(option);
-            });
-            form.appendChild(select);
-
-            // Submit the form
-            form.submit();
-        });
-    },false);
 });
