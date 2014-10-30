@@ -1,10 +1,9 @@
 /**
  * For usage, see https://github.com/BYU-ARCLITE/Ayamel-Examples/wiki/Content-selection
  */
-var PopupLabelBrowser = (function() {
+var PopupLabelBrowser = (function(){
     "use strict";
-    var selectedContent = null,
-        apply = false;
+    var selectedContent = null;
 
     var template =
         '<div id="popupLabelBrowserModal" class="modal bigModal hide fade" tabindex="-1" role="dialog" aria-labelledby="popupLabelBrowserModalLabel" aria-hidden="true">\
@@ -51,17 +50,16 @@ var PopupLabelBrowser = (function() {
             </div>\
         {{/labels}}';
 
-    function renderLabels(contentList, holder) {
-        var ractive, allContent,
+    function renderLabels(contentList, holder){
+        var ractive,
             labels = [].concat.apply([], contentList.map(function(d){return d.labels;}));
         labels = labels.filter(function(e, i, arr){ return arr.lastIndexOf(e) === i; });
         labels = labels.map(function(label){
             return {
                 name: label,
-                items: contentList.filter(function(content) { return content.labels.indexOf(label) > -1; })
+                items: contentList.filter(function(content){ return content.labels.indexOf(label) > -1; })
             };
         });
-        allContent = labels.reduce(function(acc,next){ return acc.concat(next.items); },[]);
 
         ractive = new Ractive({
             el: holder,
@@ -73,27 +71,27 @@ var PopupLabelBrowser = (function() {
             }
         });
 
-        ractive.on('hclick', function(i){
+        ractive.on('hclick', function(e, i){
             ractive.set('highlighted', i);
             document.getElementById("popupLabelBrowserSelectButton").classList.remove("disabled");
-            selectedContent = allContent;
+            selectedContent = labels[i].items;
         });
     }
 
     var loadingMechanisms = {
-        "mine": function(container) {
-            $.ajax("/ajax/content/mine").then(function(data) {
+        "mine": function(container){
+            $.ajax("/ajax/content/mine").then(function(data){
                 renderLabels(data, container);
             });
         },
-        "public": function(container) {
-            $.ajax("/ajax/content/public").then(function(data) {
+        "public": function(container){
+            $.ajax("/ajax/content/public").then(function(data){
                 renderLabels(data, container);
             });
         }
     };
 
-    function createModal(callback) {
+    function createModal(callback){
         // Create the modal and add it to the document
         var $modal = $(template),
             $selectButton = $modal.find("#popupLabelBrowserSelectButton");
@@ -101,52 +99,48 @@ var PopupLabelBrowser = (function() {
 
         // Prevent pill events from spilling into the modal
         $modal.find(".modal-body")
-            .on("show", function(e) {
+            .on("show", function(e){
                 e.stopPropagation();
-            }).on("shown", function(e) {
+            }).on("shown", function(e){
                 e.stopPropagation();
             });
 
         // Set up the pills
-        $modal.find(".nav-pills a").click(function (e) {
+        $modal.find(".nav-pills a").click(function(e){
             e.preventDefault();
             $(this).tab("show");
             $selectButton.addClass("disabled");
+            selectedContent = null;
 
             // Run the loading mechanism
             loadingMechanisms[this.dataset["load"]](document.querySelector(this.name));
         });
-        $modal.on("show", function () {
-            apply = false;
+        $modal.on("show", function(){
             $selectButton.addClass("disabled");
         });
-        $modal.on("shown", function() {
+        $modal.on("shown", function(){
             // Enable the first tab
             var $pill = $modal.find(".nav-pills li:first-child a");
             $pill.tab("show");
             loadingMechanisms[$pill.attr("data-load")](document.querySelector($pill.attr("href")));
         });
 
-        // Add submission functionality
-        $modal.on("hide", function() {
-            if(apply){ callback(selectedContent); }
-        });
-        $selectButton.click(function() {
-            if (!$(this).hasClass("disabled")) {
-                apply = true;
-                $modal.modal("hide");
-            }
+        $selectButton.click(function(){
+            if(!selectedContent){ return; }
+            $modal.modal("hide");
+            callback(selectedContent);
+            selectedContent = null;
         });
 
         return $modal;
     }
 
-    function selectContent(callback) {
+    function selectContent(callback){
         // Attempt to get the modal
         var $popupLabelBrowserModal = $("#popupLabelBrowserModal");
 
         // If it doesn't exist, create it
-        if (!$popupLabelBrowserModal.length) {
+        if(!$popupLabelBrowserModal.length){
             $popupLabelBrowserModal = createModal(callback);
         }
 
