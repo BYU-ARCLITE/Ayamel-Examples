@@ -543,22 +543,9 @@ $(function() {
             timeline.width = window.innerWidth;
         }, false);
 
-        //Menu to load tracks into the editor:
-        timeline.addMenuItem('Editor.Show Track',{
-            name: "Show Track",
-            condition: function(){
-                return videoPlayer.textTracks.some(function(track){
-                    return !timeline.hasTextTrack(track.label);
-                });
-            },
-            calc: function(f){
-                videoPlayer.textTracks.forEach(function(track){
-                    if(timeline.hasTextTrack(track.label)){ return; }
-                    f({name: track.label,
-                        action: function(){ timeline.addTextTrack(track, videoPlayer.textTrackMimes.get(track), 'server'); }
-                    });
-                });
-            }
+        //Preload tracks into the editor
+        videoPlayer.textTracks.forEach(function(track){
+            timeline.cacheTextTrack(track,videoPlayer.textTrackMimes.get(track),'server');
         });
 
         //keep the editor and the player menu in sync
