@@ -298,6 +298,9 @@ var VideoRenderer = (function(){
             // Sometimes two events appear, so only save one within a half second
             if(!registerPlay){ return; }
             ActivityStreams.predefined.playClick("" + player.currentTime);
+			if(args.layout["TranscriptTab"]){
+				$(args.layout["TranscriptTab"]).tab("show");
+			}
             registerPlay = false;
             setTimeout(function(){ registerPlay = true;}, 500);
         });
