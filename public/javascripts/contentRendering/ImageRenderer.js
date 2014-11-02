@@ -37,42 +37,41 @@ var ImageRenderer = (function(){
     }
 
     return {
-    
+
         //args: drawable, filter, open, resource, annotate, imgcallback
         // courseId, contentId, holder
         render: function(args){
 
-            // Load all important information
-            var file = ContentRenderer.findFile(args.resource, function(file) {
-                return file.representation === "original";
-            });
+            // Create the layout
+            var layout = createLayout(args.holder),
+                file = ContentRenderer.findFile(args.resource, function(file){
+                    return file.representation === "original";
+                });
 
-            // Load annotations
-            ContentRenderer.getAnnotations({
-                resource: args.resource,
-                courseId: args.courseId,
-                contentId: args.contentId,
-                permission: "view"
-            }).then(function(manifests){
-                // Create the layout
-                var layout = createLayout(args.holder);
-
-                // Load the image and set the background
-                setImage(layout, file.downloadUri, function(image) {
-
-                    // Add annotations
-                    if(args.annotate) {
-                        ImageAnnotator.annotate({
-                            image: image,
-                            layout: layout,
-                            drawable: args.drawable,
-                            manifests: manifests,
-                            filter: args.filter,
-                            open: args.open
+            // Load the image and set the background
+            setImage(layout, file.downloadUri, function(image){
+                (function(){
+                    if(args.annotate){ // Load annotations
+                        return ContentRenderer.getAnnotations({
+                            resource: args.resource,
+                            courseId: args.courseId,
+                            contentId: args.contentId,
+                            permission: "view"
+                        }).then(function(manifests){
+                            if(!manifests){ return; }
+                            ImageAnnotator.annotate({
+                                image: image,
+                                layout: layout,
+                                drawable: args.drawable,
+                                manifests: manifests,
+                                filter: args.filter,
+                                open: args.open
+                            });
                         });
                     }
-
-                    if(typeof args.imgcallback === 'function') {
+                    return Promise.resolve(null);
+                }()).then(function(){
+                    if(typeof args.imgcallback === 'function'){
                         args.imgcallback(image, layout);
                     }
                 });
