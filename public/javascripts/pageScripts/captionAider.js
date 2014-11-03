@@ -316,8 +316,10 @@ $(function() {
             data: {
                 dialogTitle: "Load Track",
                 languages: langList,
-                trackLang: ["zxx"],
+                trackLang: [],
                 trackKind: "subtitles",
+                modalId: 'loadTrackModal',
+                defaultValue: {value:'zxx',text:'No Linguistic Content'},
                 sources: Object.keys(sources).map(function(key){ return {name: key, label: sources[key].label}; }),
                 buttons: [{event:"load",label:"Load"}]
             },
