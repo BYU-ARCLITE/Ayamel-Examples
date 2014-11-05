@@ -126,7 +126,7 @@ object Courses extends Controller {
    * Add the content(s) to a specified course.
    * @param id The ID of the course
    */
-  def addContent(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
+  def addContent(id: Long) = Authentication.authenticatedAction(parse.multipartFormData) {
     implicit request =>
       implicit user =>
         getCourse(id) { course =>
@@ -135,9 +135,9 @@ object Courses extends Controller {
           if (user.hasCoursePermission(course, "addContent")) {
 
             // Add the content to the course
-            request.body("addContent").foreach(id => {
+            request.body.dataParts("addContent").foreach { id =>
               Content.findById(id.toLong).foreach(content => course.addContent(content))
-            })
+            }
             Redirect(routes.Courses.view(id)).flashing("success" -> "Content added to course.")
           } else
             Errors.forbidden

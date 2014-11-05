@@ -11,23 +11,23 @@ $(function() {
     });
 
     document.getElementById("browseContent").addEventListener('click',function(){
-        PopupBrowser.selectContent(function(content) {
-            // Create a form to add content
-            var form = document.createElement("form");
-            form.method = "post";
-            form.action = "/course/" + courseId + "/addContent";
+        PopupBrowser.selectContent(function(contentList) {
+            var formData = new FormData(),
+                xhr = new XMLHttpRequest();
 
-            // Add the content id to the form
-            [].forEach.call(content,function(c){
-                var input = document.createElement("input");
-                input.type = "hidden";
-                input.name = "addContent";
-                input.value = c.id;
-                form.appendChild(input);
+            contentList.forEach(function(c){
+                formData.append("addContent",c.id);
             });
 
-            // Submit the form
-            form.submit();
+            xhr.addEventListener('load',function(){
+                document.open();
+                document.write(xhr.responseText);
+                document.close();
+            },false);
+            xhr.addEventListener('error',function(){ alert("Error adding content"); },false);
+
+            xhr.open("POST", "/course/" + courseId + "/addContent");
+            xhr.send(formData);
         });
     },false);
 });
