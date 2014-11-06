@@ -10,7 +10,7 @@
     @views.html.content.header.includes()
 
     @Dependencies(
-	  Extern("TimelineEditor",
+      Extern("TimelineEditor",
         JS("Timeline.js"),
         JS("Slider.js"),
         JS("TimelineSkin.js"),
@@ -22,8 +22,8 @@
         JS("WaveForm.js"),
         JS("Resampler.js"),
         JS("AudioTrack.js"),
-		Rel("aurora/",
-		  JS("aurora.js"),
+        Rel("aurora/",
+          JS("aurora.js"),
           JS("aac.js"),
           JS("alac.js"),
           JS("flac.js"),
@@ -58,6 +58,7 @@
     <div id="setLocModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="setLocModalLabel" aria-hidden="true"></div>
     <div id="saveTrackModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="saveTrackModalLabel" aria-hidden="true"></div>
     <div id="loadTrackModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="loadTrackModalLabel" aria-hidden="true"></div>
+    <div id="showTrackModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="showTrackModalLabel" aria-hidden="true"></div>
 
     <script>
         var content = @Html(content.toJson.toString());
@@ -67,102 +68,107 @@
         var teacher = @course.exists(c => user.hasCoursePermission(c, "teacher"));
         ResourceLibrary.setBaseUrl("@resourceLibraryUrl");
     </script>
-	<script id='createTrackTemplate' type='text/ractive'>
-		<form class="form-horizontal">
-			<div class="control-group">
-				<label class="control-label">Name</label>
-				<div class="controls">
-					<input type="text" value="{{trackName}}" placeholder="Name">
-				</div>
-			</div>
-			{{>trackKindSelect}}
-			<div class="control-group">
-				<label class="control-label">Format</label>
-				<div class="controls">
-					<select value="{{trackMime}}">
-						<option value="text/vtt" selected>WebVTT</option>
-						<option value="text/srt">SubRip</option>
-						<option value="application/ttml+xml">TTML</option>
-						<option value="text/x-ssa">Sub Station Alpha</option>
-					</select>
-				</div>
-			</div>
-			{{>trackLangSelect}}
-		</form>
-	</script>
-	<script id='editTrackTemplate' type='text/ractive'>
-		<form class="form-horizontal">
-			{{#(trackList.length === 0)}}
-			There are no tracks loaded for editing.
-			{{/(trackList)}}
-			{{#(trackList.length > 0)}}
-			{{#(trackList.length > 1)}}
-			<div class="control-group">
-				<label class="control-label">Which Track</label>
-				<div class="controls">
-					<select value="{{trackToEdit}}">
-					{{#trackList}}<option value="{{.}}">{{.}}</option>{{/trackList}}
-					</select>
-				</div>
-			</div>
-			{{/(trackList)}}
-			<div style="display:{{(trackToEdit === "" ? "none" : "block")}}">
-				<div class="control-group">
-					<label class="control-label">Name</label>
-					<div class="controls">
-						<input type="text" value="{{trackName}}" placeholder="Name">
-					</div>
-				</div>
-				{{>trackKindSelect}}
-				{{>trackLangSelect}}
-			</div>
-			{{/(trackList)}}
-		</form>
-	</script>
-	<script id='setLocTemplate' type='text/ractive'>
-		<form class="form-horizontal">
-			<div class="control-group">
-				<label class="control-label">Current Save Location</label>
-				<div class="controls">
-					<div id="saveLocation">
-						<label class="radio">
-							<input type="radio" name="{{saveLocation}}" value="server">Server
-						</label>
-						{{#saveLocations}}
-						<label class="radio">
-							<input type="radio" name="{{saveLocation}}" value="{{.value}}">{{.name}}
-						</label>
-						{{/saveLocations}}
-					</div>
-				</div>
-			</div>
-		</form>
-	</script>
-	<script id='saveTrackTemplate' type='text/ractive'>
-		<form class="form-horizontal">
-			<div class="control-group">
-				<label class="control-label">Which Tracks</label>
-				<div class="controls">
-					<select value="{{tracksToSave}}" multiple="multiple">
-					{{#trackList}}<option value="{{.}}">{{.}}</option>{{/trackList}}
-					</select>
-				</div>
-			</div>
-		</form>
-	</script>
-	<script id='loadTrackTemplate' type='text/ractive'>
-		<form class="form-horizontal">
-			{{>trackKindSelect}}
-			{{>trackLangSelect}}
-			<div class="control-group">
-				<label class="control-label">Source</label>
-				<div class="controls">
-					{{#sources}}
-					<label class="radio"><input type="radio" name="{{loadSource}}" value="{{.name}}">{{.label}}</label>
-					{{/sources}}
-				</div>
-			</div>
-		</form>
-	</script>
+    <script id='createTrackTemplate' type='text/ractive'>
+        <form class="form-horizontal">
+            <div class="control-group">
+                <label class="control-label">Name</label>
+                <div class="controls">
+                    <input type="text" value="{{trackName}}" placeholder="Name">
+                </div>
+            </div>
+            {{>trackKindSelect}}
+            <div class="control-group">
+                <label class="control-label">Format</label>
+                <div class="controls">
+                    <select value="{{trackMime}}">
+                        <option value="text/vtt" selected>WebVTT</option>
+                        <option value="text/srt">SubRip</option>
+                        <option value="application/ttml+xml">TTML</option>
+                        <option value="text/x-ssa">Sub Station Alpha</option>
+                    </select>
+                </div>
+            </div>
+            {{>trackLangSelect}}
+        </form>
+    </script>
+    <script id='editTrackTemplate' type='text/ractive'>
+        <form class="form-horizontal">
+            {{#(trackList.length === 0)}}
+            There are no tracks loaded for editing.
+            {{/(trackList)}}
+            {{#(trackList.length > 0)}}
+            {{#(trackList.length > 1)}}
+            <div class="control-group">
+                <label class="control-label">Which Track</label>
+                <div class="controls">
+                    <select value="{{trackToEdit}}">
+                    {{#trackList}}<option value="{{.}}">{{.}}</option>{{/trackList}}
+                    </select>
+                </div>
+            </div>
+            {{/(trackList)}}
+            <div style="display:{{(trackToEdit === "" ? "none" : "block")}}">
+                <div class="control-group">
+                    <label class="control-label">Name</label>
+                    <div class="controls">
+                        <input type="text" value="{{trackName}}" placeholder="Name">
+                    </div>
+                </div>
+                {{>trackKindSelect}}
+                {{>trackLangSelect}}
+            </div>
+            {{/(trackList)}}
+        </form>
+    </script>
+    <script id='setLocTemplate' type='text/ractive'>
+        <form class="form-horizontal">
+            <div class="control-group">
+                <label class="control-label">Current Save Location</label>
+                <div class="controls">
+                    <div id="saveLocation">
+                        <label class="radio">
+                            <input type="radio" name="{{saveLocation}}" value="server">Server
+                        </label>
+                        {{#saveLocations}}
+                        <label class="radio">
+                            <input type="radio" name="{{saveLocation}}" value="{{.value}}">{{.name}}
+                        </label>
+                        {{/saveLocations}}
+                    </div>
+                </div>
+            </div>
+        </form>
+    </script>
+    <script id='saveTrackTemplate' type='text/ractive'>
+        <form class="form-horizontal">
+            <div class="control-group">
+                <label class="control-label">Which Tracks</label>
+                <div class="controls">
+                    <select value="{{tracksToSave}}" multiple="multiple">
+                    {{#trackList}}<option value="{{.}}">{{.}}</option>{{/trackList}}
+                    </select>
+                </div>
+            </div>
+        </form>
+    </script>
+    <script id='loadTrackTemplate' type='text/ractive'>
+        <form class="form-horizontal">
+            {{>trackKindSelect}}
+            {{>trackLangSelect}}
+            <div class="control-group">
+                <label class="control-label">Source</label>
+                <div class="controls">
+                    {{#sources}}
+                    <label class="radio"><input type="radio" name="{{loadSource}}" value="{{.name}}">{{.label}}</label>
+                    {{/sources}}
+                </div>
+            </div>
+        </form>
+    </script>
+    <script id='showTrackTemplate' type='text/ractive'>
+        <div class="form-horizontal">
+            {{>trackShowSelect}}
+        </div>
+    </script>
 }
 

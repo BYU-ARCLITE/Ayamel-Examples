@@ -48,6 +48,13 @@ $(function() {
         </div>\
     </div>';
 
+    Ractive.partials.trackShowSelect = '<div class="control-group">\
+        <label class="control-label">Show Track</label>\
+        <div class="controls">\
+                <superselect icon="icon-laptop" text="Select Track" selection="{{selectedTracks}}" button="left" open="{{selectOpen}}" multiple="true" options="{{tracks}}" modalId="{{modalId}}">\
+        </div>\
+    </div>';
+
     function renderCue(renderedCue, area, renderFunc) {
         return captionEditor.make(renderedCue, area, renderFunc);
     }
@@ -367,6 +374,64 @@ $(function() {
             });
         };
     }());
+    
+    // Show a track
+    var showTrackData = (function(){
+        var ractive, datalist, resolver, failer, availableTracks=[], stracks=[],
+            sources = EditorWidgets.LocalFile.sources;
+        ractive = new Dialog({
+            el: document.getElementById('showTrackModal'),
+            data: {
+                dialogTitle: "Show Track",
+                tracks: availableTracks,
+                selectedTracks: stracks,
+                trackKind: "subtitles",
+                modalId: 'showTrackModal',
+                trackList: [],
+                sources: Object.keys(sources).map(function(key){ return {name: key, label: sources[key].label}; }),
+                buttons: [{event:"showT",label:"Show"}]
+            },
+            partials:{ dialogBody: document.getElementById('showTrackTemplate').textContent },
+            components:{ superselect: EditorWidgets.SuperSelect },
+            actions: {
+                showT: function(event){
+                    var data = this.data;
+                    $("#showTrackModal").modal("hide");
+                    this.set({selectOpen: false});
+
+                    resolver(datalist.map(function(key){
+                        switch(key){
+                        case 'tracks': return data.selectedTracks;
+                        }
+                    }));
+                }
+            }
+        });
+
+        $('#showTrackModal').on('show',function(){
+
+            // We do this because ractive can't seem to update correctly with partials
+            // even when we use ractive.set
+            while(availableTracks.length > 0){ availableTracks.pop(); }
+            while(stracks.length > 0){ stracks.pop(); }
+
+            // Because of the issue noted above, we do not use filter either
+            [].forEach.call(timeline.getCachedTextTracks(), function(track){
+                availableTracks.push({value:track,text:track.label});
+                if (timeline.hasTextTrack(track.label))
+                    stracks.push(track);
+            });
+        });
+
+        return function(dl){
+            $('#showTrackModal').modal('show');
+            datalist = dl;
+            return new Promise(function(resolve, reject){
+                resolver = resolve;
+                failer = reject;
+            });
+        };
+    }());
 
     function loadTranscript(datalist){
         //datalist is always the array ['linesrc']
@@ -453,6 +518,7 @@ $(function() {
         case 'edittrack': return editTrackData(datalist);
         case 'savetrack': return saveTrackData(datalist);
         case 'loadtrack': return loadTrackData(datalist);
+        case 'showtrack': return showTrackData(datalist);
         case 'loadlines': return loadTranscript(datalist);
         case 'loadaudio': return loadAudio(datalist);
         case 'location': return getLocation(datalist);
@@ -467,6 +533,7 @@ $(function() {
         case 'edittrack':
         case 'savetrack':
         case 'loadtrack':
+        case 'showtrack':
         case 'loadlines':
         case 'loadaudio':
         case 'location':
