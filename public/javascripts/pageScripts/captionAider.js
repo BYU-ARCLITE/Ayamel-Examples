@@ -48,7 +48,7 @@ $(function() {
         </div>\
     </div>';
 
-    Ractive.partials.trackShowSelect = '<div class="control-group">\
+    Ractive.partials.trackSelect = '<div class="control-group">\
         <label class="control-label">Show Track</label>\
         <div class="controls">\
                 <superselect icon="icon-laptop" text="Select Track" selection="{{selectedTracks}}" button="left" open="{{selectOpen}}" multiple="true" options="{{tracks}}" modalId="{{modalId}}">\
@@ -201,19 +201,23 @@ $(function() {
 
     //Save Tracks
     var saveTrackData = (function(){
-        var ractive, datalist, resolver, failer;
+        var ractive, datalist, resolver, failer, availableTracks=[], stracks=[];
         ractive = new Dialog({
             el: document.getElementById('saveTrackModal'),
             data: {
                 dialogTitle: "Save Tracks",
+				tracks: availableTracks,
+                selectedTracks: stracks,
+				modalId: 'saveTrackModal',
                 buttons: [{event:"save",label:"Save"}]
             },
             partials:{ dialogBody: document.getElementById('saveTrackTemplate').textContent },
+			components:{ superselect: EditorWidgets.SuperSelect },
             actions: {
                 save: function(event){
                     var saver,
                         data = this.data,
-                        tracks = data.tracksToSave;
+                        tracks = stracks;
 
                     $("#saveTrackModal").modal("hide");
                     this.set({selectOpen: false});
@@ -224,7 +228,7 @@ $(function() {
 
                     resolver(datalist.map(function(key){
                         switch(key){
-                        case 'tidlist': return data.tracksToSave;
+                        case 'tidlist': return stracks;
                         case 'location': return timeline.saveLocation;
                         case 'saver': return function(listp){ return listp.then(saver); };
                         }
@@ -296,11 +300,16 @@ $(function() {
         });
         // Saving modal opening
         $("#saveTrackModal").on("show", function () {
-            ractive.set({
-                trackList: timeline.trackNames.filter(function(name){
-                    return !timeline.commandStack.isFileSaved(name, timeline.saveLocation);
-                }),
-                tracksToSave: []
+
+			// We do this because ractive can't seem to update correctly with partials
+            // even when we use ractive.set
+            while(availableTracks.length > 0){ availableTracks.pop(); }
+            while(stracks.length > 0){ stracks.pop(); }
+
+            // Because of the issue noted above, we do not use filter either
+            [].forEach.call(timeline.trackNames, function(track){
+				if (timeline.commandStack.isFileSaved(track, timeline.saveLocation)) return;
+                availableTracks.push({value:track,text:track});
             });
         });
 
@@ -387,7 +396,6 @@ $(function() {
                 selectedTracks: stracks,
                 trackKind: "subtitles",
                 modalId: 'showTrackModal',
-                trackList: [],
                 sources: Object.keys(sources).map(function(key){ return {name: key, label: sources[key].label}; }),
                 buttons: [{event:"showT",label:"Show"}]
             },

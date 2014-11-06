@@ -140,16 +140,9 @@
         </form>
     </script>
     <script id='saveTrackTemplate' type='text/ractive'>
-        <form class="form-horizontal">
-            <div class="control-group">
-                <label class="control-label">Which Tracks</label>
-                <div class="controls">
-                    <select value="{{tracksToSave}}" multiple="multiple">
-                    {{#trackList}}<option value="{{.}}">{{.}}</option>{{/trackList}}
-                    </select>
-                </div>
-            </div>
-        </form>
+		<div class="form-horizontal">
+			{{>trackSelect}}
+		</div>
     </script>
     <script id='loadTrackTemplate' type='text/ractive'>
         <form class="form-horizontal">
@@ -167,7 +160,7 @@
     </script>
     <script id='showTrackTemplate' type='text/ractive'>
         <div class="form-horizontal">
-            {{>trackShowSelect}}
+            {{>trackSelect}}
         </div>
     </script>
 }
