@@ -388,8 +388,8 @@ object ContentController extends Controller {
             val downloadURI = {
                 val format = new SimpleDateFormat("yyyy-M-d")
                 val contentName = content.name
-                "attachment; filename=" + format.format(Calendar.getInstance().getTime()) +
-                "." + contentName.replaceAll(" ","-") +".xlsx"
+                "attachment; filename=\"" + format.format(Calendar.getInstance().getTime()) +
+                "." + contentName.replaceAll(" ","-") +".xlsx\""
             }
             SimpleResult(
               header = ResponseHeader(200),
