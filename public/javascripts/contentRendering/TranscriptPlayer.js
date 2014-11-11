@@ -9,13 +9,13 @@ var TranscriptPlayer = (function(){
 
     // TODO: resizing
 
-	/* args: captionTracks, holder, sync */
+    /* args: captionTracks, holder, sync */
     function TranscriptPlayer(args) {
 
         var _this = this,
             tracks = args.captionTracks,
             element = args.holder,
-			currentTime = 0,
+            currentTime = 0,
             ractive;
 
         // Create the transcript player from the template
@@ -48,26 +48,22 @@ var TranscriptPlayer = (function(){
         });
         ractive.on('sync',function(e){ ractive.set('sync',!ractive.data.sync); });
         ractive.on('cueclick',function(e){
-			var target = e.original.target,
-				ti = target.parentNode.dataset.trackindex,
-			    ci = target.dataset.cueindex,
+            var target = e.original.target,
+                ti = target.parentNode.dataset.trackindex,
+                ci = target.dataset.cueindex,
                 track = tracks[ti];
-			target.dispatchEvent(new CustomEvent("cueclick",{bubbles:true,detail:{track:track,cue:track.cues[ci]}}));
+            target.dispatchEvent(new CustomEvent("cueclick",{bubbles:true,detail:{track:track,cue:track.cues[ci]}}));
         });
 
         /*
-         * Define the module interface. It must have the following
-         *  addEventListener: function(event, callback)
-         *  addTrack: function(track)
-         *  set currentTime
-         *  update: function()
+         * Define the module interface.
          */
         Object.defineProperties(this, {
             sync: {
                 set: function(value){
-					ractive.set('sync', !!value);
-					return ractive.data.sync;
-				},
+                    ractive.set('sync', !!value);
+                    return ractive.data.sync;
+                },
                 get: function(){ return ractive.data.sync; }
             },
             activeTranscript: {
@@ -79,32 +75,39 @@ var TranscriptPlayer = (function(){
             },
             addTrack: {
                 value: function(track) {
+                    if(~tracks.indexOf(track)){ return; }
                     tracks.push(track);
                     ractive.data.transcripts.push(track);
                 }
             },
+            updateTrack: {
+                value: function(track) {
+                    var i = tracks.indexOf(track);
+                    if(~i){ ractive.set("transcripts["+i+"]", track); }
+                }
+            },
             currentTime: {
-				get: function(){ return currentTime; },
+                get: function(){ return currentTime; },
                 set: function(value) {
                     var activeCue, parent,
-						track = ractive.data.transcripts[ractive.data.activeIndex];
+                        track = ractive.data.transcripts[ractive.data.activeIndex];
                     currentTime = +value;
-					[].forEach.call(document.querySelectorAll('.transcriptContent[data-trackindex="'+ractive.data.activeIndex+'"] > .transcriptCue'),
-						function(node){
-							var cue = track.cues[node.dataset.cueindex];
-							node.classList[(currentTime >= cue.startTime && currentTime <= cue.endTime)?'add':'remove']('active');
-						}
-					);
+                    [].forEach.call(document.querySelectorAll('.transcriptContent[data-trackindex="'+ractive.data.activeIndex+'"] > .transcriptCue'),
+                        function(node){
+                            var cue = track.cues[node.dataset.cueindex];
+                            node.classList[(currentTime >= cue.startTime && currentTime <= cue.endTime)?'add':'remove']('active');
+                        }
+                    );
                     // Possibly scroll
                     if(!ractive.data.sync){ return; }
                     activeCue = document.querySelector('.transcriptCue.active');
                     if(activeCue){
-						parent = activeCue.parentNode;
-						parent.scrollTop = activeCue.offsetTop - parent.offsetTop - (parent.offsetHeight - activeCue.offsetHeight)/2;
-					}
+                        parent = activeCue.parentNode;
+                        parent.scrollTop = activeCue.offsetTop - parent.offsetTop - (parent.offsetHeight - activeCue.offsetHeight)/2;
+                    }
                 }
             },
-            update: { value: function() {} }
+            update: { value: function(){ ractive.set('transcripts', tracks); } }
         });
     }
 

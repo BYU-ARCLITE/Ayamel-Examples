@@ -383,7 +383,7 @@ $(function() {
             });
         };
     }());
-    
+
     // Show a track
     var showTrackData = (function(){
         var ractive, datalist, resolver, failer, availableTracks=[], stracks=[],
@@ -576,8 +576,7 @@ $(function() {
     }).then(VideoRenderer.render);
 
     function vidcallback(vplayer, tplayer) {
-        var renderer,
-            transcript = tplayer;
+        var renderer;
 
         commandStack = new EditorWidgets.CommandStack();
         videoPlayer = vplayer;
@@ -609,8 +608,7 @@ $(function() {
         // Check for unsaved tracks before leaving
         window.addEventListener('beforeunload',function(e){
             var warning = "You have unsaved tracks. Your unsaved changes will be lost.";
-            //TODO: change "server" to access whatever the current viewing setting is.
-            if(!commandStack.isSavedAt("server")){
+            if(!commandStack.isSavedAt(timeline.saveLocation)){
                 e.returnValue = warning;
                 return warning;
             }
@@ -631,16 +629,15 @@ $(function() {
         //TODO: Integrate the next listener into the timeline editor
         timeline.on('activechange', function(){ renderer.rebuildCaptions(); });
 
+        timeline.on('cuetextchange', function(evt){ tplayer.updateTrack(evt.cue.track); });
+
         timeline.on('addtrack',function(evt){
             videoPlayer.addTextTrack(evt.track.textTrack);
+            tplayer.addTrack(evt.track.textTrack);
             updateSpacing();
         });
 
         timeline.on('removetrack', function(evt){
-            var track = evt.track.textTrack;
-            if(!videoPlayer.textTrackMimes.has(track)){
-                videoPlayer.removeTextTrack(track);
-            }
             updateSpacing();
         });
 
