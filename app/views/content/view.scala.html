@@ -129,9 +129,25 @@
                                     </a>
                                     <ul class="dropdown-menu" id="downloadMenu"></ul>
                                 </li>
+                                <li><a href="#configurationModal" data-toggle="modal"><i class="icon-cogs"></i> Configuration</a></li>
+                                @views.html.content.header.configuration(content, resourceLibraryUrl, course)
                             }
-                            <li><a href="#configurationModal" data-toggle="modal"><i class="icon-cogs"></i> Configuration</a></li>
-                            @views.html.content.header.configuration(content, resourceLibraryUrl, course)
+							@if(user.hasSitePermission("createContent")) {
+                                <li><a href="#" id="clonebtn"><i class="icon-copy"></i> Clone</a></li>
+							    <script>
+									document.getElementById("clonebtn").addEventListener("click",function(){
+										var xhr = new XMLHttpRequest();
+										xhr.addEventListener('load',function(){
+											document.open();
+											document.write(xhr.responseText);
+											document.close();
+										},false);
+										xhr.addEventListener('error',function(){ alert("Error cloning content"); },false);
+										xhr.open("POST", "/content/@content.id.get/clone");
+										xhr.send();
+									},false);
+								</script>
+							}
                         </ul>
                     </div>
                 </div>

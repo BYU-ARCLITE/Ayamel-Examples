@@ -320,6 +320,26 @@ object ContentController extends Controller {
   }
 
   /**
+   * Creates a copy of an existing content object
+   */
+  def cloneContent(id: Long) = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+        Authentication.enforcePermission("createContent") {
+          Content.findById(id) match {
+          case Some(content) => {
+            val copied = content.copy(id = NotAssigned).save
+            Redirect(routes.ContentController.view(copied.id.get))
+              .flashing("success" -> "Content Cloned")
+          }
+          case None =>
+            Redirect(routes.ContentController.mine())
+              .flashing("error" -> "No Such Content")
+          }
+        }
+  }
+
+  /**
    * Content view page
    */
   def view(id: Long) = Authentication.authenticatedAction() {

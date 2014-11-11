@@ -72,6 +72,7 @@ GET     /content/:id/stats/download     controllers.ContentController.downloadSt
 GET     /content/:id/stats/clear        controllers.ContentController.clearStats(id: Long)
 GET     /content/:id/json               controllers.ContentController.getAsJson(id: Long)
 POST    /content/:id/delete             controllers.ContentController.delete(id: Long)
+POST    /content/:id/clone              controllers.ContentController.cloneContent(id: Long)
 GET     /content/:id/access/:authKey    controllers.ContentController.shareAccess(id: Long, authKey: String)
 POST    /content/:id/addToCourse        controllers.CourseContent.addToCourse(id: Long)
 POST    /content/:id/settings           controllers.ContentEditing.setSettings(id: Long)
