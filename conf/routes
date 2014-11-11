@@ -81,9 +81,6 @@ GET     /content/:id/edit               controllers.ContentEditing.editImage(id:
 POST    /content/:id/edit               controllers.ContentEditing.saveImageEdits(id: Long)
 GET     /content/:id/makeThumb/:time    controllers.ContentEditing.createThumbnail(id: Long, time: Double)
 POST    /content/:id/source             controllers.ContentEditing.setMediaSource(id: Long)
-GET     /content/:id/publish/:docId     controllers.DocumentManager.publishDocument(id: Long, docId: String)
-GET     /content/:id/accept/:docId      controllers.DocumentManager.acceptDocument(id: Long, docId: String)
-GET     /content/:id/delete/:docId      controllers.DocumentManager.deleteDocument(id: Long, docId: String)
 
 # Playlist pages
 GET     /playlist/:id/play              controllers.Playlists.view(id: Long)
