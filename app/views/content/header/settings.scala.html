@@ -197,8 +197,18 @@
             // Recieved the current time from the videoPlayer, now create the thumbnail based off of the current time
             document.getElementById("makeThumbnail").addEventListener('timeUpdate', function(e){
                 // Get the time
-                var time = Math.floor(e.detail.currentTime * 100) / 100;
-                window.location = "/content/@content.id.get/makeThumb/" + time;
+                var time = Math.floor(e.detail.currentTime * 100) / 100,
+                    xhr = new XMLHttpRequest();
+
+                xhr.addEventListener('load',function(){
+                    document.open();
+                    document.write(xhr.responseText);
+                    document.close();
+                },false);
+                xhr.addEventListener('error',function(){ alert("Error creating thumbnail"); },false);
+
+                xhr.open("POST", "/content/@content.id.get/makeThumb/" + time);
+                xhr.send();
             }, false);
             }
         });
@@ -221,17 +231,12 @@
         </div>
         <div class="modal-footer">
             <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
-            <button id="deleteContentButton" class="btn btn-magenta">Yes</button>
+            <form method="POST" action="@routes.ContentController.delete(content.id.get)">
+                <button id="deleteContentButton" class="btn btn-magenta">Yes</button>
+            </form>
         </div>
     </div>
 
-    <script type="text/javascript">
-        $(function() {
-            $("#deleteContentButton").click(function() {
-                window.location = "@routes.ContentController.delete(content.id.get)";
-            });
-        });
-    </script>
 
 
 

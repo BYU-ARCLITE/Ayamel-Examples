@@ -71,7 +71,7 @@ GET     /content/:id/stats              controllers.ContentController.stats(id: 
 GET     /content/:id/stats/download     controllers.ContentController.downloadStats(id: Long)
 GET     /content/:id/stats/clear        controllers.ContentController.clearStats(id: Long)
 GET     /content/:id/json               controllers.ContentController.getAsJson(id: Long)
-GET     /content/:id/delete             controllers.ContentController.delete(id: Long)
+POST    /content/:id/delete             controllers.ContentController.delete(id: Long)
 GET     /content/:id/access/:authKey    controllers.ContentController.shareAccess(id: Long, authKey: String)
 POST    /content/:id/addToCourse        controllers.CourseContent.addToCourse(id: Long)
 POST    /content/:id/settings           controllers.ContentEditing.setSettings(id: Long)
@@ -79,7 +79,7 @@ POST    /content/:id/metadata           controllers.ContentEditing.setMetadata(i
 POST    /content/:id/thumbnail          controllers.ContentEditing.changeThumbnail(id: Long)
 GET     /content/:id/edit               controllers.ContentEditing.editImage(id: Long)
 POST    /content/:id/edit               controllers.ContentEditing.saveImageEdits(id: Long)
-GET     /content/:id/makeThumb/:time    controllers.ContentEditing.createThumbnail(id: Long, time: Double)
+POST    /content/:id/makeThumb/:time    controllers.ContentEditing.createThumbnail(id: Long, time: Double)
 POST    /content/:id/source             controllers.ContentEditing.setMediaSource(id: Long)
 
 # Playlist pages
