@@ -329,6 +329,7 @@ object ContentController extends Controller {
           Content.findById(id) match {
           case Some(content) => {
             val copied = content.copy(id = NotAssigned).save
+            user.addContent(copied)
             Redirect(routes.ContentController.view(copied.id.get))
               .flashing("success" -> "Content Cloned")
           }

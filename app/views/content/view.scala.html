@@ -138,6 +138,7 @@
 									document.getElementById("clonebtn").addEventListener("click",function(){
 										var xhr = new XMLHttpRequest();
 										xhr.addEventListener('load',function(){
+											if(history.pushState){ history.pushState(null,"",xhr.responseURL); }
 											document.open();
 											document.write(xhr.responseText);
 											document.close();
