@@ -5,7 +5,9 @@
  * Time: 5:39 PM
  * To change this template use File | Settings | File Templates.
  */
+
 $(function() {
+    
     function getParameterByName(name){
         name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
         var regexS = "[\\?&]" + name + "=([^&#]*)";
@@ -18,14 +20,16 @@ $(function() {
     }
 
     function loadManifest(type, callback) {
-        var docId = getParameterByName("doc");
+        // won't be implementing the annotations through the query string
+        //var docId = getParameterByName("doc");
+        var docId = "";
         if (docId.length > 0) {
 
             // Load the annotation document
             ResourceLibrary.load(docId, function (resource) {
                 var docUrl = resource.content.files[0].downloadUri;
                 AnnotationLoader.loadURL(docUrl, resource.languages.iso639_3[0])
-				.then(function(manifest){
+                .then(function(manifest){
                     callback({
                         manifest: manifest,
                         resource: resource,
@@ -36,16 +40,17 @@ $(function() {
         } else {
 
             // No annotation document. Create a new manifest
-            var manifest = new AnnotationManifest(type, []);
+            var manifest = new AnnotationManifest(type, {});
             manifest.language = "eng";
             callback({
                 manifest: manifest,
-                resource: null,
+                resource: {},
                 filename: ""
             });
         }
     }
 
+    // This function isn't necessary
     function generateDoc(type, manifest) {
         var annotations = manifest.annotations;
         if (type === "text") {
@@ -56,16 +61,7 @@ $(function() {
                 };
             });
         }
-        return {
-            meta: {
-                scheme: {
-                    name: "simple",
-                    version: 1.2
-                },
-                target: type
-            },
-            annotations: annotations
-        };
+        return { "eng": {} };
     }
 
     var typeMap = {
@@ -76,33 +72,35 @@ $(function() {
     };
 
     $("#spinner").hide();
+    $("#filename").hide();
 
-    document.getElementById("quit").addEventListener('click', function(){
-        history.back();
-        return false;
+    document.getElementById("quit").addEventListener('click', function(e){
+        e.preventDefault();
+        window.history.back();
     }, false);
 
     // First load the annotations
     loadManifest(typeMap[content.contentType], function(data) {
-
         // Load metadata from the resource
-        var title = !!data.resource ? data.resource.title : "Untitled";
-        var language = !!data.resource ? data.resource.languages.iso639_3[0] : "eng";
-        document.getElementById("title").val(title);
-        document.getElementById("language").val(language);
+        /*var title = !!data.resource ? data.resource.title : "Untitled";
+        var language = !!data.resource ? data.resource.languages.iso639_3[0] : "eng";*/
+        var title = !!content.name ? content.name : "Untitled";
+        var language = !!content.language ? content.languages.iso639_3[0] : "eng";
+        document.getElementById("title").value = title;
+        //document.querySelector(".badge").innerHTML = language;
 
         // Then create the popup editor
         new AnnotationPopupEditor(function (popupEditor) {
-
             // Now check the content type
-            if (typeMap[content.contentType] === "text") {
+            if (typeMap[content.contentType] === "text" || typeMap[content.contentType] === "video") {
 
                 // Create the text editor
                 var textEditor = new AnnotationTextEditor({
                     holder: document.getElementById("annotationEditor"),
                     content: content,
                     manifest: data.manifest,
-                    popupEditor: popupEditor
+                    popupEditor: popupEditor,
+                    language: language
                 });
             }
             if (typeMap[content.contentType] === "image") {
@@ -115,30 +113,59 @@ $(function() {
                 });
             }
 
+            var saveButton = document.getElementById("saveAnnotations");
+            var fileName = "";
+            document.getElementById("filename").addEventListener('keyup', function() {
+                if (this.value.toString().trim() == "") {
+                    saveButton.disabled = true;
+                }
+                else {
+                    fileName = this.value;
+                    saveButton.disabled = false;
+                }
+            });
+            // Setup the save annotations menu
+            document.getElementById("save").addEventListener('change', function() {
+                if (this.value === "new") {
+                    $("#filename").show();
+                } else $("#filename").hide();
+                if (this.value === "") {
+                    saveButton.disabled = true;
+                } else if (this.value !== "new") {
+                    fileName = this.options[this.selectedIndex].text;
+                    data.resource.id = this.value;
+                    saveButton.disabled = false;
+                }
+            });
+
             // Setup the navbar buttons
             document.getElementById("saveMetadataButton").addEventListener('click', function(){
                 title = document.getElementById("title").value;
-                language = document.getElementById("language").value;
+                language = document.querySelector(".badge").innerHTML;
                 $("#metadataModal").modal("hide");
             }, false);
-            document.getElementById("saveButton").addEventListener('click', function(){
+
+            saveButton.addEventListener('click', function(){
                 var $this = $(this).hide();
                 $("#spinner").show();
 
                 var formData = new FormData();
-                var doc = JSON.stringify(generateDoc(typeMap[content.contentType], data.manifest));
-                formData.append("title", title);
+                formData.append("title", fileName);
+                formData.append("filename", fileName);
                 formData.append("language", language);
-                formData.append("annotations", doc);
-                formData.append("resourceId", !!data.resource ? data.resource.id : "");
-                if (data.filename)
-                    formData.append("filename", data.filename);
+                formData.append("contentId", content.id);
+                formData.append("resourceId", !!data.resource.id ? data.resource.id : "");
+                formData.append("manifest", JSON.stringify(textEditor.getAnnotations()));
+                if (data.filename) {
+                    console.log("There is a pre-made filename! Check where that's coming from");
+                    //formData.append("filename", data.filename);
+                }
 
                 var courseId = getParameterByName("course");
                 if (!courseId)
                     courseId = 0;
 
-                $.ajax("/content/" + content.id + "/annotations?course=" + courseId, {
+                $.ajax("/annotations/saveEditedAnnotations", {
                     type: "post",
                     data: formData,
                     cache: false,
@@ -148,12 +175,14 @@ $(function() {
                         $this.show();
                         $("#spinner").hide();
                         alert("Annotations saved.");
+                        $('#saveAnnotationsModal').modal('hide')
                     },
                     error: function(data) {
                         console.log(data);
                         alert("There was a problem while saving the annotations.");
                     }
                 });
+
             }, false);
         });
     });

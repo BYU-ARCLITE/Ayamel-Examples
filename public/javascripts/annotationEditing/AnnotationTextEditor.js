@@ -6,7 +6,6 @@
  * To change this template use File | Settings | File Templates.
  */
 var AnnotationTextEditor = (function(){
-
     function loadTracks(content, callback){
         // TODO: Determine which course we're operating in
         ResourceLibrary.load(content.resourceId).then(function(resource){
@@ -27,40 +26,73 @@ var AnnotationTextEditor = (function(){
 
     /* args: manifest, content, holder, popupEditor */
     function AnnotationTextEditor(args) {
-
+        
         /*
          * Text annotation
          */
-        var activeAnnotation = null;
-        var textAnnotator = new TextAnnotator(
-            [args.manifest],
-            function (element, annotation) {
-                element.addEventListener('click', function(){
-                    args.popupEditor.show();
-                    args.popupEditor.annotation = annotation;
-                    activeAnnotation = annotation;
-                }, false);
-            }
-        );
-        var renderAnnotations = function(){};
+        var language = !!content.language ? content.languages.iso639_3[0] : "eng";
+        args.manifest = {};
+        args.manifest[language] = {};
+        var annotator = new Ayamel.Annotator({
+                classList:["annotation"],
+                handler: function(data, lang, text, index){
+                    element.dispatchEvent(new CustomEvent("annotation", {
+                        bubbles: true,
+                        detail: {data: data, lang: lang, text: text, index: index}
+                    }));
+                }
+            }, args.manifest);
 
+        var activeAnnotation = null;
+        var renderAnnotations = function(){};
+        // function to get the annotation manifest and return it's contents
+        // declared to window so it is usable by the html onclick function in the edit modal
+        // needs to access the annotation manifest which is only available in this file.
+        window.editAnn = function(resId, contentId) {
+            ResourceLibrary.load(resId).then(function(resource){
+                Promise.all([
+                    ContentRenderer.getAnnotations({
+                        courseId: courseId,
+                        contentId: contentId,
+                        permission: undefined,
+                        resource: resource
+                    })
+                ]).then(function(arr){
+                    var annLang = Object.keys(arr[0])[0];
+                    var lang = arr[0];
+                    Object.keys(lang[annLang]).forEach(function (key) {
+                        // potential problem: lose the annotation data that they recently created.
+                        args.manifest[language][key] = lang[annLang][key];
+                        window.manifest  = args.manifest;
+                    });
+                    renderAnnotations();
+                });
+            });  
+            $("#editAnnotationsModal").modal("hide");
+        }
+
+        function checkIfAnnotated(text){
+            return !!args.manifest[language].hasOwnProperty(text);
+        }
 
         function setupTextAnnotations(element) {
-            textAnnotator.annotate(element);
-
-            // Have highlighting create annotations
             element.addEventListener('mouseup', function(event){
-                // Get the text selection
                 var text = window.getSelection().toString().trim();
-
-                // Create an annotation if not empty
                 if (text !== '') {
-                    var regex = new RegExp(text);
-                    var annotation = new TextAnnotation(regex, {type: "text", value: ""});
-                    args.manifest.annotations.push(annotation);
-
-                    // Rerender the annotations
-                    renderAnnotations();
+                    activeAnnotation = text;
+                    var newAnnotation = {
+                        "global" : {
+                            "data" : {
+                                "type" : "text",
+                                "value" : ""
+                            }
+                        }
+                    };
+                    if (!checkIfAnnotated(text)) {
+                        args.manifest[language][text] = newAnnotation;
+                    }
+                    args.popupEditor.annotation = {"manifest" : args.manifest[language], "word" : text};
+                    args.popupEditor.show();
                 }
             }, false);
         }
@@ -69,7 +101,6 @@ var AnnotationTextEditor = (function(){
          * Text display area
          */
         if (args.content.contentType === "text") {
-            // Render the text content
             renderAnnotations = function() {
                 ResourceLibrary.load(args.content.resourceId, function(resource) {
                     TextRenderer.render({
@@ -86,20 +117,43 @@ var AnnotationTextEditor = (function(){
             };
             renderAnnotations();
         } else {
-            // Render the transcripts in a transcript player
+            var transcriptPlayer;
             loadTracks(args.content, function(tracks) {
-                var transcriptPlayer = new TranscriptPlayer({
+                  transcriptPlayer = new TranscriptPlayer({
                     holder: args.holder,
                     captionTracks: tracks,
-                    sync: true
+                    sync: false
                     /* filter: function(cue, $cue) {
                         setupTextAnnotations($cue);
                     } */
                 });
-                renderAnnotations = function() {
-                    transcriptPlayer.update();
-                }
             });
+            renderAnnotations = function() {
+                loadTracks(args.content, function(tracks) {
+                    transcriptPlayer = new TranscriptPlayer({
+                        holder: args.holder,
+                        captionTracks: tracks,
+                        sync: false
+                        /* filter: function(cue, $cue) {
+                            setupTextAnnotations($cue);
+                        } */
+                    });
+                    annotator.annotations = args.manifest;
+                    [].forEach.call(tracks, function(track) {
+                        [].forEach.call(track.cues, function(cue) {
+                            var t = annotator.HTML(cue.text);
+                            var z = document.createElement('p');
+                            z.appendChild(t);
+                            cue.text = z.innerHTML;
+                        });
+                    });
+                    transcriptPlayer.captionTracks = tracks;
+                    [].forEach.call(tracks, function(t){
+                        transcriptPlayer.updateTrack(t);
+                    });
+                });
+            }
+            setupTextAnnotations(args.holder, args.manifest);
         }
 
         /*
@@ -110,10 +164,16 @@ var AnnotationTextEditor = (function(){
             renderAnnotations();
         });
         args.popupEditor.on("delete", function() {
-            var index = args.manifest.annotations.indexOf(activeAnnotation);
-            args.manifest.annotations.splice(index, 1);
+            delete args.manifest[language][activeAnnotation];
             renderAnnotations();
         });
+
+        Object.defineProperties(this, {
+            getAnnotations: {
+                value: function(){ return args.manifest; }
+            }
+        });
+
     }
 
     return AnnotationTextEditor;

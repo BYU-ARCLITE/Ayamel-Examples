@@ -26,10 +26,22 @@
         JS("AnnotationPopupEditor.js"),
         JS("AnnotationImageEditor.js"),
         JS("AnnotationTextEditor.js"),
+        JS("annotationResourceLoader.js"),
         JS("annotationEditing.js"))))
 ) {
 
     @views.html.content.header.includes()
+
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/pageScripts/addRelatedDocs.js")"></script>
+
+    <script type="text/javascript">
+        var content = @Html(content.toJson.toString);
+        ResourceLibrary.setBaseUrl("@resourceLibraryUrl");
+        var courseId = 0;
+        var owner = @content.isEditableBy(user);
+        var teacher = true;
+        var userId = @user.id.get;
+    </script>
 
     <div class="padded">
 
@@ -41,18 +53,104 @@
                     <li><a href="#metadataModal" data-toggle="modal"><i class="icon-pencil"></i> Edit metadata</a></li>
                 </ul>
                 <ul class="nav pull-right">
-                    <li id="spinner"><i class="icon-spin icon-spinner icon-large pad-top-high"></i></li>
-                    <li><a href="#" id="saveButton"><i class="icon-save"></i> Save</a></li>
+                    <li><a href="#saveAnnotationsModal" data-toggle="modal"><i class="icon-save"></i> Save</a></li>
+                    <li><a href="#editAnnotationsModal" data-toggle="modal"><i class="icon-pencil"></i> Edit</a></li>
+                    <li><a href="#annotationsModal" data-toggle="modal"><i class="icon-trash"></i> Delete</a></li>
                     <li><a href="#" id="quit"><i class="icon-signout"></i> Quit</a></li>
                 </ul>
             </div>
         </div>
         <div id="annotationEditor"></div>
 
-        <script type="text/javascript">
-            var content = @Html(content.toJson.toString);
-            ResourceLibrary.setBaseUrl("@resourceLibraryUrl");
-        </script>
+    @if(true) {
+
+        <div id="annotationsModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="annotationsModalLabel" aria-hidden="true">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">X</button>
+                <h3 id="annotationsModalLabel">Annotations</h3>
+            </div>
+            <div class="modal-body">
+                <div class="row-fluid">
+                    <div>
+                        <h4>Delete Annotations</h4>
+                        <div class="clearfix"></div>
+                        <div id="annotationsTable"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div>
+                    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="saveAnnotationsModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="saveAnnotationsModalLabel" aria-hidden="true">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">X</button>
+                <h3 id="saveAnnotationsModalLabel">Annotations</h3>
+            </div>
+            <div class="modal-body">
+                <div class="row-fluid">
+                    <div>
+                        <h4>Save Annotations</h4>
+                        <div class="clearfix"></div>
+                        <form>
+                            <fieldset>
+                                <div class="form-inline">
+                                    <select id="save">
+                                        <option value=""></option>
+                                        <option value="new">New File</option>
+                                    </select>
+                                </div>
+                                <br>
+                                <input id="filename" type="text" placeholder="Filename">
+                            </fieldset>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div>
+                    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+                    <label id="spinner"><i class="icon-spin icon-spinner icon-large pad-top-high"></i></label>
+                    <button class="btn btn-magenta" id="saveAnnotations" disabled="true" type="button" value="Save">Save</button>
+                    <!--<input class="btn btn-magenta" id="saveAnnotations" disabled="true" type="button" value="Save">-->
+                </div>
+            </div>
+        </div>
+
+        <div id="editAnnotationsModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="editAnnotationsModalLabel" aria-hidden="true">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">X</button>
+                <h3 id="editAnnotationsModalLabel">Annotations</h3>
+            </div>
+            <div class="modal-body">
+                <div class="row-fluid">
+                    <div>
+                        <h4>Edit Annotations</h4>
+                        <div class="clearfix"></div>
+                        <form>
+                            <fieldset>
+                                <table class="table table-bordered pad-top-high">
+                                    <thead><tr>
+                                        <th>Track name</th><th>Language</th><th>Options</th>
+                                    </tr></thead>
+                                    <tbody id="editTable">
+                                    <!--This is the thing to make per annotation file-->
+                                    </tbody>
+                                </table>
+                            </fieldset>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div>
+                    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+                </div>
+            </div>
+        </div>
 
         <div id="metadataModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="metadataModalLabel" aria-hidden="true">
             <div class="modal-header">
@@ -69,7 +167,9 @@
                     </div>
                     <div class="control-group">
                         <label class="control-label" for="language">Language</label>
-                        <div class="controls" id="langLocation"></div>
+                        <div class="controls" id="langLocation">
+                            <input type="text" id="language" placeholder="Language">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -79,15 +179,42 @@
             </div>
         </div>
 
-    </div>
-
     <script type="text/javascript">
+
         $(function() {
+            // fills in the edit and save annotations modal table.
+            ResourceLibrary.load(content.resourceId).then(function(contentResource) {
+                annotationIds = getAnnotationIds(contentResource);
+                if(annotationIds.length){
+                    $.ajax("/ajax/permissionChecker", {
+                        type: "post",
+                        data: {
+                            contentId: content.id,
+                            permission: "edit",
+                            documentType: "annotationDocument",
+                            ids: annotationIds
+                        }
+                    }).then(function(data) {
+                        getResources(data).then(function(resources){
+                            // global array with the annotation file resource Ids
+                            window.annFileResources = [];
+                            // resources here is an array of annotation resource objects.
+                            // the actual annotations manifest is not stored in this object
+                            [].forEach.call(resources, function(resource) {
+                                annFileResources.push(resource.id);
+                                ResourceLibrary.load(resource.id).then(function(res){
+                                    addEditAnnotationsTableRows(resource, res);
+                                })
+                            });
+                        });
+                    });
+                }
+            });
 
             var langList = Object.keys(Ayamel.utils.p1map).map(function (p1) {
-                    var code = Ayamel.utils.p1map[p1];
-                    return {value: code, text: Ayamel.utils.getLangName(code)};
-                }).sort(function(a,b){ return a.text.localeCompare(b.text); });
+                var code = Ayamel.utils.p1map[p1];
+                return {value: code, text: Ayamel.utils.getLangName(code)};
+            }).sort(function(a,b){ return a.text.localeCompare(b.text); });
 
             new EditorWidgets.SuperSelect({
                 el: "langLocation",
@@ -97,6 +224,7 @@
                     icon: 'icon-globe',
                     text: 'Select Language',
                     button: 'left',
+                    modalId: 'metadataModal',
                     multiple: false,
                     options: langList,
                     defaultValue: {value:'zxx',text:'No Linguistic Content'}
@@ -104,4 +232,5 @@
             });
         });
     </script>
+    }
 }

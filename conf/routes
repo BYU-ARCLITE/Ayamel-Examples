@@ -38,7 +38,7 @@ GET     /course/:id/config                              controllers.Courses.ltiC
 POST    /course/:id/ltiAuth                             controllers.Courses.ltiAuth(id: Long)
 GET     /course/:id/keyAuth                             controllers.Courses.keyAuth(id: Long)
 POST    /course/:id/addContent                          controllers.Courses.addContent(id: Long)
-POST	/course/:id/removeContent						controllers.Courses.removeContent(id: Long)
+POST    /course/:id/removeContent                       controllers.Courses.removeContent(id: Long)
 POST    /course/:id/announce                            controllers.Courses.addAnnouncement(id: Long)
 GET     /course/:id/request                             controllers.Courses.courseRequestPage(id: Long)
 POST    /course/:id/request                             controllers.Courses.submitCourseRequest(id: Long)
@@ -136,6 +136,7 @@ POST    /captionaider/save                  controllers.CaptionAider.save
 # Annotation Editor pages
 GET     /annotations/:id/                   controllers.DocumentManager.editAnnotations(id: Long)
 POST    /annotations/save                   controllers.DocumentManager.saveAnnotations
+POST    /annotations/saveEditedAnnotations  controllers.DocumentManager.saveEditedAnnotations
 
 # Word List pages
 GET     /words                              controllers.WordLists.view

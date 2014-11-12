@@ -11,6 +11,7 @@ var AnnotationPopupEditor = (function(){
         var annotation = null,
 			content = null,
 			listeners = {},
+			currAnn, // variable to keep track of what word we are working on, Otherwise we wouldn't know which word to annotate
 			ractive, editor;
 
         function emit(event, data) {
@@ -31,7 +32,7 @@ var AnnotationPopupEditor = (function(){
 						{{#showWord}}\
 						<div class="form-inline">\
 							<label for="word">Word(s): </label>\
-							<input type="text" id="word" placeholder="Word" value="{{word}}">\
+							<input type="text" id="word" placeholder="Word" name="word" value="{{word}}">\
 						</div>\
 						{{/showWord}}\
 						<div class="form-inline">\
@@ -68,7 +69,7 @@ var AnnotationPopupEditor = (function(){
 					</div>\
 					<div>\
 						<div class="pull-left">\
-							<button class="btn btn-magenta" tmpl-attach="delete"><i class="icon-trash"></i></button>\
+							<button class="btn btn-magenta" on-tap=	"delete" tmpl-attach="delete"><i class="icon-trash"></i></button>\
 						</div>\
 						<div class="pull-right">\
 							<button class="btn" on-tap="cancel"><i class="icon-ban-circle"></i></button>\
@@ -119,41 +120,44 @@ var AnnotationPopupEditor = (function(){
 		 */
 
 		function updateAnnotation() {
-			annotation.regex = new RegExp(ractive.get('word'));
-			annotation.data.type = ractive.get('type');
+			//annotation.annotations[annSize].regex = new RegExp(ractive.get('word'));
+			annotation[currAnn]["global"]["data"]["type"] = ractive.get('type');
 
 			// Check the data type
-			switch(annotation.data.type){
+			switch(annotation[currAnn]["global"]["data"]["type"]){
 			case "text": // Update from the text editor
-				annotation.data.value = editor.getValue();
+				annotation[currAnn]["global"]["data"]["value"] = $('#textEditor').data("wysihtml5").editor.getValue();
 				break;
 			case "image": // Update from the URL text input
-				annotation.data.value = ractive.get('imageImg');
+				annotation[currAnn]["global"]["data"]["value"] = ractive.get('imageImg');
 				break;
 			case "content": // Update from the selected content
-				annotation.data.value = !!content ? content.id : 0;
+				annotation[currAnn]["global"]["data"]["value"] = !!content ? content.id : 0;
 				break;
 			}
 		}
 
 		function updateForm() {
-			if (annotation instanceof TextAnnotation) {
+			// This is my implementation
+			if (annotation instanceof ImageAnnotation) {
+				// Hide the word editor
+				ractive.set('showWord', false);
+			}else {
 				// Load the annotation data into the form
 				ractive.set({
 					showWord: true,
-					word: annotation.regex.source
+					word: currAnn
 				});
-			}else if (annotation instanceof ImageAnnotation) {
-				// Hide the word editor
-				ractive.set('showWord', false);
 			}
 			
 			content = null;
 
 			// Check the data type
-			switch(annotation.data.type){
+			switch(annotation[currAnn]["global"]["data"]["type"]){
 			case "text": // Update the text editor
-				editor.setValue(annotation.data.value);
+				$('#textEditor').data("wysihtml5").editor.setValue(annotation[currAnn]["global"]["data"]["value"]);
+				$('#textEditor').data("wysihtml5").editor.focus();
+
 				ractive.set({
 					type: "text",
 					imageImg: "",
@@ -198,7 +202,8 @@ var AnnotationPopupEditor = (function(){
 					return annotation;
 				},
 				set: function(value) {
-					annotation = value;
+					annotation = value["manifest"];
+					currAnn = value["word"];
 					updateForm();
 				}
 			},
