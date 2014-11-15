@@ -22,23 +22,21 @@ object CourseContent extends Controller {
    */
   def viewLms(id: Long, courseId: Long) = Action(parse.tolerantText) {
     implicit request =>
-      ContentController.getContent(id) {
-        content =>
-          Courses.getCourse(courseId) {
-            course =>
-              LMSAuth.ltiAuth(course) match {
-              case Some(user) => {
-                // Get the custom parameters
-                val query = FormUrlEncodedParser.parse(request.body, request.charset.getOrElse("utf-8"))
-                  .filterKeys(_.startsWith("custom")).map(d => (d._1.substring(7), d._2))
-                user.copy(lastLogin = TimeTools.now()).save
-                Redirect(routes.CourseContent.viewInCourse(id, courseId).toString(), query)
-                  .withSession("userId" -> user.id.get.toString)
-              }
-              case _ =>
-                Errors.forbidden
-              }
+      ContentController.getContent(id) { content =>
+        Courses.getCourse(courseId) { course =>
+          LMSAuth.ltiAuth(course) match {
+            case Some(user) => {
+              // Get the custom parameters
+              val query = FormUrlEncodedParser.parse(request.body, request.charset.getOrElse("utf-8"))
+                .filterKeys(_.startsWith("custom")).map(d => (d._1.substring(7), d._2))
+              user.copy(lastLogin = TimeTools.now()).save
+              Redirect(routes.CourseContent.viewInCourse(id, courseId).toString(), query)
+                .withSession("userId" -> user.id.get.toString)
+            }
+            case _ =>
+              Errors.forbidden
           }
+        }
       }
   }
 
@@ -108,20 +106,17 @@ object CourseContent extends Controller {
   def viewInCourse(id: Long, courseId: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        ContentController.getContent(id) {
-          content =>
-            Courses.getCourse(courseId) {
-              course =>
-
-              // Check that the user can view the content
-                if (content isVisibleBy user) {
-                  if (MobileDetection.isMobile())
-                    Ok(views.html.content.viewMobile(content, ResourceController.baseUrl, Some(course)))
-                  else
-                    Ok(views.html.content.view(content, ResourceController.baseUrl, Some(course)))
-                } else
-                  Errors.forbidden
-            }
+        ContentController.getContent(id) { content =>
+          Courses.getCourse(courseId) { course =>
+            // Check that the user can view the content
+            if (content isVisibleBy user) {
+              if (MobileDetection.isMobile())
+                Ok(views.html.content.viewMobile(content, ResourceController.baseUrl, Some(course)))
+              else
+                Ok(views.html.content.view(content, ResourceController.baseUrl, Some(course)))
+            } else
+              Errors.forbidden
+          }
         }
   }
 

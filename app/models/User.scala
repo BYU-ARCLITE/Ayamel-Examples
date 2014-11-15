@@ -291,7 +291,6 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
       content.get
     }
 
-//    var contentFeed: Option[List[Content]] = None
     var contentFeed: Option[List[(Content, Long)]] = None
 
     def getContentFeed = {
@@ -299,7 +298,6 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
         contentFeed = Some(
           getEnrollment.flatMap(course => course.getContent.map(c => (c, course.id.get)))
             .sortWith((c1, c2) => TimeTools.dateToTimestamp(c1._1.dateAdded) > TimeTools.dateToTimestamp(c2._1.dateAdded))
-//            .distinct
         )
       contentFeed.get
     }

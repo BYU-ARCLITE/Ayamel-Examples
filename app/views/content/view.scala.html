@@ -89,7 +89,21 @@
                                         <li><a href="@routes.CourseContent.statsInCourse(content.id.get, course.get.id.get)"><i class="icon-bar-chart"></i> View course stats</a></li>
                                       }
                                       @if(user.hasCoursePermission(course.get, "removeContent")) {
-                                        <li><a href="@routes.CourseContent.removeFromCourse(content.id.get, course.get.id.get)"><i class="icon-remove"></i> Remove from course</a></li>
+                                        <li><a href="#" id="courseremovebtn"><i class="icon-remove"></i> Remove from course</a></li>
+                                        <script>
+                                            document.getElementById("courseremovebtn").addEventListener("click",function(){
+                                                var xhr = new XMLHttpRequest();
+                                                xhr.addEventListener('load',function(){
+                                                    if(history.pushState){ history.pushState(null,"",xhr.responseURL); }
+                                                    document.open();
+                                                    document.write(xhr.responseText);
+                                                    document.close();
+                                                },false);
+                                                xhr.addEventListener('error',function(){ alert("Error removing content"); },false);
+                                                xhr.open("POST", "@routes.CourseContent.removeFromCourse(content.id.get, course.get.id.get)");
+                                                xhr.send();
+                                            },false);
+                                        </script>
                                       }
                                     </ul>
                                     @views.html.content.header.LTISettings(content, course.get)
@@ -132,23 +146,23 @@
                                 <li><a href="#configurationModal" data-toggle="modal"><i class="icon-cogs"></i> Configuration</a></li>
                                 @views.html.content.header.configuration(content, resourceLibraryUrl, course)
                             }
-							@if(user.hasSitePermission("createContent")) {
+                            @if(user.hasSitePermission("createContent")) {
                                 <li><a href="#" id="clonebtn"><i class="icon-copy"></i> Clone</a></li>
-							    <script>
-									document.getElementById("clonebtn").addEventListener("click",function(){
-										var xhr = new XMLHttpRequest();
-										xhr.addEventListener('load',function(){
-											if(history.pushState){ history.pushState(null,"",xhr.responseURL); }
-											document.open();
-											document.write(xhr.responseText);
-											document.close();
-										},false);
-										xhr.addEventListener('error',function(){ alert("Error cloning content"); },false);
-										xhr.open("POST", "/content/@content.id.get/clone");
-										xhr.send();
-									},false);
-								</script>
-							}
+                                <script>
+                                    document.getElementById("clonebtn").addEventListener("click",function(){
+                                        var xhr = new XMLHttpRequest();
+                                        xhr.addEventListener('load',function(){
+                                            if(history.pushState){ history.pushState(null,"",xhr.responseURL); }
+                                            document.open();
+                                            document.write(xhr.responseText);
+                                            document.close();
+                                        },false);
+                                        xhr.addEventListener('error',function(){ alert("Error cloning content"); },false);
+                                        xhr.open("POST", "@routes.ContentController.cloneContent(content.id.get)");
+                                        xhr.send();
+                                    },false);
+                                </script>
+                            }
                         </ul>
                     </div>
                 </div>

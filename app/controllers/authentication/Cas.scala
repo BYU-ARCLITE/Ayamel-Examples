@@ -2,6 +2,8 @@ package controllers.authentication
 
 import play.api.mvc.{Result, Action, Controller}
 import play.api.libs.ws.WS
+import play.api.Play
+import play.api.Play.current
 import scala.concurrent.{Await, Future, ExecutionContext}
 import scala.concurrent.duration._
 import ExecutionContext.Implicits.global
@@ -46,7 +48,12 @@ object Cas extends Controller {
       try {
         Await.result(r, 20 seconds)
       } catch {
-        case _: Throwable => Redirect(controllers.routes.Application.index()).flashing("error" -> "An error occurred with CAS. Either log in with a different method or <a href=\"mailto:arclitelab@gmail.com\">notify an administrator</a>.")
+        case _: Throwable =>
+          val advice = Play.configuration.getString("smtp.address") match {
+            case Some(address) => "Either log in with a different method or <a href=\"" + address + "\">notify an administrator</a>."
+            case None => "Try an alternate log in method."
+          }
+          Redirect(controllers.routes.Application.index()).flashing("error" -> ("An error occurred with CAS. " + advice))
       }
   }
 }

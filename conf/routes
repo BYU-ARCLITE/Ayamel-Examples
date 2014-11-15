@@ -46,14 +46,14 @@ GET     /course/:id/request/manage                      controllers.Courses.appr
 POST    /course/:id/request/approve                     controllers.Courses.approveRequest(id: Long)
 POST    /course/:id/request/deny                        controllers.Courses.denyRequest(id: Long)
 GET     /course/:id/join/:key                           controllers.Courses.joinLink(id: Long, key: String)
-GET     /course/:id/remove/:studentId                   controllers.Courses.removeStudent(id: Long, studentId: Long)
+POST    /course/:id/remove/:studentId                   controllers.Courses.removeStudent(id: Long, studentId: Long)
 POST    /course/:id/setPermission                       controllers.Courses.setPermission(id: Long)
 GET     /course/:courseId/content/:id                   controllers.CourseContent.viewInCourse(id: Long, courseId: Long)
 POST    /course/:courseId/content/:id/lti               controllers.CourseContent.viewLms(id: Long, courseId: Long)
 GET     /course/:courseId/content/:id/stats             controllers.CourseContent.statsInCourse(id: Long, courseId: Long)
 GET     /course/:courseId/content/:id/stats/download    controllers.CourseContent.downloadStatsInCourse(id: Long, courseId: Long)
 GET     /course/:courseId/content/:id/stats/clear       controllers.CourseContent.clearStatsInCourse(id: Long, courseId: Long)
-GET     /course/:courseId/content/:id/remove            controllers.CourseContent.removeFromCourse(id: Long, courseId: Long)
+POST    /course/:courseId/content/:id/remove            controllers.CourseContent.removeFromCourse(id: Long, courseId: Long)
 
 # Content pages
 GET     /content/mine                   controllers.ContentController.mine
