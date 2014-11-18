@@ -171,6 +171,18 @@ var AnnotationTextEditor = (function(){
         Object.defineProperties(this, {
             getAnnotations: {
                 value: function(){ return args.manifest; }
+            },
+            language: {
+                set: function(newLang) {
+                    newLang = newLang.trim();
+                    var prevLang = Object.keys(args.manifest)[0];
+                    args.manifest[newLang] = args.manifest[prevLang];
+                    delete args.manifest[prevLang];
+                    language = newLang.trim();
+                },
+                get: function() {
+                    return language;
+                }
             }
         });
 

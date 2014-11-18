@@ -72,7 +72,6 @@ $(function() {
     };
 
     $("#spinner").hide();
-    $("#filename").hide();
 
     document.getElementById("quit").addEventListener('click', function(e){
         e.preventDefault();
@@ -86,7 +85,8 @@ $(function() {
         var language = !!data.resource ? data.resource.languages.iso639_3[0] : "eng";*/
         var title = !!content.name ? content.name : "Untitled";
         var language = !!content.language ? content.languages.iso639_3[0] : "eng";
-        document.getElementById("title").value = title;
+        var metadataTitle = document.getElementById("title").value;
+        metadataTitle.value = title;
         //document.querySelector(".badge").innerHTML = language;
 
         // Then create the popup editor
@@ -128,6 +128,8 @@ $(function() {
             document.getElementById("save").addEventListener('change', function() {
                 if (this.value === "new") {
                     $("#filename").show();
+                    if (document.getElementById("filename").value == "")
+                        saveButton.disabled = true;
                 } else $("#filename").hide();
                 if (this.value === "") {
                     saveButton.disabled = true;
@@ -141,7 +143,13 @@ $(function() {
             // Setup the navbar buttons
             document.getElementById("saveMetadataButton").addEventListener('click', function(){
                 title = document.getElementById("title").value;
+                var filename = document.getElementById("filename");
+                filename.value = title;
+                fileName = title;
                 language = document.querySelector(".badge").innerHTML;
+                textEditor.language = language;
+                if (filename.value.toString().trim() != "")
+                    saveButton.disabled = false;
                 $("#metadataModal").modal("hide");
             }, false);
 
@@ -180,6 +188,7 @@ $(function() {
                     error: function(data) {
                         console.log(data);
                         alert("There was a problem while saving the annotations.");
+                        $("#spinner").hide();
                     }
                 });
 
