@@ -16,7 +16,7 @@ $(function(){
         {{#users:index}}\
             <tr style="background: {{calc_color(.permissions, activePermissions)}};" id="uid{{.id}}">\
                 <td><label><input type="checkbox" name="{{selectedUsers}}" value="{{index}}"/>{{.id}}</label></td>\
-				<td>{{.authScheme}}</td><td>{{shorten(.username)}}</td>\
+				<td>{{.authScheme}}</td><td>{{{shorten(.username)}}}</td>\
                 <td>{{{(.name?shorten(.name):"<em>Not set</em>")}}}</td>\
                 <td>{{{(.email?shorten(.email):"<em>Not set</em>")}}}</td>\
                 <td>{{{(.linked === -1 ? "No" : "Yes: #"+.linked)}}}</td>\

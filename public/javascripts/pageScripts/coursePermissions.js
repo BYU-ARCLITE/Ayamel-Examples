@@ -15,7 +15,7 @@ $(function(){
         </tr>\
         {{#users:index}}\
             <tr style="background: {{calc_color(.permissions, activePermissions)}};" id="uid{{.id}}">\
-                <td><label>{{#teacher}}<input type="checkbox" name="{{selectedUsers}}" value="{{index}}"/>{{/teacher}}{{shorten(.username)}}</label></td>\
+                <td><label>{{#teacher}}<input type="checkbox" name="{{selectedUsers}}" value="{{index}}"/>{{/teacher}}{{{shorten(.username)}}}</label></td>\
                 <td>{{{(.name?shorten(.name):"<em>Not set</em>")}}}</td>\
                 <td>{{{(.email?shorten(.email):"<em>Not set</em>")}}}</td>\
                 {{#teacher}}\
