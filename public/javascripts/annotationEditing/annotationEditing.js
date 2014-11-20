@@ -78,6 +78,26 @@ $(function() {
         window.history.back();
     }, false);
 
+    var langList = Object.keys(Ayamel.utils.p1map).map(function (p1) {
+        var code = Ayamel.utils.p1map[p1];
+        return {value: code, text: Ayamel.utils.getLangName(code)};
+    }).sort(function(a,b){ return a.text.localeCompare(b.text); });
+
+    var ractive = new EditorWidgets.SuperSelect({
+        el: "langLocation",
+        data:{
+            id: 'languages',
+            selection: [],
+            icon: 'icon-globe',
+            text: 'Select Language',
+            button: 'left',
+            modalId: 'metadataModal',
+            multiple: false,
+            options: langList,
+            defaultValue: {value:'zxx',text:'No Linguistic Content'}
+        }
+    });
+
     // First load the annotations
     loadManifest(typeMap[content.contentType], function(data) {
         // Load metadata from the resource
@@ -146,8 +166,7 @@ $(function() {
                 var filename = document.getElementById("filename");
                 filename.value = title;
                 fileName = title;
-                language = document.querySelector(".badge").innerHTML;
-                textEditor.language = language;
+                textEditor.language = ractive.data.selection[0];
                 if (filename.value.toString().trim() != "")
                     saveButton.disabled = false;
                 $("#metadataModal").modal("hide");
