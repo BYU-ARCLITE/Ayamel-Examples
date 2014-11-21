@@ -7,61 +7,16 @@
  */
 
 $(function() {
-    
-    function getParameterByName(name){
-        name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
-        var regexS = "[\\?&]" + name + "=([^&#]*)";
-        var regex = new RegExp(regexS);
-        var results = regex.exec(window.location.search);
-        if(results == null)
-            return "";
-        else
-            return decodeURIComponent(results[1].replace(/\+/g, " "));
-    }
 
     function loadManifest(type, callback) {
-        // won't be implementing the annotations through the query string
-        //var docId = getParameterByName("doc");
-        var docId = "";
-        if (docId.length > 0) {
-
-            // Load the annotation document
-            ResourceLibrary.load(docId, function (resource) {
-                var docUrl = resource.content.files[0].downloadUri;
-                AnnotationLoader.loadURL(docUrl, resource.languages.iso639_3[0])
-                .then(function(manifest){
-                    callback({
-                        manifest: manifest,
-                        resource: resource,
-                        filename: docUrl.substr(docUrl.lastIndexOf("/") + 1)
-                    });
-                });
-            });
-        } else {
-
-            // No annotation document. Create a new manifest
-            var manifest = new AnnotationManifest(type, {});
-            manifest.language = "eng";
-            callback({
-                manifest: manifest,
-                resource: {},
-                filename: ""
-            });
-        }
-    }
-
-    // This function isn't necessary
-    function generateDoc(type, manifest) {
-        var annotations = manifest.annotations;
-        if (type === "text") {
-            annotations = manifest.annotations.map(function (annotation) {
-                return {
-                    regex: annotation.regex.source,
-                    data: annotation.data
-                };
-            });
-        }
-        return { "eng": {} };
+        // will create the new manifest every time the annoatations editor is loaded
+        var manifest = new AnnotationManifest(type, {});
+        manifest.language = "eng";
+        callback({
+            manifest: manifest,
+            resource: {},
+            filename: ""
+        });
     }
 
     var typeMap = {
@@ -101,13 +56,8 @@ $(function() {
     // First load the annotations
     loadManifest(typeMap[content.contentType], function(data) {
         // Load metadata from the resource
-        /*var title = !!data.resource ? data.resource.title : "Untitled";
-        var language = !!data.resource ? data.resource.languages.iso639_3[0] : "eng";*/
         var title = !!content.name ? content.name : "Untitled";
         var language = !!content.language ? content.languages.iso639_3[0] : "eng";
-        var metadataTitle = document.getElementById("title").value;
-        metadataTitle.value = title;
-        //document.querySelector(".badge").innerHTML = language;
 
         // Then create the popup editor
         new AnnotationPopupEditor(function (popupEditor) {
@@ -133,6 +83,37 @@ $(function() {
                 });
             }
 
+            function setupEditButtons(id, resid, contentid) {
+                document.getElementById(id).addEventListener('click', function() {
+                    textEditor.editAnn(resid, contentid);
+                }, false);
+            }
+
+            ResourceLibrary.load(content.resourceId).then(function(contentResource) {
+                annotationIds = getAnnotationIds(contentResource);
+                if(annotationIds.length){
+                    $.ajax("/ajax/permissionChecker", {
+                        type: "post",
+                        data: {
+                            contentId: content.id,
+                            permission: "edit",
+                            documentType: "annotationDocument",
+                            ids: annotationIds
+                        }
+                    }).then(function(data) {
+                        getResources(data).then(function(resources){
+                            [].forEach.call(resources, function(resource) {
+                                ResourceLibrary.load(resource.id).then(function(res){
+                                    addEditAnnotationsTableRows(resource, res, function(id, resId, contentId) {
+                                        setupEditButtons(id, resId, contentId);
+                                    });
+                                });
+                            });
+                        });
+                    });
+                }
+            });
+
             var saveButton = document.getElementById("saveAnnotations");
             var fileName = "";
             document.getElementById("filename").addEventListener('keyup', function() {
@@ -143,7 +124,8 @@ $(function() {
                     fileName = this.value;
                     saveButton.disabled = false;
                 }
-            });
+            }, false);
+
             // Setup the save annotations menu
             document.getElementById("save").addEventListener('change', function() {
                 if (this.value === "new") {
@@ -159,6 +141,14 @@ $(function() {
                     saveButton.disabled = false;
                 }
             });
+
+            document.getElementById("emptyManifest").addEventListener('click', function() {
+                textEditor.emptyManifest();
+            }, false);
+
+            document.getElementById("refreshTranscript") .addEventListener('click', function() {
+                textEditor.refreshTranscript();
+            }, false);
 
             // Setup the navbar buttons
             document.getElementById("saveMetadataButton").addEventListener('click', function(){
@@ -183,14 +173,6 @@ $(function() {
                 formData.append("contentId", content.id);
                 formData.append("resourceId", !!data.resource.id ? data.resource.id : "");
                 formData.append("manifest", JSON.stringify(textEditor.getAnnotations()));
-                if (data.filename) {
-                    console.log("There is a pre-made filename! Check where that's coming from");
-                    //formData.append("filename", data.filename);
-                }
-
-                var courseId = getParameterByName("course");
-                if (!courseId)
-                    courseId = 0;
 
                 $.ajax("/annotations/saveEditedAnnotations", {
                     type: "post",

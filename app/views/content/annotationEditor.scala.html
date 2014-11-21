@@ -53,8 +53,10 @@
                     <li><a href="#metadataModal" data-toggle="modal"><i class="icon-pencil"></i> Edit metadata</a></li>
                 </ul>
                 <ul class="nav pull-right">
+                    <li><a href="#" id="refreshTranscript"><i class="icon-refresh"></i> Refresh</a></li>
                     <li><a href="#saveAnnotationsModal" data-toggle="modal"><i class="icon-save"></i> Save</a></li>
                     <li><a href="#editAnnotationsModal" data-toggle="modal"><i class="icon-pencil"></i> Edit</a></li>
+                    <li><a href="#" id="emptyManifest"><i class="icon-trash"></i> Clear Annotations</a></li>
                     <li><a href="#annotationsModal" data-toggle="modal"><i class="icon-trash"></i> Delete</a></li>
                     <li><a href="#" id="quit"><i class="icon-signout"></i> Quit</a></li>
                 </ul>
@@ -177,39 +179,5 @@
                 <button class="btn btn-blue" id="saveMetadataButton">Save changes</button>
             </div>
         </div>
-
-    <script type="text/javascript">
-
-        $(function() {
-            // fills in the edit and save annotations modal table.
-            ResourceLibrary.load(content.resourceId).then(function(contentResource) {
-                annotationIds = getAnnotationIds(contentResource);
-                if(annotationIds.length){
-                    $.ajax("/ajax/permissionChecker", {
-                        type: "post",
-                        data: {
-                            contentId: content.id,
-                            permission: "edit",
-                            documentType: "annotationDocument",
-                            ids: annotationIds
-                        }
-                    }).then(function(data) {
-                        getResources(data).then(function(resources){
-                            // global array with the annotation file resource Ids
-                            window.annFileResources = [];
-                            // resources here is an array of annotation resource objects.
-                            // the actual annotations manifest is not stored in this object
-                            [].forEach.call(resources, function(resource) {
-                                annFileResources.push(resource.id);
-                                ResourceLibrary.load(resource.id).then(function(res){
-                                    addEditAnnotationsTableRows(resource, res);
-                                })
-                            });
-                        });
-                    });
-                }
-            });
-        });
-    </script>
     }
 }

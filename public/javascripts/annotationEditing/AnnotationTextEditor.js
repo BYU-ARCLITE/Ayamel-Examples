@@ -17,8 +17,8 @@ var AnnotationTextEditor = (function(){
             }).then(function(transcripts){
                 Promise.all(transcripts.map(function(transcript){
                     return new Promise(function(resolve){
-						Ayamel.utils.loadCaptionTrack(transcript, resolve);
-					});
+                        Ayamel.utils.loadCaptionTrack(transcript, resolve);
+                    });
                 })).then(callback);
             });
         });
@@ -30,13 +30,14 @@ var AnnotationTextEditor = (function(){
         /*
          * Text annotation
          */
+        var transcriptPlayer;
         var language = !!content.language ? content.languages.iso639_3[0] : "eng";
         args.manifest = {};
         args.manifest[language] = {};
         var annotator = new Ayamel.Annotator({
                 classList:["annotation"],
                 handler: function(data, lang, text, index){
-                    element.dispatchEvent(new CustomEvent("annotation", {
+                    args.holder.dispatchEvent(new CustomEvent("annotation", {
                         bubbles: true,
                         detail: {data: data, lang: lang, text: text, index: index}
                     }));
@@ -45,31 +46,6 @@ var AnnotationTextEditor = (function(){
 
         var activeAnnotation = null;
         var renderAnnotations = function(){};
-        // function to get the annotation manifest and return it's contents
-        // declared to window so it is usable by the html onclick function in the edit modal
-        // needs to access the annotation manifest which is only available in this file.
-        window.editAnn = function(resId, contentId) {
-            ResourceLibrary.load(resId).then(function(resource){
-                Promise.all([
-                    ContentRenderer.getAnnotations({
-                        courseId: courseId,
-                        contentId: contentId,
-                        permission: undefined,
-                        resource: resource
-                    })
-                ]).then(function(arr){
-                    var annLang = Object.keys(arr[0])[0];
-                    var lang = arr[0];
-                    Object.keys(lang[annLang]).forEach(function (key) {
-                        // potential problem: lose the annotation data that they recently created.
-                        args.manifest[language][key] = lang[annLang][key];
-                        window.manifest  = args.manifest;
-                    });
-                    renderAnnotations();
-                });
-            });  
-            $("#editAnnotationsModal").modal("hide");
-        }
 
         function checkIfAnnotated(text){
             return !!args.manifest[language].hasOwnProperty(text);
@@ -97,6 +73,20 @@ var AnnotationTextEditor = (function(){
             }, false);
         }
 
+        // temporary fix to bind the handler to the annotations
+        // need make annotator.js actually bind the elements with the provided handler
+        // and make sure it doesn't get lost when the track is updated
+        function setHandler() {
+            var annotatedWords = document.querySelectorAll(".annotation");
+            [].forEach.call(annotatedWords, function(obj){
+                obj.addEventListener('click', function() {
+                    activeAnnotation = this.innerHTML;
+                    args.popupEditor.annotation = {"manifest" : args.manifest[language], "word" : this.innerHTML};
+                    args.popupEditor.show();
+                });
+            });
+        }
+
         /*
          * Text display area
          */
@@ -117,7 +107,6 @@ var AnnotationTextEditor = (function(){
             };
             renderAnnotations();
         } else {
-            var transcriptPlayer;
             loadTracks(args.content, function(tracks) {
                   transcriptPlayer = new TranscriptPlayer({
                     holder: args.holder,
@@ -134,26 +123,24 @@ var AnnotationTextEditor = (function(){
                         holder: args.holder,
                         captionTracks: tracks,
                         sync: false
-                        /* filter: function(cue, $cue) {
-                            setupTextAnnotations($cue);
-                        } */
                     });
                     annotator.annotations = args.manifest;
                     [].forEach.call(tracks, function(track) {
                         [].forEach.call(track.cues, function(cue) {
-                            var t = annotator.HTML(cue.text);
+                            var t = annotator.Text(cue.text);
                             var z = document.createElement('p');
                             z.appendChild(t);
-                            cue.text = z.innerHTML;
+                            if (z.childNodes.length > 1) {
+                                cue.text = z.innerHTML;
+                            }
                         });
+                        transcriptPlayer.updateTrack(track);
                     });
-                    transcriptPlayer.captionTracks = tracks;
-                    [].forEach.call(tracks, function(t){
-                        transcriptPlayer.updateTrack(t);
-                    });
+                    // annotator.js getmod temp fix
+                   setHandler();
                 });
             }
-            setupTextAnnotations(args.holder, args.manifest);
+            setupTextAnnotations(args.holder);
         }
 
         /*
@@ -166,6 +153,7 @@ var AnnotationTextEditor = (function(){
         args.popupEditor.on("delete", function() {
             delete args.manifest[language][activeAnnotation];
             renderAnnotations();
+
         });
 
         Object.defineProperties(this, {
@@ -174,7 +162,6 @@ var AnnotationTextEditor = (function(){
             },
             language: {
                 set: function(newLang) {
-                    newLang = newLang.trim();
                     var prevLang = Object.keys(args.manifest)[0];
                     args.manifest[newLang] = args.manifest[prevLang];
                     delete args.manifest[prevLang];
@@ -182,6 +169,41 @@ var AnnotationTextEditor = (function(){
                 },
                 get: function() {
                     return language;
+                }
+            },
+            editAnn: {
+                value: function(resId, contentId) {
+                    ResourceLibrary.load(resId).then(function(resource){
+                        Promise.all([
+                            ContentRenderer.getAnnotations({
+                                courseId: courseId,
+                                contentId: contentId,
+                                permission: undefined,
+                                resource: resource
+                            })
+                        ]).then(function(arr){
+                            var annLang = Object.keys(arr[0])[0];
+                            var lang = arr[0];
+                            Object.keys(lang[annLang]).forEach(function (key) {
+                                // potential problem: lose the annotation data that they recently created.
+                                args.manifest[language][key] = lang[annLang][key];
+                            });
+                            renderAnnotations();
+                        });
+                    });  
+                    $("#editAnnotationsModal").modal("hide");
+                }
+            },
+            emptyManifest: {
+                value: function() {
+                    args.manifest = {};
+                    args.manifest[language] = {};
+                    renderAnnotations();
+                }
+            },
+            refreshTranscript: {
+                value: function() {
+                    renderAnnotations();
                 }
             }
         });
