@@ -147,7 +147,7 @@ var AnnotationTextEditor = (function(){
          * Interaction with popup editor
          */
         args.popupEditor.on("update", function() {
-            activeAnnotation = args.popupEditor.annotation;
+            activeAnnotation = args.popupEditor.annotation.currAnn;
             renderAnnotations();
         });
         args.popupEditor.on("delete", function() {

@@ -121,9 +121,19 @@ var AnnotationPopupEditor = (function(){
 
 		function updateAnnotation() {
 			//annotation.annotations[annSize].regex = new RegExp(ractive.get('word'));
+			currAnn = ractive.get('word');
+			annotation[currAnn] = {
+                "global" : {
+                    "data" : {
+                        "type" : "text",
+                        "value" : $('#textEditor').data("wysihtml5").editor.getValue()
+                    }
+                }
+            };
 			annotation[currAnn]["global"]["data"]["type"] = ractive.get('type');
 
-			// Check the data type
+
+			/*// Check the data type
 			switch(annotation[currAnn]["global"]["data"]["type"]){
 			case "text": // Update from the text editor
 				annotation[currAnn]["global"]["data"]["value"] = $('#textEditor').data("wysihtml5").editor.getValue();
@@ -134,7 +144,7 @@ var AnnotationPopupEditor = (function(){
 			case "content": // Update from the selected content
 				annotation[currAnn]["global"]["data"]["value"] = !!content ? content.id : 0;
 				break;
-			}
+			}*/
 		}
 
 		function updateForm() {
@@ -199,7 +209,7 @@ var AnnotationPopupEditor = (function(){
 			annotation: {
 				get: function() {
 					updateAnnotation();
-					return annotation;
+					return {"manifest" : annotation, "currAnn" : currAnn};
 				},
 				set: function(value) {
 					annotation = value["manifest"];
