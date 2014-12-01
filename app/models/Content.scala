@@ -10,6 +10,7 @@ import play.api.libs.json.{Json, JsValue}
 import play.api.Logger
 import concurrent.Future
 import dataAccess.ResourceController
+import java.text.Normalizer
 
 /**
  * This links a resource object (in a resource library) to this system
@@ -29,14 +30,14 @@ case class Content(id: Pk[Long], name: String, contentType: Symbol, thumbnail: S
    */
   def save: Content = {
     if (id.isDefined) {
-      update(Content.tableName, 'id -> id, 'name -> name, 'contentType -> contentType.name, 'thumbnail -> thumbnail,
+      update(Content.tableName, 'id -> id, 'name -> normalize(name), 'contentType -> contentType.name, 'thumbnail -> thumbnail,
         'resourceId -> resourceId, 'dateAdded -> dateAdded, 'visibility -> visibility, 'shareability -> shareability,
-        'authKey -> authKey, 'labels -> labels.mkString(","))
+        'authKey -> authKey, 'labels -> normalize(labels.mkString(",")))
       this
     } else {
-      val id = insert(Content.tableName, 'name -> name, 'contentType -> contentType.name, 'thumbnail -> thumbnail,
+      val id = insert(Content.tableName, 'name -> normalize(name), 'contentType -> contentType.name, 'thumbnail -> thumbnail,
         'resourceId -> resourceId, 'dateAdded -> dateAdded, 'visibility -> visibility, 'shareability -> shareability,
-        'authKey -> authKey, 'labels -> labels.mkString(","))
+        'authKey -> authKey, 'labels -> normalize(labels.mkString(",")))
       this.copy(id)
     }
   }
@@ -79,6 +80,11 @@ case class Content(id: Pk[Long], name: String, contentType: Symbol, thumbnail: S
   def removeSetting(setting: String, argument: Seq[String]): Content = {
     Content.removeSetting(this, setting, argument)
     this
+  }
+
+  // Recognize and fix certain diacritics that can cause issues in sql
+  def normalize(str: String) = {
+    Normalizer.normalize(str, Normalizer.Form.NFC)
   }
 
   //       _____      _   _
