@@ -30,7 +30,7 @@ body.mobile {
     padding: 8px;
 }
 
-.mobile .transcriptContent, .mobile #Definitions, .mobile #Annotations {
+.mobile .transcriptContentHolder, .mobile .definitionsContent, .mobile #Annotations {
     max-height: none;
 }
 

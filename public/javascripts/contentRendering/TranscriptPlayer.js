@@ -29,7 +29,7 @@ var TranscriptPlayer = (function(){
                     </select>\
                     <button proxy-tap="sync" type="button" class="{{sync?"btn active":"btn"}}" title="Sync with media"><i class="icon-refresh"></i></button>\
                 </div>\
-                <div>\
+                <div class="transcriptContentHolder">\
                     {{#transcripts:ti}}\
                     <div class="transcriptContent" style="display:{{ ti === activeIndex ? "block" : "none" }}" data-trackindex="{{ti}}">\
                         {{#.cues:ci}}\
@@ -102,7 +102,7 @@ var TranscriptPlayer = (function(){
                     if(!ractive.data.sync){ return; }
                     activeCue = document.querySelector('.transcriptCue.active');
                     if(activeCue){
-                        parent = activeCue.parentNode;
+                        parent = activeCue.parentNode.parentNode;
                         parent.scrollTop = activeCue.offsetTop - parent.offsetTop - (parent.offsetHeight - activeCue.offsetHeight)/2;
                     }
                 }
