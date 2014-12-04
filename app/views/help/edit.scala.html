@@ -27,10 +27,12 @@
 
         <script type="text/javascript">
             $(function() {
-                $("#textEditor").wysihtml5();
+                $("#textEditor").wysihtml5({
+                    "html":true,
+                    parser: function(html) { return html; }
+                });
             });
         </script>
-
 
     </div>
 }
