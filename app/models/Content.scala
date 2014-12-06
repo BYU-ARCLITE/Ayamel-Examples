@@ -147,7 +147,7 @@ case class Content(id: Pk[Long], name: String, contentType: Symbol, thumbnail: S
     user.hasSitePermission("admin") || user.getContent.contains(this)
 
   def getSetting(setting: String) = Content.getSetting(this, setting)
-  
+
   //for backwards compatibility
   def settings(setting: String) = Content.getSetting(this, setting).mkString(",")
 

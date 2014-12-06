@@ -33,6 +33,13 @@ case class CourseMembership(id: Pk[Long], userId: Long, courseId: Long, teacher:
    * Deletes the course membership from the DB
    */
   def delete() {
+    val cid = this.courseId
+    val uid = this.userId
+    DB.withConnection {
+      implicit connection =>
+        anorm.SQL("delete from coursePermissions where courseId = {cid} and userId = {uid}")
+          .on('cid -> cid, 'uid -> uid).execute()
+    }
     delete(CourseMembership.tableName, id)
   }
 
@@ -66,6 +73,17 @@ object CourseMembership extends SQLSelectable[CourseMembership] {
     DB.withConnection {
       implicit connection =>
         anorm.SQL("select * from " + tableName + " where userId = {id}").on('id -> user.id).as(simple *)
+    }
+
+  /**
+   * Lists the membership pertaining to a certain course
+   * @param user The course for whom the membership will be
+   * @return The list of course membership
+   */
+  def listByCourse(course: Course): List[CourseMembership] =
+    DB.withConnection {
+      implicit connection =>
+        anorm.SQL("select * from " + tableName + " where courseId = {id}").on('id -> course.id).as(simple *)
     }
 
   /**

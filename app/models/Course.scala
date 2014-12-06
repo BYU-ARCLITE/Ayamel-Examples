@@ -40,6 +40,15 @@ case class Course(id: Pk[Long], name: String, startDate: String, endDate: String
    * Deletes the course from the DB
    */
   def delete() {
+    ContentListing.listByCourse(this).foreach(_.delete())
+    CourseMembership.listByCourse(this).foreach(_.delete())
+
+    DB.withConnection {
+      implicit connection =>
+        anorm.SQL("delete from coursePermissions where courseId = {cid}")
+          .on('cid -> id).execute()
+    }
+
     delete(Course.tableName, id)
   }
 
@@ -70,12 +79,12 @@ case class Course(id: Pk[Long], name: String, startDate: String, endDate: String
     val listing = ContentListing.listByCourse(this).filter(_.contentId == content.id.get)
 
     // Check the number or results
-    if (listing.size == 1)
+    if (listing.size == 1) {
     // One membership. So delete it
       listing(0).delete()
-    else{
-    // We didn't get exactly one listing so don't do anything, but warn
-      Logger.warn("Multiple (or zero) content lists for content #" + content.id.get + " in course #" + id.get)
+    } else if (listing.size != 0) {
+    // We didn't get exactly one listing so delete one of them, but warn
+      Logger.warn("Multiple content listings for content #" + content.id.get + " in course #" + id.get)
       listing(0).delete()
     }
     this
@@ -178,7 +187,7 @@ case class Course(id: Pk[Long], name: String, startDate: String, endDate: String
    * @return The add course request list
    */
   def getRequests: List[AddCourseRequest] = AddCourseRequest.listByCourse(this)
-  
+
   def getUserPermissions(user: User): List[String] = CoursePermissions.listByUser(this, user)
   def addUserPermission(user: User, permission: String) = CoursePermissions.addUserPermission(this, user, permission)
   def userHasPermission(user: User, permission: String) = CoursePermissions.userHasPermission(this, user, permission)

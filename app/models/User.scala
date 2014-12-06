@@ -74,6 +74,14 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
         accountLink.userIds.filterNot(_ == id.get).foreach(uid => delete(User.tableName, Id(uid)))
       }
     }
+
+    //Delete site permissions
+    DB.withConnection {
+      implicit connection =>
+        anorm.SQL("delete from sitePermissions where userId = {id}")
+          .on('id -> id).execute()
+    }
+
     delete(User.tableName, id)
   }
 
@@ -182,7 +190,7 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
     val otherRequests = SitePermissionRequest.listByUser(user)
     val newRequests = (otherRequests.map(_.copy(userId = thisid)).toSet
       -- SitePermissionRequest.listByUser(this))
-      
+
     // Merge permissions
     user.getPermissions.foreach { p => addSitePermission(p) }
 
@@ -420,15 +428,15 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
   def getScorings(content: Content) = cache.getScorings.filter(_.contentId == content.id.get)
 
   def getWordList = cache.getWordList
-  
+
   def getPermissions = SitePermissions.listByUser(this)
-  
+
   def getCoursePermissions(course: Course) = course.getUserPermissions(this)
 
-  def hasSitePermission(permission: String): Boolean = 
+  def hasSitePermission(permission: String): Boolean =
     SitePermissions.userHasPermission(this, permission) || SitePermissions.userHasPermission(this, "admin")
 
-  def hasCoursePermission(course: Course, permission: String): Boolean = 
+  def hasCoursePermission(course: Course, permission: String): Boolean =
     course.userHasPermission(this, permission) || course.getTeachers.contains(this) || SitePermissions.userHasPermission(this, "admin")
 
 
@@ -442,10 +450,10 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
   // |______|______|______|______|______|______|______|______|______|
   //
 
-  def addSitePermission(permission: String) = 
+  def addSitePermission(permission: String) =
     SitePermissions.addUserPermission(this, permission)
 
-  def addCoursePermission(course: Course, permission: String) = 
+  def addCoursePermission(course: Course, permission: String) =
     course.addUserPermission(this, permission)
 
 }
