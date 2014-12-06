@@ -96,7 +96,7 @@ $(function() {
         }));
     }
 
-    function deleteDoc(rid, type, file) {
+    function deleteDoc(rid, type, resource) {
         if(!confirm("Are you sure you want to delete?")){ return; }
 
         $.ajax("/content/" + content.id + "/delete/" + rid + courseQuery, {
@@ -105,11 +105,13 @@ $(function() {
             contentType: false,
             processData: false,
             success: function(data) {
+                var resourceArr;
                 if(type === "subtitles") {
-                    viewCapR.get('resources').splice(viewCapR.get('resources').indexOf(file.context),1)
+                    resourceArr = viewCapR.get('resources');
                 } else if (type === "annotations") {
-                    viewAnnR.get('resources').splice(viewAnnR.get('resources').indexOf(file.context),1)
+                    resourceArr = viewAnnR.get('resources');
                 }
+                resourceArr.splice(resourceArr.indexOf(resource),1)
                 alert("File Deleted.");
             },
             error: function(data) {
@@ -128,7 +130,7 @@ $(function() {
             calcName: calcName
         }
     });
-    viewCapR.on('delete', function(_, which){ deleteDoc(which, "subtitles"); });
+    viewCapR.on('delete', function(_, which){ deleteDoc(which, "subtitles", _.context); });
 
     addCapR = new Ractive({
         el: "#captionsUpload",
@@ -206,7 +208,7 @@ $(function() {
             calcName: function(title){ return title+'.json'; }
         }
     });
-    viewAnnR.on('delete', function(file, which){ deleteDoc(which, "annotations", file); });
+    viewAnnR.on('delete', function(_, which){ deleteDoc(which, "annotations", _.context); });
 
     addAnnR = new Ractive({
         el: "#annotationsUpload",
