@@ -43,29 +43,23 @@ var AnnotationPopupEditor = (function(){
                                 <option value="content">Content</option>\
                             </select>\
                         </div>\
-                        {{#(type === "text")}}\
-                        <div id="textContent">\
+                        <div id="textContent" style="display:{{(type==="text")?"block":"none"}}">\
                             <label for="textEditor">Text:</label>\
                             <textarea id="textEditor" data-id="editor"></textarea>\
                         </div>\
-                        {{/text}}\
-                        {{#(type === "image")}}\
-                        <div id="imageContent">\
+                        <div id="imageContent" style="display:{{(type==="image")?"block":"none"}}" >\
                             <div class="form-inline">\
                                 <label for="url">URL: </label>\
                                 <input type="text" id="url" placeholder="http://..." value={{imageImg}}>\
                             </div>\
                             <div class="popupImage" style="background-image:url(\'{{imageImg}}\');"></div>\
                         </div>\
-                        {{/image}}\
-                        {{#(type === "content")}}\
-                        <div id="contentContent">\
+                        <div id="contentContent" style="display:{{(type==="content")?"block":"none"}}">\
                             <div class="pad-bottom-med">Content:</div>\
                             <h4>{{title}}</h4>\
                             <div class="popupImage" style="background-image:url(\'{{contentImg}}\');"></div>\
                             <button class="btn btn-yellow pad-left-med" on-tap="browse"><i class="icon-folder-open"></i> Select Content</button>\
                         </div>\
-                        {{/content}}\
                     </div>\
                     <div>\
                         <div class="pull-left">\
@@ -142,7 +136,7 @@ var AnnotationPopupEditor = (function(){
                 annotation[currAnn]["global"]["data"]["value"] = ractive.get('imageImg');
                 break;
             case "content": // Update from the selected content
-                annotation[currAnn]["global"]["data"]["value"] = !!content ? content.id : 0;
+                annotation[currAnn]["global"]["data"]["value"] = !!content ? content[0].id : 0;
                 break;
             }
         }
@@ -152,7 +146,7 @@ var AnnotationPopupEditor = (function(){
             if (annotation instanceof ImageAnnotation) {
                 // Hide the word editor
                 ractive.set('showWord', false);
-            }else {
+            } else {
                 // Load the annotation data into the form
                 ractive.set({
                     showWord: true,
@@ -165,14 +159,13 @@ var AnnotationPopupEditor = (function(){
             // Check the data type
             switch(annotation[currAnn]["global"]["data"]["type"]){
             case "text": // Update the text editor
-                $('#textEditor').data("wysihtml5").editor.setValue(annotation[currAnn]["global"]["data"]["value"]);
-                $('#textEditor').data("wysihtml5").editor.focus();
-
                 ractive.set({
                     type: "text",
                     imageImg: "",
                     contentImg: ""
                 });
+                $('#textEditor').data("wysihtml5").editor.setValue(annotation[currAnn]["global"]["data"]["value"]);
+                $('#textEditor').data("wysihtml5").editor.focus();
                 break;
             case "image": // Update the URL text input
                 //editor.setValue("");
