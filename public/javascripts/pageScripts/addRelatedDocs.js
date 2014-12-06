@@ -96,9 +96,27 @@ $(function() {
         }));
     }
 
-    function deleteDoc(rid) {
+    function deleteDoc(rid, type, file) {
         if(!confirm("Are you sure you want to delete?")){ return; }
-        window.location = "/content/" + content.id + "/delete/" + rid + courseQuery;
+
+        $.ajax("/content/" + content.id + "/delete/" + rid + courseQuery, {
+            type: "post",
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function(data) {
+                if(type === "subtitles") {
+                    viewCapR.get('resources').splice(viewCapR.get('resources').indexOf(file.context),1)
+                } else if (type === "annotations") {
+                    viewAnnR.get('resources').splice(viewAnnR.get('resources').indexOf(file.context),1)
+                }
+                alert("File Deleted.");
+            },
+            error: function(data) {
+                console.log(data);
+                alert("There was a problem deleting the document.");
+            }
+        });
     }
 
     viewCapR = new Ractive({
@@ -110,7 +128,7 @@ $(function() {
             calcName: calcName
         }
     });
-    viewCapR.on('delete', function(_, which){ deleteDoc(which); });
+    viewCapR.on('delete', function(_, which){ deleteDoc(which, "subtitles"); });
 
     addCapR = new Ractive({
         el: "#captionsUpload",
@@ -165,6 +183,7 @@ $(function() {
             //TODO: save a roundtrip by having this ajax call return the complete updated resource
             ResourceLibrary.load(data).then(function(resource){
                 viewCapR.get('resources').push(resource);
+                alert("Captions saved.");
             });
 
             document.getElementById("uplCaptionsBtn").disabled = false;
@@ -187,7 +206,7 @@ $(function() {
             calcName: function(title){ return title+'.json'; }
         }
     });
-    viewAnnR.on('delete', function(_, which){ deleteDoc(which); });
+    viewAnnR.on('delete', function(file, which){ deleteDoc(which, "annotations", file); });
 
     addAnnR = new Ractive({
         el: "#annotationsUpload",
@@ -198,7 +217,7 @@ $(function() {
             lang: [],
             languages: langList,
             modalId: 'annotationsModal',
-            defaultValue: {value:'zxx',text:'No Linguistic Content'}
+            defaultValue: {value:'zxx', text:'No Linguistic Content'}
         }
     });
     addAnnR.on('upload', function(){
@@ -222,8 +241,14 @@ $(function() {
             cache: false,
             contentType: false,
             processData: false
-        }).then(function () {
-            alert("Annotations saved.");
+        }).then(function (data) {
+            ResourceLibrary.load(data).then(function(resource){
+                viewAnnR.get('resources').push(resource);
+                alert("Annotations saved.");
+            });
+
+            // If it was saved correctly, reload the page when the user closes the modal
+            $('#annotationsModal').on("hidden", function () { document.location.reload();});
         },function(data) {
             console.log(data);
             alert("There was a problem while saving the annotations.");

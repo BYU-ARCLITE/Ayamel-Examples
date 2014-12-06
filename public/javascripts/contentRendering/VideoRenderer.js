@@ -168,11 +168,12 @@ var VideoRenderer = (function(){
             }
 
             if(event.detail.data.type === "content"){
-                ContentCache.load(event.annotation.data.value, function(content){
-
+                ContentCache.load(event.detail.data.value, function(content){
+                    layout.Annotations.innerHTML = "";
                     // Don't allow annotations, transcriptions, or certain controls
                     content.settings.showTranscripts = "false";
                     content.settings.showAnnotations = "false";
+                    content.settings.allowDefinitions = "false";
 
                     ContentRenderer.render({
                         content: content,
