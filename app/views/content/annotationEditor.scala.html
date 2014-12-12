@@ -26,6 +26,7 @@
         JS("AnnotationPopupEditor.js"),
         JS("AnnotationImageEditor.js"),
         JS("AnnotationTextEditor.js"),
+        JS("editAnnotations.js"),
         JS("annotationResourceLoader.js"),
         JS("annotationEditing.js"))))
 ) {
@@ -99,10 +100,7 @@
                         <div class="clearfix"></div>
                         <form>
                             <fieldset>
-                                <div class="form-inline">
-                                    <select id="save">
-                                        <option value="new">New File</option>
-                                    </select>
+                                <div id="saveOptions" class="form-inline">
                                 </div>
                                 <br>
                                 <input id="filename" type="text" placeholder="Filename">
@@ -138,7 +136,6 @@
                                         <th>Track name</th><th>Language</th><th>Options</th>
                                     </tr></thead>
                                     <tbody id="editTable">
-                                    <!--This is the thing to make per annotation file-->
                                     </tbody>
                                 </table>
                             </fieldset>

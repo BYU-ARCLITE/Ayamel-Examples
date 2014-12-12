@@ -83,37 +83,6 @@ $(function() {
                 });
             }
 
-            function setupEditButtons(id, resid, contentid) {
-                document.getElementById(id).addEventListener('click', function() {
-                    textEditor.editAnn(resid, contentid);
-                }, false);
-            }
-
-            ResourceLibrary.load(content.resourceId).then(function(contentResource) {
-                annotationIds = getAnnotationIds(contentResource);
-                if(annotationIds.length){
-                    $.ajax("/ajax/permissionChecker", {
-                        type: "post",
-                        data: {
-                            contentId: content.id,
-                            permission: "edit",
-                            documentType: "annotationDocument",
-                            ids: annotationIds
-                        }
-                    }).then(function(data) {
-                        getResources(data).then(function(resources){
-                            [].forEach.call(resources, function(resource) {
-                                ResourceLibrary.load(resource.id).then(function(res){
-                                    addEditAnnotationsTableRows(resource, res, function(id, resId, contentId) {
-                                        setupEditButtons(id, resId, contentId);
-                                    });
-                                });
-                            });
-                        });
-                    });
-                }
-            });
-
             var saveButton = document.getElementById("saveAnnotations");
             var fileName = "";
             document.getElementById("filename").addEventListener('keyup', function() {
@@ -126,20 +95,8 @@ $(function() {
                 }
             }, false);
 
-            // Setup the save annotations menu
-            document.getElementById("save").addEventListener('change', function() {
-                if (this.value === "new") {
-                    $("#filename").show();
-                    if (document.getElementById("filename").value == "")
-                        saveButton.disabled = true;
-                } else $("#filename").hide();
-                if (this.value === "") {
-                    saveButton.disabled = true;
-                } else if (this.value !== "new") {
-                    fileName = this.options[this.selectedIndex].text;
-                    data.resource.id = this.value;
-                    saveButton.disabled = false;
-                }
+            document.addEventListener("editAnnotations", function(e) {
+                textEditor.editAnn(e.detail.resourceId, content.id);
             });
 
             document.getElementById("emptyManifest").addEventListener('click', function() {
@@ -165,13 +122,14 @@ $(function() {
             saveButton.addEventListener('click', function(){
                 var $this = $(this).hide();
                 $("#spinner").show();
+                data.resource.id = document.getElementById("save").value;
 
                 var formData = new FormData();
                 formData.append("title", fileName);
                 formData.append("filename", fileName);
                 formData.append("language", language);
                 formData.append("contentId", content.id);
-                formData.append("resourceId", !!data.resource.id ? data.resource.id : "");
+                formData.append("resourceId", (data.resource.id !== "new") ? data.resource.id : "");
                 formData.append("manifest", JSON.stringify(textEditor.getAnnotations()));
 
                 $.ajax("/annotations/saveEditedAnnotations", {
@@ -190,11 +148,11 @@ $(function() {
                         console.log(data);
                         alert("There was a problem while saving the annotations.");
                         $("#spinner").hide();
+                        $this.show();
                     }
                 });
 
             }, false);
         });
     });
-
 });

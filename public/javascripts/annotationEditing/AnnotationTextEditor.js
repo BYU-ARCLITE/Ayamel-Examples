@@ -156,6 +156,7 @@ var AnnotationTextEditor = (function(){
 
         });
 
+
         Object.defineProperties(this, {
             getAnnotations: {
                 value: function(){ return args.manifest; }
@@ -190,7 +191,7 @@ var AnnotationTextEditor = (function(){
                             });
                             renderAnnotations();
                         });
-                    });  
+                    });
                     $("#editAnnotationsModal").modal("hide");
                 }
             },
