@@ -97,7 +97,7 @@ $(function() {
     }
 
     function deleteDoc(rid, type, resource) {
-        if(!confirm("Are you sure you want to delete?")){ return; }
+        if(!confirm("Are you sure you want to delete?")){ return false; }
 
         $.ajax("/content/" + content.id + "/delete/" + rid + courseQuery, {
             type: "post",
@@ -208,7 +208,17 @@ $(function() {
             calcName: function(title){ return title+'.json'; }
         }
     });
-    viewAnnR.on('delete', function(_, which){ deleteDoc(which, "annotations", _.context); });
+
+    viewAnnR.on('delete', function(_, which){
+        var toDelete = deleteDoc(which, "annotations", _.context);
+        toDelete = (toDelete == null) ? true : toDelete;
+        if (toDelete === true) {
+            document.dispatchEvent(new CustomEvent("annotationFileDelete", {
+                bubbles: true,
+                detail: _.context.title
+            }));
+        }
+    });
 
     addAnnR = new Ractive({
         el: "#annotationsUpload",

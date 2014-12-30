@@ -27,15 +27,14 @@ $(function(){
             {{/resources}}\
         </select>',
         data: {
-            resources: [],
-            getLanguage: getLanguage
+            resources: []
         }
     });
 
     function getLanguage(resource) {
         var langs = resource.languages.iso639_3;
-        // This returns English always. Not the language of the annotations.
-        // When annotations are save, the iso639_3 array only has English added to it.
+        /* This returns English always. Not the language of the annotations.
+            When annotations are saved, the iso639_3 array only has English added to it. */
         return (langs && langs[0])?Ayamel.utils.getLangName(langs[0]):"English";
     }
 
@@ -51,6 +50,20 @@ $(function(){
             detail: {resourceId: resid}
         }));
     });
+
+    document.addEventListener("annotationFileDelete", function(fileName) {
+        /* updates the save and edit modals when an annotation file is deleted */
+        for (var i = 0; i < saveAnnotations.data.resources.length; i++) {
+            if (saveAnnotations.data.resources[i].title === fileName.detail) {
+                saveAnnotations.data.resources.splice(i, 1);
+            }
+        }
+        for (var i = 0; i < editAnnotations.data.resources.length; i++) {
+            if (editAnnotations.data.resources[i].title === fileName.detail) {
+                editAnnotations.data.resources.splice(i, 1);
+            }
+        }
+    }); 
 
     ResourceLibrary.load(content.resourceId, function(resource){
         var annotationIds = resource.relations
