@@ -121,7 +121,9 @@
                 // Collect information
                 var srcLang = Ayamel.utils.downgradeLangCode(this.dataset.srcLang);
                 var destLang = Ayamel.utils.downgradeLangCode(this.dataset.destLang);
-                var title = Ayamel.utils.getLangName(this.dataset.srcLang) + " words from Ayamel";
+                var srcLangName = Ayamel.utils.getLangName(this.dataset.srcLang);
+                var destLangName = Ayamel.utils.getLangName(this.dataset.destLang)
+                var title = ((srcLang === destLang)?srcLangName:srcLangName+"-"+destLangName) + " words from Ayamel";
                 var words = $(".exportCheckbox:checked[data-src-lang="+this.dataset.srcLang+"][data-dest-lang="+this.dataset.destLang+"]").toArray().map(function (e) {
                     return e.dataset.text;
                 });
@@ -130,8 +132,13 @@
                 var authCode = "";
 
                 // Check that we have words to export
-                if (!words.length)
+                if (!words.length){
                     return;
+                } else if (words.length === 1){
+                    // This is part of the Quizlet API, not us
+                    alert("You must select two or more words to export a set to Quizlet.");
+                    return;
+                }
 
                 function exportWords() {
                     // Make sure both async action are finished
