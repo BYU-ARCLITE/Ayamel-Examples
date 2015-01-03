@@ -1,10 +1,11 @@
 package dataAccess
 
 import play.api.Play
+import play.api.libs.ws.WS
 import Play.current
 import scala.concurrent.{ExecutionContext, Future}
 import ExecutionContext.Implicits.global
-import play.api.libs.ws.WS
+import service.HTMLConversion
 
 /**
  * Controller dealing with Quizlet
@@ -50,6 +51,9 @@ object Quizlet {
     var body = s"title=$title&lang_terms=$termLanguage&lang_definitions=$definitionLanguage"
     for (term <- terms)
       body += "&terms[]=" + term._1 + "&definitions[]=" + term._2
+
+    // Some definitions have HTML entities that use '&', which breaks some of the definition
+    body = HTMLConversion.convertEntities(body.toString)
 
     // Make the request
     WS.url(createSetUrl)

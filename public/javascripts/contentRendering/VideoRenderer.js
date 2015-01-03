@@ -92,7 +92,8 @@ var VideoRenderer = (function(){
                     $.ajax("/words", {
                         type: "post",
                         data: {
-                            language: detail.srcLang,
+                            srcLang: detail.srcLang,
+                            destLang: detail.destLang,
                             word: detail.text
                         },
                         success: function(){

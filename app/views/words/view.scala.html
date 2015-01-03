@@ -10,12 +10,15 @@
         @if(wordList.isEmpty) {
             <em>You have no words saved.</em>
         } else {
-            @for(group <- wordList.groupBy(_.language)) {
-                <h2 class="language">@group._1</h2>
-
+            @for(group <- wordList.groupBy(x=> (x.srcLang, x.destLang))) {
+                @if(group._1._1 != group._1._2){
+                    <h2><span class="language">@group._1._1</span> To <span class="language">@group._1._2</span></h2>
+                } else {
+                    <h2><span class="language">@group._1._1</span> Words</h2>
+                }
                 <div>
-                    <button class="btn selectAllButton" data-language="@group._1"><i class="icon-check"></i> Select all</button>
-                    <button class="btn btn-blue exportButton" data-language="@group._1"><i class="icon-cloud-upload"></i> Export Selected to Quizlet</button>
+                    <button class="btn selectAllButton" data-src-lang="@group._1._1" data-dest-lang="@group._1._2"><i class="icon-check"></i> Select all</button>
+                    <button class="btn btn-blue exportButton" data-src-lang="@group._1._1" data-dest-lang="@group._1._2"><i class="icon-cloud-upload"></i> Export Selected to Quizlet</button>
                 </div>
 
                 <div class="inline-block pad-top-med">
@@ -32,11 +35,11 @@
                         @for(word <- group._2) {
                             <tr>
                                 <td>
-                                    <input type="checkbox" class="exportCheckbox" data-language="@group._1" data-text="@word.word"/>
+                                    <input type="checkbox" class="exportCheckbox" data-src-lang="@group._1._1" data-dest-lang="@group._1._2" data-text="@word.word"/>
                                 </td>
                                 <td>@word.word</td>
                                 <td>
-                                    <button class="btn translateButton" data-text="@word.word" data-language="@word.language"><i class="icon-exchange"></i> Translate</button>
+                                    <button class="btn translateButton" data-text="@word.word" data-src-lang="@word.srcLang" data-dest-lang="@word.destLang"><i class="icon-exchange"></i> Translate</button>
                                 </td>
                                 <td>
                                     <a href="@routes.WordLists.deleteWord(word.id.get)" class="btn btn-magenta"><i class="icon-trash"></i> Delete</a>
@@ -62,19 +65,24 @@
 
             // Set up a caching layer
             var translationCache = {};
-            function translate(language, text, callback) {
+            function translate(srcLang, destLang, text, callback) {
                 // Make sure a cache for the language exists
-                if (!translationCache[language]){
-                    translationCache[language] = {};
+                if (translationCache[srcLang]){
+                    if (!translationCache[srcLang][destLang]){
+                        translationCache[srcLang][destLang] = {};
+                    }
+                } else {
+                    translationCache[srcLang] = {};
+                    translationCache[srcLang][destLang] = {};
                 }
 
                 // Check to see if we have already translated the text. If so pass that in to the callback.
                 // Otherwise invoke the translator
-                if (translationCache[language][text])
-                    callback(translationCache[language][text]);
+                if (translationCache[srcLang][destLang][text])
+                    callback(translationCache[srcLang][destLang][text]);
                 else {
-                    translator.translate({srcLang: language, destLang: "en", text: text}).then(function(results) {
-                        translationCache[language][text] = results;
+                    translator.translate({srcLang: srcLang, destLang:destLang, text: text}).then(function(results) {
+                        translationCache[srcLang][destLang][text] = results;
                         callback(results);
                     });
                 }
@@ -87,9 +95,10 @@
                 this.classList.add("disabled");
 
                 var text = this.dataset.text;
-                var language = Ayamel.utils.downgradeLangCode(this.dataset.language);
+                var srcLang = Ayamel.utils.downgradeLangCode(this.dataset.srcLang);
+                var destLang = Ayamel.utils.downgradeLangCode(this.dataset.destLang);
 
-                translate(language, text, function(results) {
+                translate(srcLang, destLang, text, function(results) {
                     var html =
                         '<div class="translationResult noBorder">' +
                             '<div class="translations">' + results.translations.join(", ") + '</div>' +
@@ -100,8 +109,9 @@
             });
 
             $(".selectAllButton").click(function() {
-                var language = this.dataset.language;
-                $(".exportCheckbox[data-language="+language+"]").prop("checked", true);
+                var srcLang = this.dataset.srcLang;
+                var destLang = this.dataset.destLang;
+                $(".exportCheckbox[data-src-lang="+srcLang+"][data-dest-lang="+destLang+"]").prop("checked", true);
             });
 
             // Exporting
@@ -109,11 +119,13 @@
                 var $button = $(this);
 
                 // Collect information
-                var language = Ayamel.utils.downgradeLangCode(this.dataset.language);
-                var title = Ayamel.utils.getLangName(this.dataset.language) + " words from Ayamel";
-                var words = $(".exportCheckbox:checked[data-language=" + this.dataset.language + "]").toArray().map(function (e) {
+                var srcLang = Ayamel.utils.downgradeLangCode(this.dataset.srcLang);
+                var destLang = Ayamel.utils.downgradeLangCode(this.dataset.destLang);
+                var title = Ayamel.utils.getLangName(this.dataset.srcLang) + " words from Ayamel";
+                var words = $(".exportCheckbox:checked[data-src-lang="+this.dataset.srcLang+"][data-dest-lang="+this.dataset.destLang+"]").toArray().map(function (e) {
                     return e.dataset.text;
                 });
+
                 var translations = [];
                 var authCode = "";
 
@@ -127,8 +139,8 @@
                         var data = new FormData();
                         data.append("token", authCode);
                         data.append("title", title);
-                        data.append("lang_terms", language);
-                        data.append("lang_definitions", "en");
+                        data.append("lang_terms", srcLang);
+                        data.append("lang_definitions", destLang);
                         for (var i=0; i<words.length; i++) {
                             data.append("terms[]", words[i]);
                             data.append("definitions[]", translations[i]);
@@ -165,7 +177,7 @@
                 // Translate all the words
                 Promise.all(words.map(function(word){
                     return new Promise(function(resolve){
-                        translate(language, word, function(translationResults) {
+                        translate(srcLang, destLang, word, function(translationResults) {
                             resolve(translationResults.translations.join(", "));
                         });
                     });

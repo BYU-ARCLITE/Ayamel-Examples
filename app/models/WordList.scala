@@ -14,7 +14,7 @@ import play.api.Play.current
  * Time: 1:56 PM
  * To change this template use File | Settings | File Templates.
  */
-case class WordListEntry(id: Pk[Long], word: String, language: String, userId: Long) extends SQLSavable with SQLDeletable {
+case class WordListEntry(id: Pk[Long], word: String, srcLang: String, destLang: String, userId: Long) extends SQLSavable with SQLDeletable {
 
   /**
    * Saves the word list entry to the DB
@@ -22,10 +22,10 @@ case class WordListEntry(id: Pk[Long], word: String, language: String, userId: L
    */
   def save: WordListEntry = {
     if (id.isDefined) {
-      update(WordListEntry.tableName, 'id -> id, 'word -> word, 'language -> language, 'userId -> userId)
+      update(WordListEntry.tableName, 'id -> id, 'word -> word, 'srcLang -> srcLang, 'destLang -> destLang, 'userId -> userId)
       this
     } else {
-      val id = insert(WordListEntry.tableName, 'word -> word, 'language -> language, 'userId -> userId)
+      val id = insert(WordListEntry.tableName, 'word -> word, 'srcLang -> srcLang, 'destLang -> destLang, 'userId -> userId)
       this.copy(id)
     }
   }
@@ -45,9 +45,10 @@ object WordListEntry extends SQLSelectable[WordListEntry] {
   val simple = {
     get[Pk[Long]](tableName + ".id") ~
       get[String](tableName + ".word") ~
-      get[String](tableName + ".language") ~
+      get[String](tableName + ".srcLang") ~
+      get[String](tableName + ".destLang") ~
       get[Long](tableName + ".userId") map {
-      case id ~ word ~ language ~ userId => WordListEntry(id, word, language, userId)
+      case id ~ word ~ srcLang ~ destLang ~ userId => WordListEntry(id, word, srcLang, destLang, userId)
     }
   }
 

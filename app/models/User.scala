@@ -159,7 +159,7 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
     Notification(NotAssigned, this.id.get, message).save
   }
 
-  def addWord(word: String, language: String): WordListEntry = WordListEntry(NotAssigned, word, language, id.get).save
+  def addWord(word: String, srcLang: String, destLang: String): WordListEntry = WordListEntry(NotAssigned, word, srcLang, destLang, id.get).save
 
   /**
    * Moves user ownership and enrollment from the provided user to the current user

@@ -7,11 +7,19 @@ import dataAccess.Quizlet
 import scala.concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
 import models.WordListEntry
+import java.text.Normalizer
 
 /**
  * Controller dealing with word lists
  */
 object WordLists extends Controller {
+
+  /*
+   * Recognize and fix certain diacritics that can cause issues in sql
+   */
+  def normalize(str: String) = {
+    Normalizer.normalize(str, Normalizer.Form.NFC)
+  }
 
   /**
    * Adds a word (or text) to a word list. For AJAX calls
@@ -19,7 +27,7 @@ object WordLists extends Controller {
   def add = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
-        user.addWord(request.body("word")(0), request.body("language")(0))
+        user.addWord(normalize(request.body("word")(0)), request.body("srcLang")(0), request.body("destLang")(0))
         Ok
   }
 
@@ -52,7 +60,7 @@ object WordLists extends Controller {
    */
   val tuples = List("<b>" -> "*", "</b>" -> "*", "<br>" -> "\\\n", "<i>" -> "", "</i>" -> "")
   def clean(str: String) = tuples.foldLeft( str )( (s,t) => s.replaceAll(t._1,t._2) )
-  
+
   /**
    * Exports the word list to quizlet
    */
