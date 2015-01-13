@@ -346,7 +346,7 @@ $(function() {
                     $("#loadTrackModal").modal("hide");
                     this.set({selectOpen: false});
 
-                    EditorWidgets.LocalFile(data.loadSource,/.*\.(vtt|srt|ass|ttml)/,function(fileObj){
+                    EditorWidgets.LocalFile(data.loadSource,/.*\.(vtt|srt|ass|ttml|sub|sbv|lrc|stl)/,function(fileObj){
                         //If the label is omitted, it will be filled in with the file name stripped of extension
                         //That's easier than doing the stripping here, so leave out that parameter unless we can
                         //fill it with user input in the future
