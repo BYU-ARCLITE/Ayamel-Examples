@@ -200,22 +200,22 @@ $(function() {
 
     //Save Tracks
     var saveTrackData = (function(){
-        var ractive, datalist, resolver, failer, availableTracks=[], stracks=[];
+        var ractive, datalist, resolver, failer, saver,
+            availableTracks=[], stracks=[];
         ractive = new Dialog({
             el: document.getElementById('saveTrackModal'),
             data: {
                 dialogTitle: "Save Tracks",
-				tracks: availableTracks,
+                tracks: availableTracks,
                 selectedTracks: stracks,
-				modalId: 'saveTrackModal',
+                modalId: 'saveTrackModal',
                 buttons: [{event:"save",label:"Save"}]
             },
             partials:{ dialogBody: document.getElementById('saveTrackTemplate').textContent },
-			components:{ superselect: EditorWidgets.SuperSelect },
+            components:{ superselect: EditorWidgets.SuperSelect },
             actions: {
                 save: function(event){
-                    var saver,
-                        data = this.data,
+                    var data = this.data,
                         tracks = stracks;
 
                     $("#saveTrackModal").modal("hide");
@@ -232,87 +232,94 @@ $(function() {
                         case 'saver': return function(listp){ return listp.then(saver); };
                         }
                     }));
-
-                    if(timeline.saveLocation === "server") {
-                        saver = function(exportedTracks){
-                            var savep = Promise.all(exportedTracks.map(function(fObj){
-                                var data = new FormData(),
-                                    textTrack = fObj.track;
-                                data.append("file", new Blob([fObj.data],{type:fObj.mime}), fObj.name);
-                                data.append("label", textTrack.label);
-                                data.append("language", textTrack.language);
-                                data.append("kind", textTrack.kind);
-                                data.append("resourceId", videoPlayer.textTrackResources.has(textTrack)?
-                                                          videoPlayer.textTrackResources.get(textTrack).id
-                                                          :"");
-                                data.append("contentId", content.id);
-                                return Promise.resolve($.ajax({
-                                    url: "/captionaider/save?course=" + courseId,
-                                    data: data,
-                                    cache: false,
-                                    contentType: false,
-                                    processData: false,
-                                    type: "post",
-                                    dataType: "text"
-                                })).then(function(data){
-                                    //We really need some way to update cached resources as well as just retrieving newly created ones
-                                    //That might allow us to save a roundtrip by having this ajax call return the complete updated resource
-                                    if(!videoPlayer.textTrackResources.has(textTrack)){
-                                        ResourceLibrary.load(data).then(function(resource){
-                                            videoPlayer.textTrackResources.set(textTrack, resource);
-                                        });
-                                    }
-                                    return textTrack.label;
-                                },function(error){
-                                    alert("Error occurred while saving "+textTrack.label);
-                                });
-                            }));
-                            savep.then(function(){
-                                alert("Saved Successfully");
-                                //Scott bandaid to fix the tracks being saved.
-                                //There is absolutely no logical reason why this should work,
-                                //but apparently it does.
-                                //window.location.reload(true);
-                            });
-                            return savep;
-                        };
-                    } else {
-                        // Use one of the editor widget saving mechanisms
-                        saver = function(exportedTracks){
-                            var savep = new Promise(function(resolve, reject){
-                                EditorWidgets.Save(
-                                    exportedTracks, timeline.saveLocation,
-                                    function(){
-                                        resolve(exportedTracks.map(function(fObj){ return fObj.track.label; }));
-                                    },
-                                    function(){
-                                        alert("Error Saving; please try again.");
-                                        reject(new Error("Error saving."));
-                                    }
-                                );
-                            });
-                            return savep;
-                        };
-                    }
                 }
             }
         });
         // Saving modal opening
-        $("#saveTrackModal").on("show", function () {
+        $("#saveTrackModal").on("show", function(){
 
-			// We do this because ractive can't seem to update correctly with partials
+            // We do this because ractive can't seem to update correctly with partials
             // even when we use ractive.set
             while(availableTracks.length > 0){ availableTracks.pop(); }
             while(stracks.length > 0){ stracks.pop(); }
 
             // Because of the issue noted above, we do not use filter either
-            [].forEach.call(timeline.trackNames, function(track){
-				if (timeline.commandStack.isFileSaved(track, timeline.saveLocation)) return;
+            timeline.trackNames.forEach(function(track){
+                if(timeline.commandStack.isFileSaved(track, timeline.saveLocation)){ return; }
                 availableTracks.push({value:track,text:track});
             });
         });
 
+        function serverSaver(exportedTracks){
+            var savep = Promise.all(exportedTracks.map(function(fObj){
+                var data = new FormData(),
+                    textTrack = fObj.track;
+                data.append("file", new Blob([fObj.data],{type:fObj.mime}), fObj.name);
+                data.append("label", textTrack.label);
+                data.append("language", textTrack.language);
+                data.append("kind", textTrack.kind);
+                data.append("resourceId", videoPlayer.textTrackResources.has(textTrack)?
+                                          videoPlayer.textTrackResources.get(textTrack).id
+                                          :"");
+                data.append("contentId", content.id);
+                return Promise.resolve($.ajax({
+                    url: "/captionaider/save?course=" + courseId,
+                    data: data,
+                    cache: false,
+                    contentType: false,
+                    processData: false,
+                    type: "post",
+                    dataType: "text"
+                })).then(function(data){
+                    //We really need some way to update cached resources as well as just retrieving newly created ones
+                    //That might allow us to save a roundtrip by having this ajax call return the complete updated resource
+                    if(!videoPlayer.textTrackResources.has(textTrack)){
+                        ResourceLibrary.load(data).then(function(resource){
+                            videoPlayer.textTrackResources.set(textTrack, resource);
+                        });
+                    }
+                    return textTrack.label;
+                },function(error){
+                    alert("Error occurred while saving "+textTrack.label);
+                });
+            }));
+            savep.then(function(){
+                alert("Saved Successfully");
+            });
+            return savep;
+        }
+
+        function widgetSaver(exportedTracks){
+            var savep = new Promise(function(resolve, reject){
+                EditorWidgets.Save(
+                    exportedTracks, timeline.saveLocation,
+                    function(){
+                        resolve(exportedTracks.map(function(fObj){ return fObj.track.label; }));
+                    },
+                    function(){
+                        alert("Error Saving; please try again.");
+                        reject(new Error("Error saving."));
+                    }
+                );
+            });
+            return savep;
+        }
+
         return function(dl){
+            var savableTracks = timeline.trackNames.filter(function(track){
+                return !timeline.commandStack.isFileSaved(track, timeline.saveLocation);
+            });
+
+            saver = (timeline.saveLocation === "server")?serverSaver:widgetSaver;
+            if(savableTracks.length < 2){
+                return Promise.resolve(dl.map(function(key){
+                    switch(key){
+                    case 'tidlist': return savableTracks;
+                    case 'location': return timeline.saveLocation;
+                    case 'saver': return function(listp){ return listp.then(saver); };
+                    }
+                }));
+            }
             $('#saveTrackModal').modal('show');
             datalist = dl;
             return new Promise(function(resolve, reject){
