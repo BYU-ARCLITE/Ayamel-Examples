@@ -49,7 +49,6 @@ $(function() {
     </div>';
 
     Ractive.partials.trackSelect = '<div class="control-group">\
-        <label class="control-label">Show Track</label>\
         <div class="controls">\
                 <superselect icon="icon-laptop" text="Select Track" selection="{{selectedTracks}}" button="left" open="{{selectOpen}}" multiple="true" options="{{tracks}}" modalId="{{modalId}}">\
         </div>\
