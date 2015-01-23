@@ -11,7 +11,7 @@ $(function() {
     function loadManifest(type, callback) {
         // will create the new manifest every time the annoatations editor is loaded
         var manifest = new AnnotationManifest(type, {});
-        manifest.language = "eng";
+        manifest.language = language;
         callback({
             manifest: manifest,
             resource: {},
@@ -38,6 +38,8 @@ $(function() {
         return {value: code, text: Ayamel.utils.getLangName(code)};
     }).sort(function(a,b){ return a.text.localeCompare(b.text); });
 
+    var language = !!content.language ? content.languages.iso639_3[0] : "eng";
+
     var ractive = new EditorWidgets.SuperSelect({
         el: "langLocation",
         data:{
@@ -48,16 +50,12 @@ $(function() {
             button: 'left',
             modalId: 'metadataModal',
             multiple: false,
-            options: langList,
-            defaultValue: {value:'zxx',text:'No Linguistic Content'}
+            options: langList
         }
     });
 
     // First load the annotations
     loadManifest(typeMap[content.contentType], function(data) {
-        // Load metadata from the resource
-        var title = !!content.name ? content.name : "Untitled";
-        var language = !!content.language ? content.languages.iso639_3[0] : "eng";
 
         // Then create the popup editor
         new AnnotationPopupEditor(function (popupEditor) {
@@ -70,7 +68,8 @@ $(function() {
                     content: content,
                     manifest: data.manifest,
                     popupEditor: popupEditor,
-                    language: language
+                    language: language,
+                    ractive: ractive
                 });
             }
             if (typeMap[content.contentType] === "image") {
@@ -86,7 +85,7 @@ $(function() {
             var saveButton = document.getElementById("saveAnnotations");
             var fileName = "";
             document.getElementById("filename").addEventListener('keyup', function() {
-                if (this.value.toString().trim() == "") {
+                if (this.value.toString().trim() === "") {
                     saveButton.disabled = true;
                 }
                 else {
@@ -103,27 +102,29 @@ $(function() {
                 textEditor.emptyManifest();
             }, false);
 
-            document.getElementById("refreshTranscript") .addEventListener('click', function() {
-                textEditor.refreshTranscript();
-            }, false);
-
             // Setup the navbar buttons
             document.getElementById("saveMetadataButton").addEventListener('click', function(){
-                title = document.getElementById("title").value;
-                var filename = document.getElementById("filename");
-                filename.value = title;
+                var title = document.getElementById("title").value;
+                var filenameEl = document.getElementById("filename");
+                filenameEl.value = title;
                 fileName = title;
                 textEditor.language = ractive.data.selection[0];
                 if (filename.value.toString().trim() != "")
                     saveButton.disabled = false;
                 $("#metadataModal").modal("hide");
+                textEditor.refreshTranscript();
             }, false);
 
             saveButton.addEventListener('click', function(){
                 var $this = $(this).hide();
                 $("#spinner").show();
                 data.resource.id = document.getElementById("save").value;
-
+                if (filename.trim() === "") {
+                    alert("You haven't entered a filename.");
+                    $("#spinner").hide();
+                    $this.show();
+                    return;
+                }
                 var formData = new FormData();
                 formData.append("title", fileName);
                 formData.append("filename", fileName);

@@ -24,16 +24,18 @@ var AnnotationTextEditor = (function(){
         });
     }
 
-    /* args: manifest, content, holder, popupEditor */
+    /* args: manifest, content, holder, popupEditor, language, ractive */
     function AnnotationTextEditor(args) {
-        
         /*
          * Text annotation
          */
         var transcriptPlayer;
-        var language = !!content.language ? content.languages.iso639_3[0] : "eng";
+        var language = "";
+        var activeAnnotation = null;
+        var that = this;
         args.manifest = {};
         args.manifest[language] = {};
+        
         var annotator = new Ayamel.Annotator({
                 classList:["annotation"],
                 handler: function(data, lang, text, index){
@@ -44,13 +46,15 @@ var AnnotationTextEditor = (function(){
                 }
             }, args.manifest);
 
-        var activeAnnotation = null;
         var renderAnnotations = function(){};
 
         function checkIfAnnotated(text){
             return !!args.manifest[language].hasOwnProperty(text);
         }
 
+        /*
+         * Launches the Annotation popup Editor if a word has been selected
+         */
         function setupTextAnnotations(element) {
             element.addEventListener('mouseup', function(event){
                 var text = window.getSelection().toString().trim();
@@ -73,9 +77,9 @@ var AnnotationTextEditor = (function(){
             }, false);
         }
 
-        // temporary fix to bind the handler to the annotations
-        // need make annotator.js actually bind the elements with the provided handler
-        // and make sure it doesn't get lost when the track is updated
+        /* temporary fix to bind the handler to the annotations
+           need make annotator.js actually bind the elements with the provided handler
+           and make sure it doesn't get lost when the track is updated */
         function setHandler() {
             var annotatedWords = document.querySelectorAll(".annotation");
             [].forEach.call(annotatedWords, function(obj){
@@ -116,6 +120,19 @@ var AnnotationTextEditor = (function(){
                         setupTextAnnotations($cue);
                     } */
                 });
+                if (tracks.length > 0) {
+                    // Sets the annotation language to the language of the first track.
+                    args.ractive.data.selection.push(tracks[0].language);
+                    that.language = tracks[0].language;
+                }
+                if (tracks.length > 1) {
+                    var temp = tracks[0].language;
+                    for (var i = 1; i < tracks.length; ++i) {
+                        if (tracks[i].language !== temp) {
+                            alert("Choose which language you wish to annotate.");
+                        }
+                    }
+                }
             });
             renderAnnotations = function() {
                 loadTracks(args.content, function(tracks) {
