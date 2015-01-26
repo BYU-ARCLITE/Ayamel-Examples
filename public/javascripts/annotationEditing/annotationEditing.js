@@ -84,7 +84,8 @@ $(function() {
 
             var saveButton = document.getElementById("saveAnnotations");
             var fileName = "";
-            document.getElementById("filename").addEventListener('keyup', function() {
+            var fileNameEl = document.getElementById("filename");
+            fileNameEl.addEventListener('keyup', function() {
                 if (this.value.toString().trim() === "") {
                     saveButton.disabled = true;
                 }
@@ -105,11 +106,10 @@ $(function() {
             // Setup the navbar buttons
             document.getElementById("saveMetadataButton").addEventListener('click', function(){
                 var title = document.getElementById("title").value;
-                var filenameEl = document.getElementById("filename");
-                filenameEl.value = title;
+                fileNameEl.value = title;
                 fileName = title;
                 textEditor.language = ractive.data.selection[0];
-                if (filename.value.toString().trim() != "")
+                if (fileNameEl.value.toString().trim() != "")
                     saveButton.disabled = false;
                 $("#metadataModal").modal("hide");
                 textEditor.refreshTranscript();
@@ -119,7 +119,7 @@ $(function() {
                 var $this = $(this).hide();
                 $("#spinner").show();
                 data.resource.id = document.getElementById("save").value;
-                if (filename.trim() === "") {
+                if (fileName.trim() === "") {
                     alert("You haven't entered a filename.");
                     $("#spinner").hide();
                     $this.show();
