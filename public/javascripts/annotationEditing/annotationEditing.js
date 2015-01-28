@@ -9,7 +9,7 @@
 $(function() {
 
     function loadManifest(type, callback) {
-        // will create the new manifest every time the annoatations editor is loaded
+        // will create the new manifest every time the annoatation editor is loaded
         var manifest = new AnnotationManifest(type, {});
         manifest.language = language;
         callback({
@@ -82,9 +82,17 @@ $(function() {
                 });
             }
 
+            /*
+             * Show the Annotation Filename and Language Selection
+             */
+            $("#metadataModal").modal("show"); 
+
             var saveButton = document.getElementById("saveAnnotations");
             var fileName = "";
             var fileNameEl = document.getElementById("filename");
+           // var title = 
+            document.getElementById("title").value = !!content.name ? content.name + " - Annotations" : "";
+
             fileNameEl.addEventListener('keyup', function() {
                 if (this.value.toString().trim() === "") {
                     saveButton.disabled = true;
@@ -95,6 +103,9 @@ $(function() {
                 }
             }, false);
 
+            /*
+             * Setup the navbar buttons
+             */
             document.addEventListener("editAnnotations", function(e) {
                 textEditor.editAnn(e.detail.resourceId, content.id);
             });
@@ -103,12 +114,11 @@ $(function() {
                 textEditor.emptyManifest();
             }, false);
 
-            // Setup the navbar buttons
             document.getElementById("saveMetadataButton").addEventListener('click', function(){
                 var title = document.getElementById("title").value;
                 fileNameEl.value = title;
                 fileName = title;
-                textEditor.language = ractive.data.selection[0];
+                language = textEditor.language = ractive.data.selection[0];
                 if (fileNameEl.value.toString().trim() != "")
                     saveButton.disabled = false;
                 $("#metadataModal").modal("hide");
@@ -125,6 +135,12 @@ $(function() {
                     $this.show();
                     return;
                 }
+                /*
+                 *  Create and send post request. The Following lines remove the following characters from the string fileName: * \ / < >
+                 */
+                var re = /[\*\\\/\<\>][\ \t\n]*/g;
+                fileName = fileName.replace(re, '');
+                console.log(fileName);
                 var formData = new FormData();
                 formData.append("title", fileName);
                 formData.append("filename", fileName);

@@ -125,14 +125,6 @@ var AnnotationTextEditor = (function(){
                     args.ractive.data.selection.push(tracks[0].language);
                     that.language = tracks[0].language;
                 }
-                if (tracks.length > 1) {
-                    var temp = tracks[0].language;
-                    for (var i = 1; i < tracks.length; ++i) {
-                        if (tracks[i].language !== temp) {
-                            alert("Choose which language you wish to annotate.");
-                        }
-                    }
-                }
             });
             renderAnnotations = function() {
                 loadTracks(args.content, function(tracks) {
