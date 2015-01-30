@@ -30,11 +30,9 @@ var AnnotationTextEditor = (function(){
          * Text annotation
          */
         var transcriptPlayer;
-        var language = "";
+        var language = args.language;
         var activeAnnotation = null;
         var that = this;
-        args.manifest = {};
-        args.manifest[language] = {};
         
         var annotator = new Ayamel.Annotator({
                 classList:["annotation"],
@@ -122,8 +120,14 @@ var AnnotationTextEditor = (function(){
                 });
                 if (tracks.length > 0) {
                     // Sets the annotation language to the language of the first track.
-                    args.ractive.data.selection.push(tracks[0].language);
-                    that.language = tracks[0].language;
+                    if (tracks[0].language !== "zxx") {
+                        args.ractive.data.selection.push(tracks[0].language);
+                        that.language = tracks[0].language;
+                    }
+                    else {
+                        args.ractive.data.selection.push("eng");
+                        that.language = "eng";
+                    }
                 }
             });
             renderAnnotations = function() {
