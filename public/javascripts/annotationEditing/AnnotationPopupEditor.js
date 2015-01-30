@@ -114,7 +114,6 @@ var AnnotationPopupEditor = (function(){
          */
 
         function updateAnnotation() {
-            //annotation.annotations[annSize].regex = new RegExp(ractive.get('word'));
             currAnn = ractive.get('word');
             annotation[currAnn] = {
                 "global" : {
@@ -142,7 +141,7 @@ var AnnotationPopupEditor = (function(){
         }
 
         function updateForm() {
-            // This is my implementation
+            
             if (annotation instanceof ImageAnnotation) {
                 // Hide the word editor
                 ractive.set('showWord', false);

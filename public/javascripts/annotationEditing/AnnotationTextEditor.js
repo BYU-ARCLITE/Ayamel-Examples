@@ -29,6 +29,7 @@ var AnnotationTextEditor = (function(){
         /*
          * Text annotation
          */
+        var manifest = new AnnotationManifest("text", {});
         var transcriptPlayer;
         var language = args.language;
         var activeAnnotation = null;
@@ -42,12 +43,12 @@ var AnnotationTextEditor = (function(){
                         detail: {data: data, lang: lang, text: text, index: index}
                     }));
                 }
-            }, args.manifest);
+            }, manifest);
 
         var renderAnnotations = function(){};
 
         function checkIfAnnotated(text){
-            return !!args.manifest[language].hasOwnProperty(text);
+            return !!manifest[language].hasOwnProperty(text);
         }
 
         /*
@@ -67,9 +68,9 @@ var AnnotationTextEditor = (function(){
                         }
                     };
                     if (!checkIfAnnotated(text)) {
-                        args.manifest[language][text] = newAnnotation;
+                        manifest[language][text] = newAnnotation;
                     }
-                    args.popupEditor.annotation = {"manifest" : args.manifest[language], "word" : text};
+                    args.popupEditor.annotation = {"manifest" : manifest[language], "word" : text};
                     args.popupEditor.show();
                 }
             }, false);
@@ -83,7 +84,7 @@ var AnnotationTextEditor = (function(){
             [].forEach.call(annotatedWords, function(obj){
                 obj.addEventListener('click', function() {
                     activeAnnotation = this.innerHTML;
-                    args.popupEditor.annotation = {"manifest" : args.manifest[language], "word" : this.innerHTML};
+                    args.popupEditor.annotation = {"manifest" : manifest[language], "word" : this.innerHTML};
                     args.popupEditor.show();
                 });
             });
@@ -137,7 +138,7 @@ var AnnotationTextEditor = (function(){
                         captionTracks: tracks,
                         sync: false
                     });
-                    annotator.annotations = args.manifest;
+                    annotator.annotations = manifest;
                     [].forEach.call(tracks, function(track) {
                         [].forEach.call(track.cues, function(cue) {
                             var t = annotator.Text(cue.text);
@@ -164,7 +165,7 @@ var AnnotationTextEditor = (function(){
             renderAnnotations();
         });
         args.popupEditor.on("delete", function() {
-            delete args.manifest[language][activeAnnotation];
+            delete manifest[language][activeAnnotation];
             renderAnnotations();
 
         });
@@ -172,14 +173,21 @@ var AnnotationTextEditor = (function(){
 
         Object.defineProperties(this, {
             getAnnotations: {
-                value: function(){ return args.manifest; }
+                value: function(){ return manifest; }
             },
             language: {
                 set: function(newLang) {
-                    var prevLang = Object.keys(args.manifest)[0];
-                    args.manifest[newLang] = args.manifest[prevLang];
-                    delete args.manifest[prevLang];
+                    if (newLang === "zxx")
+                        return;
+
                     language = newLang.trim();
+                    var prevLang = Object.keys(manifest)[0];
+                    if (prevLang === undefined || newLang === prevLang) {
+                        manifest[newLang] = !!manifest[prevLang] ? manifest[prevLang] : {};
+                    } else {
+                        manifest[newLang] = manifest[prevLang];
+                        delete manifest[prevLang];
+                    }
                 },
                 get: function() {
                     return language;
@@ -200,7 +208,7 @@ var AnnotationTextEditor = (function(){
                             var lang = arr[0];
                             Object.keys(lang[annLang]).forEach(function (key) {
                                 // potential problem: lose the annotation data that they recently created.
-                                args.manifest[language][key] = lang[annLang][key];
+                                manifest[language][key] = lang[annLang][key];
                             });
                             renderAnnotations();
                         });
@@ -210,8 +218,8 @@ var AnnotationTextEditor = (function(){
             },
             emptyManifest: {
                 value: function() {
-                    args.manifest = {};
-                    args.manifest[language] = {};
+                    manifest = {};
+                    manifest[language] = {};
                     renderAnnotations();
                 }
             },

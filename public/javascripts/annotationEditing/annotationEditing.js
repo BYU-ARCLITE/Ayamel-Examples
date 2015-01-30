@@ -11,7 +11,6 @@ $(function() {
     function loadManifest(type, callback) {
         // will create the new manifest every time the annoatation editor is loaded
         var manifest = new AnnotationManifest(type, {});
-        manifest.language = language;
         callback({
             manifest: manifest,
             resource: {},
@@ -66,7 +65,6 @@ $(function() {
                 var textEditor = new AnnotationTextEditor({
                     holder: document.getElementById("annotationEditor"),
                     content: content,
-                    manifest: data.manifest,
                     popupEditor: popupEditor,
                     language: language,
                     ractive: ractive
@@ -85,7 +83,7 @@ $(function() {
             /*
              * Show the Annotation Filename and Language Selection
              */
-            $("#metadataModal").modal("show"); 
+            $("#metadataModal").modal("show");
 
             var saveButton = document.getElementById("saveAnnotations");
             var fileName = "";
@@ -118,7 +116,7 @@ $(function() {
                 var title = document.getElementById("title").value;
                 fileNameEl.value = title;
                 fileName = title;
-                language = textEditor.language = ractive.data.selection[0];
+                textEditor.language = language = ractive.data.selection[0];
                 if (fileNameEl.value.toString().trim() != "")
                     saveButton.disabled = false;
                 $("#metadataModal").modal("hide");
@@ -140,7 +138,6 @@ $(function() {
                  */
                 var re = /[\*\\\/\<\>][\ \t\n]*/g;
                 fileName = fileName.replace(re, '');
-                console.log(fileName);
                 var formData = new FormData();
                 formData.append("title", fileName);
                 formData.append("filename", fileName);
