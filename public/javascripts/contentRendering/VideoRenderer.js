@@ -205,20 +205,25 @@ var VideoRenderer = (function(){
     function setupVideoPlayer(args){
         var player,
             components = args.components || {
-            left: ["play", "lastCaption", "volume", "captions"],
+            left: ["play", "lastCaption", "volume", "captions", "annotations"],
             right: ["rate", "fullScreen", "timeCode"]
         };
         var captions = args.transcripts;
 
         if(!showCaptions(args.content)){
             ["left", "right"].forEach(function(side){
-                ["lastCaption", "captions"].forEach(function(control){
+                ["lastCaption", "captions", "annotations"].forEach(function(control){
                     var index = components[side].indexOf(control);
                     if(~index){ components[side].splice(index, 1); }
                 });
             });
             // Don't load any caption tracks if they're not enabled
             if (!showTranscript(args.content)) captions = null;
+        }else if(!showAnnotations(args.content)){
+            ["left", "right"].forEach(function(side){
+                var index = components[side].indexOf("annotations");
+                if(~index){ components[side].splice(index, 1); }
+            });
         }
 
         // Set the priority of players

@@ -44,54 +44,39 @@ var ContentRenderer = (function () {
         var annotationIds = args.resource.relations
             .filter(function(r){return r.type==="references";})
             .map(function(r){return r.subjectId;}).join(',');
-		return new Promise(function(resolve, reject){
-			if(annotationIds.length){
-				resolve($.ajax("/ajax/permissionChecker", {
-					type: "post",
-					data: {
-						courseId: args.courseId,
-						contentId: args.contentId,
-						permission: args.permission || "view",
-						documentType: "annotationDocument",
-						ids: annotationIds
-					}
-				}));
-			}else{
-				resolve([]);
-			}
-		}).then(function(data){
-			// Now turn those IDs into resources then into an annotation manifest
-			return Promise.all(data.map(function(id){
-				return ResourceLibrary.load(id).then(function(resource){
-					var url = resource.content.files[0].downloadUri,
-						idx = url.indexOf('?');
-					if(idx === -1){ url += "?"; }
-					else if(idx !== url.length-1){ url += '&nocache='; }
-					url += Date.now().toString(36);
-					return AnnotationLoader.loadURL(url, resource.languages.iso639_3[0]).then(function(manifest){
-						//if(manifest){ manifest.resourceId = resource.id; } //this line breaks stuff
-						return manifest;
-					}, function(err){ return null; });
-				});
-			})).then(function(manifests){
-				if(manifests.length === 0){ return null; }
-				var manifest = {};
-				manifests.forEach(function(mobj){
-					Object.keys(mobj).forEach(function(lang){
-						var mlang, langobj = mobj[lang];
-						if(manifest.hasOwnProperty(lang)){
-							mlang = manifest[lang];
-							Object.keys(langobj).forEach(function(word){
-								mlang[word] = langobj[word];
-							});
-						}else{
-							manifest[lang] = langobj;
-						}
-					});
-				});
-				return manifest;
-			});
-		});
+        return new Promise(function(resolve, reject){
+            if(annotationIds.length){
+                resolve($.ajax("/ajax/permissionChecker", {
+                    type: "post",
+                    data: {
+                        courseId: args.courseId,
+                        contentId: args.contentId,
+                        permission: args.permission || "view",
+                        documentType: "annotationDocument",
+                        ids: annotationIds
+                    }
+                }));
+            }else{
+                resolve([]);
+            }
+        }).then(function(data){
+            // Now turn those IDs into resources then into an annotation list
+            return Promise.all(data.map(function(id){
+                return ResourceLibrary.load(id).then(function(resource){
+                    var url = resource.content.files[0].downloadUri,
+                        idx = url.indexOf('?'),
+                        lang = resource.languages.iso639_3[0];
+                    if(idx === -1){ url += "?"; }
+                    else if(idx !== url.length-1){ url += '&nocache='; }
+                    url += Date.now().toString(36);
+                    return AnnotationLoader.loadURL(url, lang).then(function(manifest){
+                        return new Ayamel.Annotator.AnnSet(resource.title, lang, manifest);
+                    }, function(err){ return null; });
+                });
+            })).then(function(list){
+                return list.filter(function(m){ return m !== null; });
+            });
+        });
     }
 
     function renderContent(args) {
