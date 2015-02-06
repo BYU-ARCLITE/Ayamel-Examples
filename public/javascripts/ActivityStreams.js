@@ -11,7 +11,7 @@ var ActivityStreams = (function() {
     var pageAction = "unknown";
     var pageId = 0;
 
-	//args: generatorType, generatorId, generatorItemRef, objectType, objectId, objectItemRef, verb
+    //args: generatorType, generatorId, generatorItemRef, objectType, objectId, objectItemRef, verb
     function save(args) {
         $.ajax("/ajax/activity", {
             type: "post",
@@ -36,7 +36,6 @@ var ActivityStreams = (function() {
             pageload: function() {
                 save({verb: "pageload"});
             },
-
             playClick: function(time) {
                 save({
                     verb: "play",
@@ -44,7 +43,6 @@ var ActivityStreams = (function() {
                     generatorItemRef: time
                 });
             },
-
             pauseClick: function(time) {
                 save({
                     verb: "pause",
@@ -52,7 +50,44 @@ var ActivityStreams = (function() {
                     generatorItemRef: time
                 });
             },
-
+            ended: function(time) {
+                save({
+                    verb: "ended",
+                    generatorType: "media player",
+                    generatorItemRef: time
+                });
+            },
+            rateChange: function(time, rate) {
+                save({
+                    verb: "playrate",
+                    generatorType: "media player",
+                    generatorItemRef: time,
+                    objectItemRef: rate
+                });
+            },
+            volumeChange: function(time, volume) {
+                save({
+                    verb: "volume",
+                    generatorType: "media player",
+                    generatorItemRef: time,
+                    objectItemRef: volume
+                });
+            },
+            timeJump: function(oldtime, newtime){
+                save({
+                    verb: "jump",
+                    generatorType: "media player",
+                    generatorItemRef: oldtime,
+                    objectItemRef: newtime
+                });
+            }, 
+            repeatCaption: function(time){
+                save({
+                    verb: "repeat",
+                    generatorType: "media player",
+                    generatorItemRef: time
+                });
+            },  
             transcriptCueClick: function(captionTrackId, cueNumber) {
                 save({
                     verb: "cueClick",
@@ -61,7 +96,6 @@ var ActivityStreams = (function() {
                     generatorItemRef: cueNumber
                 });
             },
-
             captionTranslation: function(captionTrackId, cueNumber, text) {
                 save({
                     verb: "translate",
@@ -71,7 +105,6 @@ var ActivityStreams = (function() {
                     objectItemRef: text
                 });
             },
-
             transcriptionTranslation: function(captionTrackId, cueNumber, text) {
                 save({
                     verb: "translate",
@@ -81,13 +114,26 @@ var ActivityStreams = (function() {
                     objectItemRef: text
                 });
             },
-
             viewTextAnnotation: function(annotationDocId, text) {
                 save({
                     verb: "view annotation",
                     objectType: "annotation",
                     objectId: annotationDocId,
                     objectItemRef: text
+                });
+            },
+            enterFullscreen: function(time){
+                save({
+                    verb: "enter fullscreen",
+                    generatorType: "media player",
+                    generatorItemRef: time
+                });
+            },
+            exitFullscreen: function(time){
+                save({
+                    verb: "exit fullscreen",
+                    generatorType: "media player",
+                    generatorItemRef: time
                 });
             }
         },

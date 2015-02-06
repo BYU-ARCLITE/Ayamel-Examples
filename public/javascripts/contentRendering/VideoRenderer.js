@@ -321,6 +321,34 @@ var VideoRenderer = (function(){
         player.addEventListener("pause", function(){
             ActivityStreams.predefined.pauseClick("" + player.currentTime);
         });
+        player.addEventListener("ended", function(){
+            ActivityStreams.predefined.ended("" + player.currentTime);
+        });
+        player.addEventListener("timejump", function(e){
+            ActivityStreams.predefined.timeJump(""+e.detail.oldtime, ""+e.detail.newtime);
+        });
+        player.addEventListener("captionJump", function(){
+            ActivityStreams.predefined.repeatCaption("" + player.currentTime);
+        });
+        player.addEventListener("ratechange", function(){
+            ActivityStreams.predefined.rateChange(""+player.currentTime, ""+player.playbackRate);
+        });
+        player.addEventListener("volumechange", function(){
+            if(player.muted){ return; }
+            ActivityStreams.predefined.volumeChange(""+player.currentTime, ""+player.volume);
+        });
+        player.addEventListener("mute", function(){
+            ActivityStreams.predefined.volumeChange(""+player.currentTime, "0");
+        });
+        player.addEventListener("unmute", function(){
+            ActivityStreams.predefined.volumeChange(""+player.currentTime, player.volume);
+        });
+        player.addEventListener("enterfullscreen", function(){
+            ActivityStreams.predefined.enterFullscreen(""+player.currentTime);
+        });
+        player.addEventListener("exitfullscreen", function(){
+            ActivityStreams.predefined.exitFullscreen(""+player.currentTime);
+        });
 
         return player;
     }
