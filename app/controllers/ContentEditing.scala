@@ -286,7 +286,7 @@ object ContentEditing extends Controller {
                             case None => redirect.flashing("error" -> "Could not generate thumbnail")
                           }
                         }
-                        case _ => redirect.flashing("error" -> "Cannot access raw video")
+                        case _ => redirect.flashing("error" -> "No video file found. Thumbnails cannot be generated from streams.")
                       }
                     }.getOrElse {
                       redirect.flashing("error" -> "No video file found")
