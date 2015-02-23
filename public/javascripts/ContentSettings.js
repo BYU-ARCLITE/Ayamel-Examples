@@ -42,6 +42,15 @@ var ContentSettings = (function() {
                     <button class="btn {{classes}}" on-click="click:{{name}}">{{label}}</button>\
                 </div>\
                 {{/type}}\
+                {{#(type == \'superselect\')}}\
+                    <div class="control-group">\
+                        <label class="control-label" for="language">{{label}}</label>\
+                        <div class="controls" id="targetLangLocation">\
+                            <input type="text" id="language" placeholder="Language">\
+                        </div>\
+                    </div>\
+                    {{include(context, content)}}\
+                {{/type}}\
             {{/include}}\
             {{^(controlsSettings[c].include(context, content))}}\
                 {{#(type == \'radio\')}}\
@@ -57,6 +66,9 @@ var ContentSettings = (function() {
                 {{#none}} <div class="controls"><i>{{none}}</i></div>{{/none}}\
                 {{/type}}\
                 {{#(type == \'button\')}}\
+                {{#none}}<span class="control-label"><i>{{none}}</i></span>{{/none}}\
+                {{/type}}\
+                {{#(type == \'superselect\')}}\
                 {{#none}}<span class="control-label"><i>{{none}}</i></span>{{/none}}\
                 {{/type}}\
             {{/include}}\
@@ -107,6 +119,19 @@ var ContentSettings = (function() {
             name: "allowDefinitions",
             none: "No tracks available",
             include: function(context, content){
+                return !!content.enableableCaptionTracks.length;
+            },
+            setting: function(context, content) {
+                return content.settings.allowDefinitions === "true";
+            },
+            items: function(){}
+        },
+        targetLanguages: {
+            type: "superselect",
+            label: "Target Languages:",
+            name: "targetLanguages",
+            none: "No tracks available",
+            include: function(context, content) {
                 return !!content.enableableCaptionTracks.length;
             },
             setting: function(context, content) {
@@ -225,6 +250,7 @@ var ContentSettings = (function() {
     var settings = {
         video: [
             predefined.allowDefinitions,
+            predefined.targetLanguages,
             predefined.showTranscripts,
             predefined.showCaptions,
             predefined.enabledCaptionTracks,
@@ -237,6 +263,7 @@ var ContentSettings = (function() {
         audio: [
             predefined.showCaptions,
             predefined.allowDefinitions,
+            predefined.targetLanguages,
             predefined.showAnnotations,
             predefined.showTranscripts,
             predefined.enabledCaptionTracks,
@@ -248,6 +275,7 @@ var ContentSettings = (function() {
         image: [
             predefined.showCaptions,
             predefined.allowDefinitions,
+            predefined.targetLanguages,
             predefined.showAnnotations,
             predefined.showTranscripts,
             predefined.enabledCaptionTracks,
@@ -258,6 +286,7 @@ var ContentSettings = (function() {
         ],
         text: [
             predefined.allowDefinitions,
+            predefined.targetLanguages,
             predefined.showAnnotations,
             predefined.enabledAnnotations,
             predefined.visibility,
@@ -266,7 +295,7 @@ var ContentSettings = (function() {
         ]
     };
 
-    function getPermittedResources(data,cb){
+    function getPermittedResources(data){
         if(data.ids.length){
             return Promise.resolve($.ajax("/ajax/permissionChecker", {
                 type: "post",
@@ -322,6 +351,15 @@ var ContentSettings = (function() {
         return control;
     }
 
+    function getTargetLanguages(contentId) {
+        return Promise.resolve($.ajax("/ajax/getTargetLanguages", {
+            type: "post",
+            data: { contentId: contentId }
+        })).then(function(data) {
+            return Promise.all(data);
+        });
+    }
+
     /* args: courseId, owner, userId, content, resource, holder, action */
     function ContentSettings(args) {
 
@@ -337,7 +375,7 @@ var ContentSettings = (function() {
 
         Promise.all([captionTracks,annotationDocs])
         .then(function(data){
-            var ractive, controls, controlsSettings;
+            var targetLanguages, ractive, controls, controlsSettings;
 
             args.content.enableableCaptionTracks = data[0];
             args.content.enableableAnnotationDocuments = data[1];
@@ -348,11 +386,35 @@ var ContentSettings = (function() {
                 return createControls(config, context, args.content);
             });
 
+            getTargetLanguages(content.id).then(function(codes) {
+
+                var langList = Object.keys(Ayamel.utils.p1map).map(function (p1) {
+                    var code = Ayamel.utils.p1map[p1];
+                    return {value: code, text: Ayamel.utils.getLangName(code)};
+                }).sort(function(a,b){ return a.text.localeCompare(b.text); });
+
+                targetLanguages = new EditorWidgets.SuperSelect({
+                    el: "targetLangLocation",
+                    data:{
+                        id: 'languages',
+                        selection: codes,
+                        icon: 'icon-globe',
+                        text: 'Select Language',
+                        button: 'left',
+                        modalId: 'configurationModal',
+                        multiple: true,
+                        options: langList,
+                        defaultValue: {value:"",text:"No Linguistic Content"}
+                    }
+                });
+            })
+
             ractive = new Ractive({
                 el: args.holder,
                 template: settingsTemplate,
                 data: {controls: controls, content: args.content, context: context, controlsSettings: controlsSettings}
             });
+
             ractive.on('click',function(evt, which){
                 evt.original.preventDefault();
                 if(which !== 'save'){ return; }
@@ -365,6 +427,7 @@ var ContentSettings = (function() {
                     if(control.type === 'button'){ return; }
                     var setting = ractive.get('controls['+index+'].setting'),
                         name = control.name;
+                    if(control.type === 'superselect'){ setting = targetLanguages.data.selection; }
                     (setting instanceof Array?setting:[setting]).forEach(function(value){
                         fd.append(name, ""+value);
                     });
@@ -383,5 +446,8 @@ var ContentSettings = (function() {
             });
         });
     }
+
+
+       
     return ContentSettings;
 })();

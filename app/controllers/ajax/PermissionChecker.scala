@@ -7,7 +7,7 @@ import models.Course
 import service.DocumentPermissionChecker
 import scala.concurrent.{ExecutionContext, Future}
 import ExecutionContext.Implicits.global
-import play.api.libs.json.JsArray
+import play.api.libs.json.{JsArray, Json, JsValue}
 
 /**
  * Controller for checker users' permissions pertaining to content
@@ -47,6 +47,21 @@ object PermissionChecker extends Controller {
               Ok(JsArray(resources.map(_ \ "id")))
             }
           }
-      }
+        }
   }
+
+  /**
+   * AJAX endpoint which checks which langauges the user is allowed to translate
+   * @param contentId The content Id
+   * @return JsArray of 3 letter Language codes of the permitted target languages
+   */
+  def getTargetLanguages = Authentication.authenticatedAction(parse.urlFormEncoded) {
+    implicit request =>
+      implicit user =>
+        ContentController.getContent(request.body("contentId")(0).toLong) { content =>
+          val targetLangs = content.getSetting("targetLanguages").filter(_!="")
+          Ok(Json.toJson(targetLangs))
+        }
+  } 
+
 }

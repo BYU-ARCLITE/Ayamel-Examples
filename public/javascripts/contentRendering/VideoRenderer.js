@@ -263,8 +263,11 @@ var VideoRenderer = (function(){
                         el = document.querySelector('#Transcript .transcriptContentHolder');
                         return availableHeight - usedSpace;
                     } else if (tabItem === 'Definitions'){
-                        usedSpace = document.getElementById(tabItem).firstChild.clientHeight;
-                        el = document.querySelector('#Definitions .definitionsContent');
+                        var defsPane = document.getElementById(tabItem).firstChild;
+                        if (defsPane !== null) {
+                            usedSpace = defsPane.clientHeight;
+                            el = document.querySelector('#Definitions .definitionsContent');
+                        } else { usedSpace = 0; }
                         return availableHeight - usedSpace;
                     } else if (tabItem === 'Annotations'){
                         el = document.getElementById(tabItem);
@@ -382,27 +385,49 @@ var VideoRenderer = (function(){
         return null;
     }
 
-    function setupDefinitionsPane(pane, player){
+    function getTargetLanguages(contentId){
+        return Promise.resolve($.ajax("/ajax/getTargetLanguages", {
+            type: "post",
+            data: { contentId: contentId }
+        })).then(function(data) {
+            return Promise.all(data);
+        });
+    }
+
+    function setupDefinitionsPane(pane, player, contentId){
         var selectHolder = document.createElement('div'),
             translationsHolder = document.createElement('div');
-        translationsHolder.className = "definitionsContent";
-        (new EditorWidgets.SuperSelect({
-            el: selectHolder,
-            data:{
-                id: 'transLang',
-                selection: ['eng'],
-                icon: 'icon-globe',
-                button: 'left',
-                text: 'Select Language',
-                multiple: false,
-                options: Object.keys(Ayamel.utils.p1map).map(function(p1){
+
+        getTargetLanguages(contentId).then(function(codes) {
+            var targetLanguages;
+            if (!!codes.length) {
+                // Fallback procedure when no languages have been selected
+                targetLanguages = codes.map(function(code) {
+                    return {value: code, text: Ayamel.utils.getLangName(code)};
+                }).sort(function(a,b){ return a.text.localeCompare(b.text); });
+            } else {
+                targetLanguages = Object.keys(Ayamel.utils.p1map).map(function(p1){
                     var code = Ayamel.utils.p1map[p1];
                     return {value: code, text: Ayamel.utils.getLangName(code)};
-                }).sort(function(a,b){ return a.text.localeCompare(b.text); })
+                }).sort(function(a,b){ return a.text.localeCompare(b.text); });
             }
-        })).observe('selection', function(newValue){ player.targetLang = newValue[0]; });
-        pane.appendChild(selectHolder);
-        pane.appendChild(translationsHolder);
+
+            translationsHolder.className = "definitionsContent";
+            (new EditorWidgets.SuperSelect({
+                el: selectHolder,
+                data:{
+                    id: 'transLang',
+                    selection: [],
+                    icon: 'icon-globe',
+                    button: 'left',
+                    text: 'Select Language',
+                    multiple: false,
+                    options: targetLanguages
+                }
+            })).observe('selection', function(newValue){ player.targetLang = newValue[0]; });
+            pane.appendChild(selectHolder);
+            pane.appendChild(translationsHolder);
+        })
     }
 
     return {
@@ -449,7 +474,7 @@ var VideoRenderer = (function(){
 
                 videoPlayer.addEventListener('loadtexttracks', function(event){
                     if(allowDefinitions(content)){ setupTranslator(videoPlayer, layout, videoPlayer.textTrackResources); }
-                    if(layout.Definitions){ setupDefinitionsPane(layout.Definitions, videoPlayer); }
+                    if(layout.Definitions){ setupDefinitionsPane(layout.Definitions, videoPlayer, content.id); }
                     if(transcripts && transcripts.length && showTranscript(content)){
                         transcriptPlayer = setupTranscripts(content, layout, event.detail.tracks);
                         videoPlayer.addEventListener("timeupdate", function(){
