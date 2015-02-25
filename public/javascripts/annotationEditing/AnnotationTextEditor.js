@@ -132,6 +132,7 @@ var AnnotationTextEditor = (function(){
                 }
             });
             renderAnnotations = function() {
+                var currTranscript = !!transcriptPlayer ? transcriptPlayer.activeTranscript : 0;
                 loadTracks(args.content, function(tracks) {
                     transcriptPlayer = new TranscriptPlayer({
                         holder: args.holder,
@@ -150,6 +151,7 @@ var AnnotationTextEditor = (function(){
                         });
                         transcriptPlayer.updateTrack(track);
                     });
+                    transcriptPlayer.activeTranscript = currTranscript;
                     // annotator.js getmod temp fix
                    setHandler();
                 });
