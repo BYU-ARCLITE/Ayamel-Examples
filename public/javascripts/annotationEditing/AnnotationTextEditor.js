@@ -84,7 +84,14 @@ var AnnotationTextEditor = (function(){
             [].forEach.call(annotatedWords, function(obj){
                 obj.addEventListener('click', function() {
                     activeAnnotation = this.innerHTML;
-                    args.popupEditor.annotation = {"manifest" : manifest[language], "word" : this.innerHTML};
+                    var annLang = language;
+                    Object.keys(manifest).forEach(function(key){
+                        if (manifest[key].hasOwnProperty(activeAnnotation)) {
+                            annLang = key;
+                            return;
+                        }
+                    });
+                    args.popupEditor.annotation = {"manifest" : manifest[annLang], "word" : this.innerHTML};
                     args.popupEditor.show();
                 });
             });
@@ -206,11 +213,15 @@ var AnnotationTextEditor = (function(){
                                 resource: resource
                             })
                         ]).then(function(arr){
-                            var annLang = Object.keys(arr[0])[0];
-                            var lang = arr[0];
-                            Object.keys(lang[annLang]).forEach(function (key) {
+                            var annLang = Object.keys(arr[0][0]["glosses"])[0],
+                                annObj = arr[0][0]["glosses"][annLang];
+                            Object.keys(annObj).forEach(function (key) {
+                                if (!manifest.hasOwnProperty(annLang)) {
+                                    manifest[annLang] = {};
+                                }
                                 // potential problem: lose the annotation data that they recently created.
-                                manifest[language][key] = lang[annLang][key];
+                                // saves annotations under the corresponding language
+                                manifest[annLang][key] = annObj[key];
                             });
                             renderAnnotations();
                         });
