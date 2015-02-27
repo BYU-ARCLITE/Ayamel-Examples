@@ -400,6 +400,7 @@ var VideoRenderer = (function(){
 
         getTargetLanguages(contentId).then(function(codes) {
             var targetLanguages;
+            var defaultLanguage;
             if (!!codes.length) {
                 // Fallback procedure when no languages have been selected
                 targetLanguages = codes.map(function(code) {
@@ -411,7 +412,13 @@ var VideoRenderer = (function(){
                     return {value: code, text: Ayamel.utils.getLangName(code)};
                 }).sort(function(a,b){ return a.text.localeCompare(b.text); });
             }
-
+            //defaultLanguage = targetLanguages.indexOf("eng") !== -1 ? "eng" : targetLanguages[0];
+            defaultLanguage = targetLanguages.filter(function(lang) {
+                return lang.value === "eng";
+            });
+            if (defaultLanguage.length === 0) {
+                defaultLanguage = [targetLanguages[0]];
+            }
             translationsHolder.className = "definitionsContent";
             (new EditorWidgets.SuperSelect({
                 el: selectHolder,
@@ -422,7 +429,8 @@ var VideoRenderer = (function(){
                     button: 'left',
                     text: 'Select Language',
                     multiple: false,
-                    options: targetLanguages
+                    options: targetLanguages,
+                    defaultValue : {value: defaultLanguage[0].value}
                 }
             })).observe('selection', function(newValue){ player.targetLang = newValue[0]; });
             pane.appendChild(selectHolder);
