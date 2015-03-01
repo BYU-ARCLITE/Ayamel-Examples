@@ -41,20 +41,6 @@ object ContentLister extends Controller {
   }
 
   /**
-   * Lists the public content
-   */
-  def public = Authentication.authenticatedAction() {
-    implicit request =>
-      implicit user =>
-        val content = Content.listPublic.map(_.toJson)
-        val origin = request.headers.get("Origin").getOrElse("*")
-        Ok(JsArray(content)).withHeaders(
-          "Access-Control-Allow-Origin" -> origin,
-          "Access-Control-Allow-Credentials" -> "true"
-        )
-  }
-
-  /**
    * Returns a particular content
    * @param id The ID of the content
    */

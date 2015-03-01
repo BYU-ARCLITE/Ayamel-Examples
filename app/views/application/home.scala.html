@@ -123,7 +123,7 @@
             <script type="text/javascript">
                 $(function() {
                     ContentItemRenderer.renderAll({
-                        content: [@Html(Content.listPublic.take(12).map(_.toJson).mkString(","))],
+                        content: [@Html(Content.listPublic(12).map(_.toJson).mkString(","))],
                         holder: document.getElementById("publicContentHolder")
                     });
                 });

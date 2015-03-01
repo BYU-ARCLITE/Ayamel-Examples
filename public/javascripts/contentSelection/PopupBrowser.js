@@ -17,7 +17,6 @@ var PopupBrowser = (function(){
                 <ul class="nav nav-pills">\
                     <li><a href="#popupBrowserMine" name="#popupBrowserMine" data-load="mine">My Content</a></li>\
                     <!--<li><a href="#popupBrowserCourse" name="#popupBrowserCourse" data-load="course">Course Content</a></li>-->\
-                    <li><a href="#popupBrowserPublic" name="#popupBrowserPublic" data-load="public">Public</a></li>\
                     <!--<li><a href="#popupBrowserSearch" name="#popupBrowserSearch" data-load="search">Search</a></li>-->\
                 </ul>\
                 <div class="tab-content">\
@@ -90,23 +89,6 @@ var PopupBrowser = (function(){
                     filters: ContentItemRenderer.standardFilters,
                     click: click,
                     clickHeader: clickHeader
-                });
-            });
-        },
-        "public": function(container){
-            clearSelection();
-            ajax("ajax/content/public", function(data){
-                var labels = [].concat.apply([], data.map(function(d){return d.labels;}));
-                ContentItemRenderer.renderAll({
-                    content: data,
-                    courseId: 0,
-                    holder: container,
-                    format: "table",
-                    sizing: true,
-                    sorting: true,
-                    labels: labels,
-                    filters: ContentItemRenderer.standardFilters,
-                    click: click
                 });
             });
         }/*,

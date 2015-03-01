@@ -271,8 +271,12 @@ object Content extends SQLSelectable[Content] {
    * Gets all the public content sorted by newest first
    * @return The list of content
    */
-  def listPublic: List[Content] = list.filter(_.visibility == Content.visibility.public)
-    .sortWith((c1, c2) => TimeTools.dateToTimestamp(c1.dateAdded) > TimeTools.dateToTimestamp(c2.dateAdded))
+  def listPublic(count: Long): List[Content] =
+    DB.withConnection {
+      implicit connection =>
+        anorm.SQL("select * from " + tableName + " where visibility = 4 order by id desc limit {count}")
+          .on('count -> count).as(simple *)
+    }
 
   /**
    * Create a content from fixture data
