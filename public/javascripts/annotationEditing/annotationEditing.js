@@ -88,7 +88,9 @@ $(function() {
             var saveButton = document.getElementById("saveAnnotations");
             var fileName = "";
             var fileNameEl = document.getElementById("filename");
-           // var title = 
+            var saveOptions = document.getElementById("save");
+            var metadataTitle = document.getElementById("title");
+            
             document.getElementById("title").value = !!content.name ? content.name + " - Annotations" : "";
 
             fileNameEl.addEventListener('keyup', function() {
@@ -106,6 +108,16 @@ $(function() {
              */
             document.addEventListener("editAnnotations", function(e) {
                 textEditor.editAnn(e.detail.resourceId, content.id);
+                saveOptions.value = e.detail.resourceId;
+                metadataTitle.value = fileName = saveOptions.selectedOptions[0].innerHTML;
+                if (saveOptions.value === "new") {
+                    $("#filename").show();
+                    if (document.getElementById("filename").value === "")
+                        saveButton.disabled = true;
+                } else {
+                    $("#filename").hide();
+                    saveButton.disabled = false;
+                }
             });
 
             document.getElementById("emptyManifest").addEventListener('click', function() {
@@ -113,7 +125,7 @@ $(function() {
             }, false);
 
             document.getElementById("saveMetadataButton").addEventListener('click', function(){
-                var title = document.getElementById("title").value;
+                var title = metadataTitle.value;
                 fileNameEl.value = title;
                 fileName = title;
                 textEditor.language = language = ractive.data.selection[0];
@@ -126,7 +138,7 @@ $(function() {
             saveButton.addEventListener('click', function(){
                 var $this = $(this).hide();
                 $("#spinner").show();
-                data.resource.id = document.getElementById("save").value;
+                data.resource.id = saveOptions.value;
                 if (fileName.trim() === "") {
                     alert("You haven't entered a filename.");
                     $("#spinner").hide();
