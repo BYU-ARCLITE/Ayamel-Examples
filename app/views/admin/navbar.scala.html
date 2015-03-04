@@ -1,13 +1,10 @@
 @(page: String)
 
-@active(item: String) = @{if(item == page) {"active"}else{""}}
+@active(item: String) = @{if(item == page){"active"}else{""}}
 
 <div class="navbar">
     <div class="navbar-inner">
         <ul class="nav">
-            <li class="@active("dashboard")"><a href="@routes.Administration.admin()"><i class="icon-dashboard"></i> Dashboard</a></li>
-            <li class="divider-vertical"></li>
-
             <li class="dropdown">
                 <a class="dropdown-toggle" data-toggle="dropdown" href="#"><i class="icon-group"></i>
                     Users <b class="caret"></b></a>
@@ -19,7 +16,6 @@
             </li>
 
             <li class="@active("courses")"><a href="@routes.Administration.manageCourses()"><i class="icon-book"></i> Courses</a></li>
-
             <li class="@active("content")"><a href="@routes.Administration.manageContent()"><i class="icon-picture"></i> Content</a></li>
 
             <li class="dropdown">
