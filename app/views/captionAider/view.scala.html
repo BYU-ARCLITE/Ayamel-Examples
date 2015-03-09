@@ -140,9 +140,9 @@
         </form>
     </script>
     <script id='saveTrackTemplate' type='text/ractive'>
-		<div class="form-horizontal">
-			{{>trackSelect}}
-		</div>
+        <div class="form-horizontal">
+            <superselect icon="icon-laptop" text="Select Track" selection="{{selectedTracks}}" button="left" open="{{selectOpen}}" multiple="true" options="{{tracks}}" modalId="{{modalId}}">
+        </div>
     </script>
     <script id='loadTrackTemplate' type='text/ractive'>
         <form class="form-horizontal">
@@ -160,7 +160,7 @@
     </script>
     <script id='showTrackTemplate' type='text/ractive'>
         <div class="form-horizontal">
-            {{>trackSelect}}
+            <superselect icon="icon-laptop" text="Select Track" selection="{{selectedTracks}}" button="left" open="{{selectOpen}}" multiple="true" options="{{tracks}}" modalId="{{modalId}}">
         </div>
     </script>
 }
