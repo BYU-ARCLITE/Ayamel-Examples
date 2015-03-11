@@ -70,7 +70,7 @@ object CaptionAider extends Controller {
                     val resource = ResourceHelper.make.resource(Json.obj(
                       "title" -> label,
                       "keywords" -> kind, //This makes no sense.... kind should be recorded in relations
-                      "type" -> "data",
+                      "type" -> "document",
                       "languages" -> Json.obj(
                         "iso639_3" -> languages
                       )
@@ -86,7 +86,7 @@ object CaptionAider extends Controller {
                    Future(InternalServerError("Could not upload file"))
                 }
               } else {
-				//TODO: Check permissions
+                //TODO: Check permissions
                 // Figure out which file we are replacing
                 // First get the resource
                 ResourceController.getResource(resourceId).flatMap {
@@ -107,6 +107,7 @@ object CaptionAider extends Controller {
                         )
                         val updatedResource = resource.as[JsObject] ++ Json.obj(
                           "title" -> label,
+                          "type" -> "document",
                           "languages" -> Json.obj(
                             "iso639_3" -> languages
                           ),

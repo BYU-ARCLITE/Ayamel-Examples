@@ -232,13 +232,15 @@ object ContentController extends Controller {
                 val code = (json \ "response" \ "code").as[Int]
                 if (code == 200) {
                   val title = (json \ "resource" \ "title").as[String]
-                  val contentType = (json \ "resource" \ "type").as[String]
+                  val resourceType = (json \ "resource" \ "type").as[String]
 
-                  //TODO: Make this a whitelist instead of a blacklist
-                  if (contentType == "data") {
+                  if (resourceType == "data" || resourceType == "archive") {
                      Redirect(routes.ContentController.createPage("resource"))
-                    .flashing("error" -> "Can't create content from a data resource.")
+                    .flashing("error" -> "Can't create content from a data or archive resources.")
                   } else {
+                    //TODO: properly handle collections
+                    //TODO: update our code to match the resource library, rather than special-casing "text"
+                    val contentType = if(resourceType == "document") "text" else resourceType
                     val content = Content(NotAssigned, title, Symbol(contentType), "", resourceId).save
                     user.addContent(content)
                     Redirect(routes.ContentController.view(content.id.get))
