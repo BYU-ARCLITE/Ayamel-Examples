@@ -52,7 +52,7 @@
             // Enable the content
             ResourceLibrary.setBaseUrl("@resourceLibraryUrl");
             $('.contentDisplay').each(function(){
-                ContentRenderer.render({
+                ContentLoader.render({
                     content: +this.dataset["id"],
                     holder: this,
                     annotate: true

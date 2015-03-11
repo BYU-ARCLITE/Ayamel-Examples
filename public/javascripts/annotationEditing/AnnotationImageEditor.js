@@ -10,14 +10,14 @@ var AnnotationImageEditor = (function() {
     function AnnotationImageEditor(args) {
 
         var activeAnnotation = null;
-        ContentRenderer.castContentObject(args.content).then(function(content){
+        ContentLoader.castContentObject(args.content).then(function(content){
             if(content.contentType !== 'image'){ throw "Non-Image Content"; }
             ResourceLibrary.load(content.resourceId, function(resource){
                 ImageRenderer.render({
                     resource: resource,
                     annotate: false,
                     holder: args.holder,
-                    imgcallback: function(image, layout) {
+                    callback: function(image, layout) {
 
                         // Create the image annotating canvas
                         var canvas = ImageAnnotator.annotate({

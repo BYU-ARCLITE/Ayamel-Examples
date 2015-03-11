@@ -22,7 +22,7 @@
             ResourceLibrary.setBaseUrl("@resourceLibraryUrl");
 
             // Render the content
-            ContentRenderer.render({
+            ContentLoader.render({
                 content: @Html(content.toJson.toString()),
                 holder: document.getElementById("playlistPlayer"),
                 annotate: true,

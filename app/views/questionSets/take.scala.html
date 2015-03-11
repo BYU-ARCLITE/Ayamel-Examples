@@ -14,7 +14,7 @@
                 var content = @Html(content.toJson.toString());
 
                 // Render the content
-                ContentRenderer.render({
+                ContentLoader.render({
                     content: content,
                     holder: document.getElementById("questionSetHolder")
                 });

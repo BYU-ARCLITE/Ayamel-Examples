@@ -103,7 +103,7 @@
 
                 // Render the content
                 var content = @Html(content.toJson.toString());
-                ContentRenderer.render({
+                ContentLoader.render({
                     content: content,
                     userId: "@user.id.get",
                     owner: @content.isEditableBy(user),

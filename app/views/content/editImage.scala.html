@@ -38,7 +38,7 @@
                     // Render the content
                     var content = @Html(content.toJson.toString());
                     var contentHolder = document.getElementById("contentHolder");
-                    ContentRenderer.render({
+                    ContentLoader.render({
                         content: content,
                         holder: contentHolder,
                         callback: function(data) {

@@ -556,7 +556,7 @@ $(function() {
         return false;
     }
 
-    ContentRenderer.castContentObject(content).then(function(content){
+    ContentLoader.castContentObject(content).then(function(content){
         if(content.contentType !== 'video'){ throw new Error("Non-Video Content"); }
         else return ResourceLibrary.load(content.resourceId).then(function(resource){
             content.settings.showCaptions = "true";
@@ -576,12 +576,12 @@ $(function() {
                 endTime: -1,
                 renderCue: renderCue,
                 //noUpdate: true, // Disable transcript player updating for now
-                vidcallback: vidcallback
+                callback: callback
             };
         });
-    }).then(VideoRenderer.render);
+    }).then(ContentRenderer.render);
 
-    function vidcallback(vplayer, tplayer) {
+    function callback(vplayer, tplayer) {
         var renderer;
 
         commandStack = new EditorWidgets.CommandStack();

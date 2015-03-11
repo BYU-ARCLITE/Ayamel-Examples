@@ -80,7 +80,7 @@ var PlayGraphPlayer = (function() {
 
     function displayPage(args, content, settings) {
         // TODO: Deal with courses
-        ContentRenderer.render({
+        ContentLoader.render({
             content: +content,
             courseId: 0,
             holder: args.holder,

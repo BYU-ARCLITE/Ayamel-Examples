@@ -9,7 +9,7 @@ var AnnotationTextEditor = (function(){
     function loadTracks(content, callback){
         // TODO: Determine which course we're operating in
         ResourceLibrary.load(content.resourceId).then(function(resource){
-            ContentRenderer.getTranscripts({
+            ContentLoader.getTranscripts({
                 courseId: 0,
                 contentId: content.id,
                 resource: resource,
@@ -109,7 +109,7 @@ var AnnotationTextEditor = (function(){
                         resource: resource,
                         holder: args.holder,
                         annotate: false,
-                        txtcallback: function(layout) {
+                        callback: function(layout) {
                             setupTextAnnotations(layout.textHolder);
                         }
                     });
@@ -206,7 +206,7 @@ var AnnotationTextEditor = (function(){
                 value: function(resId, contentId) {
                     ResourceLibrary.load(resId).then(function(resource){
                         Promise.all([
-                            ContentRenderer.getAnnotations({
+                            ContentLoader.getAnnotations({
                                 courseId: courseId,
                                 contentId: contentId,
                                 permission: undefined,
