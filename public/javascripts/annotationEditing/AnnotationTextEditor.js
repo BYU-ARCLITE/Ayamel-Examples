@@ -205,16 +205,14 @@ var AnnotationTextEditor = (function(){
             editAnn: {
                 value: function(resId, contentId) {
                     ResourceLibrary.load(resId).then(function(resource){
-                        Promise.all([
-                            ContentLoader.getAnnotations({
-                                courseId: courseId,
-                                contentId: contentId,
-                                permission: undefined,
-                                resource: resource
-                            })
-                        ]).then(function(arr){
-                            var annLang = Object.keys(arr[0][0]["glosses"])[0],
-                                annObj = arr[0][0]["glosses"][annLang];
+                        ContentLoader.getAnnotations({
+                            courseId: courseId,
+                            contentId: contentId,
+                            permission: undefined,
+                            resource: resource
+                        }).then(function(annsets){
+                            var annLang = Object.keys(annsets[0]["glosses"])[0],
+                                annObj = annsets[0]["glosses"][annLang];
                             Object.keys(annObj).forEach(function (key) {
                                 if (!manifest.hasOwnProperty(annLang)) {
                                     manifest[annLang] = {};
