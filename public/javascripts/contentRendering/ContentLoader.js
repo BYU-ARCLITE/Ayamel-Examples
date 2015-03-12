@@ -3,62 +3,47 @@ var ContentLoader = (function () {
 
     /* args: resource, courseId, contentId, permission */
     function getTranscripts(args){
-        var captionTrackIds = args.resource.relations
-            .filter(function(r){return r.type==="transcript_of";})
-            .map(function(r){return r.subjectId;}).join(',');
-        return new Promise(function(resolve, reject){
-            if(captionTrackIds.length){
-                resolve($.ajax("/ajax/permissionChecker", {
-                    type: "post",
-                    data: {
-                        courseId: args.courseId,
-                        contentId: args.contentId,
-                        permission: args.permission || "view",
-                        documentType: "captionTrack",
-                        ids: captionTrackIds
-                    }
-                }));
-            } else { resolve([]); }
-        }).then(function(data){
-            // Now turn those IDs into resources
-            return Promise.all(data.map(ResourceLibrary.load));
-        });
+        var resource = args.resource,
+            captionTrackIds = resource.getTranscriptIds();
+        if(captionTrackIds.length === 0){ return Promise.resolve([]); }
+        return Promise.resolve($.ajax("/ajax/permissionChecker", {
+            type: "post",
+            data: {
+                courseId: args.courseId,
+                contentId: args.contentId,
+                permission: args.permission || "view",
+                documentType: "captionTrack",
+                ids: captionTrackIds.join(',')
+            }
+        })).then(ResourceLibrary.loadAll); // Turn IDs into Resources
     }
 
     /* args: resource, courseId, contentId, permission */
     function getAnnotations(args){
-        var annotationIds = args.resource.relations
-            .filter(function(r){return r.type==="references";})
-            .map(function(r){return r.subjectId;}).join(',');
-        return new Promise(function(resolve, reject){
-            if(annotationIds.length){
-                resolve($.ajax("/ajax/permissionChecker", {
-                    type: "post",
-                    data: {
-                        courseId: args.courseId,
-                        contentId: args.contentId,
-                        permission: args.permission || "view",
-                        documentType: "annotationDocument",
-                        ids: annotationIds
-                    }
-                }));
-            }else{
-                resolve([]);
+        var resource = args.resource,
+            annotationIds = resource.getAnnotationIds();
+        if(annotationIds.length === 0){ return Promise.resolve([]); }
+        return Promise.resolve($.ajax("/ajax/permissionChecker", {
+            type: "post",
+            data: {
+                courseId: args.courseId,
+                contentId: args.contentId,
+                permission: args.permission || "view",
+                documentType: "annotationDocument",
+                ids: annotationIds.join(',')
             }
-        }).then(function(data){
-            // Now turn those IDs into resources then into an annotation list
-            return Promise.all(data.map(function(id){
-                return ResourceLibrary.load(id).then(function(resource){
-                    var url = resource.content.files[0].downloadUri,
-                        idx = url.indexOf('?'),
-                        lang = resource.languages.iso639_3[0];
-                    if(idx === -1){ url += "?"; }
-                    else if(idx !== url.length-1){ url += '&nocache='; }
-                    url += Date.now().toString(36);
-                    return AnnotationLoader.loadURL(url, lang).then(function(manifest){
-                        return new Ayamel.Annotator.AnnSet(resource.title, lang, manifest);
-                    }, function(err){ return null; });
-                });
+        }))
+        .then(ResourceLibrary.loadAll) //Turn IDs into Resources
+        .then(function(resources){ //Turn resources into an annotation list
+            return Promise.all(resources.map(function(resource){
+                return Ayamel.utils.HTTP({url: resource.content.files[0].downloadUri})
+                .then(function(manifest){
+                    return new Ayamel.Annotator.AnnSet(
+                        resource.title,
+                        resource.languages.iso639_3[0],
+                        JSON.parse(manifest)
+                    );
+                }).then(null,function(err){ return null; });
             })).then(function(list){
                 return list.filter(function(m){ return m !== null; });
             });
@@ -98,24 +83,22 @@ var ContentLoader = (function () {
     }
 
     function castContentObject(content){
-        return new Promise(function(resolve, reject){
-            if(typeof content == "object"){
-                resolve(content);
-            }else if(typeof args.content == "number") {
-                Promise.cast($.ajax("/content/" + args.content + "/json?"+Date.now().toString(36), {
-                    dataType: "json"
-                })).then(resolve, reject);
-            }else{
-                reject('invalid type');
-            }
-        });
+        switch(typeof content){
+        case "number":
+            return Promise.resolve($.ajax(
+                "/content/" + args.content + "/json?"+Date.now().toString(36),
+                {dataType: "json"}
+            ));
+        case "object": return Promise.resolve(content);
+        default: return Promise.reject(new Error('Invalid Type'));
+        }
     }
 
     return {
         getTranscripts: getTranscripts,
         getAnnotations: getAnnotations,
         castContentObject: castContentObject,
-        render: function (args) {
+        render: function(args){
             castContentObject(args.content).then(function(data){
                 args.content = data;
                 renderContent(args);

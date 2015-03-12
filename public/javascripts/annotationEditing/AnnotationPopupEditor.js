@@ -129,48 +129,43 @@ var AnnotationPopupEditor = (function(){
             // Check the data type
             switch(annotation[currAnn]["global"]["data"]["type"]){
             case "text": // Update from the text editor
-                annotation[currAnn]["global"]["data"]["value"] = $('#textEditor').data("wysihtml5").editor.getValue();
+                annotation[currAnn].global.data.value = $('#textEditor').data("wysihtml5").editor.getValue();
                 break;
             case "image": // Update from the URL text input
-                annotation[currAnn]["global"]["data"]["value"] = ractive.get('imageImg');
+                annotation[currAnn].global.data.value = ractive.get('imageImg');
                 break;
             case "content": // Update from the selected content
-                annotation[currAnn]["global"]["data"]["value"] = !!content ? content[0].id : 0;
+                annotation[currAnn].global.data.value = !!content ? content[0].id : 0;
                 break;
             }
         }
 
         function updateForm() {
             
-            if (annotation instanceof ImageAnnotation) {
-                // Hide the word editor
-                ractive.set('showWord', false);
-            } else {
-                // Load the annotation data into the form
-                ractive.set({
-                    showWord: true,
-                    word: currAnn
-                });
-            }
+            // Load the annotation data into the form
+            ractive.set({
+                showWord: true,
+                word: currAnn
+            });
             
             content = null;
 
             // Check the data type
-            switch(annotation[currAnn]["global"]["data"]["type"]){
+            switch(annotation[currAnn].global.data.type){
             case "text": // Update the text editor
                 ractive.set({
                     type: "text",
                     imageImg: "",
                     contentImg: ""
                 });
-                $('#textEditor').data("wysihtml5").editor.setValue(annotation[currAnn]["global"]["data"]["value"]);
+                $('#textEditor').data("wysihtml5").editor.setValue(annotation[currAnn].global.data.value);
                 $('#textEditor').data("wysihtml5").editor.focus();
                 break;
             case "image": // Update the URL text input
                 //editor.setValue("");
                 ractive.set({
                     type: "image",
-                    imageImg: annotation[currAnn]["global"]["data"]["value"],
+                    imageImg: annotation[currAnn].global.data.value,
                     contentImg: ""
                 });
                 break;
@@ -178,10 +173,10 @@ var AnnotationPopupEditor = (function(){
                 //editor.setValue("");
                 ractive.set({
                     type: "content",
-                    imageImg: annotation[currAnn]["global"]["data"]["value"],
+                    imageImg: annotation[currAnn].global.data.value,
                     contentImg: ""
                 });
-                ContentCache.load(annotation[currAnn]["global"]["data"]["value"], function(newContent) {
+                ContentCache.load(annotation[currAnn].global.data.value, function(newContent) {
                     content = newContent;
                     ractive.set({
                         contentImg: ContentThumbnails.resolve(content),

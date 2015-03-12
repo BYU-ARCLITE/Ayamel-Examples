@@ -58,27 +58,14 @@ $(function() {
 
         // Then create the popup editor
         new AnnotationPopupEditor(function (popupEditor) {
-            // Now check the content type
-            if (typeMap[content.contentType] === "text" || typeMap[content.contentType] === "video") {
-
-                // Create the text editor
-                var textEditor = new AnnotationTextEditor({
-                    holder: document.getElementById("annotationEditor"),
-                    content: content,
-                    popupEditor: popupEditor,
-                    language: language,
-                    ractive: ractive
-                });
-            }
-            if (typeMap[content.contentType] === "image") {
-
-                var imageEditor = new AnnotationImageEditor({
-                    holder: document.getElementById("annotationEditor"),
-                    content: content,
-                    manifest: data.manifest,
-                    popupEditor: popupEditor
-                });
-            }
+            // Create the text editor
+            var textEditor = new AnnotationTextEditor({
+                holder: document.getElementById("annotationEditor"),
+                content: content,
+                popupEditor: popupEditor,
+                language: language,
+                ractive: ractive
+            });
 
             /*
              * Show the Annotation Filename and Language Selection
