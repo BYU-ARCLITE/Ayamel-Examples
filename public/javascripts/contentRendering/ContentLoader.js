@@ -1,53 +1,30 @@
 var ContentLoader = (function () {
     "use strict";
 
-    /* args: resource, courseId, contentId, permission */
-    function getTranscripts(args){
-        var resource = args.resource,
-            captionTrackIds = resource.getTranscriptIds();
-        if(captionTrackIds.length === 0){ return Promise.resolve([]); }
+    function getDocuments(args, type, ids){
+        if(ids.length === 0){ return Promise.resolve([]); }
         return Promise.resolve($.ajax("/ajax/permissionChecker", {
             type: "post",
             data: {
                 courseId: args.courseId,
                 contentId: args.contentId,
                 permission: args.permission || "view",
-                documentType: "captionTrack",
-                ids: captionTrackIds.join(',')
+                documentType: type,
+                ids: ids.join(',')
             }
         })).then(ResourceLibrary.loadAll); // Turn IDs into Resources
     }
 
     /* args: resource, courseId, contentId, permission */
+    function getTranscripts(args){
+        return getDocuments(args, "captionTrack",
+            args.resource.getTranscriptIds());
+    }
+
+    /* args: resource, courseId, contentId, permission */
     function getAnnotations(args){
-        var resource = args.resource,
-            annotationIds = resource.getAnnotationIds();
-        if(annotationIds.length === 0){ return Promise.resolve([]); }
-        return Promise.resolve($.ajax("/ajax/permissionChecker", {
-            type: "post",
-            data: {
-                courseId: args.courseId,
-                contentId: args.contentId,
-                permission: args.permission || "view",
-                documentType: "annotationDocument",
-                ids: annotationIds.join(',')
-            }
-        }))
-        .then(ResourceLibrary.loadAll) //Turn IDs into Resources
-        .then(function(resources){ //Turn resources into an annotation list
-            return Promise.all(resources.map(function(resource){
-                return Ayamel.utils.HTTP({url: resource.content.files[0].downloadUri})
-                .then(function(manifest){
-                    return new Ayamel.Annotator.AnnSet(
-                        resource.title,
-                        resource.languages.iso639_3[0],
-                        JSON.parse(manifest)
-                    );
-                }).then(null,function(err){ return null; });
-            })).then(function(list){
-                return list.filter(function(m){ return m !== null; });
-            });
-        });
+        return getDocuments(args, "annotationDocument",
+            args.resource.getAnnotationIds());
     }
 
     function renderContent(args) {
