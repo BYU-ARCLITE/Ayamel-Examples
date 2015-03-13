@@ -8,9 +8,7 @@
 
 var ContentRenderer = (function(){
 
-    var mainPlayer,
-        trackResources = new Map(),
-        trackMimes = new Map();
+    var mainPlayer;
 
     function showTranscript(content){
         return content.settings.showTranscripts === "true";
@@ -307,6 +305,11 @@ var ContentRenderer = (function(){
                 classList: ['annotation'],
                 whitelist: args.annotations
             },
+            translator: args.translate?{
+                endpoint: Ayamel.classes.Translator.endpoint,
+                key: Ayamel.classes.Translator.key,
+                targetLang: "eng"
+            }:null,
             startTime: args.startTime,
             endTime: args.endTime,
             translate: args.translate,
@@ -359,7 +362,7 @@ var ContentRenderer = (function(){
         return player;
     }
 
-    function setupTranscripts(content, layout){
+    function setupTranscripts(content, layout, resourceMap){
         var transcriptPlayer = new TranscriptPlayer({
             //requires the actual TextTrack objects; should be fixed up to take resource IDs, I think
             captionTracks: [],
@@ -372,7 +375,7 @@ var ContentRenderer = (function(){
 
         // Cue clicking
         transcriptPlayer.addEventListener("cueclick", function(event){
-            var trackID = trackResources.get(event.detail.track).id;
+            var trackID = resourceMap.get(event.detail.track).id;
 
             mainPlayer.currentTime = event.detail.cue.startTime;
             ActivityStreams.predefined.transcriptCueClick(trackID, event.detail.cue.id);
@@ -459,6 +462,8 @@ var ContentRenderer = (function(){
                     annotationWhitelist = arr[1],
                     content = args.content,
                     layout = createLayout(content, args.holder),
+                    trackResources = new Map(),
+                    trackMimes = new Map(),
                     transcriptPlayer = null;
 
                 // Set up the video player
@@ -481,7 +486,7 @@ var ContentRenderer = (function(){
                 if(annotationWhitelist.length){ setupAnnotator(mainPlayer, layout); }
 
                 if(transcriptWhitelist.length && showTranscript(content)){
-                    transcriptPlayer = setupTranscripts(content, layout);
+                    transcriptPlayer = setupTranscripts(content, layout, trackResources);
                     mainPlayer.addEventListener("timeupdate", function(){
                         transcriptPlayer.currentTime = mainPlayer.currentTime;
                     });
