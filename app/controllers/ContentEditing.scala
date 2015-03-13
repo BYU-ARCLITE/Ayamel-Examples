@@ -62,10 +62,10 @@ object ContentEditing extends Controller {
   }
 
   /**
-   * Helper function which sets audio/video settings
+   * Helper function for setSettings
    * @param content The content whose settings are being set
    */
-  def setAudioVideoSettings(content: Content, data: Map[String, Seq[String]]) {
+  def recordSettings(content: Content, data: Map[String, Seq[String]]) {
     content.setSetting("captionTrack", data.get("captionTracks").getOrElse(Nil))
     content.setSetting("annotationDocument", data.get("annotationDocs").getOrElse(Nil))
     content.setSetting("targetLanguages", data.get("targetLanguages").getOrElse(Nil));
@@ -74,23 +74,6 @@ object ContentEditing extends Controller {
     content.setSetting("showAnnotations", List(data.get("showAnnotations").map(_(0)).getOrElse("false")))
     content.setSetting("allowDefinitions", List(data.get("allowDefinitions").map(_(0)).getOrElse("false")))
     content.setSetting("showTranscripts", List(data.get("showTranscripts").map(_(0)).getOrElse("false")))
-  }
-
-  /**
-   * Helper function which sets image settings
-   * @param content The content whose settings are being set
-   */
-  def setImageSettings(content: Content, data: Map[String, Seq[String]]) {
-    data.get("captionTracks").foreach { tracklist => content.setSetting("captionTrack", tracklist) }
-    data.get("annotationDocs").foreach { doclist => content.setSetting("annotationDocument", doclist) }
-  }
-
-  /**
-   * Helper function which sets text settings
-   * @param content The content whose settings are being set
-   */
-  def setTextSettings(content: Content, data: Map[String, Seq[String]]) {
-    data.get("annotationDocs").foreach { doclist => content.setSetting("annotationDocument", doclist) }
   }
 
   /**
@@ -109,15 +92,7 @@ object ContentEditing extends Controller {
             val visibility = data("visibility").lift(0)
               .map(_.toInt).getOrElse(content.visibility)
             val newcontent = content.copy(shareability = shareability, visibility = visibility).save
-            data("contentType")(0) match {
-            case "video" | "audio" =>
-              setAudioVideoSettings(newcontent, data)
-            case "image" =>
-              setImageSettings(newcontent, data)
-            case "text" =>
-              setTextSettings(newcontent, data)
-            case _ => Errors.forbidden
-            }
+            recordSettings(newcontent, data)
             Ok
           } else
             Errors.forbidden
