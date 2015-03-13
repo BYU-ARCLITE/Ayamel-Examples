@@ -2,6 +2,7 @@ $(function() {
     "use strict";
 
     var captionEditor, videoPlayer,
+        trackResources, trackMimes,
         timeline, commandStack, Dialog,
         langList = Object.keys(Ayamel.utils.p1map).map(function (p1) {
             var code = Ayamel.utils.p1map[p1];
@@ -258,8 +259,8 @@ $(function() {
                 data.append("label", textTrack.label);
                 data.append("language", textTrack.language);
                 data.append("kind", textTrack.kind);
-                data.append("resourceId", videoPlayer.textTrackResources.has(textTrack)?
-                                          videoPlayer.textTrackResources.get(textTrack).id
+                data.append("resourceId", trackResources.has(textTrack)?
+                                          trackResources.get(textTrack).id
                                           :"");
                 data.append("contentId", content.id);
                 return Promise.resolve($.ajax({
@@ -273,9 +274,9 @@ $(function() {
                 })).then(function(data){
                     //We really need some way to update cached resources as well as just retrieving newly created ones
                     //That might allow us to save a roundtrip by having this ajax call return the complete updated resource
-                    if(!videoPlayer.textTrackResources.has(textTrack)){
+                    if(!trackResources.has(textTrack)){
                         ResourceLibrary.load(data).then(function(resource){
-                            videoPlayer.textTrackResources.set(textTrack, resource);
+                            trackResources.set(textTrack, resource);
                         });
                     }
                     return textTrack.label;
@@ -581,11 +582,14 @@ $(function() {
         });
     }).then(ContentRenderer.render);
 
-    function callback(vplayer, tplayer) {
-        var renderer;
+    function callback(args) {
+        var renderer,
+            tplayer = args.transcriptPlayer;
 
         commandStack = new EditorWidgets.CommandStack();
-        videoPlayer = vplayer;
+        trackResources = args.trackResources;
+        trackMimes = args.trackMimes;
+        videoPlayer = args.mainPlayer;
         renderer = videoPlayer.captionRenderer;
 
         timeline = new Timeline(document.getElementById("timeline"), {
@@ -625,7 +629,7 @@ $(function() {
 
         //Preload tracks into the editor
         videoPlayer.textTracks.forEach(function(track){
-            timeline.cacheTextTrack(track,videoPlayer.textTrackMimes.get(track),'server');
+            timeline.cacheTextTrack(track,trackMimes.get(track),'server');
         });
 
         //keep the editor and the player menu in sync

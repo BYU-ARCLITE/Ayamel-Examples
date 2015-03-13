@@ -9,9 +9,8 @@
 var ContentRenderer = (function(){
 
     var mainPlayer,
-        translationHighlight,
-        captionTrackId,
-        cueNumber;
+        trackResources = new Map(),
+        trackMimes = new Map();
 
     function showTranscript(content){
         return content.settings.showTranscripts === "true";
@@ -208,7 +207,6 @@ var ContentRenderer = (function(){
             left: ["play", "lastCaption", "volume", "captions", "annotations"],
             right: ["rate", "fullScreen", "timeCode"]
         };
-        var captions = args.transcripts;
 
         if(!showCaptions(args.content)){
             ["left", "right"].forEach(function(side){
@@ -217,8 +215,6 @@ var ContentRenderer = (function(){
                     if(~index){ components[side].splice(index, 1); }
                 });
             });
-            // Don't load any caption tracks if they're not enabled
-            if (!showTranscript(args.content)) captions = null;
         }else if(!showAnnotations(args.content)){
             ["left", "right"].forEach(function(side){
                 var index = components[side].indexOf("annotations");
@@ -303,8 +299,9 @@ var ContentRenderer = (function(){
             components: components,
             holder: args.layout.player,
             resource: args.resource,
-            captionTracks: {
-                whitelist: captions
+            captions: {
+                renderCue: args.renderCue,
+                whitelist: args.transcripts
             },
             annotations: {
                 classList: ['annotation'],
@@ -313,7 +310,6 @@ var ContentRenderer = (function(){
             startTime: args.startTime,
             endTime: args.endTime,
             translate: args.translate,
-            renderCue: args.renderCue,
             aspectRatio: Ayamel.aspectRatios.hdVideo
         });
 
@@ -363,28 +359,26 @@ var ContentRenderer = (function(){
         return player;
     }
 
-    function setupTranscripts(content, layout, captionTracks){
-        if(showTranscript(content)){
-            var transcriptPlayer = new TranscriptPlayer({
-                //requires the actual TextTrack objects; should be fixed up to take resource IDs, I think
-                captionTracks: captionTracks,
-                holder: layout.Transcript,
-                sync: true
-                //noUpdate: args.noUpdate
-                //TODO: Add links to translator & annotator
-            });
+    function setupTranscripts(content, layout){
+        var transcriptPlayer = new TranscriptPlayer({
+            //requires the actual TextTrack objects; should be fixed up to take resource IDs, I think
+            captionTracks: [],
+            captionTracks: [],
+            holder: layout.Transcript,
+            sync: true
+            //noUpdate: args.noUpdate
+            //TODO: Add links to translator & annotator
+        });
 
-            // Cue clicking
-            transcriptPlayer.addEventListener("cueclick", function(event){
-                var trackID = mainPlayer.textTrackResources.get(event.detail.track).id;
+        // Cue clicking
+        transcriptPlayer.addEventListener("cueclick", function(event){
+            var trackID = trackResources.get(event.detail.track).id;
 
-                mainPlayer.currentTime = event.detail.cue.startTime;
-                ActivityStreams.predefined.transcriptCueClick(trackID, event.detail.cue.id);
-            });
+            mainPlayer.currentTime = event.detail.cue.startTime;
+            ActivityStreams.predefined.transcriptCueClick(trackID, event.detail.cue.id);
+        });
 
-            return transcriptPlayer;
-        }
-        return null;
+        return transcriptPlayer;
     }
 
     function getTargetLanguages(contentId){
@@ -482,30 +476,42 @@ var ContentRenderer = (function(){
                     transcripts: transcriptWhitelist
                 });
 
-                mainPlayer.addEventListener('loadtexttracks', function(event){
-                    if(allowDefinitions(content)){ setupTranslator(mainPlayer, layout, mainPlayer.textTrackResources); }
-                    if(layout.Definitions){ setupDefinitionsPane(layout.Definitions, mainPlayer, content.id); }
-                    if(transcriptWhitelist.length && showTranscript(content)){
-                        transcriptPlayer = setupTranscripts(content, layout, event.detail.tracks);
-                        mainPlayer.addEventListener("timeupdate", function(){
-                            transcriptPlayer.currentTime = mainPlayer.currentTime;
-                        });
-                    }
-                    if(annotationWhitelist.length){
-                        setupAnnotator(mainPlayer, layout);
-                    }
-                    if(typeof args.callback === 'function'){
-                        args.callback(mainPlayer, transcriptPlayer);
-                    }
-                    // Resize the panes' content to be correct size onload
-                    window.dispatchEvent(new Event('resize',{bubbles:true,cancealble:true}));
-                }, false);
+                if(allowDefinitions(content)){ setupTranslator(mainPlayer, layout, trackResources); }
+                if(layout.Definitions){ setupDefinitionsPane(layout.Definitions, mainPlayer, content.id); }
+                if(annotationWhitelist.length){ setupAnnotator(mainPlayer, layout); }
+
+                if(transcriptWhitelist.length && showTranscript(content)){
+                    transcriptPlayer = setupTranscripts(content, layout);
+                    mainPlayer.addEventListener("timeupdate", function(){
+                        transcriptPlayer.currentTime = mainPlayer.currentTime;
+                    });
+
+                    mainPlayer.addEventListener('addtexttrack', function(event){
+                        var track = event.detail.track;
+                        transcriptPlayer.addTrack(track);
+                        trackResources.set(track, event.detail.resource);
+                        trackMimes.set(track, event.detail.mime);
+                    }, false);
+                }
+
+                // Resize the panes' content to be correct size onload
+                window.dispatchEvent(new Event('resize',{bubbles:true}));
 
                 // Handle thumbnail making
                 document.addEventListener('makeThumbnail',function (e) {
                     e.stopPropagation();
                     document.getElementById("makeThumbnail").dispatchEvent(new CustomEvent('timeUpdate',{bubbles:true, detail : { currentTime : mainPlayer.currentTime }}));
                 },false);
+
+
+                if(typeof args.callback === 'function'){
+                    args.callback({
+                        mainPlayer: mainPlayer,
+                        transcriptPlayer: transcriptPlayer,
+                        trackResources: trackResources,
+                        trackMimes: trackMimes
+                    });
+                }
             });
         }
     };
