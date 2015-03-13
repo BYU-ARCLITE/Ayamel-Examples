@@ -1,7 +1,7 @@
 var ContentLoader = (function () {
     "use strict";
 
-    function getDocuments(args, type, ids){
+    function getDocumentWhitelist(args, type, ids){
         if(ids.length === 0){ return Promise.resolve([]); }
         return Promise.resolve($.ajax("/ajax/permissionChecker", {
             type: "post",
@@ -12,18 +12,18 @@ var ContentLoader = (function () {
                 documentType: type,
                 ids: ids.join(',')
             }
-        })).then(ResourceLibrary.loadAll); // Turn IDs into Resources
+        }));
     }
 
     /* args: resource, courseId, contentId, permission */
-    function getTranscripts(args){
-        return getDocuments(args, "captionTrack",
+    function getTranscriptWhitelist(args){
+        return getDocumentWhitelist(args, "captionTrack",
             args.resource.getTranscriptIds());
     }
 
     /* args: resource, courseId, contentId, permission */
-    function getAnnotations(args){
-        return getDocuments(args, "annotationDocument",
+    function getAnnotationWhitelist(args){
+        return getDocumentWhitelist(args, "annotationDocument",
             args.resource.getAnnotationIds());
     }
 
@@ -72,8 +72,8 @@ var ContentLoader = (function () {
     }
 
     return {
-        getTranscripts: getTranscripts,
-        getAnnotations: getAnnotations,
+        getTranscriptWhitelist: getTranscriptWhitelist,
+        getAnnotationWhitelist: getAnnotationWhitelist,
         castContentObject: castContentObject,
         render: function(args){
             castContentObject(args.content).then(function(data){

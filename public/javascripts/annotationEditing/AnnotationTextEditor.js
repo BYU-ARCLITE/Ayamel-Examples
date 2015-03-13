@@ -9,19 +9,17 @@ var AnnotationTextEditor = (function(){
     function loadTracks(content, callback){
         // TODO: Determine which course we're operating in
         ResourceLibrary.load(content.resourceId).then(function(resource){
-            ContentLoader.getTranscripts({
+            return ContentLoader.getTranscriptWhitelist({
                 courseId: 0,
                 contentId: content.id,
                 resource: resource,
                 permission: "view"
-            }).then(function(transcripts){
-                Promise.all(transcripts.map(function(transcript){
-                    return new Promise(function(resolve){
-                        Ayamel.utils.loadCaptionTrack(transcript, resolve);
-                    });
-                })).then(callback);
             });
-        });
+        })
+        .then(ResourceLibrary.loadAll) // Turn IDs into resources
+        .then(function(resources){
+            return Promise.all(resources.map(Ayamel.utils.loadCaptionTrack));
+        }).then(callback);
     }
 
     /* args: manifest, content, holder, popupEditor, language, ractive */
@@ -34,7 +32,7 @@ var AnnotationTextEditor = (function(){
         var language = args.language;
         var activeAnnotation = null;
         var that = this;
-        
+
         var annotator = new Ayamel.Annotator({
                 classList:["annotation"],
                 handler: function(data, lang, text, index){
@@ -176,7 +174,6 @@ var AnnotationTextEditor = (function(){
         args.popupEditor.on("delete", function() {
             delete manifest[language][activeAnnotation];
             renderAnnotations();
-
         });
 
 
@@ -205,24 +202,39 @@ var AnnotationTextEditor = (function(){
             editAnn: {
                 value: function(resId, contentId) {
                     ResourceLibrary.load(resId).then(function(resource){
-                        ContentLoader.getAnnotations({
+                        return ContentLoader.getAnnotationWhitelist({
                             courseId: courseId,
                             contentId: contentId,
                             permission: undefined,
                             resource: resource
-                        }).then(function(annsets){
-                            var annLang = Object.keys(annsets[0]["glosses"])[0],
-                                annObj = annsets[0]["glosses"][annLang];
-                            Object.keys(annObj).forEach(function (key) {
-                                if (!manifest.hasOwnProperty(annLang)) {
-                                    manifest[annLang] = {};
-                                }
-                                // potential problem: lose the annotation data that they recently created.
-                                // saves annotations under the corresponding language
-                                manifest[annLang][key] = annObj[key];
-                            });
-                            renderAnnotations();
                         });
+                    }).then(ResourceLibrary.loadAll) // Turn IDs into resources
+                    .then(function(resources){
+                        return Promise.all(resources.map(function(resource){
+                            return Ayamel.utils.HTTP({url: resource.content.files[0].downloadUri})
+                            .then(function(manifest){
+                                return new Ayamel.Annotator.AnnSet(
+                                    resource.title,
+                                    resource.languages.iso639_3[0],
+                                    JSON.parse(manifest)
+                                );
+                            }).then(null,function(err){ return null; });
+                        }));
+                    })
+                    .then(function(annsets){
+                        annsets = annsets.filter(function(a){ return a !== null; });
+                        if(annsets.length === 0){ return; }
+                        var annLang = Object.keys(annsets[0].glosses)[0],
+                            annObj = annsets[0].glosses[annLang];
+                        Object.keys(annObj).forEach(function(key){
+                            if(!manifest.hasOwnProperty(annLang)){
+                                manifest[annLang] = {};
+                            }
+                            // potential problem: lose the annotation data that they recently created.
+                            // saves annotations under the corresponding language
+                            manifest[annLang][key] = annObj[key];
+                        });
+                        renderAnnotations();
                     });
                     $("#editAnnotationsModal").modal("hide");
                 }

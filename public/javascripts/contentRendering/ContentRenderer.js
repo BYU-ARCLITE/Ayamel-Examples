@@ -303,10 +303,12 @@ var ContentRenderer = (function(){
             components: components,
             holder: args.layout.player,
             resource: args.resource,
-            captionTracks: captions,
+            captionTracks: {
+                whitelist: captions
+            },
             annotations: {
                 classList: ['annotation'],
-                data: args.annotations
+                whitelist: args.annotations
             },
             startTime: args.startTime,
             endTime: args.endTime,
@@ -445,22 +447,22 @@ var ContentRenderer = (function(){
             // Load the caption tracks
             Promise.all([
                 (showCaptions(args.content) || showTranscript(args.content)) ?
-                ContentLoader.getTranscripts({
+                ContentLoader.getTranscriptWhitelist({
                     resource: args.resource,
                     courseId: args.courseId,
                     contentId: args.contentId,
                     permission: args.permission
-                }) : null,
+                }) : [],
                 showAnnotations(args.content) ?
-                ContentLoader.getAnnotations({
+                ContentLoader.getAnnotationWhitelist({
                     resource: args.resource,
                     courseId: args.courseId,
                     contentId: args.contentId,
                     permission: args.permission
-                }) : null
+                }) : []
             ]).then(function(arr){
-                var transcripts = arr[0],
-                    manifest = arr[1],
+                var transcriptWhitelist = arr[0],
+                    annotationWhitelist = arr[1],
                     content = args.content,
                     layout = createLayout(content, args.holder),
                     transcriptPlayer = null;
@@ -476,20 +478,20 @@ var ContentRenderer = (function(){
                     renderCue: args.renderCue,
                     layout: layout,
                     translate: allowDefinitions(content),
-                    annotations: manifest,
-                    transcripts: transcripts
+                    annotations: annotationWhitelist,
+                    transcripts: transcriptWhitelist
                 });
 
                 mainPlayer.addEventListener('loadtexttracks', function(event){
                     if(allowDefinitions(content)){ setupTranslator(mainPlayer, layout, mainPlayer.textTrackResources); }
                     if(layout.Definitions){ setupDefinitionsPane(layout.Definitions, mainPlayer, content.id); }
-                    if(transcripts && transcripts.length && showTranscript(content)){
+                    if(transcriptWhitelist.length && showTranscript(content)){
                         transcriptPlayer = setupTranscripts(content, layout, event.detail.tracks);
                         mainPlayer.addEventListener("timeupdate", function(){
                             transcriptPlayer.currentTime = mainPlayer.currentTime;
                         });
                     }
-                    if(manifest){
+                    if(annotationWhitelist.length){
                         setupAnnotator(mainPlayer, layout);
                     }
                     if(typeof args.callback === 'function'){
