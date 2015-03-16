@@ -55,23 +55,23 @@ var supportedMimeTypes = {
     ]
 };
 
-function detectType(file) {
+function detectType(file){
     var i, type,
         normalizedType = file.type.split(";")[0].trim();
     for(i=0; i < supportedMimeTypes.types.length; i++){
         type = supportedMimeTypes.types[i];
-        if (supportedMimeTypes[type].indexOf(normalizedType) >= 0){
+        if(supportedMimeTypes[type].indexOf(normalizedType) >= 0){
             return type;
         }
     }
     return "unknown";
 }
 
-function capitalize(str) {
+function capitalize(str){
     return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-$(function() {
+$(function(){
     var selectedFile = null,
         maxFileSize = 20971520, // 20 MB
         uploadbtn = document.getElementById('uploadbtn'),
@@ -82,10 +82,10 @@ $(function() {
 
     // Set up the file uploading
     [].forEach.call(document.querySelectorAll('.fileDropper'),function(el){
-        bindDropArea(el, function(files) {
+        bindDropArea(el, function(files){
             el.classList.remove("active");
             setFile(files[0]);
-        }, function() {
+        }, function(){
             el.classList.add("active");
         });
     });
@@ -134,23 +134,22 @@ $(function() {
         });
     }
 
-    function setFile(file) {
-        $fileInfo.slideDown(300);
-
+    function setFile(file){
         // Update the info form based on the file
         // Set the content type
         var contentTypeEl,
             contentType = detectType(file);
-        if (contentType !== "unknown") {
+        if(contentType !== "unknown"){
             // Check the file size
-            if (file.size <= maxFileSize) {
+            if(file.size <= maxFileSize){
                 contentTypeEl = document.getElementById("contentType");
                 contentTypeEl.parentNode.innerHTML = "<input id='contentType' type='hidden' value='"+contentType+"' /><div class='pad-top-low'>" + capitalize(contentType) + "</div>";
                 selectedFile = file;
-            } else {
+                $fileInfo.slideDown(300);
+            }else{
                 alert("File too big! 20 MB max.");
             }
-        } else {
+        }else{
             alert("Unsupported file type: " + contentType);
         }
     }
