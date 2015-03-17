@@ -51,16 +51,16 @@ var supportedMimeTypes = {
         "video/x-sgi-movie"
     ],
     "text": [
-        "text/plain"
+        "text/plain",
+        "text/x-markdown"
     ]
 };
 
-function detectType(file){
-    var i, type,
-        normalizedType = file.type.split(";")[0].trim();
+function detectType(mime){
+    var i, type;
     for(i=0; i < supportedMimeTypes.types.length; i++){
         type = supportedMimeTypes.types[i];
-        if(supportedMimeTypes[type].indexOf(normalizedType) >= 0){
+        if(supportedMimeTypes[type].indexOf(mime) >= 0){
             return type;
         }
     }
@@ -73,6 +73,7 @@ function capitalize(str){
 
 $(function(){
     var selectedFile = null,
+        selectedMime = "",
         maxFileSize = 20971520, // 20 MB
         uploadbtn = document.getElementById('uploadbtn'),
         $fileInfo = $("#fileInfo");
@@ -100,7 +101,7 @@ $(function(){
         e.preventDefault();
         uploadbtn.disabled = true;
         var data = new FormData();
-        data.append("file", selectedFile, selectedFile.name);
+        data.append("file", new Blob([selectedFile],{type:selectedMime}), selectedFile.name);
         data.append("contentType", document.getElementById('contentType').value);
         data.append("title", document.getElementById('title').value);
         data.append("description", document.getElementById('description').value);
@@ -137,11 +138,16 @@ $(function(){
     function setFile(file){
         // Update the info form based on the file
         // Set the content type
-        var contentTypeEl,
-            contentType = detectType(file);
+        var contentTypeEl, contentType;
+        selectedMime = Ayamel.utils.mimeFromFilename(
+			file.name,
+			file.type.split(";")[0].trim() //default value
+		);
+        contentType = detectType(selectedMime);
         if(contentType !== "unknown"){
             // Check the file size
             if(file.size <= maxFileSize){
+                document.getElementById("title").value = Ayamel.utils.stripFileExt(file.name);
                 contentTypeEl = document.getElementById("contentType");
                 contentTypeEl.parentNode.innerHTML = "<input id='contentType' type='hidden' value='"+contentType+"' /><div class='pad-top-low'>" + capitalize(contentType) + "</div>";
                 selectedFile = file;
@@ -150,7 +156,7 @@ $(function(){
                 alert("File too big! 20 MB max.");
             }
         }else{
-            alert("Unsupported file type: " + contentType);
+            alert("Unsupported file type: " + selectedMime);
         }
     }
 

@@ -209,8 +209,7 @@ object ContentController extends Controller {
               }
             }
           }.getOrElse {
-            Redirect(routes.ContentController.createPage("file"))
-              .flashing("error" -> "Missing file")
+            redirect.flashing("error" -> "Missing file")
           }
         }
   }
