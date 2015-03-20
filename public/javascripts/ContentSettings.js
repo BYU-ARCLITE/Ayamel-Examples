@@ -128,7 +128,7 @@ var ContentSettings = (function() {
         },
         targetLanguages: {
             type: "superselect",
-            label: "Target Languages:",
+            label: "Definition Languages:",
             name: "targetLanguages",
             none: "No tracks available",
             include: function(context, content) {
