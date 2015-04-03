@@ -48,7 +48,9 @@ var supportedMimeTypes = {
         "video/webm",
         "video/x-msvideo",
         "video/x-ms-wmv",
-        "video/x-sgi-movie"
+        "video/x-sgi-movie",
+        "application/x-mpegURL",
+        "application/vnd.apple.mpegURL"
     ],
     "text": [
         "text/plain",
@@ -140,9 +142,9 @@ $(function(){
         // Set the content type
         var contentTypeEl, contentType;
         selectedMime = Ayamel.utils.mimeFromFilename(
-			file.name,
-			file.type.split(";")[0].trim() //default value
-		);
+            file.name,
+            file.type.split(";")[0].trim() //default value
+        );
         contentType = detectType(selectedMime);
         if(contentType !== "unknown"){
             // Check the file size
