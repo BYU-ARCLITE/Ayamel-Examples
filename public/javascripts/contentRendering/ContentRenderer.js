@@ -104,11 +104,16 @@ var ContentRenderer = (function(){
                 });
             }
             translationsHolder.appendChild(html);
-            translationsHolder.scrollTop = translationsHolder.scrollHeight;
-
+            
             if(layout.DefinitionsTab){
                 $(layout.DefinitionsTab).tab("show");
-                translationsHolder.scrollTop = translationsHolder.scrollHeight;
+                //keep the top of the new translation visible.
+                if (html.offsetHeight > translationsHolder.offsetHeight) {
+                    var translationSize = html.offsetHeight + html.querySelector('.sourceText').offsetHeight + 15;
+                    translationsHolder.scrollTop = translationsHolder.scrollHeight - translationSize;
+                } else {
+                    translationsHolder.scrollTop = translationsHolder.scrollHeight;
+                }
             }
         });
 
