@@ -76,7 +76,6 @@ var TranscriptPlayer = (function(){
             addTrack: {
                 value: function(track) {
                     if(~tracks.indexOf(track)){ return; }
-                    tracks.push(track);
                     ractive.data.transcripts.push(track);
                 }
             },
