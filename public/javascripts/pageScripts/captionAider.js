@@ -642,7 +642,10 @@ $(function() {
         //TODO: Integrate the next listener into the timeline editor
         timeline.on('activechange', function(){ renderer.rebuildCaptions(); });
 
-        timeline.on('cuetextchange', function(evt){ tplayer.updateTrack(evt.cue.track); });
+        timeline.on('cuechange', function(evt){
+            if(evt.fields.indexOf('text') === -1){ return; }
+            tplayer.updateTrack(evt.cue.track);
+        });
 
         timeline.on('addtrack',function(evt){
             videoPlayer.addTextTrack(evt.track.textTrack);
