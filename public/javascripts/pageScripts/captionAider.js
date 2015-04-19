@@ -81,7 +81,10 @@ $(function() {
 
     //Create New Track From Scratch
     var newTrackData = (function(){
-        var ractive, datalist, resolver, failer;
+        var ractive, datalist, resolver, failer, types;
+        types = TimedText.getRegisteredTypes().map(function(mime){
+            return {name: TimedText.getTypeInfo(mime).name, mime: mime};
+        });
         ractive = new Dialog({
             el: document.getElementById('newTrackModal'),
             data: {
@@ -91,6 +94,7 @@ $(function() {
                 trackKind: "subtitles",
                 trackName: "",
                 trackMime: "text/vtt",
+                types: types,
                 modalId: "newTrackModal",
                 buttons: [{event:"create",label:"Create"}],
                 defaultValue: {value:'zxx',text:'No Linguistic Content'}

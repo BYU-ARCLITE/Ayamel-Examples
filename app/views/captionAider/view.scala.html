@@ -81,10 +81,7 @@
                 <label class="control-label">Format</label>
                 <div class="controls">
                     <select value="{{trackMime}}">
-                        <option value="text/vtt" selected>WebVTT</option>
-                        <option value="text/srt">SubRip</option>
-                        <option value="application/ttml+xml">TTML</option>
-                        <option value="text/x-ssa">Sub Station Alpha</option>
+                        {{#types}}<option value="{{.mime}}">{{.name}}</option>{{/types}}
                     </select>
                 </div>
             </div>
