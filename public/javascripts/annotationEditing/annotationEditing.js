@@ -119,7 +119,7 @@ $(function() {
                 if (fileNameEl.value.toString().trim() != "")
                     saveButton.disabled = false;
                 $("#metadataModal").modal("hide");
-                textEditor.refreshTranscript();
+                //textEditor.refreshTranscript();
             }, false);
 
             saveButton.addEventListener('click', function(){
@@ -133,7 +133,8 @@ $(function() {
                     return;
                 }
                 /*
-                 *  Create and send post request. The Following lines remove the following characters from the string fileName: * \ / < >
+                 *  Create and send post request. 
+                 *  The Following lines remove the following characters from the string fileName: * \ / < >
                  */
                 var re = /[\*\\\/\<\>][\ \t\n]*/g;
                 fileName = fileName.replace(re, '');

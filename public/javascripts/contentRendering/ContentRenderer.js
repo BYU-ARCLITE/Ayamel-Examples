@@ -371,7 +371,6 @@ var ContentRenderer = (function(){
         var transcriptPlayer = new TranscriptPlayer({
             //requires the actual TextTrack objects; should be fixed up to take resource IDs, I think
             captionTracks: [],
-            captionTracks: [],
             holder: layout.Transcript,
             sync: true
             //noUpdate: args.noUpdate
