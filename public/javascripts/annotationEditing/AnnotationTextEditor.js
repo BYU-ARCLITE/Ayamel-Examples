@@ -188,6 +188,23 @@ var AnnotationTextEditor = (function(){
             renderAnnotations(true);
         });
 
+        /**
+         * @param resource - annotation document resource
+         * @return AnnSet promise
+         */
+        function loadAnnotationDoc(resource) {
+            return Ayamel.utils.HTTP({url: resource.content.files[0].downloadUri})
+            .then(function(annMan){
+                return new Ayamel.Annotator.AnnSet(
+                    resource.title,
+                    resource.languages.iso639_3[0],
+                    JSON.parse(annMan)
+                );
+            }).then(null,function(err){
+                console.log(err);
+                return null;
+            });
+        }
 
         Object.defineProperties(this, {
             getAnnotations: {
@@ -213,43 +230,24 @@ var AnnotationTextEditor = (function(){
             },
             editAnn: {
                 value: function(resId, contentId) {
-                    ResourceLibrary.load(resId).then(function(resource){
-                        return ContentLoader.getAnnotationWhitelist({
-                            courseId: courseId,
-                            contentId: contentId,
-                            permission: undefined,
-                            resource: resource
+                        ResourceLibrary.load(resId).then(function(annResource){
+                            loadAnnotationDoc(annResource).then(function(annMan){
+                                Object.keys(annMan.glosses).forEach(function(lang){
+                                    var annObj = annMan.glosses[lang];
+                                    if (!manifest.hasOwnProperty(lang)){
+                                        manifest[lang] = {};
+                                    }
+                                    Object.keys(annObj).forEach(function(key){
+                                        // Overwrites the value for that key if it already exists
+                                        manifest[lang][key] = annObj[key];
+                                    });
+                                });
+                                $("#editAnnotationsModal").modal("hide");
+                                renderAnnotations(false);
+                            });
                         });
-                    }).then(ResourceLibrary.loadAll) // Turn IDs into resources
-                    .then(function(resources){
-                        return Promise.all(resources.map(function(resource){
-                            return Ayamel.utils.HTTP({url: resource.content.files[0].downloadUri})
-                            .then(function(manifest){
-                                return new Ayamel.Annotator.AnnSet(
-                                    resource.title,
-                                    resource.languages.iso639_3[0],
-                                    JSON.parse(manifest)
-                                );
-                            }).then(null,function(err){ return null; });
-                        }));
-                    })
-                    .then(function(annsets){
-                        annsets = annsets.filter(function(a){ return a !== null; });
-                        if(annsets.length === 0){ return; }
-                        var annLang = Object.keys(annsets[0].glosses)[0],
-                            annObj = annsets[0].glosses[annLang];
-                        Object.keys(annObj).forEach(function(key){
-                            if(!manifest.hasOwnProperty(annLang)){
-                                manifest[annLang] = {};
-                            }
-                            // potential problem: lose the annotation data that they recently created.
-                            // saves annotations under the corresponding language
-                            manifest[annLang][key] = annObj[key];
-                        });
-                        renderAnnotations(false);
-                    });
-                    $("#editAnnotationsModal").modal("hide");
-                }
+
+                    }
             },
             emptyManifest: {
                 value: function() {

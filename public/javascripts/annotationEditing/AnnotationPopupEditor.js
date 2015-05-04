@@ -78,6 +78,12 @@ var AnnotationPopupEditor = (function(){
                 showWord: true
             }
         });
+        $(document).keydown(function(e) {
+            // ESCAPE key pressed
+            if (e.keyCode == 27) {
+                ractive.set('hide', true);
+            }
+        });
         editor = ractive.find('[data-id="editor"]');
         ractive.on('cancel',function() {
             ractive.set('hide', true);
