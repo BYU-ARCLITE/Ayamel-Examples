@@ -248,7 +248,7 @@ var ContentRenderer = (function(){
                 player.element.style.removeProperty("height");
             } else {
                 // call a resize event so that css can be put back
-                window.dispatchEvent(new Event('resize',{bubbles:true,cancealble:true}));
+                window.dispatchEvent(new Event('resize',{bubbles:true,cancelable:true}));
             }
         }, false);
 
