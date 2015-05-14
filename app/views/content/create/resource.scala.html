@@ -1,4 +1,4 @@
-@()(implicit request: RequestHeader, user: User)
+@(courseId: Long)(implicit request: RequestHeader, user: User)
 
 @main("Ayamel - Add Content", Local(CSS("stylesheets/content.css"))) {
 
@@ -18,7 +18,7 @@
 
         <p>If you don't know what to enter here, then you probably want to use a different method of adding content.</p>
 
-        <form class="form-horizontal" method="post" action="@routes.ContentController.createFromResource()">
+        <form class="form-horizontal" method="post" action="@routes.ContentController.createFromResource(courseId)">
             <div class="control-group">
                 <label class="control-label" for="resourceId">Resource ID</label>
                 <div class="controls">

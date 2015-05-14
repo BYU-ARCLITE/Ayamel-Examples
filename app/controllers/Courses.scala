@@ -130,7 +130,6 @@ object Courses extends Controller {
     implicit request =>
       implicit user =>
         getCourse(id) { course =>
-
           // Only non-guest members and admins can add content
           if (user.hasCoursePermission(course, "addContent")) {
 

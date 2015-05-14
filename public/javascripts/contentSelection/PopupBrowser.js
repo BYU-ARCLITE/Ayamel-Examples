@@ -29,6 +29,7 @@ var PopupBrowser = (function(){
             <div class="modal-footer">\
                 <div>\
                     <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>\
+                    <button class="btn btn-yellow" id="createContentForCourse">Create Content</button>\
                     <button class="btn btn-primary disabled" id="popupBrowserSelectButton">Select</button>\
                 </div>\
             </div>\
@@ -102,6 +103,7 @@ var PopupBrowser = (function(){
         // Create the modal and add it to the document
         var $modal = $(template);
         var $selectButton = $modal.find("#popupBrowserSelectButton");
+        var $createButton = $modal.find("#createContentForCourse");
         $("body").append($modal);
 
         // Prevent pill events from spilling into the modal
@@ -137,6 +139,10 @@ var PopupBrowser = (function(){
             $modal.modal("hide");
             callback(selection);
             selection = [];
+        });
+
+        $createButton.click(function(){
+            window.location = "/course/" + window.location.pathname.split("/").pop() + "/createContent";
         });
 
         return $modal;

@@ -1,4 +1,4 @@
-@()(implicit request: RequestHeader, user: User)
+@(courseId: Long)(implicit request: RequestHeader, user: User)
 
 @main("Ayamel - Add Content",
   Local(
@@ -23,7 +23,7 @@
 
         <h2>Content information</h2>
 
-        <form class="form-horizontal" method="post" action="@routes.ContentController.createFromUrl()">
+        <form class="form-horizontal" method="post" action="@routes.ContentController.createFromUrl(courseId)">
             <div class="control-group">
                 <label class="control-label" for="url">URL</label>
                 <div class="controls">

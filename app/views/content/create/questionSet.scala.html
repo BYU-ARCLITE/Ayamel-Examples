@@ -1,4 +1,4 @@
-@()(implicit request: RequestHeader, user: User)
+@(courseId: Long)(implicit request: RequestHeader, user: User)
 
 @main("Ayamel - Add Content",
   Local(
@@ -24,7 +24,7 @@
 
         @if(user.email.isDefined) {
 
-            <form class="form-horizontal" method="post" action="@routes.ContentController.createQuestionSet()">
+            <form class="form-horizontal" method="post" action="@routes.ContentController.createQuestionSet(courseId)">
                 <input type="hidden" name="contentType" value="playlist">
                 <div class="control-group">
                     <label class="control-label" for="title">Title</label>

@@ -47,19 +47,26 @@ object ContentController extends Controller {
   }
 
   /**
+   * Create content and then add it to the course
+   */
+  def createForCourse(courseId: Long) = {
+    createPage("url", courseId)
+  }
+   
+  /**
    * Content creation page
    */
-  def createPage(page: String = "file") = Authentication.authenticatedAction() {
+  def createPage(page: String = "file", courseId: Long = 0) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
         Authentication.enforcePermission("createContent") {
           page match {
-            case "url" => Ok(views.html.content.create.url())
-            case "batch" => Ok(views.html.content.create.batchUrl())
-            case "resource" => Ok(views.html.content.create.resource())
-            case "playlist" => Ok(views.html.content.create.playlist())
-            case "questions" => Ok(views.html.content.create.questionSet())
-            case _ => Ok(views.html.content.create.file())
+            case "url" => Ok(views.html.content.create.url(courseId))
+            case "batch" => Ok(views.html.content.create.batchUrl(courseId))
+            case "resource" => Ok(views.html.content.create.resource(courseId))
+            case "playlist" => Ok(views.html.content.create.playlist(courseId))
+            case "questions" => Ok(views.html.content.create.questionSet(courseId))
+            case _ => Ok(views.html.content.create.file(courseId))
           }
         }
   }
@@ -83,7 +90,7 @@ object ContentController extends Controller {
   /**
    * Creates content based on the posted data (URL)
    */
-  def createFromUrl = Authentication.authenticatedAction(parse.urlFormEncoded) {
+  def createFromUrl(courseId: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
 
@@ -111,11 +118,15 @@ object ContentController extends Controller {
               ResourceHelper.getUrlSize(url).flatMap { bytes =>
                 val info = ContentDescriptor(title, description, keywords, url, bytes, mime, labels = labels,
                   languages = languages)
-                ContentManagement.createContent(info, user, contentType).map { opt =>
-                  opt.map { content =>
-                    Redirect(routes.ContentController.view(content.id.get)).flashing("success" -> "Content added")
-                  }.getOrElse {
-                    Redirect(routes.ContentController.createPage("url")).flashing("error" -> "Failed to create content.")
+                if (courseId > 0) {
+                  ContentManagement.createAndAddToCourse(info, user, contentType, courseId)
+                } else {
+                  ContentManagement.createContent(info, user, contentType).map { opt =>
+                    opt.map { content =>
+                      Redirect(routes.ContentController.view(content.id.get)).flashing("success" -> "Content added")
+                    }.getOrElse {
+                      Redirect(routes.ContentController.createPage("url")).flashing("error" -> "Failed to create content.")
+                    }
                   }
                 }
               }
@@ -128,7 +139,7 @@ object ContentController extends Controller {
   /**
    * Creates content based on the posted data (URL)
    */
-  def createFromUrlBatch = Authentication.authenticatedAction(parse.multipartFormData) {
+  def createFromUrlBatch(courseId: Long) = Authentication.authenticatedAction(parse.multipartFormData) {
     implicit request =>
       implicit user =>
 
@@ -172,7 +183,7 @@ object ContentController extends Controller {
   /**
    * Creates content based on the posted data (File)
    */
-  def createFromFile = Authentication.authenticatedAction(parse.multipartFormData) {
+  def createFromFile(courseId: Long) = Authentication.authenticatedAction(parse.multipartFormData) {
     implicit request =>
       implicit user =>
 
@@ -217,7 +228,7 @@ object ContentController extends Controller {
   /**
    * Creates content based on the posted data (File)
    */
-  def createFromResource = Authentication.authenticatedAction(parse.urlFormEncoded) {
+  def createFromResource(courseId: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
 
@@ -260,7 +271,7 @@ object ContentController extends Controller {
   /**
    * Creates content based on the posted data (File)
    */
-  def createPlaylist = Authentication.authenticatedAction(parse.urlFormEncoded) {
+  def createPlaylist(courseId: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
 
@@ -298,7 +309,7 @@ object ContentController extends Controller {
   /**
    * Creates content based on the posted data (File)
    */
-  def createQuestionSet = Authentication.authenticatedAction(parse.urlFormEncoded) {
+  def createQuestionSet(courseId: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
 

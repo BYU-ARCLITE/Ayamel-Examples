@@ -54,18 +54,19 @@ GET     /course/:courseId/content/:id/stats             controllers.CourseConten
 GET     /course/:courseId/content/:id/stats/download    controllers.CourseContent.downloadStatsInCourse(id: Long, courseId: Long)
 GET     /course/:courseId/content/:id/stats/clear       controllers.CourseContent.clearStatsInCourse(id: Long, courseId: Long)
 POST    /course/:courseId/content/:id/remove            controllers.CourseContent.removeFromCourse(id: Long, courseId: Long)
+GET     /course/:courseId/createContent                 controllers.ContentController.createForCourse(courseId: Long)
 
 # Content pages
 GET     /content/mine                      controllers.ContentController.mine
 GET     /content/manage                    controllers.ContentController.manageContent
 POST    /content/manage                    controllers.ContentEditing.batchUpdateContent
-GET     /content/create/:page              controllers.ContentController.createPage(page: String)
-POST    /content/create/url                controllers.ContentController.createFromUrl
-POST    /content/create/batch              controllers.ContentController.createFromUrlBatch
-POST    /content/create/file               controllers.ContentController.createFromFile
-POST    /content/create/resource           controllers.ContentController.createFromResource
-POST    /content/create/playlist           controllers.ContentController.createPlaylist
-POST    /content/create/questions          controllers.ContentController.createQuestionSet
+GET     /content/create/:page              controllers.ContentController.createPage(page: String, courseId: Long = 0)
+POST    /content/create/url                controllers.ContentController.createFromUrl(courseId: Long)
+POST    /content/create/batch              controllers.ContentController.createFromUrlBatch(courseId: Long)
+POST    /content/create/file               controllers.ContentController.createFromFile(courseId: Long)
+POST    /content/create/resource           controllers.ContentController.createFromResource(courseId: Long)
+POST    /content/create/playlist           controllers.ContentController.createPlaylist(courseId: Long)
+POST    /content/create/questions          controllers.ContentController.createQuestionSet(courseId: Long)
 GET     /content/:id                       controllers.ContentController.view(id: Long)
 GET     /content/:id/stats                 controllers.ContentController.stats(id: Long)
 GET     /content/:id/stats/download        controllers.ContentController.downloadStats(id: Long)
@@ -137,7 +138,7 @@ POST    /captionaider/save                  controllers.CaptionAider.save
 GET     /annotations/:id/                   controllers.DocumentManager.editAnnotations(id: Long)
 POST    /annotations/save                   controllers.DocumentManager.saveAnnotations
 POST    /annotations/saveEditedAnnotations  controllers.DocumentManager.saveEditedAnnotations
-POST    /content/:contentId/delete/:docId  controllers.DocumentManager.deleteDocument(contentId: Long, docId: String)
+POST    /content/:contentId/delete/:docId   controllers.DocumentManager.deleteDocument(contentId: Long, docId: String)
 
 # Word List pages
 GET     /words                              controllers.WordLists.view

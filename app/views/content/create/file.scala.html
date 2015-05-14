@@ -1,4 +1,4 @@
-@()(implicit request: RequestHeader, user: User)
+@(courseId: Long)(implicit request: RequestHeader, user: User)
 
 @main("Ayamel - Add Content",
   Local(
@@ -108,7 +108,7 @@
     </div>
 
     <script type="text/javascript">
-        var uploadTarget = "@routes.ContentController.createFromFile()";
+        var uploadTarget = "@routes.ContentController.createFromFile(courseId)";
         $(function() {
             var langList = Object.keys(Ayamel.utils.p1map).map(function (p1) {
                     var code = Ayamel.utils.p1map[p1];

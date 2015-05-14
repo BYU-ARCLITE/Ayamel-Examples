@@ -1,14 +1,17 @@
 package service
 
 import concurrent.{ExecutionContext, Future}
-import models.{User, Content}
+import controllers.authentication.Authentication
+import controllers._
+import models.{User, Content, Course}
 import anorm.NotAssigned
 import javax.imageio.ImageIO
 import java.io.File
 import java.net.URL
 import ExecutionContext.Implicits.global
 import play.api.libs.json.{JsValue, Json}
-
+import play.api.mvc.Results._
+import play.api.mvc.{Action, Result, Request, Controller, SimpleResult, ResponseHeader}
 
 case class ContentDescriptor(title: String, description: String, keywords: String, url: String, bytes: Long,
                              mime: String, thumbnail: Option[String] = None, labels: List[String] = Nil,
@@ -18,6 +21,92 @@ case class ContentDescriptor(title: String, description: String, keywords: Strin
  * This service helps with the creation and management of content objects and their corresponding resources.
  */
 object ContentManagement {
+
+  /**
+   *  This function is used to get the course
+   *  without an implicit request
+   */
+  private def getCourse(id: Long)(f: Course => Result): Result = {
+    Course.findById(id).map( course => f(course) ).getOrElse(Errors.notFound)
+  }
+
+  /**
+   * Add newly created content to course
+   * @param courseId
+   * @param content Content object
+   */
+  private def addToCourse(courseId: Long, content: Content): Unit = {
+      getCourse(courseId) { course =>
+        course.addContent(content)
+        // how to check if content was correctly added to the course?
+        Ok("")
+      }
+  }
+
+  /**
+   * Creates content depending on the content type and adds it to the specified course
+   * @param info A ContentDescriptor which contains information about the content
+   * @param owner The user who is to own the content
+   * @param contentType The type of content
+   * @param courseId Id of target course
+   * @return The content object in a future
+   */
+  def createAndAddToCourse(info: ContentDescriptor, owner: User, contentType: Symbol, courseId: Long): Future[Result] = {
+
+    val redirect = Redirect(routes.Courses.view(courseId))
+
+    contentType match {
+      case 'audio => {
+        createAudio(info, owner).map { opt =>
+          opt.map { content =>
+            addToCourse(courseId, content)
+            redirect.flashing("success" -> "Content created and added to course")
+          }.getOrElse {
+            redirect.flashing("error" -> "Could not add content to course.")
+          }
+        }
+      }
+      case 'image => {
+        // Create a thumbnail
+        ImageTools.generateThumbnail(info.url).flatMap { thumbnail =>
+          val imageInfo = info.copy(thumbnail = thumbnail)
+          createImage(imageInfo, owner).map { opt =>
+            opt.map { content =>
+              addToCourse(courseId, content)
+              redirect.flashing("success" -> "Content created and added to course")
+            }.getOrElse {
+              redirect.flashing("error" -> "Could not add content to course.")
+            }
+          }
+        }
+      }
+      case 'video => {
+        // Create a thumbnail
+        VideoTools.generateThumbnail(info.url).flatMap { thumbnail =>
+          val videoInfo = info.copy(thumbnail = thumbnail)
+          createVideo(videoInfo, owner).map { opt =>
+            opt.map { content =>
+              addToCourse(courseId, content)
+              redirect.flashing("success" -> "Content created and added to course")
+            }.getOrElse {
+              redirect.flashing("error" -> "Could not add content to course.")
+            }
+          }
+        }
+      }
+      case 'text => {
+        createText(info, owner).map { opt =>
+          opt.map { content =>
+            addToCourse(courseId, content)
+            redirect.flashing("success" -> "Content created and added to course")
+          }.getOrElse {
+            redirect.flashing("error" -> "Could not add content to course")
+          }
+        }
+      }
+      case _ => Future { redirect.flashing("error" -> "Error creating content") }
+    }
+  }
 
   /**
    * Creates content depending on the content type
