@@ -9,6 +9,7 @@ import scala.concurrent.duration._
 import ExecutionContext.Implicits.global
 import anorm.NotAssigned
 import play.api.Logger
+import dataAccess.ResourceController
 
 /**
  * Controller for Administration pages and actions
@@ -219,7 +220,7 @@ object Administration extends Controller {
       implicit user =>
         Authentication.enforcePermission("admin") {
           val content = Content.list
-          Ok(views.html.admin.content(content))
+          Ok(views.html.admin.content(content, ResourceController.baseUrl))
         }
   }
 

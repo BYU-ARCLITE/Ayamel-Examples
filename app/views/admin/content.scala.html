@@ -1,4 +1,4 @@
-@(contentList: List[models.Content])(implicit request: RequestHeader, user: User)
+@(contentList: List[models.Content], resourceLibraryUrl: String)(implicit request: RequestHeader, user: User)
 
 @shorten(str: String) = {
     @if(str.length > 15) {
@@ -9,6 +9,9 @@
 }
 
 @main("Ayamel - Manage Content", Local(CSS("stylesheets/admin.css"))) {
+
+    @Dependencies(Extern("Ayamel.js",Rel("js/",JS("Resource.js"), JS("LangCodes.js"))))
+
     <div class="adminBackground">
     </div>
 
@@ -24,6 +27,7 @@
             <tr>
                 <th>Id</th>
                 <th>Name</th>
+                <th>Language</th>
                 <th>Shareability</th>
                 <th>Visibility</th>
                 <th>Resource Id</th>
@@ -32,9 +36,10 @@
                 <th></th>
             </tr>
             @for(content <- contentList) {
-                <tr>
+                <tr id="@content.resourceId">
                     <td>@content.id.get</td>
                     <td>@shorten(content.name)</td>
+                    <td class="lang"></td>
                     <td>
                         @if(content.shareability == models.Content.shareability.notShareable) {
                             Not Shareable
@@ -141,6 +146,18 @@
             $("#batchEditModal").on("show", function() {
                 var ids = $(".contentSelector:checked").map(function(e, f){return $(f).attr("data-id");}).toArray().join(",");
                 document.getElementById("ids").value = ids;
+            });
+
+            ResourceLibrary.setBaseUrl("@resourceLibraryUrl");
+            var rows = document.getElementsByTagName("tr");
+
+            [].forEach.call(rows, function(row){
+                if (row.id.length == 24) {
+                    var langCol = row.querySelector(".lang");
+                    ResourceLibrary.load(row.id).then(function(resource){
+                        langCol.innerHTML = Ayamel.utils.getLangName(resource.languages.iso639_3[0]);
+                    });
+                }
             });
         });
     </script>
