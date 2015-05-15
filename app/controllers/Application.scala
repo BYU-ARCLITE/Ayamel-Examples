@@ -29,7 +29,7 @@ object Application extends Controller {
   def home = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        Ok(views.html.application.home())
+        Ok(views.html.application.home(Course.list))
   }
 
   /**

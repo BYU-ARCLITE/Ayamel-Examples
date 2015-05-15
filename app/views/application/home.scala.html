@@ -1,4 +1,4 @@
-@()(implicit request: RequestHeader, user: User)
+@(courseList: List[Course])(implicit request: RequestHeader, user: User)
 
 @main("Ayamel",
   Local(
@@ -38,7 +38,7 @@
                 <button class="btn btn-inverse btn-large btn-block homeNavButton color-light-blue clicked" data-target="#myAyamel"><i class="icon-home"></i> My Ayamel</button>
             </div>
             <div class="span3">
-                <button class="btn btn-inverse btn-large btn-block homeNavButton color-light-magenta" data-target="#publicContent"><i class="icon-globe"></i> Public Content</button>
+                <button class="btn btn-inverse btn-large btn-block homeNavButton color-light-magenta" data-target="#openCourses"><i class="icon-globe"></i> Open Courses</button>
             </div>
             <div class="span3">
                 <a class="btn btn-inverse btn-large btn-block color-light-yellow" href="@routes.HelpPages.tableOfContents()" ><i class="icon-beaker"></i> Help Lab</a>
@@ -111,23 +111,37 @@
             </div>
         </div>
 
-        <div id="publicContent" class="homeNavContent">
-            <div class="pull-left"><h1>Latest Public Content</h1></div>
+        <div id="openCourses" class="homeNavContent">
+            <div class="pull-left"><h1>Open Courses</h1></div>
             <div class="clearfix"></div>
-
             <p>
-                Here is a sampling of the newest and freshest public content added to Ayamel. Enjoy!
+                The following is a complete list of all the open courses on Ayamel.
             </p>
 
-            <div id="publicContentHolder"></div>
-            <script type="text/javascript">
-                $(function() {
-                    ContentItemRenderer.renderAll({
-                        content: [@Html(Content.listPublic(12).map(_.toJson).mkString(","))],
-                        holder: document.getElementById("publicContentHolder")
-                    });
-                });
-            </script>
+            <div id="openCoursesHolder">
+                <div class="padded">
+                    <div class="row-fluid">
+                        <div class="span6">
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                <tr>
+                                    <th>Course Name</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                @for(course <- courseList.sortWith(_.name < _.name)) {
+                                    @if(course.enrollment == 'open) {
+                                        <tr>
+                                            <td><a href="@routes.Courses.view(course.id.get)">@course.name</a></td>
+                                        </tr>
+                                    }
+                                }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="homeNavContent" id="siteNews">
