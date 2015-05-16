@@ -33,7 +33,7 @@ var TranscriptPlayer = (function(){
                     {{#transcripts:ti}}\
                     <div class="transcriptContent" style="display:{{ ti === activeIndex ? "block" : "none" }}" data-trackindex="{{ti}}">\
                         {{#.cues:ci}}\
-                        <div class="transcriptCue {{direction(.text)}}" on-tap="cueclick" data-cueindex="{{ci}}">{{{.text}}}</div>\
+                        <div class="transcriptCue {{direction(.)}}" on-tap="cueclick" data-cueindex="{{ci}}">{{{HTML(.)}}}</div>\
                         {{/.cues}}\
                     </div>\
                     {{/transcripts}}\
@@ -43,7 +43,8 @@ var TranscriptPlayer = (function(){
                 activeIndex: 0,
                 transcripts: tracks,
                 sync: args.sync || false,
-                direction: function(text){ return !!text && Ayamel.Text.getDirection(text); }
+                direction: function(cue){ return Ayamel.Text.getDirection(cue.getCueAsHTML().textContent); },
+                HTML: function(cue){ return cue.getCueAsHTML().textContent; }
             }
         });
         ractive.on('sync',function(e){ ractive.set('sync',!ractive.data.sync); });
