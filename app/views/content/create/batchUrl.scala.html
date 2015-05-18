@@ -11,10 +11,10 @@
         <h1>Add Content</h1>
 
         <ul class="nav nav-tabs">
-            <li><a href="@routes.ContentController.createPage("page")">Upload File</a></li>
-            <li><a href="@routes.ContentController.createPage("url")">Link to URL</a></li>
+            <li><a href="@routes.ContentController.createPage("page", courseId)">Upload File</a></li>
+            <li><a href="@routes.ContentController.createPage("url", courseId)">Link to URL</a></li>
             <li class="active"><a href="#">Batch Add</a></li>
-            <li><a href="@routes.ContentController.createPage("resource")">Load from Resource</a></li>
+            <li><a href="@routes.ContentController.createPage("resource", courseId)">Load from Resource</a></li>
         </ul>
 
 

@@ -54,7 +54,7 @@ GET     /course/:courseId/content/:id/stats             controllers.CourseConten
 GET     /course/:courseId/content/:id/stats/download    controllers.CourseContent.downloadStatsInCourse(id: Long, courseId: Long)
 GET     /course/:courseId/content/:id/stats/clear       controllers.CourseContent.clearStatsInCourse(id: Long, courseId: Long)
 POST    /course/:courseId/content/:id/remove            controllers.CourseContent.removeFromCourse(id: Long, courseId: Long)
-GET     /course/:courseId/createContent                 controllers.ContentController.createForCourse(courseId: Long)
+GET     /content/create/:page/:courseId                 controllers.ContentController.createPage(page: String, courseId: Long)
 
 # Content pages
 GET     /content/mine                      controllers.ContentController.mine

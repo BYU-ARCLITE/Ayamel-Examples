@@ -16,7 +16,7 @@
             <h1 class="pull-left">Manage My Content</h1>
             @if(user.hasSitePermission("createContent")) {
               <!-- This should be a menu with all add methods, not just file upload -->
-              <a href="@routes.ContentController.createPage("file")" class="btn btn-blue pull-right pad-right-high pad-top-med">Add Content</a>
+              <a href="@routes.ContentController.createPage("file", 0)" class="btn btn-blue pull-right pad-right-high pad-top-med">Add Content</a>
             }
         </div>
 

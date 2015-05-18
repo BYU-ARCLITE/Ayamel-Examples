@@ -10,14 +10,13 @@
     JS("js/MimeExts.js"))
 ){
     <div class="padded">
-
         <h1>Add Content</h1>
 
         <ul class="nav nav-tabs">
-            <li><a href="@routes.ContentController.createPage("page")">Upload File</a></li>
+            <li><a href="@routes.ContentController.createPage("page", courseId)">Upload File</a></li>
             <li class="active"><a href="#">Link to URL</a></li>
-            <li><a href="@routes.ContentController.createPage("batch")">Batch Add</a></li>
-            <li><a href="@routes.ContentController.createPage("resource")">Load from Resource</a></li>
+            <li><a href="@routes.ContentController.createPage("batch", courseId)">Batch Add</a></li>
+            <li><a href="@routes.ContentController.createPage("resource", courseId)">Load from Resource</a></li>
         </ul>
 
 

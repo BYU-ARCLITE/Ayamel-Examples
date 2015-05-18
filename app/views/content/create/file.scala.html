@@ -21,9 +21,9 @@
 
         <ul class="nav nav-tabs">
             <li class="active"><a href="#">Upload File</a></li>
-            <li><a href="@routes.ContentController.createPage("url")">Link to URL</a></li>
-            <li><a href="@routes.ContentController.createPage("batch")">Batch Add</a></li>
-            <li><a href="@routes.ContentController.createPage("resource")">Load from Resource</a></li>
+            <li><a href="@routes.ContentController.createPage("url", courseId)">Link to URL</a></li>
+            <li><a href="@routes.ContentController.createPage("batch", courseId)">Batch Add</a></li>
+            <li><a href="@routes.ContentController.createPage("resource", courseId)">Load from Resource</a></li>
         </ul>
 
         <form class="form-horizontal" method="POST" enctype="multipart/form-data">

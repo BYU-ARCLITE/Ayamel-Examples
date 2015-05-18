@@ -142,7 +142,7 @@ var PopupBrowser = (function(){
         });
 
         $createButton.click(function(){
-            window.location = "/course/" + window.location.pathname.split("/").pop() + "/createContent";
+            window.location = "/content/create/file/" + window.location.pathname.split("/").pop();
         });
 
         return $modal;

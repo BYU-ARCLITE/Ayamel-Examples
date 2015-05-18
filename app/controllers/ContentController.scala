@@ -47,13 +47,6 @@ object ContentController extends Controller {
   }
 
   /**
-   * Create content and then add it to the course
-   */
-  def createForCourse(courseId: Long) = {
-    createPage("url", courseId)
-  }
-   
-  /**
    * Content creation page
    */
   def createPage(page: String = "file", courseId: Long = 0) = Authentication.authenticatedAction() {
@@ -125,14 +118,14 @@ object ContentController extends Controller {
                     opt.map { content =>
                       Redirect(routes.ContentController.view(content.id.get)).flashing("success" -> "Content added")
                     }.getOrElse {
-                      Redirect(routes.ContentController.createPage("url")).flashing("error" -> "Failed to create content.")
+                      Redirect(routes.ContentController.createPage("url", courseId)).flashing("error" -> "Failed to create content.")
                     }
                   }
                 }
               }
             }
           } else
-            Redirect(routes.ContentController.createPage("url")).flashing("error" -> "The given URL is invalid.")
+            Redirect(routes.ContentController.createPage("url", courseId)).flashing("error" -> "The given URL is invalid.")
         }
   }
 
@@ -198,7 +191,7 @@ object ContentController extends Controller {
           val labels = data.get("labels").map(_.toList).getOrElse(Nil)
           val keywords = labels.mkString(",")
           val languages = data.get("languages").map(_.toList).getOrElse(List("eng"))
-          lazy val redirect = Redirect(routes.ContentController.createPage("file"))
+          lazy val redirect = Redirect(routes.ContentController.createPage("file", courseId))
 
           // Upload the file
           request.body.file("file").map { file =>
@@ -245,7 +238,7 @@ object ContentController extends Controller {
                   val resourceType = (json \ "resource" \ "type").as[String]
 
                   if (resourceType == "data" || resourceType == "archive") {
-                     Redirect(routes.ContentController.createPage("resource"))
+                     Redirect(routes.ContentController.createPage("resource", courseId))
                     .flashing("error" -> "Can't create content from a data or archive resources.")
                   } else {
                     //TODO: properly handle collections
@@ -257,10 +250,10 @@ object ContentController extends Controller {
                       .flashing("success" -> "Content added.")
                   }
                 } else
-                  Redirect(routes.ContentController.createPage("resource"))
+                  Redirect(routes.ContentController.createPage("resource", courseId))
                     .flashing("error" -> "That resource doesn't exist")
               }.getOrElse {
-                Redirect(routes.ContentController.createPage("resource"))
+                Redirect(routes.ContentController.createPage("resource", courseId))
                   .flashing("error" -> "Couldn't access resource")
               }
             }
