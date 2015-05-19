@@ -16,13 +16,11 @@
 			l = ks.length, i = -1;
 		return {
 			next: function(){
-				if(i < l){
-					i++;
-					return {value: [ks[i],vs[i]], done: false};
-				}
+				i++;
+				if(i < l){ return {value: [ks[i],vs[i]], done: false}; }
 				return {value: void 0, done: true};
 			}
-		}
+		};
 	};
 
 	Map.prototype.keys = function(){
@@ -30,13 +28,11 @@
 			l = ks.length, i = -1;
 		return {
 			next: function(){
-				if(i < l){
-					i++;
-					return {value: ks[i], done: false};
-				}
+				i++;
+				if(i < l){ return {value: ks[i], done: false}; }
 				return {value: void 0, done: true};
 			}
-		}
+		};
 	};
 
 	Map.prototype.values = function(){
@@ -44,13 +40,11 @@
 			l = vs.length, i = -1;
 		return {
 			next: function(){
-				if(i < l){
-					i++;
-					return {value: vs[i], done: false};
-				}
+				i++;
+				if(i < l){ return {value: vs[i], done: false}; }
 				return {value: void 0, done: true};
 			}
-		}
+		};
 	};
 
 	Map.prototype.get = function(key){
