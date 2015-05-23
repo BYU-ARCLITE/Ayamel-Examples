@@ -104,7 +104,7 @@ var ContentRenderer = (function(){
                 });
             }
             translationsHolder.appendChild(html);
-            
+
             if(layout.DefinitionsTab){
                 $(layout.DefinitionsTab).tab("show");
                 //keep the top of the new translation visible.
@@ -503,8 +503,10 @@ var ContentRenderer = (function(){
                     }, false);
                 }
 
-                // Resize the panes' content to be correct size onload
-                window.dispatchEvent(new Event('resize',{bubbles:true}));
+                mainPlayer.then(function(){
+                    // Resize the panes' content to be correct size onload
+                    window.dispatchEvent(new Event('resize',{bubbles:true}));
+                });
 
                 // Handle thumbnail making
                 document.addEventListener('makeThumbnail',function (e) {

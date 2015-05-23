@@ -437,8 +437,7 @@ $(function() {
             // Because of the issue noted above, we do not use filter either
             [].forEach.call(timeline.getCachedTextTracks(), function(track){
                 availableTracks.push({value:track,text:track.label});
-                if (timeline.hasTextTrack(track.label))
-                    stracks.push(track);
+                if(timeline.hasTextTrack(track.label)){ stracks.push(track); }
             });
         });
 
@@ -632,7 +631,9 @@ $(function() {
         }, false);
 
         //Preload tracks into the editor
-        videoPlayer.textTracks.forEach(function(track){
+        videoPlayer.addEventListener('addtexttrack', function(event){
+            var track = event.detail.track;
+            if(timeline.hasCachedTextTrack(track)){ return; }
             timeline.cacheTextTrack(track,trackMimes.get(track),'server');
         });
 
