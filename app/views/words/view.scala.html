@@ -158,12 +158,16 @@
                             processData: false,
                             contentType: false,
                             dataType: "text",
-                            success: function (url) {
-                                $button.after("<div class='alert alert-success pad-top-med'><button type='button' class='close' data-dismiss='alert'>&times;</button> Quizlet set created. <a href='"+url+"'>View it now</a>.</div>")
+                            success: function(url){
+                                $button.after(
+                                    '<div class="alert alert-success pad-top-med">\
+                                        <button class="close" data-dismiss="alert">&times;</button>\
+                                        Quizlet set created.\
+                                        <a href="https://quizlet.com'+url+'" target="_blank">View it now</a>.\
+                                    </div>'
+                                );
                             },
-                            error: function(data) {
-                                console.log(data);
-                            }
+                            error: function(data){ console.log(data); }
                         });
                     }
                 }
