@@ -81,11 +81,11 @@
                             </a>
                         </div>
 
-						<div class="link">
-							<a href="@routes.HelpPages.tableOfContents()">
-								<i class="icon-question-sign"></i> Help
-							</a>
-						</div>
+                        <div class="link">
+                            <a href="@routes.HelpPages.tableOfContents()">
+                                <i class="icon-question-sign"></i> Help
+                            </a>
+                        </div>
                         <div class="link">
                             <a href="#" class="headerDropdownLink" data-target="#profileDropdown">
                                 <span class="profileIcon" style="background-image: url('@user.getPicture')"></span>
@@ -121,20 +121,20 @@
                             </div>
                         </div>
 
-                        <div class="link">
+                        <!--<div class="link">
                             <i class="icon-search"></i>
                             <input type="text" class="searchBox" id="searchBox" />
-                        </div>
+                        </div>-->
                     } else {
                         <div class="link">
                             <a href="@routes.HelpPages.tableOfContents()">
                                 <i class="icon-question-sign"></i> Help
                             </a>
-						</div>
-                        <div class="link">
+                        </div>
+                        <!--<div class="link">
                             <i class="icon-search"></i>
                             <input type="text" class="searchBox" id="searchBox" />
-                        </div>
+                        </div>-->
                         <div class="link">
                             <a href="@controllers.authentication.routes.Authentication.logout()"><i class="icon-off"></i> Log out</a>
                         </div>
@@ -226,11 +226,11 @@
                 });
 
                 // Set up the search box
-                document.getElementById("searchBox").addEventListener('keypress',function(event){
+                /*document.getElementById("searchBox").addEventListener('keypress',function(event){
                     if (event.which == 13) {
                         window.location = "/search?query=" + encodeURI(this.value);
                     }
-                }, false);
+                }, false);*/
 
                 setTimeout(function() {
                     $(".alert").fadeOut(500, function() {

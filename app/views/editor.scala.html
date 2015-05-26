@@ -116,10 +116,10 @@
                             </div>
                         </div>
 
-                        <div class="link">
+                        <!--<div class="link">
                             <i class="icon-search"></i>
                             <input type="text" class="searchBox" id="searchBox" />
-                        </div>
+                        </div>-->
                     } else {
                         <div class="link">
                             <a href="@controllers.authentication.routes.Authentication.logout()"><i class="icon-off"></i> Log out</a>
@@ -178,11 +178,11 @@
                 });
 
                 // Set up the search box
-                document.getElementById("searchBox").addEventListener('keypress', function(event){
+                /*document.getElementById("searchBox").addEventListener('keypress', function(event){
                     if (event.which == 13) {
                         window.location = "/search?query=" + this.value;
                     }
-                }, false);
+                }, false);*/
 
                 setTimeout(function() {
                     $(".alert").fadeOut(500, function() {

@@ -368,7 +368,7 @@ object ContentController extends Controller {
             } else
               Errors.forbidden
           } else {
-            Redirect(routes.Application.search)
+            Redirect(routes.Application.home)
               .flashing("error" -> "Requested content uses invalid resource")
           }
         }

@@ -108,13 +108,6 @@
                     event.stopPropagation();
                 });
 
-                // Set up the search box
-                document.getElementById("searchBox").addEventListener('keypress', function(event){
-                    if (event.which == 13) {
-                        window.location = "/search?query=" + encodeURI(this.value);
-                    }
-                }, false);
-
                 setTimeout(function() {
                     $(".alert").fadeOut(500, function() {
                         $(this).remove();
