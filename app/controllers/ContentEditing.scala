@@ -246,12 +246,10 @@ object ContentEditing extends Controller {
                                 to "http:". If it doesn't work, we'll just get a message that the thumbnail
                                 could not be generated.
                         */
-                         val url = {
-                            if (videoUrl.value.startsWith("https://"))
+                         val url = if (videoUrl.value.startsWith("https://"))
                                 JsString(videoUrl.value.replaceFirst("https://","http://"))
                             else
                                 videoUrl
-                         }
 
                          // Generate the thumbnail for that video
                           VideoTools.generateThumbnail(url.value, time).map {
