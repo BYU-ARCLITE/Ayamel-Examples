@@ -657,49 +657,5 @@ $(function() {
         timeline.on('removetrack', function(evt){
             updateSpacing();
         });
-
-        [   //Set up keyboard shortcuts
-            [Ayamel.KeyBinder.keyCodes.a,Timeline.CREATE],  //a - Add
-            [Ayamel.KeyBinder.keyCodes.s,Timeline.SELECT],  //s - Select
-            [Ayamel.KeyBinder.keyCodes.d,Timeline.DELETE],  //d - Delete
-            [Ayamel.KeyBinder.keyCodes.m,Timeline.MOVE],    //m - Move
-            [Ayamel.KeyBinder.keyCodes.q,Timeline.SPLIT],   //q - Split
-            [Ayamel.KeyBinder.keyCodes.o,Timeline.ORDER],   //o - Reorder
-            [Ayamel.KeyBinder.keyCodes.f,Timeline.SHIFT],   //f - Time shift
-            [Ayamel.KeyBinder.keyCodes.r,Timeline.REPEAT]   //r - Set repeat tool
-        ].forEach(function(pair) {
-            var tool = pair[1];
-            Ayamel.KeyBinder.addKeyBinding(pair[0], function() {
-                // Only do the shortcut if:
-                //  1. We aren't in an input
-                //  2. A modal isn't open
-                var inputFocused = ["TEXTAREA", "INPUT"].indexOf(document.activeElement.nodeName) > -1,
-                    modalOpen = document.querySelectorAll(".modal\\:visible").length;
-                if (!inputFocused && !modalOpen){ timeline.currentTool = tool; }
-            });
-        });
-
-        // Autocue controls
-        Ayamel.KeyBinder.addKeyBinding(Ayamel.KeyBinder.keyCodes['|'], timeline.breakPoint.bind(timeline),true);
-
-        //undo/redo shortcuts & track modes
-        document.addEventListener('keydown',function(e){
-            var track, code = e.keyCode;
-            if(code === 89 && (e.ctrlKey || e.metaKey)){
-                timeline.commandStack.redo();
-            e.preventDefault();
-            }else if(code === 90 && (e.ctrlKey || e.metaKey)){
-                timeline.commandStack.undo();
-            }else if(code > 47 && code < 58){
-                // map codes for number keys to range 0..9, where '1' is 0 and '0' is 9
-                track = timeline.tracks[(code - 39)%10];
-                if(track !== void 0){
-                    if(e.altKey || e.metaKey){ track.autoFill = !track.autoFill; }
-                    else if(e.ctrlKey){ track.autoCue = !track.autoCue; }
-                    else{ return; }
-                }
-            }else{ return; }
-            e.preventDefault();
-        },false);
     }
 });
