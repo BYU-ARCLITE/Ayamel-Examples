@@ -1,7 +1,8 @@
 package controllers.authentication
 
 import play.api.mvc.{Action, Controller}
-import play.api.libs.openid.OpenID
+import java.security.SecureRandom
+import play.api.libs.ws._
 import concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
 
@@ -14,27 +15,56 @@ object Google extends Controller {
    * Redirects to the Google login page. Uses OpenID
    */
   def login(action: String, path: String = "") = Action {
-    implicit request =>
-      val openID = "https://www.google.com/accounts/o8/id"
+    
 
+    implicit request =>
+      val openID = "https://accounts.google.com/o/oauth2/auth"
+
+      val random = SecureRandom()
+      val myVal = Array.Fill[Byte](30)(0)
+      val state_token = random.nextBytes(myVal).mkString
+
+
+
+      redirect("https://accounts.google.com/o/oauth2/auth", Map[String, String]
+        ("client_id" -> "1052219675733-16ul2rbrpm05reqe8cra14ib4m0j8bt8.apps.googleusercontent.com", 
+          "response_type" -> "code"
+          "scope" -> "openid email"
+          "redirect_uri" -> "https://ayamel.byu.edu/auth/google/callback/"
+          "state" -> state_token
+        )
+      )
+
+      /*
       Async {
         OpenID.redirectURL(
           openID, routes.Google.callback(action, path).absoluteURL(),
           Seq(
             "email" -> "http://axschema.org/contact/email",
             "firstname" -> "http://axschema.org/namePerson/first",
-            "lastname" -> "http://axschema.org/namePerson/last"
+            "lastname" -> "http://axschema.org/namePerson/last",
+            "openid.realm" -> "https://ayamel.byu.edu"
           )
         ).map(Redirect(_))
-      }
+      }*/
   }
+
 
   /**
    * When the Google login is successful, it is redirected here, where user info is extracted and the user is logged in.
    */
   def callback(action: String, path: String = "") = Action {
     implicit request =>
+      val code = request.queryString.get("code").get
       Async {
+        WS.url("Place Holder...").post("code" -> code, 
+          "client_id" -> "1052219675733-16ul2rbrpm05reqe8cra14ib4m0j8bt8.apps.googleusercontent.com",
+          "client_secret" -> "YcoCdjWna_-EFvoTxwx_q2uK",
+          "redirect_uri" -> "https://ayamel.byu.edu/auth/google/callback/",
+          "grant_type" -> "authorization_code"
+          ).flatMap{}
+
+        /*
         OpenID.verifiedId.map(userInfo => {
           // Get the user info
           //          val username = userInfo.id
@@ -49,7 +79,7 @@ object Google extends Controller {
             Authentication.merge(user)
           else
             Authentication.login(user, path)
-        })
+        })*/
       }
   }
 
