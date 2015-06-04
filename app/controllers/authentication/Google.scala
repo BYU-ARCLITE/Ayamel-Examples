@@ -34,19 +34,6 @@ object Google extends Controller {
           "state" -> state_token
         )
       )
-
-      /*
-      Async {
-        OpenID.redirectURL(
-          openID, routes.Google.callback(action, path).absoluteURL(),
-          Seq(
-            "email" -> "http://axschema.org/contact/email",
-            "firstname" -> "http://axschema.org/namePerson/first",
-            "lastname" -> "http://axschema.org/namePerson/last",
-            "openid.realm" -> "https://ayamel.byu.edu"
-          )
-        ).map(Redirect(_))
-      }*/
   }
 
 
@@ -54,32 +41,45 @@ object Google extends Controller {
    * When the Google login is successful, it is redirected here, where user info is extracted and the user is logged in.
    */
   def callback(action: String, path: String = "") = Action {
+  
+  // Confirm anti-forgery state token
+  
     implicit request =>
       val code = request.queryString.get("code").get
       Async {
-        WS.url("Place Holder...").post("code" -> code, 
+        WS.url("Place Holder for the token endpoint ").post("code" -> code, 
           "client_id" -> "1052219675733-16ul2rbrpm05reqe8cra14ib4m0j8bt8.apps.googleusercontent.com",
           "client_secret" -> "YcoCdjWna_-EFvoTxwx_q2uK",
           "redirect_uri" -> "https://ayamel.byu.edu/auth/google/callback/",
           "grant_type" -> "authorization_code"
-          ).flatMap{}
+          ).flatMap{
 
-        /*
-        OpenID.verifiedId.map(userInfo => {
-          // Get the user info
-          //          val username = userInfo.id
-          val firstName = userInfo.attributes("firstname")
-          val lastName = userInfo.attributes("lastname")
-          val email = userInfo.attributes("email")
+          /*
+          OUR PSEUDO CODE
+          4.)
+          >> We're getting a JSON object and we want to extract the fields from it
 
-          val name = firstName + " " + lastName
-          val user = Authentication.getAuthenticatedUser(email, 'google, Some(name), Some(email))
+          >> extract from JSON object:
+            - access_token
+            - id_token
+            - expires_in
+            - token_type
+            - refresh_token
+          
+          5.)
+          >> Turning ID_token into decoded JSON object and extract data - it is signed and base64 coded
+
+          >> get email address out of ID_token
+          */
+
+          val user = Authentication.getAuthenticatedUser(email, 'google, None, Some(email))
 
           if (action == "merge")
             Authentication.merge(user)
           else
             Authentication.login(user, path)
-        })*/
+
+        }
       }
   }
 
