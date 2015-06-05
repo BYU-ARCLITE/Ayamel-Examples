@@ -39,11 +39,11 @@ object SitePermissions {
   def addUserPermission(user: User, permission: String) {
     DB.withConnection {
       implicit connection =>
-        if (anorm.SQL("select 1 from " + tableName + " where userId = {uid} and permission = {permission}")
+        /*if (anorm.SQL("select 1 from " + tableName + " where userId = {uid} and permission = {permission}")
             .on('uid -> user.id.get, 'permission -> permission).list.isEmpty) {
           anorm.SQL("insert into " + tableName + " (userId, permission) values ({uid}, {permission})")
             .on('uid -> user.id.get, 'permission -> permission).executeUpdate()
-        }
+        }*/
     }
   }
     

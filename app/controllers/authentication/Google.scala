@@ -17,9 +17,13 @@ object Google extends Controller {
    */
   def login(action: String, path: String = "") = Action {
     implicit request =>
-      val random = SecureRandom()
-      val byte_array = Array.Fill[Byte](30)(0)
-      val state_token = random.nextBytes(byte_array).mkString
+      val random = new SecureRandom()
+      val byte_array = Array.fill[Byte](30)(0)
+
+      // what is random?
+
+      random.nextBytes(byte_array)//.mkString
+      val state_token = byte_array.mkString
 
       //Figure out how to save the action & the state token in the session or something
 
