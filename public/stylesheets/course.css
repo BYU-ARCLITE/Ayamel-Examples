@@ -23,6 +23,8 @@
 .faces {
     margin-top: 40px;
     margin-left: 5px;
+    height: 60px;
+    overflow: hidden;
 }
 
 .face {
