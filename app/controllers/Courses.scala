@@ -323,9 +323,8 @@ object Courses extends Controller {
                  req <- AddCourseRequest.findById(id.toLong);
                  if req.courseId == courseId
             ) { req.approve() }
-            Ok
-        } else
-            Errors.forbidden
+            Redirect(routes.Courses.approvePage(courseId))
+        } else{ Errors.forbidden }
   }
 
   /**
@@ -340,9 +339,40 @@ object Courses extends Controller {
                  req <- AddCourseRequest.findById(id.toLong);
                  if req.courseId == courseId
             ) { req.deny() }
-            Ok
-        } else
-            Errors.forbidden
+            Redirect(routes.Courses.approvePage(courseId))
+        } else{ Errors.forbidden }
+  }
+
+  /**
+   * Approves all selected join requests
+   * @param courseId The ID of the course
+   */
+  def approveRequests(courseId: Long) = Authentication.authenticatedAction(parse.multipartFormData) {
+    implicit request =>
+      implicit user =>
+        if (user.hasCoursePermission(Course.findById(courseId).get, "addStudent")) {
+          for ( id <- request.body.dataParts("reqid");
+                req <- AddCourseRequest.findById(id.toLong);
+                if req.courseId == courseId
+          ) { req.approve() }
+          Ok
+        } else { Errors.forbidden }
+  }
+
+  /**
+   * Denies all selected join requests
+   * @param courseId The ID of the course
+   */
+  def denyRequests(courseId: Long) = Authentication.authenticatedAction(parse.multipartFormData) {
+    implicit request =>
+      implicit user =>
+        if (user.hasCoursePermission(Course.findById(courseId).get, "addStudent")) {
+          for ( id <- request.body.dataParts("reqid");
+                req <- AddCourseRequest.findById(id.toLong);
+                if req.courseId == courseId
+          ) { req.deny() }
+          Ok
+        } else { Errors.forbidden }
   }
 
   /**
