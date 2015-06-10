@@ -152,6 +152,10 @@
     height: 35px;
     font-weight: bold;
     font-size: 20px;
+    max-width: calc(100% - 250px);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .contentItem.blockFormat .contentStats {
