@@ -1,6 +1,7 @@
 package controllers.authentication
 
 import play.api.mvc.{Action, Controller}
+import play.api.mvc.Results.InternalServerError
 import java.security.SecureRandom
 import play.api.libs.ws.{WS, Response}
 import play.api.libs.json.{Json, JsObject}
@@ -33,14 +34,23 @@ object Google extends Controller {
 
       //Figure out how to save the action & the state token in the session or something
 
-      Redirect("https://accounts.google.com/o/oauth2/auth", Map(
-          "client_id" -> Seq("1052219675733-16ul2rbrpm05reqe8cra14ib4m0j8bt8.apps.googleusercontent.com"),
-          "response_type" -> Seq("code"),
-          "scope" -> Seq("openid email"),
-          "redirect_uri" -> Seq(redirect_uri),
-          "state" -> Seq(state_token)
-        ), 303
-      )
+      Async {
+        WS.url("https://accounts.google.com/.well-known/openid-configuration")
+          .get().map { discovery: Response =>
+          try {
+            val auth_endpoint = (discovery.json \ "authorization_endpoint")
+            Redirect(auth_endpoint, Map(
+                "client_id" -> Seq("1052219675733-16ul2rbrpm05reqe8cra14ib4m0j8bt8.apps.googleusercontent.com"),
+                "response_type" -> Seq("code"),
+                "scope" -> Seq("openid email"),
+                "redirect_uri" -> Seq(redirect_uri),
+                "state" -> Seq(state_token)
+              ), 303
+            )
+          } catch(_)
+            InternalServerError
+        }
+      }
   }
 
   def decodeIdTokenJson(jwt: String) = {
