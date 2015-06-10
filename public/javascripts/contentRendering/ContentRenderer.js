@@ -252,8 +252,8 @@ var ContentRenderer = (function(){
             }
         }, false);
 
-         window.addEventListener('resize', function(event){
-            if(!args.screenAdaption || !args.screenAdaption.fit || Ayamel.utils.FullScreen.isFullScreen){ return; }
+        window.addEventListener('resize', function(event){
+            if(!args.screenAdaption || !args.screenAdaption.fit){ return; }
 
             var el, sidebarHeight, slideOuts = [], avaliableHeight, usedSpace,
                 tabsSizer = function(tabItem){
