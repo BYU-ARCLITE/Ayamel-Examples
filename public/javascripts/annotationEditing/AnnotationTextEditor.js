@@ -97,9 +97,7 @@ var AnnotationTextEditor = (function(){
         }
 
         function addTracks(tracks) {
-            if (typeof transcriptPlayer === 'undefined') {
-                return;
-            }
+            if (typeof transcriptPlayer === 'undefined') { return; }
             [].forEach.call(tracks, function(track) {
                 transcriptPlayer.addTrack(track.track)
             });
@@ -130,10 +128,8 @@ var AnnotationTextEditor = (function(){
                 transcriptPlayer = new TranscriptPlayer({
                     holder: args.holder,
                     captionTracks: [],
-                    sync: false
-                    /* filter: function(cue, $cue) {
-                        setupTextAnnotations($cue);
-                    } */
+                    sync: false,
+                    annotating:true
                 });
                 addTracks(captionTracks);
                 if (tracks.length > 0) {

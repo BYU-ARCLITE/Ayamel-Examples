@@ -44,7 +44,7 @@ var TranscriptPlayer = (function(){
                 transcripts: tracks,
                 sync: args.sync || false,
                 direction: function(cue){ return Ayamel.Text.getDirection(cue.getCueAsHTML().textContent); },
-                HTML: function(cue){ return cue.getCueAsHTML().textContent; }
+                HTML: args.annotating ? getHTMLannotating : getHTMLvideo
             }
         });
         ractive.on('sync',function(e){ ractive.set('sync',!ractive.data.sync); });
@@ -55,6 +55,14 @@ var TranscriptPlayer = (function(){
                 track = tracks[ti];
             target.dispatchEvent(new CustomEvent("cueclick",{bubbles:true,detail:{track:track,cue:track.cues[ci]}}));
         });
+
+        function getHTMLvideo(cue) {
+            return cue.getCueAsHTML().textContent;
+        }
+
+        function getHTMLannotating(cue) {
+            return cue.text;
+        }
 
         /*
          * Define the module interface.
