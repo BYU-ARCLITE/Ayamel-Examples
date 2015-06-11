@@ -10,6 +10,7 @@ import concurrent.ExecutionContext
 import scala.concurrent.duration.Duration
 import scala.concurrent.Await
 import ExecutionContext.Implicits.global
+import play.api.Play
 
 /**
  * Controller which handles Google authentication.
@@ -93,12 +94,15 @@ object Google extends Controller {
       val redirect_route = routes.Google.callback()
       val redirect_uri = redirect_route.absoluteURL()
 
+      val client_id = Play.current.configuration.getString("openID.client_id")
+      val client_secret = Play.current.configuration.getString("openID.client_secret")
+
       Async {
         WS.url(getTokenEndPoint).post(
           Map(
             "code" -> codeSeq,
-            "client_id" -> Seq("1052219675733-16ul2rbrpm05reqe8cra14ib4m0j8bt8.apps.googleusercontent.com"),
-            "client_secret" -> Seq("YcoCdjWna_-EFvoTxwx_q2uK"),
+            "client_id" -> Seq(client_id),
+            "client_secret" -> Seq(client_secret),
             "redirect_uri" -> Seq(redirect_uri),
             "grant_type" -> Seq("authorization_code")
           )
