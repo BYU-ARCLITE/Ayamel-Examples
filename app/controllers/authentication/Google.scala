@@ -29,7 +29,7 @@ object Google extends Controller {
       val byte_array = Array.fill[Byte](30)(0)
 
       random.nextBytes(byte_array)
-      val state_token = byte_array.mkString
+      val state_token = byte_array.mkString()
 
       val redirect_uri = routes.Google.callback().absoluteURL()
 
@@ -58,8 +58,12 @@ object Google extends Controller {
 
   def decodeIdTokenJson(jwt: String) = {
     val b64payload = jwt.split('.')(1)
-    val jsString = Base64.decodeBase64(b64payload.getBytes("utf-8")).mkString
-    logger.debug(jsString)
+    logger.debug("Payload: " + b64payload)
+    val jsBytes = Base64.decodeBase64(b64payload)
+    logger.debug("got bytes")
+    logger.debug("bytes: " + jsBytes.toString)
+    val jsString = new String(jsBytes, "UTF-8")
+    logger.debug("jsString: " + jsString)
     Json.parse(jsString)
   }
   
@@ -78,9 +82,9 @@ object Google extends Controller {
       val codeSeq: Seq[String] = request.queryString.get("code").get
       val redirect_uri = routes.Google.callback().absoluteURL()
 
-      val client_id = Play.current.configuration.getString("openID.client_id")
-      val client_secret = Play.current.configuration.getString("openID.client_secret")
-
+      val client_id : String = Play.current.configuration.getString("openID.client_id").get
+      val client_secret : String = Play.current.configuration.getString("openID.client_secret").get
+      
       Async {
         WS.url("https://accounts.google.com/.well-known/openid-configuration").get()
         .flatMap { discovery: Response =>
@@ -94,19 +98,23 @@ object Google extends Controller {
             )
           )
         }.map { response: Response =>
-          logger.debug(response.body)
           val id_token = (response.json \ "id_token").as[String]
           val id_json = decodeIdTokenJson(id_token)
-              
           // check that the email was actually verified - there's a boolean property of the returned JSON object for that
-          val email_verified = (id_json \ "email_verified").as[String]
-          val email = (id_json \ "email").as[String]
+          val email_verified = (id_json \ "email_verified").as[Boolean]
 
-          logger.debug(email)
+          if(email_verified) {
+            logger.debug("Ces Troupe!")
+            val email = (id_json \ "email").as[String]
 
-          val user = Authentication.getAuthenticatedUser(email, 'google, None, Some(email))
+            val user = Authentication.getAuthenticatedUser(email, 'google, None, Some(email))
 
-          Authentication.login(user, path)
+            Authentication.login(user, path)
+
+          }
+          else {
+            Redirect(routes.Google.callback().absoluteURL())
+          }
         }
       }
   }
