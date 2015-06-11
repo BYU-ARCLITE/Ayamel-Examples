@@ -29,7 +29,7 @@ object Google extends Controller {
       val byte_array = Array.fill[Byte](30)(0)
 
       random.nextBytes(byte_array)
-      val state_token = byte_array.mkString()
+      val state_token = byte_array.mkString
 
       val redirect_uri = routes.Google.callback().absoluteURL()
 
@@ -78,13 +78,18 @@ object Google extends Controller {
 
       // Eliminate unchecked ".get"s
       // Confirm anti-forgery state token
+
+    if(request.queryString.get("code").isEmpty) {
+      Redirect(controllers.routes.Application.index())
+    } else {
+
       val stateSeq: Seq[String] = request.queryString.get("state").get
       val codeSeq: Seq[String] = request.queryString.get("code").get
       val redirect_uri = routes.Google.callback().absoluteURL()
 
       val client_id : String = Play.current.configuration.getString("openID.client_id").get
       val client_secret : String = Play.current.configuration.getString("openID.client_secret").get
-      
+
       Async {
         WS.url("https://accounts.google.com/.well-known/openid-configuration").get()
         .flatMap { discovery: Response =>
@@ -102,20 +107,17 @@ object Google extends Controller {
           val id_json = decodeIdTokenJson(id_token)
           // check that the email was actually verified - there's a boolean property of the returned JSON object for that
           val email_verified = (id_json \ "email_verified").as[Boolean]
-
           if(email_verified) {
             logger.debug("Ces Troupe!")
             val email = (id_json \ "email").as[String]
-
             val user = Authentication.getAuthenticatedUser(email, 'google, None, Some(email))
-
             Authentication.login(user, path)
-
           }
           else {
-            Redirect(routes.Google.callback().absoluteURL())
+            Redirect(controllers.routes.Application.index())
           }
         }
       }
+    } 
   }
 }
