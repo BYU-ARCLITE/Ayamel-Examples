@@ -60,20 +60,22 @@ object Authentication extends Controller {
    */
   def logout = Action {
     implicit request =>
-      val user = getUserFromRequest()(request).get
-      val accountLink = user.getAccountLink
       val service = controllers.routes.Application.index().absoluteURL()
-      val casLogoutUrl  = "https://cas.byu.edu/cas/logout?service="
+      getUserFromRequest()(request).map { user =>
+        val accountLink = user.getAccountLink
+        val casLogoutUrl  = "https://cas.byu.edu/cas/logout?service="
 
-      // If the account is not linked, there exists only one authentication scheme
-      val redir:String = if (accountLink == None) {
-        if (user.authScheme == 'cas) { casLogoutUrl + service } else { service }
-      } else {
-        val users = accountLink.get.getUsers
-        val authSchemes = for (u <- accountLink.get.getUsers) yield { u.authScheme }
-        if (authSchemes.contains('cas)) { casLogoutUrl + service } else { service }
-      }
-      Redirect(redir).withNewSession
+        // If the account is not linked, there exists only one authentication scheme
+        val redir:String = if (accountLink == None) {
+          if (user.authScheme == 'cas) { casLogoutUrl + service } else { service }
+        } else {
+          val users = accountLink.get.getUsers
+          val authSchemes = for (u <- accountLink.get.getUsers) yield { u.authScheme }
+          if (authSchemes.contains('cas)) { casLogoutUrl + service } else { service }
+        }
+        Redirect(redir)
+      }.getOrElse(Redirect(service))
+        .withNewSession
   }
 
   /**
