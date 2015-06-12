@@ -10,8 +10,11 @@ import play.api.Logger
 import concurrent.ExecutionContext
 import scala.concurrent.duration.Duration
 import scala.concurrent.Await
+import scala.concurrent.Future
 import ExecutionContext.Implicits.global
 import play.api.Play
+import play.api.cache.Cache
+import play.api.Play.current
 
 /**
  * Controller which handles Google authentication.
@@ -38,8 +41,10 @@ object Google extends Controller {
       try {
         Async {
           //Figure out how to cache the discovery document
-          WS.url("https://accounts.google.com/.well-known/openid-configuration")
-          .get().map { discovery: Response =>
+
+          //
+          //Cache.set("googleopenid.discoverydoc", discoveryDoc)
+          getDiscoveryDoc.map { discovery: Response =>
             val auth_endpoint = (discovery.json \ "authorization_endpoint")
             Redirect(auth_endpoint.as[String], Map(
                 "client_id" -> Seq("1052219675733-16ul2rbrpm05reqe8cra14ib4m0j8bt8.apps.googleusercontent.com"),
@@ -57,14 +62,14 @@ object Google extends Controller {
       }
   }
 
+  def getDiscoveryDoc() = Cache.getOrElse[Future[Response]]("googleopenid.discoverydoc") {
+    WS.url("https://accounts.google.com/.well-known/openid-configuration").get()
+  }
+
   def decodeIdTokenJson(jwt: String) = {
     val b64payload = jwt.split('.')(1)
-    logger.debug("Payload: " + b64payload)
     val jsBytes = Base64.decodeBase64(b64payload)
-    logger.debug("got bytes")
-    logger.debug("bytes: " + jsBytes.toString)
     val jsString = new String(jsBytes, "UTF-8")
-    logger.debug("jsString: " + jsString)
     Json.parse(jsString)
   }
   
@@ -93,7 +98,7 @@ object Google extends Controller {
       val client_secret : String = Play.current.configuration.getString("openID.client_secret").get
 
       Async {
-        WS.url("https://accounts.google.com/.well-known/openid-configuration").get()
+        getDiscoveryDoc
         .flatMap { discovery: Response =>
           WS.url((discovery.json \ "token_endpoint").as[String]).post(
             Map(
@@ -110,13 +115,19 @@ object Google extends Controller {
 
           val email_verified = (id_json \ "email_verified").as[Boolean]
           if(email_verified) {
-            logger.debug("Ces Troupe!")
             val email = (id_json \ "email").as[String]
             val user = Authentication.getAuthenticatedUser(email, 'google, None, Some(email))
             Authentication.login(user, path)
           }
           else {
-            Redirect(controllers.routes.Application.index())
+            Redirect(controllers.routes.Application.index()).flashing(
+              "success" ->
+                """
+                Sorry! We couldn't log you in because your email address has
+                not been verified. Please go to your Google account and get
+                your email verified before logging in with your Google account.
+                """
+            )
           }
         }
       }
