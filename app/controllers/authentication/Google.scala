@@ -37,6 +37,7 @@ object Google extends Controller {
 
       try {
         Async {
+          //Figure out how to cache the discovery document
           WS.url("https://accounts.google.com/.well-known/openid-configuration")
           .get().map { discovery: Response =>
             val auth_endpoint = (discovery.json \ "authorization_endpoint")
@@ -79,7 +80,8 @@ object Google extends Controller {
       // Eliminate unchecked ".get"s
       // Confirm anti-forgery state token
 
-    if(request.queryString.get("code").isEmpty) {
+    val queryString = request.queryString
+    if(queryString.get("code").isEmpty) {
       Redirect(controllers.routes.Application.index())
     } else {
 
@@ -105,7 +107,7 @@ object Google extends Controller {
         }.map { response: Response =>
           val id_token = (response.json \ "id_token").as[String]
           val id_json = decodeIdTokenJson(id_token)
-          // check that the email was actually verified - there's a boolean property of the returned JSON object for that
+
           val email_verified = (id_json \ "email_verified").as[Boolean]
           if(email_verified) {
             logger.debug("Ces Troupe!")
