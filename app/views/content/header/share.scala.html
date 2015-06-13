@@ -1,5 +1,8 @@
 @(content: models.Content)(implicit request: RequestHeader, user: User)
 
+@import play.api.Play
+@import play.api.Play.current
+
 @embedSize = @{
     Map(
         "generic" -> "height: 600px; width: 800px;",
@@ -9,7 +12,7 @@
         "audio2" -> "height: 200px; width: 840px;"
     )
 }
-@if(true) {
+@defining(Play.configuration.getBoolean("HTTPS").getOrElse(false)) { isHTTPS =>
     <div id="shareModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="shareModalLabel" aria-hidden="true">
         <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
@@ -20,14 +23,14 @@
             <div>
 
                 <!-- Place this tag where you want the share button to render. -->
-                <div id="googlePlusShare" class="g-plus" data-action="share" data-annotation="bubble" data-height="24" data-href="@routes.ContentController.shareAccess(content.id.get, content.authKey).absoluteURL()"></div>
+                <div id="googlePlusShare" class="g-plus" data-action="share" data-annotation="bubble" data-height="24" data-href="@routes.ContentController.shareAccess(content.id.get, content.authKey).absoluteURL(isHTTPS)"></div>
 
                 <div>
-                    <a id="twitterShare" href="https://twitter.com/share" class="twitter-share-button" data-url="@routes.ContentController.shareAccess(content.id.get, content.authKey).absoluteURL()" data-size="large" data-hashtags="ayamel">Tweet</a>
+                    <a id="twitterShare" href="https://twitter.com/share" class="twitter-share-button" data-url="@routes.ContentController.shareAccess(content.id.get, content.authKey).absoluteURL(isHTTPS)" data-size="large" data-hashtags="ayamel">Tweet</a>
                 </div>
 
                 @if(content.contentType == 'image) {
-                    @defining(java.net.URLEncoder.encode(routes.ContentController.shareAccess(content.id.get, content.authKey).absoluteURL(), "UTF-8")) { encodedUrl =>
+                    @defining(java.net.URLEncoder.encode(routes.ContentController.shareAccess(content.id.get, content.authKey).absoluteURL(isHTTPS), "UTF-8")) { encodedUrl =>
                         @defining(java.net.URLEncoder.encode(content.thumbnail, "UTF-8")) { encodedMedia =>
                             @defining(java.net.URLEncoder.encode(content.name, "UTF-8")) { encodedTitle =>
                                 <a id="pinterestShare" data-pin-config="beside" href="//pinterest.com/pin/create/button/?url=@{encodedUrl}&media=@{encodedMedia}&description=@{encodedTitle}" data-pin-do="buttonPin" ><img /></a>
@@ -39,10 +42,10 @@
             </div>
 
             <h4>Embed Code</h4>
-            <pre>&lt;iframe src="@{routes.ContentController.shareAccess(content.id.get, content.authKey).absoluteURL()}?embed=true" style="border: none; @embedSize(content.embedClass)"&gt;&lt;/iframe&gt;</pre>
+            <pre>&lt;iframe src="@{routes.ContentController.shareAccess(content.id.get, content.authKey).absoluteURL(isHTTPS)}?embed=true" style="border: none; @embedSize(content.embedClass)"&gt;&lt;/iframe&gt;</pre>
 
             <h4>URL</h4>
-            <code>@routes.ContentController.shareAccess(content.id.get, content.authKey).absoluteURL()</code>
+            <code>@routes.ContentController.shareAccess(content.id.get, content.authKey).absoluteURL(isHTTPS)</code>
         </div>
         <div class="modal-footer">
             <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>

@@ -1,33 +1,30 @@
 @(content: models.Content)(implicit request: RequestHeader, user: User)
 
 @import dataAccess.PlayGraph
+@import play.api.Play
+@import play.api.Play.current
 
 @main("Ayamel - Playlist") {
+  @defining(Play.configuration.getBoolean("HTTPS").getOrElse(false)) { isHTTPS =>
+    <div class="padded">
+        <h1><i class="icon-list"></i> @content.name</h1>
+        <p>@content.settings("description")</p>
+        <div>
+            <a href="@routes.Playlists.view(content.id.get)" class="btn btn-blue"><i class="icon-play-sign"></i> Play</a>
+            @if(content.isEditableBy(user)) {
+                <form action="@{PlayGraph.host}author" method="post" class="inline-block">
+                    <input name="author" value="@{PlayGraph.authorKey.consumerKey}" type="hidden"/>
+                    <input name="player" value="@{PlayGraph.playerKey.consumerKey}" type="hidden"/>
+                    <input name="graph" value="@content.resourceId" type="hidden"/>
+                    <input name="action" value="edit" type="hidden"/>
+                    <input name="exit" value="@routes.Playlists.about(content.id.get).absoluteURL(isHTTPS)" type="hidden"/>
+                    <input name="play" value="@routes.Playlists.view(content.id.get).absoluteURL(isHTTPS)" type="hidden"/>
+                    <input name="widgets" value="@routes.Assets.at("javascripts/playGraph/widgets.js").absoluteURL(isHTTPS)" type="hidden"/>
 
-	<div class="padded">
-
-		<h1><i class="icon-list"></i> @content.name</h1>
-
-		<p>@content.settings("description")</p>
-
-		<div>
-			<a href="@routes.Playlists.view(content.id.get)" class="btn btn-blue"><i class="icon-play-sign"></i> Play</a>
-			@if(content.isEditableBy(user)) {
-				<form action="@{PlayGraph.host}author" method="post" class="inline-block">
-				    <input name="author" value="@{PlayGraph.authorKey.consumerKey}" type="hidden"/>
-				    <input name="player" value="@{PlayGraph.playerKey.consumerKey}" type="hidden"/>
-				    <input name="graph" value="@content.resourceId" type="hidden"/>
-				    <input name="action" value="edit" type="hidden"/>
-				    <input name="exit" value="@routes.Playlists.about(content.id.get).absoluteURL()" type="hidden"/>
-				    <input name="play" value="@routes.Playlists.view(content.id.get).absoluteURL()" type="hidden"/>
-				    <input name="widgets" value="@routes.Assets.at("javascripts/playGraph/widgets.js").absoluteURL()" type="hidden"/>
-
-				    <button type="submit" class="btn btn-yellow"><i class="icon-edit-sign"></i> Edit</button>
-				</form>
-			}
-		</div>
-	</div>
-
-	
-
+                    <button type="submit" class="btn btn-yellow"><i class="icon-edit-sign"></i> Edit</button>
+                </form>
+            }
+        </div>
+    </div>
+  }
 }

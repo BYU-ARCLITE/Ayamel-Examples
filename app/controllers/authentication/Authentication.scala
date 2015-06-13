@@ -1,6 +1,7 @@
 package controllers.authentication
 
 import play.api.mvc._
+import play.api.Play.current
 import models.{User, SitePermissions}
 import anorm.NotAssigned
 import controllers.Errors
@@ -10,6 +11,8 @@ import service.TimeTools
  * This controller does logging out and has a bunch of helpers for dealing with authentication and permissions.
  */
 object Authentication extends Controller {
+
+  val isHTTPS = current.configuration.getBoolean("HTTPS").getOrElse(false)
 
   /**
    * Given a user, logs the user in and sets up the session
@@ -60,7 +63,7 @@ object Authentication extends Controller {
    */
   def logout = Action {
     implicit request =>
-      val service = controllers.routes.Application.index().absoluteURL()
+      val service = controllers.routes.Application.index().absoluteURL(isHTTPS)
       getUserFromRequest()(request).map { user =>
         val accountLink = user.getAccountLink
         val casLogoutUrl  = "https://cas.byu.edu/cas/logout?service="

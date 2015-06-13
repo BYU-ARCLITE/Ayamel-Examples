@@ -1,6 +1,7 @@
 package controllers
 
 import play.api.mvc.Controller
+import play.api.Play.current
 import controllers.authentication.Authentication
 import service.HashTools
 import dataAccess.Quizlet
@@ -13,6 +14,8 @@ import java.text.Normalizer
  * Controller dealing with word lists
  */
 object WordLists extends Controller {
+
+  val isHTTPS = current.configuration.getBoolean("HTTPS").getOrElse(false)
 
   /*
    * Recognize and fix certain diacritics that can cause issues in sql
@@ -90,7 +93,7 @@ object WordLists extends Controller {
           "client_id" -> Seq(Quizlet.clientId),
           "scope" -> Seq("write_set"),
           "state" -> Seq(HashTools.md5Hex(request.session.toString)),
-          "redirect_uri" -> Seq(routes.WordLists.authorizeCallback().absoluteURL())
+          "redirect_uri" -> Seq(routes.WordLists.authorizeCallback().absoluteURL(isHTTPS))
         )
         Redirect("https://quizlet.com/authorize/", data)
   }

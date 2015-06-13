@@ -1,6 +1,10 @@
 @(user: User, course: Course)(implicit request: RequestHeader)
 
-@if(user.hasCoursePermission(course, "addStudent")) {
+@import play.api.Play
+@import play.api.Play.current
+
+@defining(Play.configuration.getBoolean("HTTPS").getOrElse(false)) { isHTTPS =>
+  @if(user.hasCoursePermission(course, "addStudent")) {
     <div id="joinLinkModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="joinLinkModalLabel" aria-hidden="true">
         <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
@@ -10,10 +14,11 @@
             <p>
                 You can share this link with people you wish to add to this course.
             </p>
-            <pre>@routes.Courses.joinLink(course.id.get, course.lmsKey).absoluteURL()</pre>
+            <pre>@routes.Courses.joinLink(course.id.get, course.lmsKey).absoluteURL(isHTTPS)</pre>
         </div>
         <div class="modal-footer">
             <button class="btn btn-blue" data-dismiss="modal" aria-hidden="true">Close</button>
         </div>
     </div>
+  }
 }

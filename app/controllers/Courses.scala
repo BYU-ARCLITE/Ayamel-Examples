@@ -2,6 +2,7 @@ package controllers
 
 import authentication.Authentication
 import play.api.mvc._
+import play.api.Play.current
 import models._
 import service.{TimeTools, LMSAuth}
 import anorm.NotAssigned
@@ -10,6 +11,8 @@ import anorm.NotAssigned
  * This controller manages all the pages relating to courses, including authentication.
  */
 object Courses extends Controller {
+
+  val isHTTPS = current.configuration.getBoolean("HTTPS").getOrElse(false)
 
   /**
    * Gets the course. A mix-in for action composition.
@@ -43,7 +46,7 @@ object Courses extends Controller {
             {routes.Assets.at("images/lti/icon.png")}
           </blti:icon>
           <blti:launch_url>
-            {routes.Courses.ltiAuth(course.id.get).absoluteURL()}
+            {routes.Courses.ltiAuth(course.id.get).absoluteURL(isHTTPS)}
           </blti:launch_url>
           <blti:extensions platform="canvas.instructure.com">
             <lticm:property name="tool_id">Ayamel</lticm:property>

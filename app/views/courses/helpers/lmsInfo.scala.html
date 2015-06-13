@@ -1,6 +1,10 @@
 @(user: User, course: Course)(implicit request: RequestHeader)
 
-@if(user.hasCoursePermission(course, "teacher")) {
+@import play.api.Play
+@import play.api.Play.current
+
+@defining(Play.configuration.getBoolean("HTTPS").getOrElse(false)) { isHTTPS =>
+  @if(user.hasCoursePermission(course, "teacher")) {
     <div id="lmsModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="lmsModalLabel" aria-hidden="true">
         <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
@@ -26,14 +30,14 @@
                 automatically configure the tool:
             </p>
             <p>
-                <code>@routes.Courses.ltiConfiguration(course.id.get).absoluteURL()</code>
+                <code>@routes.Courses.ltiConfiguration(course.id.get).absoluteURL(isHTTPS)</code>
             </p>
             <h4>Launch URL</h4>
             <p>
                 If the LMS does not support the automatic configuration, you can use the following launch URL:
             </p>
             <p>
-                <code>@routes.Courses.ltiAuth(course.id.get).absoluteURL()</code>
+                <code>@routes.Courses.ltiAuth(course.id.get).absoluteURL(isHTTPS)</code>
             </p>
 
             @*<h4>Keyed URL</h4>*@
@@ -50,4 +54,5 @@
             <button class="btn btn-blue" data-dismiss="modal" aria-hidden="true">Close</button>
         </div>
     </div>
+  }
 }

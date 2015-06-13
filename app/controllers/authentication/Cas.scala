@@ -13,12 +13,14 @@ import ExecutionContext.Implicits.global
  */
 object Cas extends Controller {
 
+  val isHTTPS = current.configuration.getBoolean("HTTPS").getOrElse(false)
+
   /**
    * Redirects to the CAS login page.
    */
   def login(action: String, path: String = "") = Action {
     implicit request =>
-      val service = routes.Cas.callback(action, path).absoluteURL()
+      val service = routes.Cas.callback(action, path).absoluteURL(isHTTPS)
       Redirect("https://cas.byu.edu:443?service=" + service, 302)
   }
 
@@ -29,7 +31,7 @@ object Cas extends Controller {
     implicit request =>
     // Retrieve the TGT
       val tgt = request.queryString("ticket")(0)
-      val casService = routes.Cas.callback(action, path).absoluteURL()
+      val casService = routes.Cas.callback(action, path).absoluteURL(isHTTPS)
 
       // Verify the TGT with CAS to get the user id
       val url = "https://cas.byu.edu/cas/serviceValidate?ticket=" + tgt + "&service=" + casService
