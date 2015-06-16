@@ -453,6 +453,12 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
   def addSitePermission(permission: String) =
     SitePermissions.addUserPermission(this, permission)
 
+  def removeSitePermission(permission: String) =
+    SitePermissions.removeUserPermission(this, permission)
+
+  def removeAllSitePermissions =
+    SitePermissions.removeAllUserPermissions(this)
+
   def addCoursePermission(course: Course, permission: String) =
     course.addUserPermission(this, permission)
 

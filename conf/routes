@@ -107,30 +107,31 @@ GET     /user/permission/request        controllers.Users.permissionRequestPage
 POST    /user/permission/request        controllers.Users.submitPermissionRequest
 
 # Admin pages
-GET     /admin                              controllers.Administration.admin
-GET     /admin/permission                   controllers.Administration.approvalPage
-POST    /admin/permission/approve           controllers.Administration.approveRequest()
-POST    /admin/permission/deny              controllers.Administration.denyRequest()
-GET     /admin/users                        controllers.Administration.manageUsers
-POST    /admin/users/setPermission          controllers.Administration.setPermission
-POST    /admin/users/notify                 controllers.Administration.sendNotification(currentPage: Int)
-GET     /admin/users/:id/delete             controllers.Administration.delete(id: Long)
-GET     /admin/logins                       controllers.Administration.logins
-GET     /admin/courses                      controllers.Administration.manageCourses
-POST    /admin/courses/:id                  controllers.Administration.editCourse(id: Long)
-GET     /admin/courses/:id/delete           controllers.Administration.deleteCourse(id: Long)
-GET     /admin/content                      controllers.Administration.manageContent
-POST    /admin/content                      controllers.Administration.batchUpdateContent
-GET     /admin/homePageContent              controllers.Administration.homePageContent
-POST    /admin/homePageContent              controllers.Administration.createHomePageContent
-GET     /admin/homePageContent/:id/active   controllers.Administration.toggleHomePageContent(id: Long)
-GET     /admin/homePageContent/:id/delete   controllers.Administration.deleteHomePageContent(id: Long)
-GET     /admin/feedback                     controllers.Administration.feedback
-GET     /admin/feedback/:id/delete          controllers.Administration.deleteFeedback(id: Long)
-GET     /admin/settings                     controllers.Administration.siteSettings
-POST    /admin/settings                     controllers.Administration.saveSiteSettings
-GET     /admin/proxy/:id                    controllers.Administration.proxy(id: Long)
-
+GET     /admin                                  controllers.Administration.admin
+GET     /admin/permission                       controllers.Administration.approvalPage
+POST    /admin/permission/approve               controllers.Administration.approveRequest()
+POST    /admin/permission/deny                  controllers.Administration.denyRequest()
+GET     /admin/users                            controllers.Administration.manageUsers
+POST    /admin/users/setPermission/:operation   controllers.Administration.setPermission(operation: String)
+POST    /admin/users/setPermission              controllers.Administration.setPermission(operation: String = "")
+POST    /admin/users/notify                     controllers.Administration.sendNotification(currentPage: Int)
+GET     /admin/users/:id/delete                 controllers.Administration.delete(id: Long)
+GET     /admin/logins                           controllers.Administration.logins
+GET     /admin/courses                          controllers.Administration.manageCourses
+POST    /admin/courses/:id                      controllers.Administration.editCourse(id: Long)
+GET     /admin/courses/:id/delete               controllers.Administration.deleteCourse(id: Long)
+GET     /admin/content                          controllers.Administration.manageContent
+POST    /admin/content                          controllers.Administration.batchUpdateContent
+GET     /admin/homePageContent                  controllers.Administration.homePageContent
+POST    /admin/homePageContent                  controllers.Administration.createHomePageContent
+GET     /admin/homePageContent/:id/active       controllers.Administration.toggleHomePageContent(id: Long)
+GET     /admin/homePageContent/:id/delete       controllers.Administration.deleteHomePageContent(id: Long)
+GET     /admin/feedback                         controllers.Administration.feedback
+GET     /admin/feedback/:id/delete              controllers.Administration.deleteFeedback(id: Long)
+GET     /admin/settings                         controllers.Administration.siteSettings
+POST    /admin/settings                         controllers.Administration.saveSiteSettings
+GET     /admin/proxy/:id                        controllers.Administration.proxy(id: Long)
+    
 # CaptionAider pages
 GET     /captionaider/:id/:courseId         controllers.CaptionAider.view(id: Long, courseId: Long)
 POST    /captionaider/save                  controllers.CaptionAider.save

@@ -59,7 +59,7 @@
 
     <script>
         var viewer_id = @{user.id.get};
-        var permUrl = "@{routes.Administration.setPermission()}";
+        var permUrl = "@{routes.Administration.setPermission("")}";
         var userPermissionList = [@for((k,v) <- descriptionMap) {
             {value: "@k", text: "@v"},
         }];
