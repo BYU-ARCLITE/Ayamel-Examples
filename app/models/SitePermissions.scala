@@ -11,10 +11,10 @@ object SitePermissions {
   val desc_map = Map(
     "admin" -> "Administrator",
     "createCourse" -> "Create Course",
-	"createContent" -> "Create Content",
+    "createContent" -> "Create Content",
     "viewRestricted" -> "View Restricted Content",
     "joinCourse" -> "Join Courses",
-	"requestPermission" -> "Request New Permissions"
+    "requestPermission" -> "Request New Permissions"
   )
 
   def permissionList = desc_map.keys.toList
@@ -36,7 +36,7 @@ object SitePermissions {
             .on('uid -> user.id.get, 'permission -> permission).list.isEmpty)
     }
 
-  def addUserPermission(user: User, permission: String) {
+  def addUserPermission(user: User, permission: String) = {
     DB.withConnection {
       implicit connection =>
         if (anorm.SQL("select 1 from " + tableName + " where userId = {uid} and permission = {permission}")
@@ -46,14 +46,42 @@ object SitePermissions {
         }
     }
   }
+
+  /**
+   * deletes the permission from sitePermissions if it exists
+   * @param user User whose permission is to be removed
+   * @param permission String name of the permission to search and delete
+   */
+  def removeUserPermission(user: User, permission: String) = {
+    DB.withConnection {
+      implicit connection =>
+      if (anorm.SQL("select 1 from " + tableName + " where userId = {uid} and permission = {permission}")
+          .on('uid -> user.id.get, 'permission -> permission).list.nonEmpty) {
+        anorm.SQL("delete from " + tableName + " where userId = {uid} and permission = {permission}")
+          .on('uid -> user.id.get, 'permission -> permission).executeUpdate()
+      }
+    }
+  }
+
+  /**
+   * removes all permissions for a user
+   * @param user User whose permissions are to be removed
+   */
+  def removeAllUserPermissions(user: User) = {
+    DB.withConnection {
+      implicit connection =>
+        anorm.SQL("delete from " + tableName + " where userId = {uid}")
+          .on('uid -> user.id.get).executeUpdate()
+    }
+  }
     
   def getDescription(permission: String) = desc_map.get(permission).getOrElse("")
   
   val roles = Map(
     'guest -> List(),
-	'student -> List("requestPermission", "createContent", "joinCourse"),
-	'teacher -> List("requestPermission", "createContent", "joinCourse", "createCourse", "viewRestricted"),
-	'admin -> List("admin")
+    'student -> List("requestPermission", "createContent", "joinCourse"),
+    'teacher -> List("requestPermission", "createContent", "joinCourse", "createCourse", "viewRestricted"),
+    'admin -> List("admin")
   )
   
   def assignRole(user: User, role: Symbol) {

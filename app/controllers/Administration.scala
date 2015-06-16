@@ -106,14 +106,29 @@ object Administration extends Controller {
   /**
    * Give permissions to a user
    */
-  def setPermission() = Authentication.authenticatedAction(parse.multipartFormData) {
+  def setPermission(operation: String = "") = Authentication.authenticatedAction(parse.multipartFormData) {
     implicit request =>
       implicit user =>
         Authentication.enforcePermission("admin") {
-		  val data = request.body.dataParts
+          val data = request.body.dataParts
           getUser(data("userId")(0).toLong) { targetUser =>
-            data("permission").foreach { permission =>
-              targetUser.addSitePermission(permission)
+            operation match {
+              case "remove" => {
+                data("permission").foreach { permission =>
+                  targetUser.removeSitePermission(permission)
+                }
+              }
+              case "match" => {
+                targetUser.removeAllSitePermissions
+                data("permission").foreach { permission =>
+                  targetUser.addSitePermission(permission)
+                }
+              }
+              case _ => {
+                data("permission").foreach { permission =>
+                  targetUser.addSitePermission(permission)
+                }
+              }
             }
             Redirect(routes.Administration.manageUsers()).flashing("info" -> "User permissions updated")
           }
