@@ -1,6 +1,7 @@
 @(title: String, moreDependencies: Include*)(content: Html)(implicit request: RequestHeader, user: User)
 
 @import views.html.resources._
+@import play.api.Play.{current, configuration}
 
 @notifications = @{user.getNotifications.filterNot(_.messageRead)}
 
@@ -157,6 +158,7 @@
                                             <div><a href="@routes.Courses.list()">Course Directory</a></div>
                                         }
                                         <div><a href="@routes.Application.about()">About Ayamel</a></div>
+                                        <div><a href="mailto:@configuration.getString("smtp.address").get">Contact Us</a></div>
                                     </div>
                                     <div class="span3">
                                         <div><a href="@routes.Application.terms()">Terms of Use</a></div>

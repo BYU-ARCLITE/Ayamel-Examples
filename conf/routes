@@ -125,8 +125,6 @@ GET     /admin/homePageContent                  controllers.Administration.homeP
 POST    /admin/homePageContent                  controllers.Administration.createHomePageContent
 GET     /admin/homePageContent/:id/active       controllers.Administration.toggleHomePageContent(id: Long)
 GET     /admin/homePageContent/:id/delete       controllers.Administration.deleteHomePageContent(id: Long)
-GET     /admin/feedback                         controllers.Administration.feedback
-GET     /admin/feedback/:id/delete              controllers.Administration.deleteFeedback(id: Long)
 GET     /admin/settings                         controllers.Administration.siteSettings
 POST    /admin/settings                         controllers.Administration.saveSiteSettings
 GET     /admin/proxy/:id                        controllers.Administration.proxy(id: Long)
