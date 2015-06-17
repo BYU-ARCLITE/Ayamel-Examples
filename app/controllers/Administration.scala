@@ -344,30 +344,6 @@ object Administration extends Controller {
   }
 
   /**
-   * The feedback view
-   */
-  def feedback = Authentication.authenticatedAction() {
-    implicit request =>
-      implicit user =>
-        Authentication.enforcePermission("admin") {
-          Ok(views.html.admin.feedback(Feedback.list))
-        }
-  }
-
-  /**
-   * Deletes a particular feedback item
-   * @param id The ID of the feedback item
-   */
-  def deleteFeedback(id: Long) = Authentication.authenticatedAction() {
-    implicit request =>
-      implicit user =>
-        Authentication.enforcePermission("admin") {
-          Feedback.findById(id).foreach(_.delete())
-          Redirect(routes.Administration.feedback()).flashing("info" -> "Feedback deleted")
-        }
-  }
-
-  /**
    * The site settings view
    */
   def siteSettings = Authentication.authenticatedAction() {

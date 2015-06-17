@@ -74,6 +74,36 @@ object Application extends Controller {
   }
 
   /**
+   * Feedback helper methods: parse different kinds of info
+   * Eventually, these should be eliminated by sending different
+   * kinds of structured data to different feedback routes
+   */
+
+  def getProblemInfo(description: String): (String, String, String) = {
+    val pattern = "^Problem: (.*), Reproduce: (.*), User Agent: (.*)$".r
+    description.replaceAll("\\n", "") match {
+      case pattern(problem, reproduce, userAgent) => (problem, reproduce, userAgent)
+      case _ => ("error", "error", "error")
+    }
+  }
+
+  def getSuggestionInfo(description: String): String = {
+    val pattern = "^Feature: (.*)$".r
+    description.replaceAll("\\n", "") match {
+      case pattern(suggestion) => suggestion
+      case _ => "error"
+    }
+  }
+
+  def getThoughtInfo(description: String): (String, String, String, String) = {
+    val pattern = "^Navigate: (.*), Find: (.*), Useful: (.*), Comments: (.*)$".r
+    description.replaceAll("\\n", "") match {
+      case pattern(navigate, find, useful, comments) => (navigate, find, useful, comments)
+      case _ => ("error", "error", "error", "error")
+    }
+  }
+
+  /**
    * Saves feedback submissions (bug reports, suggestions, ratings)
    */
   def saveFeedback = Authentication.authenticatedAction(parse.urlFormEncoded) {
@@ -81,15 +111,16 @@ object Application extends Controller {
       user =>
         val category = request.body("category")(0)
         val description = request.body("description")(0)
-        val feedback = Feedback.save(user, category, description)
 
         // Send out emails
-        if (category == "problem")
-          EmailTools.sendAdminNotificationEmail("notifications.notifyOn.bugReport", feedback.getProblemInfo)
-        if (category == "suggestion")
-          EmailTools.sendAdminNotificationEmail("notifications.notifyOn.suggestion", feedback.getSuggestionInfo)
-        if (category == "rating")
-          EmailTools.sendAdminNotificationEmail("notifications.notifyOn.rating", feedback.getThoughtInfo)
+        category match {
+        case "problem" =>
+          EmailTools.sendAdminNotificationEmail("notifications.notifyOn.bugReport", getProblemInfo(description))
+        case "suggestion" =>
+          EmailTools.sendAdminNotificationEmail("notifications.notifyOn.suggestion", getSuggestionInfo(description))
+        case "rating" =>
+          EmailTools.sendAdminNotificationEmail("notifications.notifyOn.rating", getThoughtInfo(description))
+        }
         Ok
   }
 
@@ -102,7 +133,6 @@ object Application extends Controller {
         val description = request.body("description")(0)
         val errorCode = request.body("errorCode")(0)
         val userId = user.id.get
-        Feedback.save(user, "error", "Error Code: " + errorCode + ", Description: " + description)
         EmailTools.sendAdminNotificationEmail("notifications.notifyOn.errorReport", (errorCode, description, userId))
         Ok
   }
