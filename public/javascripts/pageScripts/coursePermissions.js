@@ -36,8 +36,8 @@ $(function(){
         {{#teacher}}<tr><td colspan="5">\
             <b>For selected:</b>\
             <!--<a proxy-tap="deletesel" class="btn btn-small btn-magenta deleteUser">Remove from Course</a>-->\
-            <a proxy-tap="addsel" class="btn btn-small btn-yellow">Add Permissions</a>\
-            <a proxy-tap="removesel" class="btn btn-small btn-yellow">Remove Permissions</a>\
+            <a proxy-tap="addsel" class="btn btn-small btn-yellow">Add Missing</a>\
+            <a proxy-tap="removesel" class="btn btn-small btn-yellow">Remove Extra</a>\
             <a proxy-tap="matchsel" class="btn btn-small btn-yellow">Match Filter</a>\
         </td></tr>{{/teacher}}\
     </table>';
@@ -133,12 +133,12 @@ $(function(){
     });
     //utable.on('deletesel', function(){alert("Unimplemented");});
 
-    function updateUserPermissions(index, perms){
+    function updateUserPermissions(index, perms, operation){
         var data = new FormData();
         data.append("userId", utable.data.users[index].id);
         perms.forEach(function(p){ data.append("permission", p); });
         return Promise.resolve($.ajax({
-            url: permUrl,
+            url: permUrl + (operation || ""),
             data: data,
             cache: false,
             contentType: false,
@@ -146,7 +146,19 @@ $(function(){
             type: "post",
             dataType: "text"
         })).then(function(data){
-            utable.set('users['+index+'].permissions', perms);
+            switch(operation) {
+                case "remove":
+                    var uperm = utable.get('users['+index+'].permissions');
+                    perms.forEach(function(p) { uperm.splice(uperm.indexOf(p), 1); });
+                    break;
+                case "match":
+                    utable.set('users['+index+'].permissions', perms);
+                    break;
+                case "add":
+                    var uperm = utable.get('users['+index+'].permissions');
+                    perms.forEach(function(p){ uperm.push(p); });
+                    break;
+            }
         });
     }
 
@@ -156,15 +168,18 @@ $(function(){
             nperm = aperm.filter(function(p){ return uperm.indexOf(p) === -1; });
         if(nperm.length === 0){ return Promise.resolve(true); }
         [].push.apply(nperm, uperm);
-        return updateUserPermissions(index, nperm);
+        return updateUserPermissions(index, nperm, 'add');
     }
 
     function removeUserPermissions(index){
+        // remove extra permissions. Removes the permissions the user
+        // possesses which are not currently selected
         var aperm = utable.get('activePermissions'),
             uperm = utable.get('users['+index+'].permissions'),
-            nperm = aperm.filter(function(p){ return uperm.indexOf(p) > -1; });
-        if(nperm.length === uperm.length){ return Promise.resolve(true); }
-        return updateUserPermissions(index, nperm);
+            nperm = uperm.filter(function(p){ return aperm.indexOf(p) === -1; });
+        // nperm is a list of permissions to remove from the user
+        if(nperm.length === 0){ return Promise.resolve(true); }
+        return updateUserPermissions(index, nperm, 'remove');
     }
 
     function matchUserPermissions(index){
@@ -174,6 +189,6 @@ $(function(){
             aperm.every(function(p){ return uperm.indexOf(p) > -1; }) &&
             uperm.every(function(p){ return aperm.indexOf(p) > -1; })
         ){ return Promise.resolve(true); }
-        return updateUserPermissions(index, aperm);
+        return updateUserPermissions(index, aperm, 'match');
     }
 });

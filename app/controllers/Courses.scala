@@ -402,24 +402,37 @@ object Courses extends Controller {
 
   /**
    * Give permissions to a user
+   * @param operation add, remove or match
    */
-  def setPermission(id: Long) = Authentication.authenticatedAction(parse.multipartFormData) {
+  def setPermission(id: Long, operation: String = "") = Authentication.authenticatedAction(parse.multipartFormData) {
     implicit request =>
       implicit user =>
-        //Authentication.enforcePermission("admin") {
-            val data = request.body.dataParts
-            getCourse(id) { course =>
-              User.findById(data("userId")(0).toLong) match {
-              case Some(user) =>
+        val data = request.body.dataParts
+        getCourse(id) { course =>
+          User.findById(data("userId")(0).toLong) match {
+          case Some(user) => {
+            operation match {
+              case "remove" => {
+                data("permission").foreach { permission =>
+                  user.removeCoursePermission(course, permission)
+                }
+              }
+              case "match" => {
+                user.removeAllCoursePermissions(course)
                 data("permission").foreach { permission =>
                   user.addCoursePermission(course, permission)
                 }
-                Redirect(routes.Courses.view(course.id.get)).flashing("info" -> "User permissions updated")
-              case None =>
-                Redirect(routes.Courses.view(course.id.get)).flashing("error" -> "User not found")
               }
+              case _ => data("permission").foreach { permission => user.addCoursePermission(course, permission) }
             }
-        //}
+            // Should we just send back Ok? since this method is called through ajax, the page is never redirected
+            // and the 'User Permissions Updated' message is never shown
+            Redirect(routes.Courses.view(course.id.get)).flashing("info" -> "User permissions updated")
+          }
+          case None =>
+            Redirect(routes.Courses.view(course.id.get)).flashing("error" -> "User not found")
+          }
+        }
   }
 
   /**

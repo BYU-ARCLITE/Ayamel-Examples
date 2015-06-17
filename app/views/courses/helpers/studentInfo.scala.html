@@ -37,7 +37,7 @@
 
 	<script>
         var viewer_id = @{user.id.get};
-        var permUrl = "@{routes.Courses.setPermission(course.id.get)}";
+        var permUrl = "@{routes.Courses.setPermission(course.id.get, "")}";
 		var isTeacher = @if(user.hasCoursePermission(course, "teacher")){ "true" } else { "false" };
         var memberPermissionList = [@for((k,v) <- descriptionMap) {
             {value: "@k", text: "@v"},

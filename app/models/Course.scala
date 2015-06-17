@@ -190,6 +190,8 @@ case class Course(id: Pk[Long], name: String, startDate: String, endDate: String
 
   def getUserPermissions(user: User): List[String] = CoursePermissions.listByUser(this, user)
   def addUserPermission(user: User, permission: String) = CoursePermissions.addUserPermission(this, user, permission)
+  def removeUserPermission(user: User, permission: String) = CoursePermissions.removeUserPermission(this, user, permission)
+  def removeAllUserPermissions(user: User) = CoursePermissions.removeAllUserPermissions(this, user)
   def userHasPermission(user: User, permission: String) = CoursePermissions.userHasPermission(this, user, permission)
 }
 
