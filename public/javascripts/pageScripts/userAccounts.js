@@ -55,7 +55,7 @@ $(function(){
         components: { superselect:  EditorWidgets.SuperSelect },
         template: userTemplate,
         data: {
-            activePermissions: ["admin"],
+            activePermissions: [],
             permissionList: userPermissionList,
             selectedUsers: [],
             users: userList,
