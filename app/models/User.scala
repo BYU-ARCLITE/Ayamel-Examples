@@ -462,6 +462,12 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
   def addCoursePermission(course: Course, permission: String) =
     course.addUserPermission(this, permission)
 
+  def removeCoursePermission(course: Course, permission: String) =
+    course.removeUserPermission(this, permission)
+
+  def removeAllCoursePermissions(course: Course) =
+    course.removeAllUserPermissions(this)
+
 }
 
 object User extends SQLSelectable[User] {

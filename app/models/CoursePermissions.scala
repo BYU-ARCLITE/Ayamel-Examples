@@ -39,7 +39,7 @@ object CoursePermissions {
             .on('cid -> course.id.get, 'uid -> user.id.get, 'permission -> permission).list.isEmpty)
     }
 
-  def addUserPermission(course: Course, user: User, permission: String) {
+  def addUserPermission(course: Course, user: User, permission: String) = {
     DB.withConnection {
       implicit connection =>
         if (anorm.SQL("select 1 from " + tableName + " where courseId = {cid} and userId = {uid} and permission = {permission}")
@@ -47,6 +47,28 @@ object CoursePermissions {
           anorm.SQL("insert into " + tableName + " (courseId, userId, permission) values ({cid}, {uid}, {permission})")
             .on('cid -> course.id.get, 'uid -> user.id.get, 'permission -> permission).executeUpdate()
         }
+    }
+  }
+
+  /**
+   * remove a permission from a user
+   */
+  def removeUserPermission(course: Course, user: User, permission: String) = {
+    DB.withConnection {
+      implicit connection =>
+        anorm.SQL("delete from " + tableName + " where courseId = {cid} and userId = {uid} and permission = {permission}")
+          .on('cid -> course.id.get, 'uid -> user.id.get, 'permission -> permission).executeUpdate()
+    }
+  }
+
+  /**
+   * Removes all the permissions a user has for a course
+   */
+  def removeAllUserPermissions(course: Course, user: User) = {
+    DB.withConnection {
+      implicit connection =>
+        anorm.SQL("delete from " + tableName + " where courseId = {cid} and userId = {uid}")
+          .on('cid -> course.id.get, 'uid -> user.id.get).executeUpdate()
     }
   }
 
