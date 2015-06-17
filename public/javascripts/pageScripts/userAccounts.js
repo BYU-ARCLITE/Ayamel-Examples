@@ -106,7 +106,7 @@ $(function(){
     utable.on('notify', function(e,id){
         $("#noteUserId").val(id);
         $("#noteUserIdDisplay").text(id);
-        $("#notificationModal").show();
+        $("#notificationModal").modal('show');
     });
     utable.on('delete', function(e,id){
         $("#deleteUserId").text(id);
@@ -114,7 +114,7 @@ $(function(){
             //HOLY COW INSECURE! WHY IS THIS NOT A POST!?
             window.location = "/admin/users/" + id + "/delete";
         });
-        $("#deleteModal").show();
+        $("#deleteModal").modal('show');
     });
 
     utable.on('addsel', function(){
