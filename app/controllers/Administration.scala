@@ -81,25 +81,13 @@ object Administration extends Controller {
   }
 
   /**
-   * User login information view
-   */
-  def logins = Authentication.authenticatedAction() {
-    implicit request =>
-      implicit user =>
-        Authentication.enforcePermission("admin") {
-          Ok(views.html.admin.logins(User.list))
-        }
-  }
-
-  /**
    * Helper function for finding user accounts
    * @param id The ID of the user account
    * @param f The function which will be called with the user
    */
   def getUser(id: Long)(f: User => Result)(implicit request: RequestHeader): Result = {
-    User.findById(id).map {
-      user =>
-        f(user.getAccountLink.flatMap(_.getPrimaryUser).getOrElse(user))
+    User.findById(id).map { user =>
+      f(user.getAccountLink.flatMap(_.getPrimaryUser).getOrElse(user))
     }.getOrElse(Errors.notFound)
   }
 
@@ -198,13 +186,11 @@ object Administration extends Controller {
     implicit request =>
       implicit user =>
         Authentication.enforcePermission("admin") {
-          Courses.getCourse(id) {
-            course =>
-
+          Courses.getCourse(id){  course =>
             // Update the course
-              val params = request.body.mapValues(_(0))
-              course.copy(name = params("name"), enrollment = Symbol(params("enrollment"))).save
-              Redirect(routes.Administration.manageCourses()).flashing("info" -> "Course updated")
+            val params = request.body.mapValues(_(0))
+            course.copy(name = params("name"), enrollment = Symbol(params("enrollment"))).save
+            Redirect(routes.Administration.manageCourses()).flashing("info" -> "Course updated")
           }
         }
   }
@@ -326,13 +312,12 @@ object Administration extends Controller {
       implicit user =>
         Authentication.enforcePermission("admin") {
 
-          HomePageContent.findById(id).map {
-            homePageContent =>
-              homePageContent.copy(active = !homePageContent.active).save
-              val message =
-                if (homePageContent.active) "no longer active."
-                else "now active."
-              Redirect(routes.Administration.homePageContent()).flashing("info" -> ("Home page content is " + message))
+          HomePageContent.findById(id).map { homePageContent =>
+            homePageContent.copy(active = !homePageContent.active).save
+            val message =
+              if (homePageContent.active) "no longer active."
+              else "now active."
+            Redirect(routes.Administration.homePageContent()).flashing("info" -> ("Home page content is " + message))
           }.getOrElse {
             Errors.notFound
           }
@@ -348,10 +333,10 @@ object Administration extends Controller {
       implicit user =>
         Authentication.enforcePermission("admin") {
 
-          HomePageContent.findById(id).map {
-            homePageContent =>
-              homePageContent.delete()
-              Redirect(routes.Administration.homePageContent()).flashing("info" -> "Home page content deleted")
+          HomePageContent.findById(id).map { homePageContent =>
+            homePageContent.delete()
+            Redirect(routes.Administration.homePageContent())
+              .flashing("info" -> "Home page content deleted")
           }.getOrElse {
             Errors.notFound
           }
