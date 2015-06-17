@@ -38,8 +38,8 @@ $(function(){
         <tr><td colspan="8">\
             <b>For selected:</b>\
             <!--<a proxy-tap="deletesel" class="btn btn-small btn-magenta deleteUser">Delete</a>-->\
-            <a proxy-tap="addsel" class="btn btn-small btn-yellow">Add Permissions</a>\
-            <a proxy-tap="removesel" class="btn btn-small btn-yellow">Remove Permissions</a>\
+            <a proxy-tap="addsel" class="btn btn-small btn-yellow">Add Missing</a>\
+            <a proxy-tap="removesel" class="btn btn-small btn-yellow">Remove Extra</a>\
             <a proxy-tap="matchsel" class="btn btn-small btn-yellow">Match Filter</a>\
         </td></tr>\
     </table>';
@@ -150,7 +150,19 @@ $(function(){
             type: "post",
             dataType: "text"
         })).then(function(data){
-            utable.set('users['+index+'].permissions', perms);
+            switch(operation) {
+                case "remove":
+                    var uperm = utable.get('users['+index+'].permissions');
+                    perms.forEach(function(p) { uperm.splice(uperm.indexOf(p), 1); });
+                    break;
+                case "match":
+                    utable.set('users['+index+'].permissions', perms);
+                    break;
+                case "add":
+                    var uperm = utable.get('users['+index+'].permissions');
+                    perms.forEach(function(p){ uperm.push(p); });
+                    break;
+            }
         });
     }
 
