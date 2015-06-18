@@ -1,0 +1,17 @@
+@(user: User, course: Course)(implicit request: RequestHeader)
+
+<div id="quitCourseModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="quitModalLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="quitModalLabel">Quit course</h3>
+    </div>
+    <div class="modal-body">
+        <p>Are you sure you want to quit @course.name?</p>
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
+        <form action="@routes.Courses.quitCourse(course.id.get)" method="POST">
+            <button class="btn btn-magenta">Yes, Quit</button>
+        </form>
+    </div>
+</div>

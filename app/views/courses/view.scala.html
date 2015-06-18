@@ -40,6 +40,7 @@
             @if(user.hasCoursePermission(course, "addStudent") && !course.getRequests.isEmpty) {
                 <a href="@routes.Courses.approvePage(course.id.get)" class="btn btn-blue"><i class="icon-check"></i> Student Requests</a>
             }
+            <a href="#quitCourseModal" role="button" class="btn btn-magenta" data-toggle="modal"><i class="icon-reply"></i> Quit</a>
         </div>
 
         <div class="faces">
@@ -96,6 +97,7 @@
     @views.html.courses.helpers.lmsInfo(user, course)
     @views.html.courses.helpers.editCourse(user, course)
     @views.html.courses.helpers.deleteCourse(user, course)
+    @views.html.courses.helpers.quitCourse(user, course)
     @views.html.courses.helpers.studentInfo(user, course)
     @views.html.courses.helpers.joinLink(user, course)
     @views.html.courses.helpers.makeAnnouncement(user, course)
