@@ -401,6 +401,21 @@ object Courses extends Controller {
   }
 
   /**
+   * Used when one removes oneself from a specific course and one is a user
+   * @param id the Course Id
+   */
+  def quitCourse(id: Long) = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+        getCourse(id) { course =>
+          user.unenroll(course)
+          Redirect(routes.Application.home).flashing("info" -> "You just quit ".+(course.name))
+        }
+        Errors.notFound
+  }
+
+
+  /**
    * Give permissions to a user
    * @param operation add, remove or match
    */
