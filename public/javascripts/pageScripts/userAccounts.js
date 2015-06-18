@@ -110,10 +110,7 @@ $(function(){
     });
     utable.on('delete', function(e,id){
         $("#deleteUserId").text(id);
-        $("#deleteButton").click(function() {
-            //HOLY COW INSECURE! WHY IS THIS NOT A POST!?
-            window.location = "/admin/users/" + id + "/delete";
-        });
+        $("#deleteForm").attr("action", "/admin/users/" + id + "/delete");
         $("#deleteModal").modal('show');
     });
 

@@ -116,16 +116,16 @@ GET     /admin/users                            controllers.Administration.manag
 POST    /admin/users/setPermission/:operation   controllers.Administration.setPermission(operation: String)
 POST    /admin/users/setPermission              controllers.Administration.setPermission(operation: String = "")
 POST    /admin/users/notify                     controllers.Administration.sendNotification(currentPage: Int)
-GET     /admin/users/:id/delete                 controllers.Administration.delete(id: Long)
+POST    /admin/users/:id/delete                 controllers.Administration.delete(id: Long)
 GET     /admin/courses                          controllers.Administration.manageCourses
 POST    /admin/courses/:id                      controllers.Administration.editCourse(id: Long)
-GET     /admin/courses/:id/delete               controllers.Administration.deleteCourse(id: Long)
+POST    /admin/courses/:id/delete               controllers.Administration.deleteCourse(id: Long)
 GET     /admin/content                          controllers.Administration.manageContent
 POST    /admin/content                          controllers.Administration.batchUpdateContent
 GET     /admin/homePageContent                  controllers.Administration.homePageContent
 POST    /admin/homePageContent                  controllers.Administration.createHomePageContent
-GET     /admin/homePageContent/:id/active       controllers.Administration.toggleHomePageContent(id: Long)
-GET     /admin/homePageContent/:id/delete       controllers.Administration.deleteHomePageContent(id: Long)
+POST    /admin/homePageContent/:id/active       controllers.Administration.toggleHomePageContent(id: Long)
+POST    /admin/homePageContent/:id/delete       controllers.Administration.deleteHomePageContent(id: Long)
 GET     /admin/settings                         controllers.Administration.siteSettings
 POST    /admin/settings                         controllers.Administration.saveSiteSettings
 GET     /admin/proxy/:id                        controllers.Administration.proxy(id: Long)

@@ -24,12 +24,18 @@
             <div class="pad-top-high">
                 @if(homePageContent.active) {
                     <span class="badge badge-yellow">Active</span>
-                    <a class="btn" href="@routes.Administration.toggleHomePageContent(homePageContent.id.get)"><i class="icon-remove"></i> Deactivate</a>
+                    <form style="display:inline;" action="@routes.Administration.toggleHomePageContent(homePageContent.id.get)" method="POST">
+                        <button class="btn"><i class="icon-remove"></i> Deactivate</button>
+                    </form>
                 } else {
                     <span class="badge badge-blue">Not Active</span>
-                    <a class="btn" href="@routes.Administration.toggleHomePageContent(homePageContent.id.get)"><i class="icon-ok"></i> Activate</a>
+                    <form style="display:inline;" action="@routes.Administration.toggleHomePageContent(homePageContent.id.get)" method="POST">
+                        <button class="btn"><i class="icon-ok"></i> Activate</button>
+                    </form>
                 }
-                <a class="btn" href="@routes.Administration.deleteHomePageContent(homePageContent.id.get)"><i class="icon-trash"></i> Delete</a>
+                <form style="display:inline;" action="@routes.Administration.deleteHomePageContent(homePageContent.id.get)" method="POST">
+                    <button class="btn"><i class="icon-trash"></i> Delete</button>
+                </form>
             </div>
             <hr>
         }
