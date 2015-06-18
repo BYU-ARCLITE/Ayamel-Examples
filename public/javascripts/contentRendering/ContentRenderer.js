@@ -368,7 +368,7 @@ var ContentRenderer = (function(){
             startTime: args.startTime,
             endTime: args.endTime,
             translate: args.translate,
-            aspectRatio: parseFloat(args.content.settings.aspectRatio) || Ayamel.aspectRatios.hdVideo
+            aspectRatio: parseFloat(args.content.settings.aspectRatio) || Ayamel.aspectRatios.hdVideo,
             tabs: tabs
         });
 
