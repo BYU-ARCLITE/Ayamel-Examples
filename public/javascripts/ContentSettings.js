@@ -57,19 +57,9 @@ var ContentSettings = (function() {
                 {{#label}}<span class="control-label">{{label}}</span>{{/label}}\
                 {{#none}}<div class="controls">\{{none}}</div>{{/none}}\
                 {{/type}}\
-                {{#(type == \'checkbox\')}}\
+                {{#(type != \'radio\')}}\
                 {{#label}}<span class="control-label">{{label}}</span>{{/label}}\
                 {{#none}}<div class="controls">\<i>{{none}}</i></div>{{/none}}\
-                {{/type}}\
-                {{#(type == \'multicheck\')}}\
-                {{#label}}<span class="control-label">{{label}}</span>{{/label}}\
-                {{#none}} <div class="controls"><i>{{none}}</i></div>{{/none}}\
-                {{/type}}\
-                {{#(type == \'button\')}}\
-                {{#none}}<span class="control-label"><i>{{none}}</i></span>{{/none}}\
-                {{/type}}\
-                {{#(type == \'superselect\')}}\
-                {{#none}}<span class="control-label"><i>{{none}}</i></span>{{/none}}\
                 {{/type}}\
             {{/include}}\
         </div>\
@@ -86,6 +76,20 @@ var ContentSettings = (function() {
             include: function(context, content) { return true; },
             setting: function(context, content) {},
             items: function(){}
+        },
+        aspectRatio: {
+            type: "radio",
+            label: "Player Aspect Ratio:",
+            name: "aspectRatio",
+            include: function(context, content) { return true; },
+            setting: function(context, content) {
+                return content.settings.aspectRatio;
+            },
+            items: function(){
+                return Object.keys(Ayamel.aspectRatios).map(function(name){
+                    return {text: name, value: Ayamel.aspectRatios[name]};
+                });
+            }
         },
         showCaptions: {
             type: "checkbox",
@@ -130,13 +134,10 @@ var ContentSettings = (function() {
             type: "superselect",
             label: "Definition Languages:",
             name: "targetLanguages",
-            none: "No tracks available",
             include: function(context, content) {
                 return !!content.enableableCaptionTracks.length;
             },
-            setting: function(context, content) {
-                return content.settings.allowDefinitions === "true";
-            },
+            setting: function(context, content) {},
             items: function(){}
         },
         showTranscripts: {
@@ -249,6 +250,7 @@ var ContentSettings = (function() {
 
     var settings = {
         video: [
+            predefined.aspectRatio,
             predefined.allowDefinitions,
             predefined.targetLanguages,
             predefined.showTranscripts,
@@ -261,6 +263,7 @@ var ContentSettings = (function() {
             predefined.saveButton
         ],
         audio: [
+            predefined.aspectRatio,
             predefined.showCaptions,
             predefined.allowDefinitions,
             predefined.targetLanguages,
@@ -273,6 +276,7 @@ var ContentSettings = (function() {
             predefined.saveButton
         ],
         image: [
+            predefined.aspectRatio,
             predefined.showCaptions,
             predefined.allowDefinitions,
             predefined.targetLanguages,
@@ -285,6 +289,7 @@ var ContentSettings = (function() {
             predefined.saveButton
         ],
         text: [
+            predefined.aspectRatio,
             predefined.allowDefinitions,
             predefined.targetLanguages,
             predefined.showAnnotations,
@@ -351,14 +356,6 @@ var ContentSettings = (function() {
         return control;
     }
 
-    function getTargetLanguages(contentId) {
-        return Promise.resolve($.ajax("/ajax/getTargetLanguages", {
-            type: "post",
-            data: { contentId: contentId }
-        })).then(function(data) {
-            return Promise.all(data);
-        });
-    }
 
     /* args: courseId, owner, userId, content, resource, holder, action */
     function ContentSettings(args) {
@@ -385,29 +382,6 @@ var ContentSettings = (function() {
             controls = controlsSettings.map(function(config) {
                 return createControls(config, context, args.content);
             });
-
-            getTargetLanguages(content.id).then(function(codes) {
-
-                var langList = Object.keys(Ayamel.utils.p1map).map(function (p1) {
-                    var code = Ayamel.utils.p1map[p1];
-                    return {value: code, text: Ayamel.utils.getLangName(code)};
-                }).sort(function(a,b){ return a.text.localeCompare(b.text); });
-
-                targetLanguages = new EditorWidgets.SuperSelect({
-                    el: "targetLangLocation",
-                    data:{
-                        id: 'languages',
-                        selection: codes,
-                        icon: 'icon-globe',
-                        text: 'Select Language',
-                        button: 'left',
-                        modalId: 'configurationModal',
-                        multiple: true,
-                        options: langList,
-                        defaultValue: {value:"",text:"No Linguistic Content"}
-                    }
-                });
-            })
 
             ractive = new Ractive({
                 el: args.holder,
@@ -443,6 +417,25 @@ var ContentSettings = (function() {
 
                 xhr.open('POST', args.action);
                 xhr.send(fd);
+            });
+
+            targetLanguages = new EditorWidgets.SuperSelect({
+                el: "targetLangLocation",
+                data:{
+                    id: 'languages',
+                    selection: (content.settings.targetLanguages || "")
+                                    .split(",").filter(function(s){ return !!s; }),
+                    icon: 'icon-globe',
+                    text: 'Select Language',
+                    button: 'left',
+                    modalId: 'configurationModal',
+                    multiple: true,
+                    options: Object.keys(Ayamel.utils.p1map).map(function(p1){
+                        var code = Ayamel.utils.p1map[p1];
+                        return {value: code, text: Ayamel.utils.getLangName(code)};
+                    }).sort(function(a,b){ return a.text.localeCompare(b.text); }),
+                    defaultValue: {value:"",text:"No Linguistic Content"}
+                }
             });
         });
     }

@@ -343,7 +343,7 @@ var ContentRenderer = (function(){
             startTime: args.startTime,
             endTime: args.endTime,
             translate: args.translate,
-            aspectRatio: Ayamel.aspectRatios.hdVideo,
+            aspectRatio: parseFloat(args.content.settings.aspectRatio) || Ayamel.aspectRatios.hdVideo,
             tabs: tabs
         });
 
@@ -414,57 +414,44 @@ var ContentRenderer = (function(){
         return transcriptPlayer;
     }
 
-    function getTargetLanguages(contentId){
-        return Promise.resolve($.ajax("/ajax/getTargetLanguages", {
-            type: "post",
-            data: { contentId: contentId }
-        })).then(function(data) {
-            return Promise.all(data);
-        });
-    }
-
-    function setupDefinitionsPane(pane, player, contentId){
-        var selectHolder = document.createElement('div'),
+    function setupDefinitionsPane(pane, player, content){
+        var targetLanguages,
+            codes = (content.settings.targetLanguages || "")
+                .split(",").filter(function(s){ return !!s; }),
+            selectHolder = document.createElement('div'),
             translationsHolder = document.createElement('div');
 
-        getTargetLanguages(contentId).then(function(codes) {
-            var targetLanguages;
-            var defaultLanguage;
-            if (!!codes.length) {
-                // Fallback procedure when no languages have been selected
-                targetLanguages = codes.map(function(code) {
-                    return {value: code, text: Ayamel.utils.getLangName(code)};
-                }).sort(function(a,b){ return a.text.localeCompare(b.text); });
-            } else {
-                targetLanguages = Object.keys(Ayamel.utils.p1map).map(function(p1){
-                    var code = Ayamel.utils.p1map[p1];
-                    return {value: code, text: Ayamel.utils.getLangName(code)};
-                }).sort(function(a,b){ return a.text.localeCompare(b.text); });
-            }
-            //defaultLanguage = targetLanguages.indexOf("eng") !== -1 ? "eng" : targetLanguages[0];
-            defaultLanguage = targetLanguages.filter(function(lang) {
-                return lang.value === "eng";
-            });
-            if (defaultLanguage.length === 0) {
-                defaultLanguage = [targetLanguages[0]];
-            }
-            translationsHolder.className = "definitionsContent";
-            (new EditorWidgets.SuperSelect({
-                el: selectHolder,
-                data:{
-                    id: 'transLang',
-                    selection: [],
-                    icon: 'icon-globe',
-                    button: 'left',
-                    text: 'Select Language',
-                    multiple: false,
-                    options: targetLanguages,
-                    defaultValue : {value: defaultLanguage[0].value}
+        if (!!codes.length) {
+            // Fallback procedure when no languages have been selected
+            targetLanguages = codes.map(function(code) {
+                return {value: code, text: Ayamel.utils.getLangName(code)};
+            }).sort(function(a,b){ return a.text.localeCompare(b.text); });
+        } else {
+            targetLanguages = Object.keys(Ayamel.utils.p1map).map(function(p1){
+                var code = Ayamel.utils.p1map[p1];
+                return {value: code, text: Ayamel.utils.getLangName(code)};
+            }).sort(function(a,b){ return a.text.localeCompare(b.text); });
+        }
+
+        translationsHolder.className = "definitionsContent";
+        (new EditorWidgets.SuperSelect({
+            el: selectHolder,
+            data:{
+                id: 'transLang',
+                selection: [],
+                icon: 'icon-globe',
+                button: 'left',
+                text: 'Select Language',
+                multiple: false,
+                options: targetLanguages,
+                defaultValue: {
+                    value: targetLanguages.indexOf("eng") !== -1 ?
+                            "eng" : targetLanguages[0]
                 }
-            })).observe('selection', function(newValue){ player.targetLang = newValue[0]; });
-            pane.appendChild(selectHolder);
-            pane.appendChild(translationsHolder);
-        })
+            }
+        })).observe('selection', function(newValue){ player.targetLang = newValue[0]; });
+        pane.appendChild(selectHolder);
+        pane.appendChild(translationsHolder);
     }
 
     return {
@@ -512,7 +499,7 @@ var ContentRenderer = (function(){
                 });
 
                 if(allowDefinitions(content)){ setupTranslator(mainPlayer, layout, trackResources); }
-                if(layout.Definitions){ setupDefinitionsPane(layout.Definitions, mainPlayer, content.id); }
+                if(layout.Definitions){ setupDefinitionsPane(layout.Definitions, mainPlayer, content); }
                 if(annotationWhitelist.length){ setupAnnotator(mainPlayer, layout); }
 
                 if(transcriptWhitelist.length && showTranscript(content)){

@@ -16,7 +16,6 @@
 
 <script type="text/javascript">
     $(function() {
-
         var owner = @content.isEditableBy(user);
         var userId = @user.id.get;
         var courseId = @course.map(_.id.get).getOrElse(0);

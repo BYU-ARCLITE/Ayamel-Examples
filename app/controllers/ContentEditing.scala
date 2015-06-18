@@ -68,7 +68,9 @@ object ContentEditing extends Controller {
   def recordSettings(content: Content, data: Map[String, Seq[String]]) {
     content.setSetting("captionTrack", data.get("captionTracks").getOrElse(Nil))
     content.setSetting("annotationDocument", data.get("annotationDocs").getOrElse(Nil))
-    content.setSetting("targetLanguages", data.get("targetLanguages").getOrElse(Nil));
+    content.setSetting("targetLanguages", data.get("targetLanguages").getOrElse(Nil))
+
+    content.setSetting("aspectRatio", List(data.get("aspectRatio").map(_(0)).getOrElse("1.7778")))
 
     content.setSetting("showCaptions", List(data.get("showCaptions").map(_(0)).getOrElse("false")))
     content.setSetting("showAnnotations", List(data.get("showAnnotations").map(_(0)).getOrElse("false")))
