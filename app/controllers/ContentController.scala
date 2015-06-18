@@ -360,13 +360,14 @@ object ContentController extends Controller {
           } else if (content.contentType != 'data) {
             //TODO: make this a whitelist instead of blacklist
             // Check that the user can view the content
-            if (content isVisibleBy user) {
-              if (MobileDetection.isMobile())
-                Ok(views.html.content.viewMobile(content, ResourceController.baseUrl))
-              else
-                Ok(views.html.content.view(content, ResourceController.baseUrl))
-            } else
-              Errors.forbidden
+            if (content isVisibleBy user) Ok(
+                if (MobileDetection.isMobile())
+                  views.html.content.viewMobile(content, ResourceController.baseUrl)
+                else
+                  views.html.content.view(content, ResourceController.baseUrl)
+            ) else
+              Redirect(routes.Application.home)
+                .flashing("error" -> "You do not have permission to view the requested content.")
           } else {
             Redirect(routes.Application.home)
               .flashing("error" -> "Requested content uses invalid resource")
