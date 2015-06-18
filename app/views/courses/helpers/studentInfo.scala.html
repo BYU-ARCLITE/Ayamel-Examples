@@ -5,7 +5,7 @@
     @Dependencies(Local(JS("javascripts/pageScripts/coursePermissions.js")))
     <div id="studentInfoModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="studentInfoModalLabel" aria-hidden="true">
         <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">X</button>
             <h3 id="studentInfoModalLabel">Student Information</h3>
         </div>
         <div class="modal-body">
@@ -28,17 +28,17 @@
             </table>
 
             <h4>Students</h4>
-			<span id="membertable"></span>
+            <span id="membertable"></span>
         </div>
         <div class="modal-footer">
             <button class="btn btn-blue" data-dismiss="modal" aria-hidden="true">Close</button>
         </div>
     </div>
 
-	<script>
+    <script>
         var viewer_id = @{user.id.get};
         var permUrl = "@{routes.Courses.setPermission(course.id.get, "")}";
-		var isTeacher = @if(user.hasCoursePermission(course, "teacher")){ "true" } else { "false" };
+        var isTeacher = @if(user.hasCoursePermission(course, "teacher")){ "true" } else { "false" };
         var memberPermissionList = [@for((k,v) <- descriptionMap) {
             {value: "@k", text: "@v"},
         }];
