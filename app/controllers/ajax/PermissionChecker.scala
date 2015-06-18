@@ -50,18 +50,4 @@ object PermissionChecker extends Controller {
         }
   }
 
-  /**
-   * AJAX endpoint which checks which langauges the user is allowed to translate
-   * @param contentId The content Id
-   * @return JsArray of 3 letter Language codes of the permitted target languages
-   */
-  def getTargetLanguages = Authentication.authenticatedAction(parse.urlFormEncoded) {
-    implicit request =>
-      implicit user =>
-        ContentController.getContent(request.body("contentId")(0).toLong) { content =>
-          val targetLangs = content.getSetting("targetLanguages").filter(_!="")
-          Ok(Json.toJson(targetLangs))
-        }
-  } 
-
 }
