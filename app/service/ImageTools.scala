@@ -6,7 +6,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import javax.imageio.ImageIO
 import java.net.URL
 import java.io.{File, IOException}
-import play.api.Play
+import play.api.{Logger, Play}
 import play.api.Play.current
 import java.awt.geom.AffineTransform
 import models.Content
@@ -36,6 +36,8 @@ object ImageTools {
       } else {
         newHeight = imgHeight*width/imgWidth
       }
+
+      Logger.debug(s"Original Image: $imgWidth x $imgHeight; New Image: $newWidth x $newHeight")
 
       // Write the image to a new image of a different size
       val newImage = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_RGB)
