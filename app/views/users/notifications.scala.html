@@ -28,20 +28,32 @@
                 <p>Click on a read notification to delete it.</p>
             </div>
             <div class="span8 notifications">
-                @for(notification <- user.getNotifications) {
-                    @if(!notification.messageRead) {
-                        <a href="@routes.Users.markNotification(notification.id.get)">
-                    } else {
-                        <a href="@routes.Users.deleteNotification(notification.id.get)">
-                    }
+                @if(user.getNotifications.isEmpty) {
+                    <em>You don't have any notifications</em>
+                } else {
+                  @for(notification <- user.getNotifications) {
                     <div class="notification @read(notification)" data-id="@notification.id.get">
                         <div class="message">@Html(notification.message)</div>
                         <div class="date">@service.TimeTools.prettyTime(notification.dateSent)</div>
                     </div>
-                    </a>
-                }
-                @if(user.getNotifications.isEmpty) {
-                    <em>You don't have any notifications</em>
+                  }
+                  <script>
+                    [].forEach.call(document.querySelectorAll(".notification"),function(note){
+                        note.addEventListener('click',function(e){
+                            var xhr = new XMLHttpRequest(),
+                                formData = new FormData();
+                            formData.append("id", note.dataset.id);
+                            if(note.classList.contains("unread")){
+                                xhr.open("POST", "@routes.Users.markNotification()");
+                                note.classList.remove("unread");
+                            }else{
+                                xhr.open("POST", "@routes.Users.deleteNotification()");
+                                note.parentElement.removeChild(note);
+                            }
+                            xhr.send(formData);
+                        },false);
+                    });
+                  </script>
                 }
             </div>
         </div>
