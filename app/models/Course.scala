@@ -170,6 +170,16 @@ case class Course(id: Pk[Long], name: String, startDate: String, endDate: String
   def getContent: List[Content] = cache.getContent
 
   /**
+   * Get content posted to this course that the current user is allowed to see
+   * @return The list of content
+   */
+  def getContentFor(user: User): List[Content] =
+    if (user.hasSitePermission("admin")) cache.getContent
+    else cache.getContent.filter { c =>
+      c.visibility != Content.visibility._private || user.getContent.contains(c)
+    }
+
+  /**
    * Get the list of announcement for this course
    * @return The list of announcements
    */

@@ -56,7 +56,7 @@
             <div class="span8">
                 <div class="pull-right">
                     @if(user.hasCoursePermission(course, "addContent")){
-				       <a id="browseContent" class="btn btn-inverse"><i class="icon-plus"></i> Add content</a>
+                       <a id="browseContent" class="btn btn-inverse"><i class="icon-plus"></i> Add content</a>
                     }
                     @if(user.hasCoursePermission(course, "removeContent")){
                         <a href="#removeContentModal" role="button" class="btn btn-inverse" data-toggle="modal"><i class="icon-minus"></i> Remove Content</a>
@@ -64,18 +64,20 @@
                 </div>
                 <div id="courseContent"></div>
                 <script type="text/javascript">
+                    @defining(course.getContentFor(user)) { content =>
                     $(function() {
                         ContentItemRenderer.renderAll({
-                            content: [@Html(course.getContent.map(_.toJson).mkString(","))],
+                            content: [@Html(content.map(_.toJson).mkString(","))],
                             holder: document.getElementById("courseContent"),
                             format: "auto",
                             sizing: true,
                             sorting: true,
-                            labels: [@Html(course.getContent.flatMap(_.labels).map(s => "\"" + s + "\"").mkString(","))],
+                            labels: [@Html(content.flatMap(_.labels).map(s => "\"" + s + "\"").mkString(","))],
                             filters: ContentItemRenderer.standardFilters,
                             courseId: courseId
                         });
                     });
+                    }
                 </script>
             </div>
             <div class="span4">
