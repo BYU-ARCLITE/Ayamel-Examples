@@ -409,29 +409,27 @@ object Courses extends Controller {
       implicit user =>
         val data = request.body.dataParts
         getCourse(id) { course =>
-          User.findById(data("userId")(0).toLong) match {
-          case Some(user) => {
-            operation match {
-              case "remove" => {
-                data("permission").foreach { permission =>
-                  user.removeCoursePermission(course, permission)
+          if(user.hasCoursePermission(course, "teacher")) {
+            User.findById(data("userId")(0).toLong) foreach { member =>
+              operation match {
+                case "remove" => {
+                  data("permission").foreach { permission =>
+                    member.removeCoursePermission(course, permission)
+                  }
+                }
+                case "match" => {
+                  user.removeAllCoursePermissions(course)
+                  data("permission").foreach { permission =>
+                    member.addCoursePermission(course, permission)
+                  }
+                }
+                case _ => data("permission").foreach { permission =>
+                  member.addCoursePermission(course, permission)
                 }
               }
-              case "match" => {
-                user.removeAllCoursePermissions(course)
-                data("permission").foreach { permission =>
-                  user.addCoursePermission(course, permission)
-                }
-              }
-              case _ => data("permission").foreach { permission => user.addCoursePermission(course, permission) }
             }
-            // Should we just send back Ok? since this method is called through ajax, the page is never redirected
-            // and the 'User Permissions Updated' message is never shown
-            Redirect(routes.Courses.view(course.id.get)).flashing("info" -> "User permissions updated")
-          }
-          case None =>
-            Redirect(routes.Courses.view(course.id.get)).flashing("error" -> "User not found")
-          }
+            Ok
+          } else Results.Forbidden
         }
   }
 
