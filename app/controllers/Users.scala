@@ -4,7 +4,6 @@ import authentication.Authentication
 import play.api.mvc.Controller
 import models._
 import service.{FileUploader, ImageTools, HashTools}
-import scala.Some
 import scala.util.{Try, Success, Failure}
 import javax.imageio.ImageIO
 import scala.concurrent.ExecutionContext
@@ -24,43 +23,40 @@ object Users extends Controller {
         Ok(views.html.users.notifications())
   }
 
-  def modNotification(id: Long, user: User)(cb: Notification => (String, String)) =
-    Notification.findById(id) match {
-    case Some(notification) =>
-      // Make sure the notification belongs to the user
-      if (user.getNotifications.contains(notification)) {
-        val message = cb(notification)
-        Redirect(routes.Users.notifications()).flashing(message)
-      } else
-        Errors.forbidden
-    case _ =>
-      Errors.notFound
-    }
+  def modNotification(ids: Seq[String], user: User)(cb: Notification => Unit) =
+    for(
+      id <- ids;
+      note <- try{
+        Notification.findById(id.toLong)
+      }catch{
+        case _: Exception => None
+      } if (user.getNotifications.contains(note))
+    ) cb(note)
 
   /**
    * Marks a notification as read
    * @param id The ID of the notification
    */
-  def markNotification(id: Long) = Authentication.authenticatedAction() {
+  def markNotification() = Authentication.authenticatedAction(parse.multipartFormData) {
     implicit request =>
       implicit user =>
-        modNotification(id, user) { notification =>
-          notification.copy(messageRead = true).save
-          "info" -> "Notification marked as read."
+        modNotification(request.body.dataParts("id"), user) { note =>
+          note.copy(messageRead = true).save
         }
+        Ok
   }
 
   /**
    * Deletes a notification
    * @param id The ID of the notification
    */
-  def deleteNotification(id: Long) = Authentication.authenticatedAction() {
+  def deleteNotification() = Authentication.authenticatedAction(parse.multipartFormData) {
     implicit request =>
       implicit user =>
-        modNotification(id, user) { notification =>
-          notification.delete()
-          "info" -> "Notification deleted."
+         modNotification(request.body.dataParts("id"), user) { note =>
+          note.delete()
         }
+        Ok
   }
 
   /**

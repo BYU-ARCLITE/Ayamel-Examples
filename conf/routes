@@ -54,7 +54,7 @@ GET     /course/:courseId/content/:id                   controllers.CourseConten
 POST    /course/:courseId/content/:id/lti               controllers.CourseContent.viewLms(id: Long, courseId: Long)
 GET     /course/:courseId/content/:id/stats             controllers.CourseContent.statsInCourse(id: Long, courseId: Long)
 GET     /course/:courseId/content/:id/stats/download    controllers.CourseContent.downloadStatsInCourse(id: Long, courseId: Long)
-GET     /course/:courseId/content/:id/stats/clear       controllers.CourseContent.clearStatsInCourse(id: Long, courseId: Long)
+POST    /course/:courseId/content/:id/stats/clear       controllers.CourseContent.clearStatsInCourse(id: Long, courseId: Long)
 POST    /course/:courseId/content/:id/remove            controllers.CourseContent.removeFromCourse(id: Long, courseId: Long)
 
 # Content pages
@@ -72,7 +72,7 @@ POST    /content/create/questions          controllers.ContentController.createQ
 GET     /content/:id                       controllers.ContentController.view(id: Long)
 GET     /content/:id/stats                 controllers.ContentController.stats(id: Long)
 GET     /content/:id/stats/download        controllers.ContentController.downloadStats(id: Long)
-GET     /content/:id/stats/clear           controllers.ContentController.clearStats(id: Long)
+POST    /content/:id/stats/clear           controllers.ContentController.clearStats(id: Long)
 GET     /content/:id/json                  controllers.ContentController.getAsJson(id: Long)
 POST    /content/:id/delete                controllers.ContentController.delete(id: Long)
 POST    /content/:id/clone                 controllers.ContentController.cloneContent(id: Long)
@@ -102,8 +102,8 @@ POST    /user/settings                  controllers.Users.saveSettings
 POST    /user/changePassword            controllers.Users.changePassword
 POST    /user/uploadPicture             controllers.Users.uploadProfilePicture
 GET     /user/notifications             controllers.Users.notifications
-GET     /user/notifications/mark/:id    controllers.Users.markNotification(id: Long)
-GET     /user/notifications/delete/:id  controllers.Users.deleteNotification(id: Long)
+POST    /user/notifications/mark/       controllers.Users.markNotification()
+POST    /user/notifications/delete/     controllers.Users.deleteNotification()
 GET     /user/permission/request        controllers.Users.permissionRequestPage
 POST    /user/permission/request        controllers.Users.submitPermissionRequest
 
@@ -143,7 +143,7 @@ POST    /content/:contentId/delete/:docId   controllers.DocumentManager.deleteDo
 # Word List pages
 GET     /words                              controllers.WordLists.view
 POST    /words                              controllers.WordLists.add
-GET     /words/delete/:id                   controllers.WordLists.deleteWord(id: Long)
+POST    /words/delete/:id                   controllers.WordLists.deleteWord(id: Long)
 POST    /words/export                       controllers.WordLists.export
 GET     /words/auth                         controllers.WordLists.authorize
 GET     /words/auth/callback                controllers.WordLists.authorizeCallback
@@ -153,7 +153,7 @@ GET     /help                               controllers.HelpPages.tableOfContent
 GET     /help/:id                           controllers.HelpPages.view(id: Long)
 GET     /help/:id/edit                      controllers.HelpPages.edit(id: Long)
 POST    /help/:id/edit                      controllers.HelpPages.save(id: Long)
-GET     /help/:id/delete                    controllers.HelpPages.delete(id: Long)
+POST    /help/:id/delete                    controllers.HelpPages.delete(id: Long)
 
 # Ajax utilities
 POST    /ajax/activity                      controllers.ajax.ActivitySaver.save

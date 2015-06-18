@@ -55,9 +55,9 @@ object HelpPages extends Controller {
     implicit request =>
       implicit user =>
         Authentication.enforcePermission("admin") {
-
           HelpPage.findById(id).map(_.delete())
-          Redirect(routes.HelpPages.tableOfContents()).flashing("info" -> "Help page deleted.")
+          Redirect(routes.HelpPages.tableOfContents())
+            .flashing("info" -> "Help page deleted.")
         }
   }
 

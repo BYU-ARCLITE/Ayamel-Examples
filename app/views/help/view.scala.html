@@ -35,7 +35,9 @@
                 @if(user.isDefined && user.get.hasSitePermission("admin")) {
                     <div class="pad-top-med">
                         <a class="btn btn-yellow" href="@routes.HelpPages.edit(helpPage.id.get)"><i class="icon-edit"></i> Edit</a>
-                        <a class="btn btn-magenta" href="@routes.HelpPages.delete(helpPage.id.get)"><i class="icon-trash"></i> Delete</a>
+                        <form action="@routes.HelpPages.delete(helpPage.id.get)" method="POST">
+                            <button class="btn btn-magenta"><i class="icon-trash"></i> Delete</button>
+                        </form>
                     </div>
                 }
             </div>
