@@ -39,6 +39,7 @@ GET     /course/:id/keyAuth                             controllers.Courses.keyA
 POST    /course/:id/addContent                          controllers.Courses.addContent(id: Long)
 POST    /course/:id/removeContent                       controllers.Courses.removeContent(id: Long)
 POST    /course/:id/announce                            controllers.Courses.addAnnouncement(id: Long)
+POST    /course/:courseId/announce/delete               controllers.Courses.deleteAnnouncement(courseId: Long)
 GET     /course/:id/request                             controllers.Courses.courseRequestPage(id: Long)
 POST    /course/:id/request                             controllers.Courses.submitCourseRequest(id: Long)
 GET     /course/:id/request/manage                      controllers.Courses.approvePage(id: Long)

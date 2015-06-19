@@ -43,6 +43,10 @@
     padding-top: 20px;
 }
 
+.announcement .btn-mini { /* for delete announcement button */
+    float: right;
+}
+
 .info {
     margin-top: 9px;
     margin-left: 30px;
