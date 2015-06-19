@@ -40,7 +40,13 @@
             @if(user.hasCoursePermission(course, "addStudent") && !course.getRequests.isEmpty) {
                 <a href="@routes.Courses.approvePage(course.id.get)" class="btn btn-blue"><i class="icon-check"></i> Student Requests</a>
             }
-            <a href="#quitCourseModal" role="button" class="btn btn-magenta" data-toggle="modal"><i class="icon-reply"></i> Quit</a>
+            @if(course.getMembers.contains(user)) {
+                <a href="#quitCourseModal" role="button" class="btn btn-magenta" data-toggle="modal"><i class="icon-reply"></i> Quit</a>
+            } else { @if(course.enrollment == 'open) {
+                <form method="post" action="@routes.Courses.submitCourseRequest(course.id.get)" style="position:absolute;">
+                    <input class="btn btn-blue" type="submit" value="Join Course"/>
+                </form>
+            }}
         </div>
 
         <div class="faces">
