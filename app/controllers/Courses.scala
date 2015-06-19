@@ -269,7 +269,12 @@ object Courses extends Controller {
             } else {
               AddCourseRequest.listByCourse(course).find(req => req.userId == user.id.get) match {
               case Some(_) => Ok(views.html.courses.pending(course))
-              case _ => Ok(views.html.courses.request(course))
+              case _ => {
+                if (course.enrollment == 'open)
+                  Ok(views.html.courses.view(course))
+                else
+                  Ok(views.html.courses.request(course))
+              }
               }
             }
           }
@@ -428,7 +433,6 @@ object Courses extends Controller {
           user.unenroll(course)
           Redirect(routes.Application.home).flashing("info" -> "You just quit ".+(course.name))
         }
-        Errors.notFound
   }
 
 
