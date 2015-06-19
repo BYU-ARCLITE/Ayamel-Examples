@@ -34,6 +34,12 @@ var AnnotationTextEditor = (function(){
         var that = this;
         var captionTracks = null;
 
+        window.onbeforeunload = function() {
+            if (Object.keys(manifest[language]).length > 0) {
+                return "Your unsaved changes will be lost.";
+            }
+        }
+
         var annotator = new Ayamel.Annotator({
                 classList:["annotation"],
                 handler: function(data, lang, text, index){
