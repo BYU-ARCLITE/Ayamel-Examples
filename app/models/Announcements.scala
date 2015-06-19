@@ -133,4 +133,16 @@ object Announcement extends SQLSelectable[Announcement] {
    */
   def fromFixture(data: (Long, Long, String, String)): Announcement =
     Announcement(NotAssigned, data._1, data._2, data._3, data._4)
+
+  /**
+   * Delete an announcement by id
+   * @param id The announcement ID
+   */
+  def deleteAnnouncement(id: Long, courseId: Long) = {
+    DB.withConnection {
+      implicit connection =>
+        anorm.SQL("delete from " + tableName + " where id = {id} and courseId = {cid}")
+          .on('id -> id, 'cid -> courseId).executeUpdate()
+    }
+  }
 }

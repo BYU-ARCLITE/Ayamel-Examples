@@ -5,6 +5,9 @@
     @if(!user.isEmpty) {
         <div class="announcement">
             @announcement.content
+            @if(!course.isDefined) {
+                <a id="@announcement.id.get" role="button" class="btn btn-mini btn-magenta"><i class="icon-trash"></i></a>
+            }
             <div class="info">
                 By @user.get.displayName on @service.TimeTools.prettyTime(announcement.timeMade)
                 @if(course.isDefined) {

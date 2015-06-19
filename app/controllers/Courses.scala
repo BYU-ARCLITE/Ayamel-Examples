@@ -190,6 +190,23 @@ object Courses extends Controller {
   }
 
   /**
+   * Deletes an announcement
+   * @param id The ID of the course
+   */
+  def deleteAnnouncement(courseId: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
+    implicit request =>
+      implicit user =>
+        getCourse(courseId) { course =>
+          if (user.hasCoursePermission(course, "addContent")) {
+            val announcementId = request.body("announcementId")(0).toLong
+            Announcement.deleteAnnouncement(announcementId, courseId)
+            Redirect(routes.Courses.view(courseId)).flashing("success" -> "Announcement deleted")
+          } else
+            Errors.forbidden
+        }
+  }
+
+  /**
    * Creates a new course
    */
   def create = Authentication.authenticatedAction(parse.urlFormEncoded) {
