@@ -24,8 +24,17 @@ case class CourseMembership(id: Pk[Long], userId: Long, courseId: Long, teacher:
       update(CourseMembership.tableName, 'id -> id, 'userId -> userId, 'courseId -> courseId, 'teacher -> teacher)
       this
     } else {
-      val id = insert(CourseMembership.tableName, 'userId -> userId, 'courseId -> courseId, 'teacher -> teacher)
-      this.copy(id)
+      DB.withConnection {
+        implicit connection =>
+          // won't add users to the course if they are already enrolled in it
+          if (anorm.SQL("select 1 from " + CourseMembership.tableName + " where userId = {uid} and courseId = {cid}")
+              .on('uid -> userId, 'cid -> courseId).list.isEmpty) {
+            val id = insert(CourseMembership.tableName, 'userId -> userId, 'courseId -> courseId, 'teacher -> teacher)
+            this.copy(id)
+          } else {
+            this
+          }
+      }
     }
   }
 
