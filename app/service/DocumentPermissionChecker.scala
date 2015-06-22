@@ -53,7 +53,7 @@ class DocumentPermissionChecker(user: User, content: Content, course: Option[Cou
    * Checks if the user is allowed to edit this particular resource
    */
   def canEdit(resource: JsObject): Boolean = {
-    enabled(resource) && (personalFilter(resource) || user.hasSitePermission("admin"))//or user is admin
+    (personalFilter(resource) || user.hasSitePermission("admin"))//or user is admin
   }
 
   //TODO: update the content database so that this doesn't have to make resource requests
