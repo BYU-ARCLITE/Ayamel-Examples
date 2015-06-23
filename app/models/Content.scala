@@ -21,7 +21,7 @@ case class Content(id: Pk[Long], name: String, contentType: Symbol, thumbnail: S
                    dateAdded: String = TimeTools.now(),
                    visibility: Int = Content.visibility.tightlyRestricted,
                    shareability: Int = Content.shareability.shareable,
-                   authKey: String = HashTools.md5Hex(util.Random.nextString(16)), labels: List[String] = Nil)
+                   authKey: String = HashTools.md5Hex(util.Random.nextString(16)), labels: List[String] = Nil, views: Long = 0)
   extends SQLSavable with SQLDeletable {
 
   /**
@@ -32,12 +32,12 @@ case class Content(id: Pk[Long], name: String, contentType: Symbol, thumbnail: S
     if (id.isDefined) {
       update(Content.tableName, 'id -> id, 'name -> normalize(name), 'contentType -> contentType.name, 'thumbnail -> thumbnail,
         'resourceId -> resourceId, 'dateAdded -> dateAdded, 'visibility -> visibility, 'shareability -> shareability,
-        'authKey -> authKey, 'labels -> normalize(labels.mkString(",")))
+        'authKey -> authKey, 'labels -> normalize(labels.mkString(",")), 'views -> views)
       this
     } else {
       val id = insert(Content.tableName, 'name -> normalize(name), 'contentType -> contentType.name, 'thumbnail -> thumbnail,
         'resourceId -> resourceId, 'dateAdded -> dateAdded, 'visibility -> visibility, 'shareability -> shareability,
-        'authKey -> authKey, 'labels -> normalize(labels.mkString(",")))
+        'authKey -> authKey, 'labels -> normalize(labels.mkString(",")), 'views -> views)
       this.copy(id)
     }
   }
@@ -174,7 +174,7 @@ case class Content(id: Pk[Long], name: String, contentType: Symbol, thumbnail: S
     "shareability" -> shareability,
     "settings" -> Content.getSettingMap(this).mapValues(_.mkString(",")),
     "authKey" -> authKey,
-    "views" -> views("").size,
+    "views" -> views,
     "labels" -> labels
   )
 
@@ -208,8 +208,6 @@ case class Content(id: Pk[Long], name: String, contentType: Symbol, thumbnail: S
   def getScorings = cache.getScorings
 
   def getActivity(coursePrefix: String) = cache.getActivity.filter(_.activityContext.pageContext.action.startsWith(coursePrefix))
-
-  def views(coursePrefix: String) = getActivity(coursePrefix).filter(_.verb == "pageload")
 
   def translations(coursePrefix: String) = getActivity(coursePrefix).filter(_.verb == "translate")
 
@@ -247,10 +245,11 @@ object Content extends SQLSelectable[Content] {
       get[Int](tableName + ".visibility") ~
       get[Int](tableName + ".shareability") ~
       get[String](tableName + ".authKey") ~
-      get[String](tableName + ".labels") map {
-      case id ~ name ~ contentType ~ thumbnail ~ resourceId ~ dateAdded ~ visibility ~ shareability ~ authKey ~ labels =>
+      get[String](tableName + ".labels") ~
+      get[Long](tableName + ".views") map {
+      case id ~ name ~ contentType ~ thumbnail ~ resourceId ~ dateAdded ~ visibility ~ shareability ~ authKey ~ labels ~ views =>
         Content(id, name, Symbol(contentType), thumbnail, resourceId, dateAdded, visibility, shareability,
-          authKey, labels.split(",").toList.filterNot(_.isEmpty))
+          authKey, labels.split(",").toList.filterNot(_.isEmpty), views)
     }
   }
 
@@ -352,5 +351,15 @@ object Content extends SQLSelectable[Content] {
               else acc + (setting -> List(argument))
           }
         }
+    }
+
+  /**
+   * Increments the views for a specific content item
+   * @param id The content id
+   */
+  def incrementViews(id: Long) =
+    DB.withConnection {
+      implicit connection =>
+        anorm.SQL("UPDATE " + tableName + " set views = views + 1 where id = {cid}").on('cid -> id).executeUpdate()
     }
 }

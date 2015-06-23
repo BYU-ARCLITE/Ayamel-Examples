@@ -2,7 +2,7 @@ package controllers.ajax
 
 import controllers.authentication.Authentication
 import play.api.mvc.Controller
-import models.{ActivityObject, PageContext, ActivityContext, Activity}
+import models.{ActivityObject, PageContext, ActivityContext, Activity, Content}
 import anorm.NotAssigned
 
 /**
@@ -29,6 +29,8 @@ object ActivitySaver extends Controller {
       user =>
 
         val data = request.body.mapValues(_(0))
+
+        if (data("verb") == "pageload") Content.incrementViews(data("pageId").toLong)
 
         // Save the activity
         val activityContext = ActivityContext(
