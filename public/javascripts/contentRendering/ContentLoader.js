@@ -63,7 +63,7 @@ var ContentLoader = (function () {
         switch(typeof content){
         case "number":
             return Promise.resolve($.ajax(
-                "/content/" + args.content + "/json?"+Date.now().toString(36),
+                "/content/" + content + "/json?"+Date.now().toString(36),
                 {dataType: "json"}
             ));
         case "object": return Promise.resolve(content);
