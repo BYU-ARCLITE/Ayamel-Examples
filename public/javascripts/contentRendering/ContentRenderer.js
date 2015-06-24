@@ -235,7 +235,7 @@ var ContentRenderer = (function(){
 
         // Spacebar to play/pause video
         window.addEventListener("keydown", function(e){
-            if(e.keyCode == 32 && document.querySelectorAll('input:focus').length === 0){
+            if(e.keyCode == 32 && document.querySelectorAll('input:focus, textarea:focus').length === 0){
                 player[player.paused?'play':'pause']();
                 e.preventDefault();
             }
