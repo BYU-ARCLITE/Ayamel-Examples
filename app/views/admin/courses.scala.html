@@ -2,17 +2,9 @@
 
 @optStr(str: Option[String]) = {
     @if(str.isDefined) {
-        @shorten(str.get)
+        @str.get
     } else {
         <em>Not set</em>
-    }
-}
-
-@shorten(str: String) = {
-    @if(str.length > 15) {
-        <a href="#" class="shortened" data-toggle="tooltip" title="@str">@{str.substring(0, 12) + "..."}</a>
-    } else {
-        @str
     }
 }
 
@@ -42,7 +34,7 @@
             @for(course <- courses) {
                 <tr>
                     <td>@course.id.get</td>
-                    <td>@shorten(course.name)</td>
+                    <td>@course.name</td>
                     <td>@course.enrollment.name.capitalize</td>
                     <td>@if(course.getTeachers.size > 0){
                         @optStr(course.getTeachers(0).name)}</td>
@@ -51,7 +43,7 @@
                     <td>@course.getMembers.size</td>
                     <td>@course.getContent.size</td>
                     <td>@course.getAnnouncements.size</td>
-                    <td>@shorten(course.lmsKey)</td>
+                    <td>@course.lmsKey</td>
                     <td>
                         <a href="@routes.Courses.view(course.id.get)" class="btn btn-small"><i class="icon-eye-open"></i></a>
                         <a href="#editModal" role="button" data-toggle="modal" class="btn btn-small btn-yellow editCourse" data-id="@course.id.get" data-name="@course.name" data-enrollment="@course.enrollment.name"><i class="icon-pencil"></i></a>
@@ -143,28 +135,26 @@
     </div>
 
     <script type="text/javascript">
-        $(function() {
-            $(".shortened").tooltip();
-
-            $(".editCourse").click(function() {
+        $(function(){
+            $(".editCourse").click(function(){
                 $("#editForm").attr("action", "/admin/courses/" + this.dataset["id"]);
                 $("#name").val(this.dataset["name"]);
                 $("#enrollment").val(this.dataset["enrollment"]);
             });
 
-            $(".deleteCourse").click(function() {
+            $(".deleteCourse").click(function(){
                 var id = this.dataset['id'];
                 $("#deleteCourseId").text(id);
                 $("#deleteForm").attr("action", "/admin/courses/" + id + "/delete");
             });
 
-            $(".sendNote").click(function() {
+            $(".sendNote").click(function(){
                 var id = this.dataset['id'];
                 $("#noteUserId").val(id);
                 $("#noteUserIdDisplay").text(id);
             });
 
-            $(".formSubmitter").click(function() {
+            $(".formSubmitter").click(function(){
                 $(this.dataset["target"]).submit();
             });
         });

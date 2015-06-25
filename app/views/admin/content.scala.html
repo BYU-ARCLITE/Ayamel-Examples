@@ -1,13 +1,5 @@
 @(contentList: List[(models.Content, User)], resourceLibraryUrl: String)(implicit request: RequestHeader, user: User)
 
-@shorten(str: String) = {
-    @if(str.length > 15) {
-        <a class="shortened" data-toggle="tooltip" title="@str">@{str.substring(0, 12) + "..."}</a>
-    } else {
-        @str
-    }
-}
-
 @main("Ayamel - Manage Content", Local(CSS("stylesheets/admin.css"))) {
 
     @Dependencies(Extern("Ayamel.js",Rel("js/",JS("Resource.js"), JS("LangCodes.js"))))
@@ -39,8 +31,8 @@
             @for(content <- contentList) {
                 <tr id="@content._1.resourceId">
                     <td>@content._1.id.get</td>
-                    <td>@shorten(content._1.name)</td>
-                    <td><a class="shortened" data-toggle="tooltip" title="@content._2.email.get">@shorten(content._2.name.get)</a></td>
+                    <td>@content._1.name</td>
+                    <td><a class="shortened" data-toggle="tooltip" title="@content._2.email.get">@content._2.name.get</a></td>
                     <td class="lang"></td>
                     <td>
                         @if(content._1.shareability == models.Content.shareability.notShareable) {
@@ -67,7 +59,7 @@
                             Public
                         }
                     </td>
-                    <td>@shorten(content._1.resourceId)</td>
+                    <td>@content._1.resourceId</td>
                     <td>@content._1.contentType.name</td>
                     <td>
                         <a href="@routes.ContentController.view(content._1.id.get)" class="btn">View</a>
@@ -142,10 +134,8 @@
     </div>
 
     <script type="text/javascript">
-        $(function() {
-            $(".shortened").tooltip();
-
-            $("#batchEditModal").on("show", function() {
+        $(function(){
+            $("#batchEditModal").on("show", function(){
                 var ids = $(".contentSelector:checked").map(function(e, f){return $(f).attr("data-id");}).toArray().join(",");
                 document.getElementById("ids").value = ids;
             });
