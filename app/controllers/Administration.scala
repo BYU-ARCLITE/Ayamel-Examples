@@ -220,7 +220,7 @@ object Administration extends Controller {
     implicit request =>
       implicit user =>
         Authentication.enforcePermission("admin") {
-          val content = Content.list
+          val content = Content.ownershipList
           Ok(views.html.admin.content(content, ResourceController.baseUrl))
         }
   }

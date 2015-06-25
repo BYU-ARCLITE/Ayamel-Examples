@@ -1,8 +1,8 @@
-@(contentList: List[models.Content], resourceLibraryUrl: String)(implicit request: RequestHeader, user: User)
+@(contentList: List[(models.Content, User)], resourceLibraryUrl: String)(implicit request: RequestHeader, user: User)
 
 @shorten(str: String) = {
     @if(str.length > 15) {
-        <a href="#" class="shortened" data-toggle="tooltip" title="@str">@{str.substring(0, 12) + "..."}</a>
+        <a class="shortened" data-toggle="tooltip" title="@str">@{str.substring(0, 12) + "..."}</a>
     } else {
         @str
     }
@@ -27,6 +27,7 @@
             <tr>
                 <th>Id</th>
                 <th>Name</th>
+                <th>Owner</th>
                 <th>Language</th>
                 <th>Shareability</th>
                 <th>Visibility</th>
@@ -36,42 +37,43 @@
                 <th></th>
             </tr>
             @for(content <- contentList) {
-                <tr id="@content.resourceId">
-                    <td>@content.id.get</td>
-                    <td>@shorten(content.name)</td>
+                <tr id="@content._1.resourceId">
+                    <td>@content._1.id.get</td>
+                    <td>@shorten(content._1.name)</td>
+                    <td><a class="shortened" data-toggle="tooltip" title="@content._2.email.get">@shorten(content._2.name.get)</a></td>
                     <td class="lang"></td>
                     <td>
-                        @if(content.shareability == models.Content.shareability.notShareable) {
+                        @if(content._1.shareability == models.Content.shareability.notShareable) {
                             Not Shareable
                         }
-                        @if(content.shareability == models.Content.shareability.byMeOnly) {
+                        @if(content._1.shareability == models.Content.shareability.byMeOnly) {
                             By Owner Only
                         }
-                        @if(content.shareability == models.Content.shareability.shareable) {
+                        @if(content._1.shareability == models.Content.shareability.shareable) {
                             Shareable
                         }
                     </td>
                     <td>
-                        @if(content.visibility == models.Content.visibility._private) {
+                        @if(content._1.visibility == models.Content.visibility._private) {
                             Private
                         }
-                        @if(content.visibility == models.Content.visibility.tightlyRestricted) {
+                        @if(content._1.visibility == models.Content.visibility.tightlyRestricted) {
                             Tightly Restricted
                         }
-                        @if(content.visibility == models.Content.visibility.looselyRestricted) {
+                        @if(content._1.visibility == models.Content.visibility.looselyRestricted) {
                             Loosely Restricted
                         }
-                        @if(content.visibility == models.Content.visibility.public) {
+                        @if(content._1.visibility == models.Content.visibility.public) {
                             Public
                         }
                     </td>
-                    <td>@shorten(content.resourceId)</td>
-                    <td>@content.contentType.name</td>
+                    <td>@shorten(content._1.resourceId)</td>
+                    <td>@content._1.contentType.name</td>
                     <td>
-                        <a href="@routes.ContentController.view(content.id.get)" class="btn">View</a>
+                        <a href="@routes.ContentController.view(content._1.id.get)" class="btn">View</a>
                     </td>
                     <td>
-                        <input type="checkbox" class="contentSelector" data-id="@content.id.get">
+                        <input type="checkbox" class="contentSelector" data-id="@content._1.id.get">
                     </td>
                 </tr>
             }
