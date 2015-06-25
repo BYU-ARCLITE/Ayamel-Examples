@@ -254,6 +254,41 @@ object Content extends SQLSelectable[Content] {
   }
 
   /**
+   * Parser for getting (content, user) tuple in order to display content ownership
+   */
+  val contentOwnership = {
+    // content object
+    get[Pk[Long]]("contentId") ~
+    get[String]("cname") ~
+    get[String]("contentType") ~
+    get[String]("thumbnail") ~
+    get[String]("resourceId") ~
+    get[String]("dateAdded") ~
+    get[Int]("visibility") ~
+    get[Int]("shareability") ~
+    get[String]("authKey") ~
+    get[String]("labels") ~
+    get[Long]("views") ~
+    // user object
+    get[Pk[Long]]("userId") ~
+    get[String]("authId") ~
+    get[String]("authScheme") ~
+    get[String]("username") ~
+    get[String]("name") ~
+    get[String]("email") ~
+    get[Option[String]]("picture") ~
+    get[Long]("accountLinkId") ~
+    get[String]("created") ~
+    get[String]("lastLogin") map {
+      case contentId ~ cname ~ contentType ~ thumbnail ~ resourceId ~ dateAdded ~ visibility ~ shareability ~ authKey ~ labels ~ views ~
+        userId ~ authId ~ authScheme ~ username ~ name ~ email ~ picture ~ accountLinkId ~ created ~ lastLogin =>
+          Content(contentId, cname, Symbol(contentType), thumbnail, resourceId, dateAdded, visibility, shareability,
+          authKey, labels.split(",").toList.filterNot(_.isEmpty), views) -> 
+          User(userId, authId, Symbol(authScheme), username, Some(name), Some(email), picture, accountLinkId, created, lastLogin)
+    }
+  }
+
+  /**
    * Finds a content by the given id
    * @param id The id of the content link
    * @return If a content link was found, then Some[Content], otherwise None
@@ -265,6 +300,19 @@ object Content extends SQLSelectable[Content] {
    * @return The list of content
    */
   def list: List[Content] = list(tableName, simple)
+
+  /**
+   * Gets all content and owners information
+   * @return map of contentId's to tuple (owner, email)
+   */
+  def ownershipList: List[(Content, User)] = {
+    DB.withConnection {
+      implicit connection =>
+        anorm.SQL("""SELECT * FROM ((SELECT content.name AS cname, content . * , contentOwnership.contentId, contentOwnership.userId
+          FROM content JOIN contentOwnership ON content.id = contentOwnership.contentid) AS listing
+          JOIN userAccount ON userAccount.id = listing.userId)""").as(contentOwnership *)
+    }
+  }
 
   /**
    * Gets all the public content sorted by newest first
