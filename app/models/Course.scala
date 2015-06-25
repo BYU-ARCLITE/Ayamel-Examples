@@ -249,6 +249,7 @@ object Course extends SQLSelectable[Course] {
     DB.withConnection {
       implicit connection =>
         val sqlQuery = "%" + query + "%"
-        anorm.SQL("SELECT * from " + tableName + " where name like {query}").on('query -> sqlQuery).as(simple *)
+        anorm.SQL("SELECT * from " + tableName + " where name like {query} order by name asc")
+          .on('query -> sqlQuery).as(simple *)
     }
 }

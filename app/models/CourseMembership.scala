@@ -104,7 +104,7 @@ object CourseMembership extends SQLSelectable[CourseMembership] {
     DB.withConnection {
       implicit connection =>
         anorm.SQL("select * from " + Course.tableName + " join " + tableName + " on " + Course.tableName + ".id = " +
-          tableName + ".courseId where " + tableName + ".userId = {id}").on('id -> user.id).as(Course.simple *)
+          tableName + ".courseId where " + tableName + ".userId = {id} order by name asc").on('id -> user.id).as(Course.simple *)
     }
   }
 
@@ -117,7 +117,7 @@ object CourseMembership extends SQLSelectable[CourseMembership] {
     DB.withConnection {
       implicit connection =>
         anorm.SQL("select * from " + Course.tableName + " join " + tableName + " on " + Course.tableName + ".id = " +
-          tableName + ".courseId where " + tableName + ".userId = {id} and " + tableName + ".teacher = true")
+          tableName + ".courseId where " + tableName + ".userId = {id} and " + tableName + ".teacher = true order by name asc")
           .on('id -> user.id).as(Course.simple *)
     }
   }
