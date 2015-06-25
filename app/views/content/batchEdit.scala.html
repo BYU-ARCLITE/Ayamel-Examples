@@ -1,13 +1,5 @@
 @(contentList: List[models.Content])(implicit request: RequestHeader, user: User)
 
-@shorten(str: String) = {
-    @if(str.length > 15) {
-        <a href="#" class="shortened" data-toggle="tooltip" title="@str">@{str.substring(0, 12) + "..."}</a>
-    } else {
-        @str
-    }
-}
-
 @main("Ayamel - Manage My Content", Local(CSS("stylesheets/content.css"))) {
 
     <div class="padded">
@@ -38,7 +30,7 @@
             @for(content <- contentList) {
                 <tr>
                     <td>@content.id.get</td>
-                    <td>@shorten(content.name)</td>
+                    <td>@content.name</td>
                     <td>
                         @if(content.shareability == models.Content.shareability.notShareable) {
                             Not Shareable
@@ -64,7 +56,7 @@
                             Public
                         }
                     </td>
-                    <td>@shorten(content.resourceId)</td>
+                    <td>@content.resourceId</td>
                     <td>@content.contentType.name</td>
                     <td>
                         <a href="@routes.ContentController.view(content.id.get)" class="btn">View</a>
@@ -140,9 +132,7 @@
 
     <script type="text/javascript">
         $(function() {
-            $(".shortened").tooltip();
-
-            $("#batchEditModal").on("show", function() {
+            $("#batchEditModal").on("show", function(){
                 var ids = $(".contentSelector:checked").map(function(e, f){return $(f).attr("data-id");}).toArray().join(",");
                 document.getElementById("ids").value = ids;
             });
