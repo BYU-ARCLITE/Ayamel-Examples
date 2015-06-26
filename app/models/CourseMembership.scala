@@ -27,6 +27,7 @@ case class CourseMembership(id: Pk[Long], userId: Long, courseId: Long, teacher:
       DB.withConnection {
         implicit connection =>
           // won't add users to the course if they are already enrolled in it
+          // Don't use userIsEnrolled method because that takes objects, not IDs
           if (anorm.SQL("select 1 from " + CourseMembership.tableName + " where userId = {uid} and courseId = {cid}")
               .on('uid -> userId, 'cid -> courseId).list.isEmpty) {
             val id = insert(CourseMembership.tableName, 'userId -> userId, 'courseId -> courseId, 'teacher -> teacher)
@@ -134,6 +135,20 @@ object CourseMembership extends SQLSelectable[CourseMembership] {
         anorm.SQL("select * from " + User.tableName + " join " + tableName + " on " + User.tableName + ".id = " +
           tableName + ".userId where " + tableName + ".courseId = {id} and " + tableName + ".teacher = {teacher}")
           .on('id -> course.id, 'teacher -> teacher).as(User.simple *)
+    }
+  }
+
+  /**
+   * Checks if a specific user is enrolled in a certain course
+   * @param user The user who's enrollment is being checked
+   * @param course The course in which the user may be enrolled
+   * @return Whether or not they're enrolled
+   */
+  def userIsEnrolled(user: User, course: Course): Boolean = {
+    DB.withConnection {
+      implicit connection =>
+        anorm.SQL("select 1 from " + tableName + " where userId = {uid} and courseId = {cid}")
+            .on('uid -> user.id, 'cid -> course.id).list.isEmpty
     }
   }
 

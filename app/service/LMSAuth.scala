@@ -3,6 +3,7 @@ package service
 import joshmonson.oauth.{OAuthKey, OAuthRequest}
 import play.api.mvc.{AnyContent, Request}
 import models.{Course, User, SitePermissions}
+import controllers.authentication._
 import anorm.NotAssigned
 import play.core.parsers.FormUrlEncodedParser
 
@@ -16,26 +17,38 @@ import play.core.parsers.FormUrlEncodedParser
  */
 object LMSAuth {
 
-  def getCourseUser(course: Course, userInfo: (Option[String], Option[String], Option[String], Option[String])): User = {
-    // Check that the user information was provided. If not, then give a guest account
-    if (userInfo._2.isDefined) {
-      val id = course.id.get + "." + userInfo._2.get
-      User.findByAuthInfo(id, 'ltiAuth) match {
-      case Some(user) => user
-      case _ =>
-        val user = User(NotAssigned, id, 'ltiAuth, "user" + id, userInfo._1, userInfo._3).save
-          .enroll(course, teacher = false)
-        SitePermissions.assignRole(user, 'student)
-        //TODO: add course permissions
-        user
-      }
-    } else
-      getGuestAccount(course)
+  def getCourseUser(course: Course, userId: String, name: Option[String], email: Option[String]): User = {
+    val id = course.id.get + "." + userId
+    User.findByAuthInfo(id, 'ltiAuth).getOrElse {
+      val user = User(NotAssigned, id, 'ltiAuth, "user" + id, name, email).save
+        .enroll(course, teacher = false)
+      SitePermissions.assignRole(user, 'student)
+      //TODO: add course permissions
+      user
+    }
   }
 
   /**
-   * Checks that the request is signed and valid for the given course. Returns, and creates if necessary, a student user
-   * enrolled in that course.
+   * This tries to get the guest account for a course. If it doesn't exist then it creates it and enrolls it in the
+   * course.
+   * @param course The course for which the guest account is to be obtained.
+   * @return The guest account
+   */
+  def getGuestAccount(course: Course): User = {
+    User.findByAuthInfo(course.id.get.toString, 'keyAuth) match {
+    case Some(user) => user
+    case _ =>
+      val user = User(NotAssigned, course.id.get.toString, 'keyAuth, "guest", Some("Guest")).save
+        .enroll(course, teacher = false)
+      SitePermissions.assignRole(user, 'student)
+      //TODO: add course permissions
+      user
+    }
+  }
+ 
+  /**
+   * Checks that the request is signed and valid for the given course. Returns, and creates if necessary,
+   * a student user enrolled in that course.
    * @param course The course to view.
    * @param request The incoming web request. The body must be a string in order to verify it
    * @return Some(User) if the request is valid and signed. None otherwise
@@ -44,17 +57,25 @@ object LMSAuth {
 
     // Verify the request. There is no token in LTI, so give an empty string
     val key = OAuthKey(course.id.get.toString, course.lmsKey, "", "")
-    val oauthRequest = OAuthRequest(request.headers.get("Authentication"), request.headers.get("Content-Type"), request.host, request.rawQueryString, request.body, request.method, request.path)
-    val valid = oauthRequest.verify(key)
-    if (valid) {
 
+    val oauthRequest = OAuthRequest(
+      request.headers.get("Authentication"), request.headers.get("Content-Type"),
+      request.host, request.rawQueryString, request.body, request.method, request.path
+    )
+
+    if (oauthRequest.verify(key)) {
       // Get the user info
       val params = FormUrlEncodedParser.parse(request.body, request.charset.getOrElse("utf-8")).mapValues(_(0))
-      val userInfo = (params.get("lis_person_name_full"), params.get("user_id"),
-        params.get("lis_person_contact_email_primary"), params.get("user_image"))
 
-      // Get the user based on the user info
-      Some(getCourseUser(course, userInfo))
+      params.get("user_id").map { id =>  //Not used: params.get("user_image")
+        getCourseUser(course, id, params.get("lis_person_name_full"), params.get("lis_person_contact_email_primary"))
+      }.orElse {
+        val uopt = Authentication.getUserFromRequest()
+        uopt.foreach(_.enroll(course, teacher = false))
+        uopt
+      }.orElse {
+        Some(getGuestAccount(course))
+      }
     } else
       None
   }
@@ -75,22 +96,5 @@ object LMSAuth {
       Some(getGuestAccount(course))
     } else
       None
-  }
-
-  /**
-   * This tries to get the guest account for a course. If it doesn't exist then it creates it and enrolls it in the
-   * course.
-   * @param course The course for which the guest account is to be obtained.
-   * @return The guest account
-   */
-  def getGuestAccount(course: Course): User = {
-    User.findByAuthInfo(course.id.get.toString, 'keyAuth) match {
-    case Some(user) => user
-    case _ =>
-      val user = User(NotAssigned, course.id.get.toString, 'keyAuth, "guest", Some("Guest")).save.enroll(course, teacher = false)
-	  SitePermissions.assignRole(user, 'student)
-      //TODO: add course permissions
-	  user
-    }
   }
 }
