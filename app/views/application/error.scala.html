@@ -14,12 +14,11 @@
               CSS("font-awesome.min.css"),
               CSS("main.css")),
             Rel("javascripts/",
-			  Rel("libraries/",
+              Rel("libraries/",
                 JS("jquery-1.9.0.min.js"),
                 JS("bootstrap.min.js")))))
     </head>
     <body>
-
 
         <div class="container">
             <div class="mainContent">
@@ -29,7 +28,7 @@
                         We've taken note that something went wrong, but we can't read your mind. To help us fix this,
                         please describe what you were doing. Thanks!
                     </p>
-                    <form class="form-horizontal" id="feedbackForm">
+                    <span class="form-horizontal" id="feedbackForm">
                         <div class="control-group">
                             <label class="control-label" for="description">Describe what you were doing:</label>
                             <div class="controls">
@@ -42,7 +41,7 @@
                                 <button type="submit" id="saveButton" class="btn">Save</button>
                             </div>
                         </div>
-                    </form>
+                    </span>
                     <div id="feedbackSaved">
                         Thank you for providing feedback!
                     </div>
@@ -60,9 +59,7 @@
         <script type="text/javascript">
             $(function() {
                 var $saved = $("#feedbackSaved").hide();
-
                 document.getElementById("saveButton").addEventListener('click', function(){
-
                     $.ajax("/feedback/error", {
                         type: "post",
                         data: {
@@ -73,8 +70,6 @@
 
                     $("#feedbackForm").hide();
                     $saved.show();
-
-                    return false;
                 }, false);
             });
         </script>
