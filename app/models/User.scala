@@ -98,13 +98,20 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
   //
 
   /**
+   * Checks if a user is already enrolled in a course
+   * @param course The course in which the user will be enrolled
+   */
+  def isEnrolled(course: Course) = CourseMembership.userIsEnrolled(this, course)
+
+  /**
    * Enrolls the user in a course
    * @param course The course in which the user will be enrolled
    * @param teacher Is this user a teacher of the course?
    * @return The user (for chaining)
    */
   def enroll(course: Course, teacher: Boolean = false): User = {
-    CourseMembership(NotAssigned, id.get, course.id.get, teacher).save
+    if(!this.isEnrolled(course))
+      CourseMembership(NotAssigned, id.get, course.id.get, teacher).save
     this
   }
 
@@ -119,7 +126,6 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
     val membership = CourseMembership.listByUser(this).filter(_.courseId == course.id.get)
 
     if (membership.size > 1)
-    // We didn't get exactly one membership warn
       Logger.warn("Multiple (or zero) memberships for user #" + id.get + " in course #" + course.id.get)
 
     // Delete all found
