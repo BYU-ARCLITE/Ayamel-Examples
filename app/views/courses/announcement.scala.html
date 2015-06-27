@@ -1,19 +1,14 @@
-@(announcement: Announcement, course: Option[Course] = None)
+@(announcement: Announcement, course: Course)(implicit user: User)
 
-@{ /* TODO: Fix this so it notifies system admin when user is empty */ }
-@defining(announcement.getUser){ user =>
-    @if(!user.isEmpty) {
-        <div class="announcement">
-            @announcement.content
-            @if(!course.isDefined) {
-                <a id="@announcement.id.get" role="button" class="btn btn-mini btn-magenta"><i class="icon-trash"></i></a>
-            }
-            <div class="info">
-                By @user.get.displayName on @service.TimeTools.prettyTime(announcement.timeMade)
-                @if(course.isDefined) {
-                    <br>for <a href="@routes.Courses.view(course.get.id.get)">@course.get.name</a>
-                }
-            </div>
+@defining(announcement.getUser){ announcer =>
+    <div class="announcement">
+        @announcement.content
+        @if(user.hasCoursePermission(course, "makeAnnouncement")) {
+            <a data-id="@announcement.id.get" role="button" class="btn btn-mini btn-magenta"><i class="icon-trash"></i></a>
+        }
+        <div class="info">
+            By @announcer.displayName on @service.TimeTools.prettyTime(announcement.timeMade)
+            <br>for <a href="@routes.Courses.view(course.id.get)">@course.name</a>
         </div>
-    }
+    </div>
 }

@@ -178,12 +178,15 @@ object Courses extends Controller {
         getCourse(id) { course =>
 
           // Only non-guest members and admins can add content
-          if (user.hasCoursePermission(course, "addContent")) {
-
+          if (user.hasCoursePermission(course, "makeAnnouncement")) {
             // Add the content to the course
             val announcement = request.body("announcement")(0)
-            course.makeAnnouncement(user, announcement)
-            Redirect(routes.Courses.view(id)).flashing("success" -> "Announcement published.")
+            if (announcement.getBytes("UTF-8").length < 65534) { //2^16-2: max length of MySQL Text
+              course.makeAnnouncement(user, announcement)
+              Redirect(routes.Courses.view(id)).flashing("success" -> "Announcement published.")
+            } else {
+              Redirect(routes.Courses.view(id)).flashing("error" -> "Announcement text was too long.")
+            }
           } else
             Errors.forbidden
       }
@@ -197,7 +200,7 @@ object Courses extends Controller {
     implicit request =>
       implicit user =>
         getCourse(courseId) { course =>
-          if (user.hasCoursePermission(course, "addContent")) {
+          if (user.hasCoursePermission(course, "makeAnnouncement")) {
             val announcementId = request.body("announcementId")(0).toLong
             Announcement.deleteAnnouncement(announcementId, courseId)
             Redirect(routes.Courses.view(courseId)).flashing("success" -> "Announcement deleted")

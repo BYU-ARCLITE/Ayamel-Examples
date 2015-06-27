@@ -94,7 +94,7 @@
                 }
 
                 @for(announcement <- course.getSortedAnnouncements) {
-                    @courses.announcement(announcement)
+                    @courses.announcement(announcement, course)
                 }
             </div>
         </div>
@@ -107,6 +107,6 @@
     @views.html.courses.helpers.studentInfo(user, course)
     @views.html.courses.helpers.joinLink(user, course)
     @views.html.courses.helpers.makeAnnouncement(user, course)
+    @views.html.courses.helpers.deleteAnnouncement(user, course)
     @views.html.courses.helpers.removeContent(user, course)
-    @views.html.courses.helpers.deleteAnnouncement(course)
 }
