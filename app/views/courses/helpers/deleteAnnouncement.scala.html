@@ -1,32 +1,33 @@
-@(course: Course)
+@(user: User, course: Course)
 
-<div id="deleteAnnouncementModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="deleteAnnouncementModalLabel" aria-hidden="true">
-    <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-        <h3 id="deleteAnnouncementModalLabel">Delete announcement</h3>
+@if(user.hasCoursePermission(course, "makeAnnouncement")) {
+    <div id="deleteAnnouncementModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="deleteAnnouncementModalLabel" aria-hidden="true">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3 id="deleteAnnouncementModalLabel">Delete announcement</h3>
+        </div>
+        <div class="modal-body">
+            <p>Are you sure you want to delete the announcement?</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
+                <form action="@routes.Courses.deleteAnnouncement(course.id.get)" method="POST">
+                    <input id="courseId" type="hidden" name="courseId" value="@course.id.get">
+                    <input id="announcementId" type="hidden" name="announcementId" value="0">
+                    <button class="btn btn-magenta">Yes, Delete</button>
+                </form>
+        </div>
     </div>
-    <div class="modal-body">
-        <p>Are you sure you want to delete the announcement?</p>
-    </div>
-    <div class="modal-footer">
-        <button class="btn" data-dismiss="modal" aria-hidden="true">No</button>
-            <form action="@routes.Courses.deleteAnnouncement(course.id.get)" method="POST">
-                <input id="courseId" type="hidden" name="courseId" value="@course.id.get">
-                <input id="announcementId" type="hidden" name="announcementId" value="0">
-                <button class="btn btn-magenta">Yes, Delete</button>
-            </form>
-    </div>
-</div>
 
-<script type="text/javascript">
-    $(function(){
-        var announcements = document.querySelectorAll(".announcement .btn-mini");
-        [].forEach.call(announcements, function(announcement){
-            announcement.addEventListener("click", function() {
-                var announcementId = this.id;
-                $(".modal-footer #announcementId").val(announcementId);
-                $("#deleteAnnouncementModal").modal("show");
+    <script type="text/javascript">
+        $(function(){
+            var announcements = document.querySelectorAll(".announcement .btn-mini");
+            [].forEach.call(announcements, function(announcement){
+                announcement.addEventListener("click", function() {
+                    $(".modal-footer #announcementId").val(this.dataset.id);
+                    $("#deleteAnnouncementModal").modal("show");
+                });
             });
         });
-    });
-</script>
+    </script>
+}
