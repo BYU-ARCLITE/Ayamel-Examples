@@ -135,7 +135,7 @@ var AnnotationTextEditor = (function(){
                     holder: args.holder,
                     captionTracks: [],
                     sync: false,
-                    annotating:true
+                    annotator: annotator
                 });
                 addTracks(captionTracks);
                 if (tracks.length > 0) {
@@ -158,17 +158,7 @@ var AnnotationTextEditor = (function(){
                 });
                 annotator.annotations = annArray;
                 var currTranscript = !!transcriptPlayer ? transcriptPlayer.activeTranscript : 0;
-                [].forEach.call(captionTracks, function(track) {
-                    [].forEach.call(track.track.cues, function(cue) {
-                        var t = annotator.Text(cue.text.replace(/<[^]*?>/gm, ''));
-                        var z = document.createElement('p');
-                        z.appendChild(t);
-                        if (z.childNodes.length > 1) {
-                            cue.text = z.innerHTML;
-                        } else if (deleted === true) {
-                            cue.text = cue.text.replace(/<[^]*?>/gm, '');
-                        }
-                    });
+                [].forEach.call(captionTracks, function(track){
                     transcriptPlayer.updateTrack(track.track);
                 });
                 transcriptPlayer.activeTranscript = currTranscript;
