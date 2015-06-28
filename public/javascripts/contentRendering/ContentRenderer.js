@@ -372,9 +372,8 @@ var ContentRenderer = (function(){
             //requires the actual TextTrack objects; should be fixed up to take resource IDs, I think
             captionTracks: [],
             holder: layout.Transcript,
-            sync: true
-            //noUpdate: args.noUpdate
-            //TODO: Add links to translator & annotator
+            sync: true,
+            annotator: null
         });
 
         // Cue clicking
