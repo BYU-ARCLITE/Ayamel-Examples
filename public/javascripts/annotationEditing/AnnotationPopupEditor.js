@@ -98,6 +98,7 @@ var AnnotationPopupEditor = (function(){
         });
         ractive.on('browse',function(){
             PopupBrowser.selectContent(function(newContent){
+                newContent = newContent[0];
                 ContentCache.cache[newContent.id] = newContent;
                 content = newContent;
                 ractive.set({
@@ -141,7 +142,7 @@ var AnnotationPopupEditor = (function(){
                 annotation[currAnn].global.data.value = ractive.get('imageImg');
                 break;
             case "content": // Update from the selected content
-                annotation[currAnn].global.data.value = !!content ? content[0].id : 0;
+                annotation[currAnn].global.data.value = !!content ? content.id : 0;
                 break;
             }
         }
