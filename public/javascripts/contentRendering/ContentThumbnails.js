@@ -17,7 +17,7 @@ var ContentThumbnails = (function() {
 
     return {
         resolve: function(content) {
-            return thumbnailMap[content[0].contentType](content);
+            return thumbnailMap[content.contentType](content);
         }
     };
 })();
