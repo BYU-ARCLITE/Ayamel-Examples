@@ -298,6 +298,31 @@ var ContentRenderer = (function(){
             }
         }, false);
 
+        var elemStr1 = '<div>Lalalalala</div>';
+        var elemStr2 = '<div>Hum hah</div>';
+        var elemStr3 = '<div>dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd</div>';
+
+        var elem1 = Ayamel.utils.parseHTML(elemStr1);
+        var elem2 = Ayamel.utils.parseHTML(elemStr2);
+        var elem3 = Ayamel.utils.parseHTML(elemStr3);
+
+        var ct1 = new Ayamel.classes.SidebarTab({
+            title: 'Tab 1',
+            content: elem1
+        });
+
+        var ct2 = new Ayamel.classes.SidebarTab({
+            title: 'Tab 2',
+            content: elem2
+        });
+
+        var ct3 = new Ayamel.classes.SidebarTab({
+            title: 'Tab 3',
+            content: elem3
+        });
+
+        var tabs = [ct1, ct2, ct3];
+
         player = new Ayamel.classes.AyamelPlayer({
             components: components,
             holder: args.layout.player,
@@ -318,7 +343,8 @@ var ContentRenderer = (function(){
             startTime: args.startTime,
             endTime: args.endTime,
             translate: args.translate,
-            aspectRatio: Ayamel.aspectRatios.hdVideo
+            aspectRatio: Ayamel.aspectRatios.hdVideo,
+            tabs: tabs
         });
 
         var registerPlay = true;
