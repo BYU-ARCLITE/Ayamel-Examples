@@ -26,34 +26,55 @@ var ContentRenderer = (function(){
         return content.settings.allowDefinitions === "true";
     }
 
-    function createLayout(content, holder){
-        var panes, obj, slideOuts = [];
-
-        if(showTranscript(content)){ slideOuts.push("Transcript"); }
-        if(allowDefinitions(content)){ slideOuts.push("Definitions"); }
-        if(showAnnotations(content)){ slideOuts.push("Annotations"); }
-
-        switch(slideOuts.length){
-        case 0:
-            return ContentLayoutManager.onePanel(holder);
-        case 1:
-            panes = ContentLayoutManager.twoPanel(holder, slideOuts);
-            obj = { player: panes.player };
-            obj[slideOuts[0]] = panes[slideOuts[0]].content
-            return obj;
-        default:
-            panes = ContentLayoutManager.twoPanel(holder, slideOuts);
-            obj = { player: panes.player };
-            slideOuts.forEach(function(tab){
-                obj[tab] = panes[tab].content;
-                obj[tab+"Tab"] = panes[tab].tab;
-            });
-            return obj;
+    function getDefaultLanguage(languages) {
+        for(var i = 0; i < languages.length; i++) {
+            var langObj = languages[i];
+            if(langObj.value === "eng") {
+                return langObj;
+            }
         }
+        return languages[0];
     }
 
-    function setupTranslator(player, layout, resourceMap){
-        // Add translation listeners
+    function setupTranslatorPane(tab, player, content, resourceMap){
+        var pane, targetLanguages,
+            codes = (content.settings.targetLanguages || "")
+                .split(",").filter(function(s){ return !!s; }),
+            selectHolder = document.createElement('div'),
+            translationsHolder = document.createElement('div');
+
+        if(!!codes.length){
+            // Fallback procedure when no languages have been selected
+            targetLanguages = codes.map(function(code) {
+                return {value: code, text: Ayamel.utils.getLangName(code)};
+            }).sort(function(a,b){ return a.text.localeCompare(b.text); });
+        }else{
+            targetLanguages = Object.keys(Ayamel.utils.p1map).map(function(p1){
+                var code = Ayamel.utils.p1map[p1];
+                return {value: code, text: Ayamel.utils.getLangName(code)};
+            }).sort(function(a,b){ return a.text.localeCompare(b.text); });
+        }
+
+        translationsHolder.className = "definitionsContent";
+        (new EditorWidgets.SuperSelect({
+            el: selectHolder,
+            data:{
+                id: 'transLang',
+                selection: [],
+                icon: 'icon-globe',
+                button: 'left',
+                text: 'Select Language',
+                multiple: false,
+                options: targetLanguages,
+                defaultValue: {
+                    value: targetLanguages.indexOf("eng") !== -1 ?
+                            "eng" : targetLanguages[0]
+                }
+            }
+        })).observe('selection', function(newValue){ player.targetLang = newValue[0]; });
+
+        // Player Event Listeners
+
         // Translation started
         player.addEventListener("translate", function(event){
             var detail = event.detail,
@@ -72,9 +93,8 @@ var ContentRenderer = (function(){
 
         // Translation succeeded
         player.addEventListener("translation", function(event){
-            var detail = event.detail,
+            var translationSize, detail = event.detail,
                 translations = detail.translations,
-                translationsHolder = layout.Definitions.querySelector('.definitionsContent'),
                 wordList = !document.body.classList.contains("share")? // Only allow saving words if the user is logged in (not sharing)
                     '<div class="addToWordList"><button class="btn btn-small"><i class="icon-paste"></i> Add to Word List</button></div>':"",
                 html = Ayamel.utils.parseHTML('<div class="translationResult">\
@@ -104,16 +124,14 @@ var ContentRenderer = (function(){
                 });
             }
             translationsHolder.appendChild(html);
+            tab.select();
 
-            if(layout.DefinitionsTab){
-                $(layout.DefinitionsTab).tab("show");
-                //keep the top of the new translation visible.
-                if (html.offsetHeight > translationsHolder.offsetHeight) {
-                    var translationSize = html.offsetHeight + html.querySelector('.sourceText').offsetHeight + 15;
-                    translationsHolder.scrollTop = translationsHolder.scrollHeight - translationSize;
-                } else {
-                    translationsHolder.scrollTop = translationsHolder.scrollHeight;
-                }
+            //keep the top of the new translation visible.
+            if (html.offsetHeight > translationsHolder.offsetHeight) {
+                translationSize = html.offsetHeight + html.querySelector('.sourceText').offsetHeight + 15;
+                translationsHolder.scrollTop = translationsHolder.scrollHeight - translationSize;
+            }else{
+                translationsHolder.scrollTop = translationsHolder.scrollHeight;
             }
         });
 
@@ -153,26 +171,64 @@ var ContentRenderer = (function(){
             }
             return engine;
         }
+        
+        pane = document.createDocumentFragment();
+        pane.appendChild(selectHolder);
+        pane.appendChild(translationsHolder);
+        return pane;
     }
 
-    function setupAnnotator(player, layout){
+    function setupTranscriptPane(tab, player, content, trackResources, trackMimes){
+        var DOM = document.createDocumentFragment(),
+            transcriptPlayer = new TranscriptPlayer({
+                //requires the actual TextTrack objects; should be fixed up to take resource IDs, I think
+                captionTracks: [],
+                holder: DOM,
+                sync: true,
+                annotator: null
+            });
+
+        // Cue clicking
+        transcriptPlayer.addEventListener("cueclick", function(event){
+            var trackID = trackResources.get(event.detail.track).id;
+
+            player.currentTime = event.detail.cue.startTime;
+            ActivityStreams.predefined.transcriptCueClick(trackID, event.detail.cue.id);
+        });
+
+        player.addEventListener("timeupdate", function(){
+            transcriptPlayer.currentTime = player.currentTime;
+        });
+
+        player.addEventListener('addtexttrack', function(event){
+            var track = event.detail.track;
+            transcriptPlayer.addTrack(track);
+            trackResources.set(track, event.detail.resource);
+            trackMimes.set(track, event.detail.mime);
+        }, false);
+
+        return DOM;
+    }
+
+    function setupAnnotatorPane(player){
+        var display = document.createElement('div');
         player.addEventListener("annotation", function(event){
             player.pause();
 
             if(event.detail.data.type === "text"){
-                layout.Annotations.innerHTML = event.detail.data.value;
-                [].forEach.call(layout.Annotations.querySelectorAll('a'),function(link){
+                display.innerHTML = event.detail.data.value;
+                [].forEach.call(display.querySelectorAll('a'),function(link){
                     link.target = "_blank";
                 });
             }
 
             if(event.detail.data.type === "image"){
-                layout.Annotations.innerHTML = '<img src="' + event.detail.data.value + '">';
+                display.innerHTML = '<img src="' + event.detail.data.value + '">';
             }
 
             if(event.detail.data.type === "content"){
                 ContentCache.load(event.detail.data.value, function(content){
-                    layout.Annotations.innerHTML = "";
+                    display.innerHTML = "";
                     // Don't allow annotations, transcriptions, or certain controls
                     content.settings.showTranscripts = "false";
                     content.settings.showAnnotations = "false";
@@ -180,7 +236,7 @@ var ContentRenderer = (function(){
 
                     ContentLoader.render({
                         content: content,
-                        holder: layout.Annotations,
+                        holder: display,
                         annotate: false,
                         screenAdaption: {
                             fit: false
@@ -198,18 +254,24 @@ var ContentRenderer = (function(){
             var annotationDocId = "Unknown";
             ActivityStreams.predefined.viewTextAnnotation(annotationDocId, event.detail.text);
 
-            $(layout.AnnotationsTab).tab("show");
+            tab.select();
         });
+
+        return display;
     }
 
     /* args: components, transcripts, content, screenAdaption, layout, resource,
         startTime, endTime, renderCue, annotator, translate */
     function setupMainPlayer(args){
         var player,
+            content = args.content,
+            trackResources = new Map(),
+            trackMimes = new Map(),
+            transcriptPlayer = null;
             components = args.components || {
-            left: ["play", "lastCaption", "volume", "captions", "annotations"],
-            right: ["rate", "fullScreen", "timeCode"]
-        };
+                left: ["play", "lastCaption", "volume", "captions", "annotations"],
+                right: ["rate", "fullScreen", "timeCode"]
+            };
 
         if(!showCaptions(args.content)){
             ["left", "right"].forEach(function(side){
@@ -254,49 +316,37 @@ var ContentRenderer = (function(){
 
         window.addEventListener('resize', function(event){
             if(!args.screenAdaption || !args.screenAdaption.fit){ return; }
-
-            var el, sidebarHeight, slideOuts = [], avaliableHeight, usedSpace,
-                tabsSizer = function(tabItem){
-                    if (tabItem === 'Transcript'){
-                        usedSpace = document.querySelector('#Transcript .form-inline').clientHeight;
-                        el = document.querySelector('#Transcript .transcriptContentHolder');
-                        return availableHeight - usedSpace;
-                    } else if (tabItem === 'Definitions'){
-                        var defsPane = document.getElementById(tabItem).firstChild;
-                        if (defsPane !== null) {
-                            usedSpace = defsPane.clientHeight;
-                            el = document.querySelector('#Definitions .definitionsContent');
-                        } else { usedSpace = 0; }
-                        return availableHeight - usedSpace;
-                    } else if (tabItem === 'Annotations'){
-                        el = document.getElementById(tabItem);
-                        return availableHeight;
-                    }
-                };
-
             player.resetSize();
-
-            availableHeight = document.getElementById("player").clientHeight;
-            if(showTranscript(args.content)){ slideOuts.push("Transcript"); }
-            if(allowDefinitions(args.content)){ slideOuts.push("Definitions"); }
-            if(showAnnotations(args.content)){ slideOuts.push("Annotations"); }
-
-            switch(slideOuts.length){
-            case 0:
-                break;
-            case 1:
-                sidebarHeight = tabsSizer(slideOuts[0]) - (document.getElementById(slideOuts[0]).parentNode.firstChild.clientHeight + 20);
-                el.style.maxHeight = sidebarHeight + "px";
-                break;
-            default:
-                sidebarHeight = document.getElementById("player").clientHeight - (document.getElementById("videoTabs").clientHeight + 20);
-                [].forEach.call(slideOuts, function(tab){
-                    sidebarHeight = tabsSizer(tab) - (document.getElementById("videoTabs").clientHeight + 20);
-                    el.style.maxHeight = sidebarHeight + "px";
-                });
-                break;
-            }
         }, false);
+
+        var tabs = [];
+        if(allowDefinitions(content)){
+            tabs.push({
+                title: "Definitions",
+                content: function(tab, player){
+                    return setupTranslatorPane(tab, player, content, trackResources);
+                }
+            });
+        }
+
+        if(args.transcripts.length && showTranscript(content)){
+            tabs.push({
+                title: "Transcripts",
+                content: function(tab, player){
+                    return setupTranscriptPane(tab, player, content, trackResources, trackMimes);
+                }
+            });
+        }
+
+
+        if(args.annotations.length){
+            tabs.push({
+                title: "Annotations",
+                content: function(tab, player){
+                    return setupAnnotatorPane(player);
+                }
+            });
+        }
 
         player = new Ayamel.classes.AyamelPlayer({
             components: components,
@@ -319,6 +369,7 @@ var ContentRenderer = (function(){
             endTime: args.endTime,
             translate: args.translate,
             aspectRatio: parseFloat(args.content.settings.aspectRatio) || Ayamel.aspectRatios.hdVideo
+            tabs: tabs
         });
 
         var registerPlay = true;
@@ -326,9 +377,6 @@ var ContentRenderer = (function(){
             // Sometimes two events appear, so only save one within a half second
             if(!registerPlay){ return; }
             ActivityStreams.predefined.playClick("" + player.currentTime);
-            if(args.layout["TranscriptTab"]){
-                $(args.layout["TranscriptTab"]).tab("show");
-            }
             registerPlay = false;
             setTimeout(function(){ registerPlay = true;}, 500);
         });
@@ -364,76 +412,18 @@ var ContentRenderer = (function(){
             ActivityStreams.predefined.exitFullscreen(""+player.currentTime);
         });
 
+        if(typeof args.callback === 'function'){
+            setTimeout(function(){
+                args.callback({
+                    mainPlayer: player,
+                    transcriptPlayer: transcriptPlayer,
+                    trackResources: trackResources,
+                    trackMimes: trackMimes
+                });
+            }, 1);
+        }
+
         return player;
-    }
-
-    function setupTranscripts(content, layout, resourceMap){
-        var transcriptPlayer = new TranscriptPlayer({
-            //requires the actual TextTrack objects; should be fixed up to take resource IDs, I think
-            captionTracks: [],
-            holder: layout.Transcript,
-            sync: true,
-            annotator: null
-        });
-
-        // Cue clicking
-        transcriptPlayer.addEventListener("cueclick", function(event){
-            var trackID = resourceMap.get(event.detail.track).id;
-
-            mainPlayer.currentTime = event.detail.cue.startTime;
-            ActivityStreams.predefined.transcriptCueClick(trackID, event.detail.cue.id);
-        });
-
-        return transcriptPlayer;
-    }
-
-    function getDefaultLanguage(languages) {
-        for(var i = 0; i < languages.length; i++) {
-            var langObj = languages[i];
-            if(langObj.value === "eng") {
-                return langObj;
-            }
-        }
-        return languages[0];
-    }
-
-    function setupDefinitionsPane(pane, player, content){
-        var targetLanguages,
-            codes = (content.settings.targetLanguages || "")
-                .split(",").filter(function(s){ return !!s; }),
-            selectHolder = document.createElement('div'),
-            translationsHolder = document.createElement('div');
-
-        if (!!codes.length) {
-            // Fallback procedure when no languages have been selected
-            targetLanguages = codes.map(function(code) {
-                return {value: code, text: Ayamel.utils.getLangName(code)};
-            }).sort(function(a,b){ return a.text.localeCompare(b.text); });
-        } else {
-            targetLanguages = Object.keys(Ayamel.utils.p1map).map(function(p1){
-                var code = Ayamel.utils.p1map[p1];
-                return {value: code, text: Ayamel.utils.getLangName(code)};
-            }).sort(function(a,b){ return a.text.localeCompare(b.text); });
-        }
-
-        translationsHolder.className = "definitionsContent";
-        var defval = getDefaultLanguage(targetLanguages);
-        var languageSelect = new EditorWidgets.SuperSelect({
-            el: selectHolder,
-            data: {
-                id: 'transLang',
-                selection: [],
-                icon: 'icon-globe',
-                button: 'left',
-                text: 'Select Language',
-                multiple: false,
-                options: targetLanguages,
-                defaultValue: defval
-            }
-        });
-        languageSelect.observe('selection', function(newValue){ player.targetLang = newValue[0]; });
-        pane.appendChild(selectHolder);
-        pane.appendChild(translationsHolder);
     }
 
     return {
@@ -457,17 +447,11 @@ var ContentRenderer = (function(){
                     permission: args.permission
                 }) : []
             ]).then(function(arr){
-                var transcriptWhitelist = arr[0],
-                    annotationWhitelist = arr[1],
-                    content = args.content,
-                    layout = createLayout(content, args.holder),
-                    trackResources = new Map(),
-                    trackMimes = new Map(),
-                    transcriptPlayer = null;
+                var layout = ContentLayoutManager.onePanel(args.holder);
 
                 // Set up the video player
                 mainPlayer = setupMainPlayer({
-                    content: content,
+                    content: args.content,
                     components: args.components,
                     screenAdaption: args.screenAdaption,
                     resource: args.resource,
@@ -476,27 +460,10 @@ var ContentRenderer = (function(){
                     renderCue: args.renderCue,
                     layout: layout,
                     translate: allowDefinitions(content),
-                    annotations: annotationWhitelist,
-                    transcripts: transcriptWhitelist
+                    annotations: arr[0],
+                    transcripts: arr[1],
+                    callback: args.callback
                 });
-
-                if(allowDefinitions(content)){ setupTranslator(mainPlayer, layout, trackResources); }
-                if(layout.Definitions){ setupDefinitionsPane(layout.Definitions, mainPlayer, content); }
-                if(annotationWhitelist.length){ setupAnnotator(mainPlayer, layout); }
-
-                if(transcriptWhitelist.length && showTranscript(content)){
-                    transcriptPlayer = setupTranscripts(content, layout, trackResources);
-                    mainPlayer.addEventListener("timeupdate", function(){
-                        transcriptPlayer.currentTime = mainPlayer.currentTime;
-                    });
-
-                    mainPlayer.addEventListener('addtexttrack', function(event){
-                        var track = event.detail.track;
-                        transcriptPlayer.addTrack(track);
-                        trackResources.set(track, event.detail.resource);
-                        trackMimes.set(track, event.detail.mime);
-                    }, false);
-                }
 
                 mainPlayer.then(function(){
                     // Resize the panes' content to be correct size onload
@@ -508,16 +475,6 @@ var ContentRenderer = (function(){
                     e.stopPropagation();
                     document.getElementById("makeThumbnail").dispatchEvent(new CustomEvent('timeUpdate',{bubbles:true, detail : { currentTime : mainPlayer.currentTime }}));
                 },false);
-
-
-                if(typeof args.callback === 'function'){
-                    args.callback({
-                        mainPlayer: mainPlayer,
-                        transcriptPlayer: transcriptPlayer,
-                        trackResources: trackResources,
-                        trackMimes: trackMimes
-                    });
-                }
             });
         }
     };
