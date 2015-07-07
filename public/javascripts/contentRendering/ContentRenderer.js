@@ -413,6 +413,19 @@ var ContentRenderer = (function(){
         return transcriptPlayer;
     }
 
+    function getDefaultLanguage(languages) {
+        console.log(languages);
+        for(var i = 0; i < languages.length; i++) {
+            var langObj = languages[i];
+            if(langObj.value === "eng") {
+                return {
+                    value: "eng"
+                };
+            }
+        }
+        return languages[0];
+    }
+
     function setupDefinitionsPane(pane, player, content){
         var targetLanguages,
             codes = (content.settings.targetLanguages || "")
@@ -433,9 +446,10 @@ var ContentRenderer = (function(){
         }
 
         translationsHolder.className = "definitionsContent";
-        (new EditorWidgets.SuperSelect({
+        var defval = getDefaultLanguage(targetLanguages);
+        var languageSelect = new EditorWidgets.SuperSelect({
             el: selectHolder,
-            data:{
+            data: {
                 id: 'transLang',
                 selection: [],
                 icon: 'icon-globe',
@@ -443,12 +457,10 @@ var ContentRenderer = (function(){
                 text: 'Select Language',
                 multiple: false,
                 options: targetLanguages,
-                defaultValue: {
-                    value: targetLanguages.indexOf("eng") !== -1 ?
-                            "eng" : targetLanguages[0]
-                }
+                defaultValue: defval
             }
-        })).observe('selection', function(newValue){ player.targetLang = newValue[0]; });
+        });
+        languageSelect.observe('selection', function(newValue){ player.targetLang = newValue[0]; });
         pane.appendChild(selectHolder);
         pane.appendChild(translationsHolder);
     }
