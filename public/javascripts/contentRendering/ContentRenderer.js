@@ -414,7 +414,6 @@ var ContentRenderer = (function(){
     }
 
     function getDefaultLanguage(languages) {
-        console.log(languages);
         for(var i = 0; i < languages.length; i++) {
             var langObj = languages[i];
             if(langObj.value === "eng") {
