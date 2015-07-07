@@ -417,9 +417,7 @@ var ContentRenderer = (function(){
         for(var i = 0; i < languages.length; i++) {
             var langObj = languages[i];
             if(langObj.value === "eng") {
-                return {
-                    value: "eng"
-                };
+                return langObj;
             }
         }
         return languages[0];
