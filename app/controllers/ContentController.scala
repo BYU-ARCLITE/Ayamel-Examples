@@ -111,7 +111,15 @@ object ContentController extends Controller {
               ResourceHelper.getUrlSize(url).flatMap { bytes =>
                 val info = ContentDescriptor(title, description, keywords, url, bytes, mime, labels = labels,
                   languages = languages)
-                if (courseId > 0) {
+                if (courseId == 40747105) {
+                  ContentManagement.createContent(info, user, contentType).map { opt =>
+                    opt.map { content =>
+                      Ok(<script type="text/javascript">window.close();</script>).as(HTML)
+                    }.getOrElse {
+                      Redirect(routes.ContentController.createPage("url", courseId)).flashing("error" -> "Failed to create content.")
+                    }
+                  }
+                } else if (courseId > 0) {
                   ContentManagement.createAndAddToCourse(info, user, contentType, courseId)
                 } else {
                   ContentManagement.createContent(info, user, contentType).map { opt =>

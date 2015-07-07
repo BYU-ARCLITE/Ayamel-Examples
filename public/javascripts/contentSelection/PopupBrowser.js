@@ -141,8 +141,32 @@ var PopupBrowser = (function(){
             selection = [];
         });
 
+        /**
+         * Opens the create file page in a new tab if the current page is not in a course setting.
+         * otherwise, the window goes to the create content page.
+         * The modal is hidden and then shown after the content has been added in order to refresh it's contents.
+         */
         $createButton.click(function(){
-            window.location = "/content/create/file/" + window.location.pathname.split("/").pop();
+            var newTab = window.location.pathname.split("/").indexOf("course") === -1;
+            var url = newTab?"/content/create/url/40747105":"/content/create/url/" + window.location.pathname.split("/").pop();
+            if (newTab) {
+                // save window to bring the focus back afterwards.
+                var thisWindow = window.open('', '_parent', '');
+                var newWindow = window.open(url, '_blank');
+                win2.focus();
+                $modal.modal("hide");
+                // checks to see if the window has closed been closed,
+                // then opens the modal and removes the timer
+                var contentCreated = setInterval(function(){
+                    if (newWindow.location.pathname === undefined) {
+                        thisWindow.focus();
+                        window.clearInterval(contentCreated);
+                        $modal.modal("show");
+                    }
+                }, 700);
+            } else {
+                window.location = url;
+            }
         });
 
         return $modal;
