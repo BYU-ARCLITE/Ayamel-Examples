@@ -494,7 +494,7 @@ $(function() {
                         name: targets[key].label
                     };
                 }), saveLocation: "server",
-                buttons: [{event:"save",label:"Save"}]
+                buttons: [{event:"save",label:"Set Location"}]
             },
             partials:{ dialogBody: document.getElementById('setLocTemplate').textContent },
             actions: {
