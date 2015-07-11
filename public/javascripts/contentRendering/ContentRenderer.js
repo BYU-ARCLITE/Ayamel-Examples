@@ -260,7 +260,7 @@ var ContentRenderer = (function(){
         return display;
     }
 
-    /* args: components, transcripts, content, screenAdaption, layout, resource,
+    /* args: components, transcripts, content, screenAdaption, holder, resource,
         startTime, endTime, renderCue, annotator, translate */
     function setupMainPlayer(args){
         var player,
@@ -293,7 +293,7 @@ var ContentRenderer = (function(){
 
         // padding to account for the control bar
         //TODO: Dynamically check the actual control bar height
-        args.layout.player.style.paddingBottom = "61px";
+        args.holder.style.paddingBottom = "61px";
 
         // Spacebar to play/pause video
         window.addEventListener("keydown", function(e){
@@ -350,7 +350,7 @@ var ContentRenderer = (function(){
 
         player = new Ayamel.classes.AyamelPlayer({
             components: components,
-            holder: args.layout.player,
+            holder: args.holder,
             resource: args.resource,
             captions: {
                 renderCue: args.renderCue,
@@ -447,7 +447,9 @@ var ContentRenderer = (function(){
                     permission: args.permission
                 }) : []
             ]).then(function(arr){
-                var layout = ContentLayoutManager.onePanel(args.holder);
+                var container = document.createElement('div');
+                container.id = "player";
+                args.holder.appendChild(container);
 
                 // Set up the video player
                 mainPlayer = setupMainPlayer({
@@ -458,7 +460,7 @@ var ContentRenderer = (function(){
                     startTime: args.startTime,
                     endTime: args.endTime,
                     renderCue: args.renderCue,
-                    layout: layout,
+                    holder: container,
                     translate: allowDefinitions(content),
                     annotations: arr[0],
                     transcripts: arr[1],
