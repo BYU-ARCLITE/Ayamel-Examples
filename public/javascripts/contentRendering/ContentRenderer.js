@@ -71,7 +71,7 @@ var ContentRenderer = (function(){
                             "eng" : targetLanguages[0]
                 }
             }
-        })).observe('selection', function(newValue){ player.targetLang = newValue[0]; });
+        })).observe('selection', function(newValue){ player.targetLang = newValue[0].value; });
 
         // Player Event Listeners
 
@@ -462,8 +462,8 @@ var ContentRenderer = (function(){
                     renderCue: args.renderCue,
                     holder: container,
                     translate: allowDefinitions(content),
-                    annotations: arr[0],
-                    transcripts: arr[1],
+                    transcripts: arr[0],
+                    annotations: arr[1],
                     callback: args.callback
                 });
 

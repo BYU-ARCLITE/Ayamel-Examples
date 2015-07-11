@@ -33,7 +33,7 @@ var TranscriptPlayer = (function(){
                     {{#transcripts:ti}}\
                     <div class="transcriptContent" style="display:{{ ti === activeIndex ? "block" : "none" }}" data-trackindex="{{ti}}">\
                         {{#.cues:ci}}\
-                        <div class="transcriptCue {{direction(.)}}" on-tap="cueclick" data-cueindex="{{ci}}">{{{HTML(.)}}}</div>\
+                        <div class="transcriptCue {{direction(.)}}" on-tap="cueclick" data-cueindex="{{ci}}" data-trackindex="{{ti}}">{{{HTML(.)}}}</div>\
                         {{/.cues}}\
                     </div>\
                     {{/transcripts}}\
@@ -57,8 +57,9 @@ var TranscriptPlayer = (function(){
         ractive.on('sync',function(e){ ractive.set('sync',!ractive.data.sync); });
         ractive.on('cueclick',function(e){
             var target = e.original.target,
-                ti = target.parentNode.dataset.trackindex,
-                ci = target.dataset.cueindex,
+                parent = target.parentElement,
+                ci = parent.dataset.cueindex,
+                ti = parent.dataset.trackindex,
                 track = tracks[ti];
             target.dispatchEvent(new CustomEvent("cueclick",{bubbles:true,detail:{track:track,cue:track.cues[ci]}}));
         });
