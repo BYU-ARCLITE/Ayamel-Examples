@@ -43,35 +43,33 @@ var ContentRenderer = (function(){
             selectHolder = document.createElement('div'),
             translationsHolder = document.createElement('div');
 
-        if(!!codes.length){
-            // Fallback procedure when no languages have been selected
-            targetLanguages = codes.map(function(code) {
-                return {value: code, text: Ayamel.utils.getLangName(code)};
-            }).sort(function(a,b){ return a.text.localeCompare(b.text); });
-        }else{
-            targetLanguages = Object.keys(Ayamel.utils.p1map).map(function(p1){
-                var code = Ayamel.utils.p1map[p1];
-                return {value: code, text: Ayamel.utils.getLangName(code)};
-            }).sort(function(a,b){ return a.text.localeCompare(b.text); });
+        if(!codes.length){ // Fallback procedure when no languages have been selected
+            codes = Object.keys(Ayamel.utils.p1map)
+                    .map(function(p1){ return Ayamel.utils.p1map[p1]; });
         }
+
+        targetLanguages = codes.map(function(code){
+            return {value: code, text: Ayamel.utils.getLangName(code)};
+        }).sort(function(a,b){ return a.text.localeCompare(b.text); });
 
         translationsHolder.className = "definitionsContent";
         (new EditorWidgets.SuperSelect({
             el: selectHolder,
             data:{
                 id: 'transLang',
-                selection: [],
+                selection: [
+                    codes.indexOf("eng") !== -1 ?
+                        "eng" : codes[0]
+                ],
                 icon: 'icon-globe',
                 button: 'left',
                 text: 'Select Language',
                 multiple: false,
-                options: targetLanguages,
-                defaultValue: {
-                    value: targetLanguages.indexOf("eng") !== -1 ?
-                            "eng" : targetLanguages[0]
-                }
+                options: targetLanguages
             }
-        })).observe('selection', function(newValue){ player.targetLang = newValue[0].value; });
+        })).observe('selection', function(newValue){
+            player.targetLang = newValue[0];
+        });
 
         // Player Event Listeners
 
