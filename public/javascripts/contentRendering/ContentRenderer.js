@@ -168,7 +168,7 @@ var ContentRenderer = (function(){
             }
             return engine;
         }
-        
+
         pane = document.createDocumentFragment();
         pane.appendChild(selectHolder);
         pane.appendChild(translationsHolder);
@@ -208,45 +208,58 @@ var ContentRenderer = (function(){
     }
 
     function setupAnnotatorPane(player){
-        var display = document.createElement('div');
+        var display = document.createElement('div'),
+            data = null,
+            newplayer = null;
+
         player.addEventListener("annotation", function(event){
             player.pause();
 
-            if(event.detail.data.type === "text"){
-                display.innerHTML = event.detail.data.value;
-                [].forEach.call(display.querySelectorAll('a'),function(link){
-                    link.target = "_blank";
-                });
-            }
+            if(data !== event.detail.data){
+                data = event.detail.data;
+                if(newplayer){
+                    newplayer.destroy();
+                    newplayer = null;
+                }
 
-            if(event.detail.data.type === "image"){
-                display.innerHTML = '<img src="' + event.detail.data.value + '">';
-            }
-
-            if(event.detail.data.type === "content"){
-                ContentCache.load(event.detail.data.value, function(content){
-                    display.innerHTML = "";
-                    // Don't allow annotations, transcriptions, or certain controls
-                    content.settings.showTranscripts = "false";
-                    content.settings.showAnnotations = "false";
-                    content.settings.allowDefinitions = "false";
-
-                    ContentLoader.render({
-                        content: content,
-                        holder: display,
-                        annotate: false,
-                        screenAdaption: {
-                            fit: false
-                        },
-                        aspectRatio: Ayamel.aspectRatios.hdVideo,
-                        components: {
-                            left: ["play"],
-                            right: ["captions", "timeCode"]
-                        }
+                switch(event.detail.data.type){
+                case "text":
+                    display.innerHTML = event.detail.data.value;
+                    [].forEach.call(display.querySelectorAll('a'),function(link){
+                        link.target = "_blank";
                     });
-                });
-            }
+                    break;
+                case "image":
+                    display.innerHTML = '<img src="' + event.detail.data.value + '">';
+                    break;
+                case "content":
+                    ContentCache.load(event.detail.data.value, function(content){
+                        display.innerHTML = "";
+                        // Don't allow annotations, transcriptions, or certain controls
+                        content.settings.showTranscripts = "false";
+                        content.settings.showAnnotations = "false";
+                        content.settings.allowDefinitions = "false";
 
+                        ContentLoader.render({
+                            content: content,
+                            holder: display,
+                            annotate: false,
+                            screenAdaption: {
+                                fit: false
+                            },
+                            aspectRatio: Ayamel.aspectRatios.hdVideo,
+                            components: {
+                                left: ["play"],
+                                right: ["captions", "timeCode"]
+                            },
+                            callback: function(args){
+                                newplayer = args.mainPlayer;
+                            }
+                        });
+                    });
+                    break;
+                }
+            }
             // Find the annotation doc
             var annotationDocId = "Unknown";
             ActivityStreams.predefined.viewTextAnnotation(annotationDocId, event.detail.text);
