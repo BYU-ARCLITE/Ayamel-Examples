@@ -207,7 +207,7 @@ var ContentRenderer = (function(){
         return DOM;
     }
 
-    function setupAnnotatorPane(player){
+    function setupAnnotatorPane(tab, player){
         var display = document.createElement('div'),
             data = null,
             newplayer = null;
@@ -352,9 +352,7 @@ var ContentRenderer = (function(){
         if(args.annotations.length){
             tabs.push({
                 title: "Annotations",
-                content: function(tab, player){
-                    return setupAnnotatorPane(player);
-                }
+                content: setupAnnotatorPane
             });
         }
 
