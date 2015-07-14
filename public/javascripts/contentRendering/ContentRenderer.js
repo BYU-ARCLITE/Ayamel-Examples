@@ -7,8 +7,7 @@
  */
 
 var ContentRenderer = (function(){
-
-    var mainPlayer;
+    "use strict";
 
     function showTranscript(content){
         return content.settings.showTranscripts === "true";
@@ -265,7 +264,7 @@ var ContentRenderer = (function(){
             content = args.content,
             trackResources = new Map(),
             trackMimes = new Map(),
-            transcriptPlayer = null;
+            transcriptPlayer = null,
             components = args.components || {
                 left: ["play", "lastCaption", "volume", "captions", "annotations"],
                 right: ["rate", "fullScreen", "timeCode"]
@@ -445,12 +444,13 @@ var ContentRenderer = (function(){
                     permission: args.permission
                 }) : []
             ]).then(function(arr){
-                var container = document.createElement('div');
+                var player,
+                    container = document.createElement('div');
                 container.id = "player";
                 args.holder.appendChild(container);
 
                 // Set up the video player
-                mainPlayer = setupMainPlayer({
+                player = setupMainPlayer({
                     content: args.content,
                     components: args.components,
                     screenAdaption: args.screenAdaption,
@@ -465,7 +465,7 @@ var ContentRenderer = (function(){
                     callback: args.callback
                 });
 
-                mainPlayer.then(function(){
+                player.then(function(){
                     // Resize the panes' content to be correct size onload
                     window.dispatchEvent(new Event('resize',{bubbles:true}));
                 });
@@ -473,7 +473,11 @@ var ContentRenderer = (function(){
                 // Handle thumbnail making
                 document.addEventListener('makeThumbnail',function (e) {
                     e.stopPropagation();
-                    document.getElementById("makeThumbnail").dispatchEvent(new CustomEvent('timeUpdate',{bubbles:true, detail : { currentTime : mainPlayer.currentTime }}));
+                    document.getElementById("makeThumbnail")
+                        .dispatchEvent(new CustomEvent('timeUpdate', {
+                            bubbles:true,
+                            detail: { currentTime : player.currentTime }
+                        }));
                 },false);
             });
         }
