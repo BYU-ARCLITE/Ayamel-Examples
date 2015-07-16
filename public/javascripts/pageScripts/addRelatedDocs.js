@@ -86,7 +86,8 @@ $(function() {
     }
 
     function calcName(title, mime){
-        return TimedText.addExt(mime, title);
+        try { return TimedText.addExt(mime, title); }
+        catch (_){ return title; }
     }
 
     // A resource id -> Resource object function
