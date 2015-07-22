@@ -148,7 +148,7 @@ object CourseMembership extends SQLSelectable[CourseMembership] {
     DB.withConnection {
       implicit connection =>
         anorm.SQL("select 1 from " + tableName + " where userId = {uid} and courseId = {cid}")
-            .on('uid -> user.id, 'cid -> course.id).list.isEmpty
+            .on('uid -> user.id, 'cid -> course.id).list.nonEmpty
     }
   }
 
