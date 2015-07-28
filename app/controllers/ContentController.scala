@@ -149,6 +149,12 @@ object ContentController extends Controller {
           val file = request.body.file("file").get.ref.file
           val data = io.Source.fromFile(file).getLines().toList
           var count = 0
+          val onContentAdded = () => {
+            count += 1
+            if(count == data.size) {
+              user.sendNotification("Your batch file upload has finished.")
+            }
+          }
 
           Future {
             data.map(line => Future {
@@ -168,18 +174,12 @@ object ContentController extends Controller {
                 val info = ContentDescriptor(title, description, keywords, url, bytes, mime, labels = labels,
                   languages = languages)
                 if (courseId > 0) {
-                  ContentManagement.createAndAddToCourse(info, user, contentType, courseId).map(content => {
-                      count += 1
-                      if(count == data.size) {
-                        user.sendNotification("Your batch file upload has finished.")
-                      }
-                    })
+                  ContentManagement.createAndAddToCourse(info, user, contentType, courseId).map(result => {
+                    onContentAdded()
+                  })
                 } else {
                   ContentManagement.createContent(info, user, contentType).map(content => {
-                    count += 1
-                    if (count == data.size) {
-                      user.sendNotification("Your batch file upload has finished.")
-                    }
+                    onContentAdded()
                   })
                 }
               })
