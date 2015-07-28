@@ -167,12 +167,21 @@ object ContentController extends Controller {
               ResourceHelper.getUrlSize(url).flatMap(bytes => {
                 val info = ContentDescriptor(title, description, keywords, url, bytes, mime, labels = labels,
                   languages = languages)
-                ContentManagement.createContent(info, user, contentType).map(content => {
-                  count += 1
-                  if (count == data.size) {
-                    user.sendNotification("Your batch file upload has finished.")
-                  }
-                })
+                if (courseId > 0) {
+                  ContentManagement.createAndAddToCourse(info, user, contentType, courseId).map(content => {
+                      count += 1
+                      if(count == data.size) {
+                        user.sendNotification("Your batch file upload has finished.")
+                      }
+                    })
+                } else {
+                  ContentManagement.createContent(info, user, contentType).map(content => {
+                    count += 1
+                    if (count == data.size) {
+                      user.sendNotification("Your batch file upload has finished.")
+                    }
+                  })
+                }
               })
             })
           }
