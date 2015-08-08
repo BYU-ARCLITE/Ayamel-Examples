@@ -21,10 +21,9 @@
 }
 
 .faces {
-    margin-top: 40px;
-    margin-left: 5px;
-    height: 60px;
-    overflow: hidden;
+    margin: 0 0 0 0;
+    padding: 0 0 0 0;
+    overflow-x: visible;
 }
 
 .face {
@@ -32,7 +31,7 @@
     height: 60px;
     background: black;
     display: inline-block;
-    margin-left: 12px;
+    margin-right: 12px;
 }
 
 .addStudent {
@@ -64,4 +63,56 @@
     -webkit-border-radius: 5px;
     -moz-border-radius: 5px;
     border-radius: 5px;
+}
+
+.face-nav-btn {
+    opacity: 0.4;
+    position: absolute;
+    background-color: transparent;
+    width: 0;
+    height: 0;
+    padding: 0;
+    margin: 5px;
+    border-top: 25px solid transparent;
+    border-bottom: 25px solid transparent;
+}
+
+.face-nav {
+    position: absolute;
+    margin-top: 40px;
+    width: 100%;
+}
+
+.face-nav-btn-left {
+    left: 0;
+    border-right: 20px solid white;
+}
+
+.face-nav-btn-right {
+    border-left: 20px solid white;
+    top: 0;
+    right: 0;
+}
+
+.faces-window {
+    position: absolute;
+    left: 40px;
+    display: inline-block;
+    height: 100px;
+    width: calc(100% - 80px);
+    overflow: hidden;
+    white-space: nowrap;
+    margin: 0 0 0 0;
+    padding: 0 0 0 0;
+}
+
+.face-nav-btn:hover {
+    opacity: 1;
+}
+
+.faces-filler {
+    width: 2000px;
+    height: 50px;
+    background-color: transparent;
+    display: inline-block;
 }

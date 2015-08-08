@@ -15,6 +15,7 @@
 @if(user.hasCoursePermission(course, "addContent")){
     <script type="text/javascript" src='@routes.Assets.at("javascripts/pageScripts/viewCourse.js")'></script>
 }
+    <script type="text/javascript" src='@routes.Assets.at("javascripts/pageScripts/facesNav.js")'></script>
     <script type="text/javascript">
         var courseId = @course.id.get;
     </script>
@@ -49,12 +50,19 @@
             }}
         </div>
 
-        <div class="faces">
-            @for(member <- course.getMembers) {
-                @renderFace(member)
-            }
+        <div class="face-nav">
+            <div class="face-nav-btn face-nav-btn-left"></div>
+            <div class="faces-window">
+                <div class="faces">
+                    @for(member <- course.getMembers) {
+                        @renderFace(member)
+                    }
 
-            @*<a href="#" class="btn btn-yellow addStudent"><i class="icon-user"></i> Add student</a>*@
+                    @*<a href="#" class="btn btn-yellow addStudent"><i class="icon-user"></i> Add student</a>*@
+                    <div class="faces-filler"></div>
+                </div>
+            </div>
+            <div class="face-nav-btn face-nav-btn-right"></div>
         </div>
     </div>
 
