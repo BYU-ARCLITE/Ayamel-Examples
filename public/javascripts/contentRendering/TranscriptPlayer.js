@@ -61,7 +61,7 @@ var TranscriptPlayer = (function(){
                 ci = parent.dataset.cueindex,
                 ti = parent.dataset.trackindex,
                 track = tracks[ti];
-            target.dispatchEvent(new CustomEvent("cueclick",{bubbles:true,detail:{track:track,cue:track.cues[ci]}}));
+            element.dispatchEvent(new CustomEvent("cueclick",{bubbles:true,detail:{track:track,cue:track.cues[ci]}}));
         });
 
         /*
