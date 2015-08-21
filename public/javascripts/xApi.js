@@ -221,6 +221,15 @@ var xApi = (function() {
                     type: baseUri+"mediaPlayer",
                     extensions : extensions
                 });
+            },
+            watched: function(time) {
+                var extensions = {};
+                extensions[baseUri+"playerTime"] = time;
+                send({
+                    verb: "watched",
+                    type: baseUri+"mediaPlayer",
+                    extensions : extensions
+                });
             }
         },
 

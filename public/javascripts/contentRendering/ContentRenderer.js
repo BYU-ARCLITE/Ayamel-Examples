@@ -420,6 +420,9 @@ var ContentRenderer = (function(){
         player.addEventListener("disabletrack", function(e){
             xApi.predefined.disableCaptionTrack(e.detail.track);
         });
+        player.addEventListener("watched", function(e){
+            xApi.predefined.watched(""+player.currentTime);
+        });
 
         /**
          * Used to limit the amount of times that a function is called per wait period
