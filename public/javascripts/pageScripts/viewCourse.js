@@ -7,7 +7,8 @@
  */
 $(function() {
     $(".face, .contentEntry").tooltip({
-        placement: "bottom"
+        placement: "bottom",
+        viewport: document
     });
 
     document.getElementById("browseContent").addEventListener('click',function(){
