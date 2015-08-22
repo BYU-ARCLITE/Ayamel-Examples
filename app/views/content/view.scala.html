@@ -40,14 +40,14 @@
         ResourceLibrary.setBaseUrl("@resourceLibraryUrl");
         var content = @Html(content.toJson.toString());
 
-		//The "add content" page submits its form via AJAX; I don't recall why it was done that way,
-		//and therefore am reluctant to change it. It overwrites itself with the text of returned pages,
-		//which does not change the URL, which means that this page may end up overwriting the add
-		//content page at the wrong address. If that happens, we need to re-write history to display
-		//the correct URL for this page here.  
-		if(location.pathname !== "/content/@{content.id.get}" && history.pushState){
-			history.pushState(null, "Ayamel - @{content.name}", "/content/@{content.id.get}");
-		}
+        //The "add content" page submits its form via AJAX; I don't recall why it was done that way,
+        //and therefore am reluctant to change it. It overwrites itself with the text of returned pages,
+        //which does not change the URL, which means that this page may end up overwriting the add
+        //content page at the wrong address. If that happens, we need to re-write history to display
+        //the correct URL for this page here.  
+        if(location.pathname !== "/content/@{content.id.get}" && history.pushState){
+            history.pushState(null, "Ayamel - @{content.name}", "/content/@{content.id.get}");
+        }
 
         $(function() {
             // information for statements to learninglocker
@@ -252,8 +252,12 @@
 
                 // Show the metadata
                 ResourceLibrary.load(content.resourceId).then(function(resource){
-                    var title = resource.title;
-                    document.getElementById("metadataDescription").textContent = resource.description;
+                    var title = resource.title,
+                        descEl = document.getElementById("metadataDescription");
+                    resource.description.split('\n').forEach(function(text){
+                        descEl.appendChild(document.createTextNode(text));
+                        descEl.appendChild(document.createElement('br'));
+                    });
                     document.getElementById("metadataLanguages").firstChild.innerHTML =
                         resource.languages.iso639_3.map(function(langCode) {
                             return '<em class="pad-left-high">' + Ayamel.utils.getLangName(langCode) + '</em>';
