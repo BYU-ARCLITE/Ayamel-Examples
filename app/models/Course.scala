@@ -18,7 +18,7 @@ import play.api.Play.current
  * @param lmsKey A key for connecting with LMSs
  */
 case class Course(id: Pk[Long], name: String, startDate: String, endDate: String, enrollment: Symbol = 'closed,
-                  lmsKey: String = HashTools.md5Hex(Random.nextString(32))) extends SQLSavable with SQLDeletable {
+                  featured: Boolean = false, lmsKey: String = HashTools.md5Hex(Random.nextString(32))) extends SQLSavable with SQLDeletable {
 
   /**
    * Saves the course to the DB
@@ -27,11 +27,11 @@ case class Course(id: Pk[Long], name: String, startDate: String, endDate: String
   def save: Course = {
     if (id.isDefined) {
       update(Course.tableName, 'id -> id, 'name -> name, 'startDate -> startDate, 'endDate -> endDate,
-        'enrollment -> enrollment.name, 'lmsKey -> lmsKey)
+        'enrollment -> enrollment.name, 'featured -> featured, 'lmsKey -> lmsKey)
       this
     } else {
       val id = insert(Course.tableName, 'name -> name, 'startDate -> startDate, 'endDate -> endDate,
-        'enrollment -> enrollment.name, 'lmsKey -> lmsKey)
+        'enrollment -> enrollment.name, 'featured -> featured, 'lmsKey -> lmsKey)
       this.copy(id)
     }
   }
@@ -214,8 +214,10 @@ object Course extends SQLSelectable[Course] {
       get[String](tableName + ".startDate") ~
       get[String](tableName + ".endDate") ~
       get[String](tableName + ".enrollment") ~
+      get[Boolean](tableName + ".featured") ~
       get[String](tableName + ".lmsKey") map {
-      case id~name~startDate~endDate~enrollment~lmsKey => Course(id, name, startDate, endDate, Symbol(enrollment), lmsKey)
+      case id~name~startDate~endDate~enrollment~featured~lmsKey =>
+        Course(id, name, startDate, endDate, Symbol(enrollment), featured, lmsKey)
     }
   }
 
@@ -238,7 +240,7 @@ object Course extends SQLSelectable[Course] {
    * @return The user
    */
   def fromFixture(data: (String, String, String, Symbol, String)): Course =
-    Course(NotAssigned, data._1, data._2, data._3, data._4, data._5)
+    Course(NotAssigned, data._1, data._2, data._3, data._4, false, data._5)
 
   /**
    * Search the names of courses

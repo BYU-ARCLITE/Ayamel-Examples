@@ -30,6 +30,25 @@
                   </div>
               </div>
 
+              @if(user.hasSitePermission("admin")){
+              <div class="control-group">
+                  <label class="control-label" for="courseStatus">Status</label>
+                  <div class="controls">
+                      <select name="courseStatus" id="courseStatus">
+                      @if(course.featured) {
+                          <option value="featured" selected="selected">Featured</option>
+                          <option value="normal">Normal</option>
+                      } else {
+                          <option value="featured">Featured</option>
+                          <option value="normal" selected="selected">Normal</option>
+                      }
+                      </select>
+                  </div>
+              </div>
+              }else{
+                <input type="hidden" name="courseStatus" id="courseStatus" value="@{if (course.featured) "featured" else "normal"}" />
+              }
+
               <div class="control-group">
                 <div class="controls">
                   <button type="submit" class="btn">Save changes</button>

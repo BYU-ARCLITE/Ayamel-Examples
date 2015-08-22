@@ -46,7 +46,7 @@
                     <td>@course.lmsKey</td>
                     <td>
                         <a href="@routes.Courses.view(course.id.get)" class="btn btn-small"><i class="icon-eye-open"></i></a>
-                        <a href="#editModal" role="button" data-toggle="modal" class="btn btn-small btn-yellow editCourse" data-id="@course.id.get" data-name="@course.name" data-enrollment="@course.enrollment.name"><i class="icon-pencil"></i></a>
+                        <a href="#editModal" role="button" data-toggle="modal" class="btn btn-small btn-yellow editCourse" data-id="@course.id.get" data-name="@course.name" data-enrollment="@course.enrollment.name" data-status="@{if (course.featured) "featured" else "normal"}"><i class="icon-pencil"></i></a>
                         <a href="#deleteModal" role="button" data-toggle="modal" class="btn btn-small btn-magenta deleteCourse" data-id="@course.id.get"><i class="icon-trash"></i></a>
                         @if(course.getTeachers.size > 0 && course.getTeachers(0) != user) {
                             <a href="@routes.Administration.proxy(course.getTeachers(0).id.get)" class="btn btn-small btn-yellow">Proxy</a>
@@ -69,15 +69,24 @@
                 <div class="control-group">
                     <label class="control-label" for="name">Name</label>
                     <div class="controls">
-                        <input type="text" id="name" name="name">
+                        <input type="text" id="name" name="courseName">
                     </div>
                 </div>
                 <div class="control-group">
                     <label class="control-label" for="enrollment">Enrollment</label>
                     <div class="controls">
-                        <select name="enrollment" id="enrollment">
+                        <select name="courseEnrollment" id="enrollment">
                             <option value="open">Open</option>
                             <option value="closed">Closed</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label" for="enrollment">Status</label>
+                    <div class="controls">
+                        <select name="courseStatus" id="status">
+                            <option value="featured">Featured</option>
+                            <option value="normal">Normal</option>
                         </select>
                     </div>
                 </div>
@@ -140,6 +149,7 @@
                 $("#editForm").attr("action", "/admin/courses/" + this.dataset["id"]);
                 $("#name").val(this.dataset["name"]);
                 $("#enrollment").val(this.dataset["enrollment"]);
+                $("#status").val(this.dataset["status"]);
             });
 
             $(".deleteCourse").click(function(){

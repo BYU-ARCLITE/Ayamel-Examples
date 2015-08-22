@@ -118,7 +118,10 @@ object Courses extends Controller {
           if (user.hasCoursePermission(course, "editCourse")) {
             val name = request.body("courseName")(0)
             val enrollment = Symbol(request.body("courseEnrollment")(0))
-            course.copy(name = name, enrollment = enrollment).save
+            val featured = if (SitePermissions.userHasPermission(user, "admin")){
+              request.body("courseStatus")(0) == "featured"
+            } else { course.featured }
+            course.copy(name = name, enrollment = enrollment, featured = featured).save
             Redirect(routes.Courses.view(id)).flashing("info" -> "Course updated")
           } else
             Errors.forbidden
