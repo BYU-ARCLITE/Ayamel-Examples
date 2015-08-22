@@ -1,7 +1,7 @@
 @(user: User, course: Course)(implicit request: RequestHeader)
 @import models.CoursePermissions.descriptionMap
 
-@if(user.hasCoursePermission(course, "teacher")) {
+@if(user.hasCoursePermission(course, "teacher") || user.hasCoursePermission(course, "viewData")) {
     @Dependencies(Local(JS("javascripts/pageScripts/coursePermissions.js")))
     <div id="studentInfoModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="studentInfoModalLabel" aria-hidden="true">
         <div class="modal-header">

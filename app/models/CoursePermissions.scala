@@ -9,7 +9,8 @@ object CoursePermissions {
   val tableName = "coursePermissions"
 
   val desc_map = Map(
-    "teacher" -> "View Student Data and Analytics",
+    "teacher" -> "Course Admin",
+    "viewData" -> "View Student Data and Analytics",
     "editCourse" -> "Edit Course Information",
     "addContent" -> "Add Content to Course",
     "makeAnnouncement" -> "Make Course Announcements",

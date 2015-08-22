@@ -26,6 +26,8 @@
             <div class="btn-group">
                 @if(user.hasCoursePermission(course, "teacher")) {
                     <a href="#lmsModal" role="button" class="btn" data-toggle="modal"><i class="icon-book"></i> Add to an LMS</a>
+                }
+                @if(user.hasCoursePermission(course, "viewData")) {
                     <a href="#studentInfoModal" role="button" class="btn" data-toggle="modal"><i class="icon-user"></i> Course members</a>
                 }
                 @if(user.hasCoursePermission(course, "addStudent")) {

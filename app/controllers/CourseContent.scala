@@ -47,7 +47,7 @@ object CourseContent extends Controller {
     implicit request =>
       implicit user =>
         Courses.getCourse(courseId) { course =>
-          if (user.hasCoursePermission(course, "teacher")) {
+          if (user.hasCoursePermission(course, "teacher") || user.hasCoursePermission(course, "viewData")) {
             ContentController.getContent(id) { content =>
               Ok(views.html.content.stats(content, ResourceController.baseUrl, Some(course)))
             }
@@ -64,7 +64,7 @@ object CourseContent extends Controller {
     implicit request =>
       implicit user =>
         Courses.getCourse(courseId) { course =>
-          if (user.hasCoursePermission(course, "teacher")) {
+          if (user.hasCoursePermission(course, "teacher") || user.hasCoursePermission(course, "viewData")) {
             ContentController.getContent(id) { content =>
               val coursePrefix = "course_" + course.id.get + ":"
               val activity = content.getActivity(coursePrefix)
