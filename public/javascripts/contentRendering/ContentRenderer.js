@@ -458,8 +458,14 @@ var ContentRenderer = (function(){
         /* args: resource, content, courseId, contentId, holder, components,
             screenAdaption, startTime, endTime, renderCue, permission, callback */
         render: function(args){
-            // Load the caption tracks
+			// Temporary hack to show current source
+			var srcFile, srcUrlEl = document.getElementById('sourceUrl');
+			if(srcUrlEl){
+				srcFile = args.resource.content.files[0];
+				srcUrlEl.value = srcFile.downloadUri || srcFile.streamUri;
+			}
             Promise.all([
+                // Load the caption tracks
                 (showCaptions(args.content) || showTranscript(args.content)) ?
                 ContentLoader.getTranscriptWhitelist({
                     resource: args.resource,
@@ -467,6 +473,7 @@ var ContentRenderer = (function(){
                     contentId: args.contentId,
                     permission: args.permission
                 }) : [],
+                // Load annotations
                 showAnnotations(args.content) ?
                 ContentLoader.getAnnotationWhitelist({
                     resource: args.resource,
