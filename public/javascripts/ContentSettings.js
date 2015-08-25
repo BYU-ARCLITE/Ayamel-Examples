@@ -214,7 +214,7 @@ var ContentSettings = (function() {
                     text: "Not Shareable",
                     value: 1
                 },{
-                    text: "Shareable by me only",
+                    text: "Shareable by owner only",
                     value: 2
                 },{
                     text: "Shareable by anybody",
