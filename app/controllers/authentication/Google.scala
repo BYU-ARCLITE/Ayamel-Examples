@@ -74,7 +74,7 @@ object Google extends Controller {
     }
 
     Future {
-      blocking(Thread.sleep(10000))
+      blocking(Thread.sleep(100000))
       if(retrieveStoredState(token).isDefined){
         logger.info("Cleaned up timed-out login token")
       }
