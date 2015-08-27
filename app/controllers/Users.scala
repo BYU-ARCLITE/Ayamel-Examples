@@ -162,14 +162,14 @@ object Users extends Controller {
           // Check to see if the user already has the requested permission
           // or has already submitted a request
           if (user.hasSitePermission(permission)) {
-            val msg = "You already have " + desc + " permission"
-            Ok(views.html.users.permissionRequest.requestForm()).flashing("info" -> msg)
+            Redirect(routes.Users.permissionRequestPage())
+              .flashing("info" -> s"You already have $desc permission")
           } else {
             if (SitePermissionRequest.findByUser(user, permission).isEmpty) {
               user.requestPermission(permission, reason)
             }
-            val msg = "Your request for " + desc + " permission has been submitted."
-            Redirect(routes.Application.home()).flashing("success" -> msg)
+            Redirect(routes.Users.accountSettings())
+              .flashing("success" -> s"Your request for $desc permission has been submitted.")
           }
         }
   }
