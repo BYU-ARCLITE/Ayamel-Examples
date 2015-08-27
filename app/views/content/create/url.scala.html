@@ -111,14 +111,22 @@
                     return {value: code, text: Ayamel.utils.getLangName(code)};
                 }).sort(function(a,b){ return a.text.localeCompare(b.text); });
 
-            function isYouTube(uri){
-                return uri.indexOf("youtube://") === 0 ||
+            function isSpecial(uri){
+                return (
+					// YouTube
+					uri.indexOf("youtube://") === 0 ||
                     /^https?:\/\/www\.youtube\.com\/watch\?v=/.test(uri) ||
-                    /^https?:\/\/youtu\.be\//.test(uri);
-            }
-
-            function isBrightcove(uri){
-                return uri.indexOf("brightcove://") === 0;
+                    /^https?:\/\/youtu\.be\//.test(uri) ||
+					// Vimeo
+					uri.indexOf("vimeo://") === 0 ||
+                    /^https?:\/\/www\.vimeo\.com\//.test(uri)||
+					// Brightcove
+					uri.indexOf("brightcove://") === 0 ||
+					// OOyala
+					uri.indexOf("ooyala://") === 0 ||
+					uri.substr(0,35) === "http://player.ooyala.com/iframe.js#" ||
+					uri.substr(0,36) === "https://player.ooyala.com/iframe.js#"
+				);
             }
 
             new EditorWidgets.SuperSelect({
@@ -138,7 +146,7 @@
             document.getElementById("url").addEventListener('change', function(){
                 var uri = this.value;
                 document.getElementById("contentType").value = typeMap[
-                    (isYouTube(uri)||isBrightcove(uri))?"video":
+                    isSpecial(uri)?"video":
                     Ayamel.utils.mimeFromFilename(uri).split("/")[0]
                 ];
             });

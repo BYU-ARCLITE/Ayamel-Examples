@@ -99,7 +99,7 @@ object ContentController extends Controller {
           val keywords = labels.mkString(",")
           val languages = data.get("languages").map(_.toList).getOrElse(List("eng"))
 
-          // Get the URL and MIME. Process the URL if it is not YouTube or Brightcove
+          // Get the URL and MIME. Process the URL if it is not "special"
           val raw_url = data("url")(0)
           val url = if (ResourceHelper.isHTTP(raw_url)) processUrl(raw_url) else raw_url
 

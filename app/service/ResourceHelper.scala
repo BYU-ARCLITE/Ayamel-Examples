@@ -21,7 +21,9 @@ object ResourceHelper {
    * @param uri The URL to check
    * @return
    */
-  def isHTTP(uri: String): Boolean = uri.startsWith("http://") || uri.startsWith("https://")
+  def isHTTP(uri: String): Boolean =
+    uri.startsWith("http://") || uri.startsWith("https://") &&
+    !isYouTube(uri) && !isVimeo(uri)
 
   /**
    * Determines if the given URL is to a YouTube video or not
@@ -35,6 +37,23 @@ object ResourceHelper {
     uri.startsWith("https://youtu.be/")
 
   /**
+   * Determines if the given URL is to a Vimeo video or not
+   * @param uri The URL to check
+   * @return
+   */
+  def isVimeo(uri: String): Boolean = uri.startsWith("vimeo://") ||
+    uri.startsWith("http://www.vimeo.com/") || uri.startsWith("https://www.vimeo.com/")
+
+  /**
+   * Determines if the given URL is to an Ooyala video or not
+   * @param uri The URL to check
+   * @return
+   */
+  def isOoyala(uri: String): Boolean = uri.startsWith("ooyala://") ||
+    uri.startsWith("http://player.ooyala.com/iframe.js#") ||
+    uri.startsWith("https://player.ooyala.com/iframe.js#")
+
+  /**
    * Determines if the given URL is to a brightcove video or not
    * @param uri The URL to check
    * @return
@@ -46,7 +65,8 @@ object ResourceHelper {
    * @param uri The URL to check
    * @return
    */
-  def isValidUrl(uri: String): Boolean = isHTTP(uri) || isYouTube(uri) || isBrightcove(uri)
+  def isValidUrl(uri: String): Boolean = isHTTP(uri) ||
+    isYouTube(uri) || isBrightcove(uri) || isVimeo(uri) || isOoyala(uri)
 
   /**
    * Methods for creating resources with basic data
@@ -84,7 +104,7 @@ object ResourceHelper {
    * @return
    */
   def getUrlName(url: String): String =
-    if (!isYouTube(url) && isHTTP(url)) "downloadUri" else "streamUri"
+    if (isHTTP(url)) "downloadUri" else "streamUri"
 
   /**
    * Attempts to retrieve the mime type from the uri. Doesn't deal with the resource library, but this is used by other
@@ -97,6 +117,10 @@ object ResourceHelper {
       "video/x-youtube"
     } else if (isBrightcove(uri)) {
       "video/x-brightcove"
+    } else if (isVimeo(uri)) {
+      "video/x-vimeo"
+    } else if (isOoyala(uri)) {
+      "video/x-ooyala"
     } else {
       MimeTypes.forFileName(uri).getOrElse("application/octet-stream")
     }

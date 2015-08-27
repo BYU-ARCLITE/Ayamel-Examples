@@ -38,7 +38,7 @@ object VideoTools {
    */
   def generateThumbnail(videoUrl: String, time: Double = thumbnailTime): Future[Option[String]] = {
     // Check that we are able to get the video
-    if (ffmpegExists && !ResourceHelper.isBrightcove(videoUrl) && !ResourceHelper.isYouTube(videoUrl)) {
+    if (ffmpegExists && ResourceHelper.isHTTP(videoUrl)) {
 
       try {
         // Make a unique file to save the image to

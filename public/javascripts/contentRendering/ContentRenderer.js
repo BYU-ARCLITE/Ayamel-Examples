@@ -298,7 +298,7 @@ var ContentRenderer = (function(){
         }
 
         // Set the priority of players
-        Ayamel.prioritizedPlugins.video = ["html5", "flash", "brightcove", "youtube"];
+        Ayamel.prioritizedPlugins.video = ["html5", "flash", "brightcove", "youtube", "vimeo", "ooyala"];
         Ayamel.prioritizedPlugins.audio = ["html5"];
 
         // padding to account for the control bar
