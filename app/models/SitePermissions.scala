@@ -86,7 +86,7 @@ object SitePermissions {
   
   def assignRole(user: User, role: Symbol) {
     roles(role).foreach { p =>
-      user.addSitePermission(p)
+      addUserPermission(user, p)
     }
   }
 
