@@ -20,11 +20,15 @@
         "personal"
 }
 
+@import play.api.Play.{current, configuration}
+@import play.api.libs.json._
+
 @main("Ayamel - " + content.name,
   Local(
     Rel("javascripts/",
       Rel("libraries/",
         JS("sha1.js"),
+        JS("xapiwrapper.min.js"),
         JS("oauth.js")),
       Rel("formFixes/",
         JS("fileFix.js"),
@@ -37,11 +41,37 @@
         var content = @Html(content.toJson.toString());
 
         $(function() {
+            // information for statements to learninglocker
+            var llendpoint = "@current.configuration.getString("learninglocker.endpoint")";
+            var llusername = "@current.configuration.getString("learninglocker.username")";
+            var llpwd = "@current.configuration.getString("learninglocker.password")";
+
+            // configure the learning locker connection
+            xApi.connect(llendpoint, llusername, llpwd);
+
             // Register the page for later activity stream calls
-            ActivityStreams.registerPage("content", "@{course.map(c => "course_" + c.id.get + ":").getOrElse("")}view", @{content.id.get});
+            xApi.registerPage({
+                "page":{
+                    "category":"content",
+                    "action":"@{course.map(c => "course_" + c.id.get + ":").getOrElse("")}view",
+                    "name":window.location.href
+                },
+                @if(course.isDefined) {
+                    course: {
+                        "id":@course.get.id.get,
+                        "name":"@course.get.name"
+                    },
+                }
+                "user": {
+                    "name":"@user.name.getOrElse(user.authId)",
+                    "id":@user.id.get,
+                    "email":"@user.email.getOrElse("")"
+                }
+            });
 
             // Save the page load
-            ActivityStreams.predefined.pageload();
+            xApi.predefined.pageload();
+            
         });
     </script>
     <div class="padded">

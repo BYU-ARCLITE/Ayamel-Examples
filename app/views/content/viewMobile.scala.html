@@ -24,7 +24,7 @@
                 JS("jquery-1.9.0.min.js"),
                 JS("bootstrap.min.js")),
               JS("contentSelection/ContentItemRenderer.js"),
-              JS("ActivityStreams.js")))
+              JS("xApi.js")))
         )
 
         @views.html.content.header.includes()
@@ -33,10 +33,10 @@
             $(function() {
                 ResourceLibrary.setBaseUrl("@resourceLibraryUrl");
                 // Register the page for later activity stream calls
-                ActivityStreams.registerPage("content", coursePrefix + "@{course.map(c => "course_" + c.id.get + ":").getOrElse("")}view", @{content.id.get});
+                xApi.registerPage("content", coursePrefix + "@{course.map(c => "course_" + c.id.get + ":").getOrElse("")}view", @{content.id.get});
 
                 // Save the page load
-                ActivityStreams.predefined.pageload();
+                xApi.predefined.pageload();
             });
         </script>
     </head>

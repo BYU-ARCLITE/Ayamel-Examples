@@ -32,7 +32,7 @@
                 JS("Ractive-events-tap.js")),
               JS("polyfills/Map.js"),
               JS("contentSelection/ContentItemRenderer.js"),
-              JS("ActivityStreams.js"))),
+              JS("xApi.js"))),
           Extern("EditorWidgets",
             CSS("css/Superselect.css"),
             JS("js/SuperSelect.js"))
@@ -46,10 +46,10 @@
                 ResourceLibrary.setBaseUrl("@resourceLibraryUrl");
 
                 // Register the page for later activity stream calls
-                ActivityStreams.registerPage("content", "share:view", @content.id.get);
+                xApi.registerPage("content", "share:view", @content.id.get);
 
                 // Save the page load
-                ActivityStreams.predefined.pageload();
+                xApi.predefined.pageload();
             });
         </script>
     </head>
