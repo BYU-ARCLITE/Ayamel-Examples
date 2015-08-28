@@ -29,8 +29,8 @@ object ActivitySaver extends Controller {
       user =>
 
         val data = request.body.mapValues(_(0))
-
-        if (data("verb") == "started") Content.incrementViews(data("pageId").toLong)
+        
+        if (data("verb") == "pageload") Content.incrementViews(data("pageId").toLong)
 
         // Save the activity
         val activityContext = ActivityContext(

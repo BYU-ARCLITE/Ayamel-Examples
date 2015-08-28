@@ -59,6 +59,7 @@
             xApi.connect(llendpoint, llusername, llpwd);
 
             // Register the page for later activity stream calls
+            ActivityStreams.registerPage("content", "@{course.map(c => "course_" + c.id.get + ":").getOrElse("")}view", @{content.id.get});
             xApi.registerPage({
                 "page":{
                     "category":"content",
@@ -79,6 +80,7 @@
             });
 
             // Save the page load
+            ActivityStreams.predefined.pageload();
             xApi.predefined.pageload();
             
         });
