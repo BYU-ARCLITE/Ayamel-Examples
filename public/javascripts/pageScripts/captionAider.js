@@ -256,7 +256,8 @@ $(function() {
         });
 
         function serverSaver(exportedTracks){
-            var savep = Promise.all(exportedTracks.map(function(fObj){
+            var success = true,
+                savep = Promise.all(exportedTracks.map(function(fObj){
                 var data = new FormData(),
                     textTrack = fObj.track;
                 data.append("file", new Blob([fObj.data],{type:fObj.mime}), fObj.name);
@@ -286,9 +287,11 @@ $(function() {
                     return textTrack.label;
                 },function(error){
                     alert("Error occurred while saving "+textTrack.label);
+                    success = false;
                 });
             }));
             savep.then(function(){
+                if(!success){ return; }
                 alert("Saved Successfully");
             });
             return savep;
