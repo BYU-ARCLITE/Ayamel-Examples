@@ -245,7 +245,7 @@ object Administration extends Controller {
             redirect.flashing("info" -> "Contents updated")
           } catch {
             case e: Throwable =>
-              Logger.debug(e.getMessage())
+              Logger.debug("Batch Update Error: " + e.getMessage())
               redirect.flashing("error" -> ("Error while updating: "+e.getMessage()))
           }
         }

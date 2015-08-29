@@ -45,10 +45,10 @@ object S3Uploader extends UploadEngine {
         Some("https://s3.amazonaws.com/" + bucket + "/" + filename)
       } catch {
         case e:AmazonClientException =>
-          Logger.debug(e.getMessage())
+          Logger.debug("Amazon Client Exception: " + e.getMessage())
           None
         case e:AmazonServiceException =>
-          Logger.debug(e.getMessage())
+          Logger.debug("Amazon Service Exception: " + e.getMessage())
           None
       }
     }
