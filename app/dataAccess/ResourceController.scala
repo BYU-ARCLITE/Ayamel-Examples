@@ -29,23 +29,6 @@ object ResourceController {
     }
   }
 
-
-  /**
-   * List resources
-   * The API endpoint is: GET resources
-   * @param limit The number to list. Default is 50
-   * @param offset Offset of results. Default is 0
-   * @param descending Ascending/descending order switch
-   * @return The future JSON result
-   */
-  def list(limit: Int = 50, offset: Int = 0, descending: Boolean = true): Future[Option[JsValue]] = {
-    val order = if (descending) -1 else 1
-    WS.url(baseResourceUrl + "?limit=" + limit + "&order=" + order + "&skip=" + offset).get().map { r =>
-      Logger.info("Resource Controller: list")
-      decode(r)
-    }
-  }
-
   /**
    * Resource creation
    * The API endpoint is: POST resources
@@ -76,7 +59,6 @@ object ResourceController {
    * @return The future JSON result
    */
   def getResource(id: String): Future[Option[JsValue]] = WS.url(baseResourceUrl + "/" + id).get().map { r =>
-    Logger.info("Resource Controller: get")
     decode(r)
   }
 
@@ -131,7 +113,6 @@ object ResourceController {
   def getRelations(id: String, relationType: Symbol = 'id) = {
     val idKey = if (relationType == 'subject) "subjectId" else if (relationType == 'object) "objectId" else "id"
     WS.url(baseUrl + s"relations?$idKey=$id").get().map { r =>
-      Logger.info("Resource Controller: get relations")
       decode(r)
     }
   }
