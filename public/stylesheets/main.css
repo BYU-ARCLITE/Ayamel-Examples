@@ -518,3 +518,14 @@ h1, h2, h3, h4, h5, h6 {
 .bigModal .modal-footer > div {
     padding: 14px 15px 15px;
 }
+
+
+@media screen and (max-width: 980px) {
+    body {  min-width:980px !important; }
+    tbody:nth-child(2) {color: red !important;}
+
+}
+
+table tr td:nth-child(2) {
+    width: 1000px !important;
+}

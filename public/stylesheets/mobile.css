@@ -38,8 +38,9 @@ body.mobile {
     font-size: 18pt;
 }
 
+/*
 @media (max-width: 767px) {
     body.mobile {
         padding: 0;
     }
-}
+}*/
