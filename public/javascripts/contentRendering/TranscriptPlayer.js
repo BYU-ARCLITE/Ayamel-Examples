@@ -23,7 +23,7 @@ var TranscriptPlayer = (function(){
         ractive = new Ractive({
             el: element,
             template: '<div class="transcriptDisplay">\
-                <div class="form-inline">\
+                <div class="form-inline transcriptSelect">\
                     <select value="{{activeIndex}}">\
                         {{#transcripts:i}}<option value="{{i}}">{{.label}}</option>{{/transcripts}}\
                     </select>\

@@ -326,7 +326,7 @@
 /* Transcript styling */
 
 .transcriptContentHolder, .definitionsContent, #Annotations {
-    max-height: 300px;
+    max-height: calc(100% - 35px);
     overflow-y: scroll;
 }
 
@@ -495,4 +495,12 @@
 
 .form-horizontal .controls {
     padding-top: 5px;
+}
+
+.transcriptDisplay {
+    height: calc(100% - 4px);
+}
+
+.transcriptSelect {
+    height: 35px;
 }
