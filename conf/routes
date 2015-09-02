@@ -32,7 +32,7 @@ GET     /course                                         controllers.Courses.list
 GET     /course/create                                  controllers.Courses.createPage
 POST    /course/create                                  controllers.Courses.create
 GET     /course/:id                                     controllers.Courses.view(id: Long)
-POST    /coures/:id                                     controllers.Courses.edit(id: Long)
+POST    /course/:id                                     controllers.Courses.edit(id: Long)
 GET     /course/:id/config                              controllers.Courses.ltiConfiguration(id: Long)
 POST    /course/:id/ltiAuth                             controllers.Courses.ltiAuth(id: Long)
 GET     /course/:id/keyAuth                             controllers.Courses.keyAuth(id: Long)
