@@ -2,6 +2,7 @@ package service.joshmonson.oauth
 
 import com.google.gdata.client.authn.oauth.OAuthUtil
 import scala.collection.JavaConversions._
+import play.api.Play.current
 
 /**
  * Represents a HTTP request and offers functionality for generating and verifying OAuth 1.0a signatures including the
@@ -175,8 +176,10 @@ case class OAuthRequest(
     val hostSlash = host.replaceAll("/+$", "")
     if (hostSlash.startsWith("http"))
       hostSlash
-    else
-      "http://" + hostSlash
+    else {
+      val isHttps = current.configuration.getBoolean("HTTPS").getOrElse(false)
+      if (isHttps) "https://" + hostSlash else "http://" + hostSlash
+    }
   }
 
   /**
