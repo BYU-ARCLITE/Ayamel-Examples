@@ -54,7 +54,14 @@ var supportedMimeTypes = {
     ],
     "text": [
         "text/plain",
-        "text/x-markdown"
+        "text/x-markdown",
+        "text/vtt",
+        "application/ttml+xml",
+        "text/subtitle+sub",
+        "text/x-ssa",
+        "text/srt",
+        "text/subtitle+sbv",
+        "text/subtitle+lrc"
     ]
 };
 
