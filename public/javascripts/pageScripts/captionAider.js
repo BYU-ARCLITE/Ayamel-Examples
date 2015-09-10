@@ -589,14 +589,12 @@ $(function() {
     }).then(ContentRenderer.render);
 
     function callback(args) {
-        var renderer,
-            tplayer = args.transcriptPlayer;
+        var tplayer = args.transcriptPlayer;
 
         commandStack = new EditorWidgets.CommandStack();
         trackResources = args.trackResources;
         trackMimes = args.trackMimes;
         videoPlayer = args.mainPlayer;
-        renderer = videoPlayer.captionRenderer;
 
         timeline = new Timeline(document.getElementById("timeline"), {
             stack: commandStack,
@@ -616,7 +614,8 @@ $(function() {
 
         captionEditor = CaptionEditor({
             stack: commandStack,
-            renderer: renderer,
+            refresh: function(){ videoPlayer.refreshLayout(); },
+            rebuild: function(){ videoPlayer.rebuildCaptions(); },
             timeline: timeline
         });
 
@@ -644,7 +643,7 @@ $(function() {
         timeline.on('altertrack', function(){ videoPlayer.refreshCaptionMenu(); });
 
         //TODO: Integrate the next listener into the timeline editor
-        timeline.on('activechange', function(){ renderer.rebuildCaptions(); });
+        timeline.on('activechange', function(){ videoPlayer.rebuildCaptions(); });
 
         timeline.on('cuechange', function(evt){
             if(evt.fields.indexOf('text') === -1){ return; }
