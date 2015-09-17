@@ -55,8 +55,8 @@ $(function() {
         </div>\
     </div>';
 
-    function renderCue(renderedCue, area, renderFunc) {
-        return captionEditor.make(renderedCue, area, renderFunc);
+    function renderCue(renderedCue, renderFunc) {
+        return captionEditor.make(renderedCue, renderFunc);
     }
 
     // Render the content
