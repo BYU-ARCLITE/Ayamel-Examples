@@ -589,8 +589,6 @@ $(function() {
     }).then(ContentRenderer.render);
 
     function callback(args) {
-        var tplayer = args.transcriptPlayer;
-
         commandStack = new EditorWidgets.CommandStack();
         trackResources = args.trackResources;
         trackMimes = args.trackMimes;
@@ -647,12 +645,10 @@ $(function() {
 
         timeline.on('cuechange', function(evt){
             if(evt.fields.indexOf('text') === -1){ return; }
-            tplayer.updateTrack(evt.cue.track);
         });
 
         timeline.on('addtrack',function(evt){
             videoPlayer.addTextTrack(evt.track.textTrack);
-            tplayer.addTrack(evt.track.textTrack);
             updateSpacing();
         });
 
