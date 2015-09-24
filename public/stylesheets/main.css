@@ -518,21 +518,3 @@ h1, h2, h3, h4, h5, h6 {
 .bigModal .modal-footer > div {
     padding: 14px 15px 15px;
 }
-
-@media screen and (max-width: 1200px) {
-    .container {  width:1170px !important; }
-}
-
-@media screen and (max-width: 980px) {
-    body {  min-width:980px !important; }
-    tbody:nth-child(2) {/* MAX-SIZE of name column */}
-
-}
-
-table tr td:nth-child(2) {
-    max-width: 200px !important;
-}
-
-table tr td:nth-child(7) {
-    max-width: 200px !important;
-}

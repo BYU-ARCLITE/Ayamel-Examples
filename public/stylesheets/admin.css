@@ -22,3 +22,25 @@
     margin-top: 12px;
     margin-bottom: 5px;
 }
+
+
+/* CSS from David */
+
+@media screen and (max-width: 1200px) {
+    .container {  width:1170px !important; }
+}
+
+@media screen and (max-width: 980px) {
+    body {  min-width:980px !important; }
+}
+
+.adminTable tr td {
+    max-width: 50px;
+    white-space: wrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.adminTable tr td:nth-child(2) {
+    max-width: 200px;
+}
