@@ -1,6 +1,7 @@
 @(requests: List[SitePermissionRequest])(implicit request: RequestHeader, user: User)
 
-@main("Ayamel - Permission Request Approval", Local(CSS("stylesheets/permission.css"))) {
+@main("Ayamel - Permission Request Approval", Some(user),
+  Local(CSS("stylesheets/permission.css"))) {
 
     <div class="permissionRequestBackground">
     </div>

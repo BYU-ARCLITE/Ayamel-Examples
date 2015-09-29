@@ -1,6 +1,6 @@
 @(course: Course)(implicit request: RequestHeader, user:User)
 
-@main("Ayamel - Request Pending"){
+@main("Ayamel - Request Pending", Some(user)){
     <div class="padded">
         <h1>
             Request Pending

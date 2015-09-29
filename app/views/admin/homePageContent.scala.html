@@ -1,6 +1,6 @@
 @()(implicit request: RequestHeader, user: User)
 
-@main("Ayamel - Home Page Content",
+@main("Ayamel - Home Page Content", Some(user),
   Local(
     Rel("stylesheets/", CSS("admin.css"), CSS("home.css")),
     JS("javascripts/formFixes/fileFix.js"))

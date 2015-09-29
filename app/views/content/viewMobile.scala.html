@@ -1,4 +1,4 @@
-@(content: models.Content, resourceLibraryUrl: String, course: Option[Course] = None)(implicit request: RequestHeader, user: User)
+@(content: models.Content, resourceLibraryUrl: String, course: Option[Course] = None, user: Option[User] = None)(implicit request: RequestHeader)
 
 @import views.html.resources._
 
@@ -59,19 +59,19 @@
                         </a>
                     </div>
 
-                    @if(!user.getEnrollment.isEmpty) {
+                    @if(!user.exists(_.getEnrollment.isEmpty)) {
                         <div class="link">
                             <a class="headerDropdownLink" data-target="#coursesDropdown" href="#">
                                 <i class="icon-group"></i> My Courses
                             </a>
                             <div class="headerDropdown" id="coursesDropdown">
                                 <div class="dropdownPoint"></div>
-                                @for(course <- user.getEnrollment) {
+                                @for(course <- user.get.getEnrollment) {
                                     <div class="dropdownItem">
                                         <a href="@routes.Courses.view(course.id.get)"><i class="icon-book"></i> @course.name</a>
                                     </div>
                                 }
-                                @if(user.hasSitePermission("createCourse")) {
+                                @if(user.exists(_.hasSitePermission("createCourse"))) {
                                     <div class="dropdownItem">
                                         <a href="@routes.Courses.createPage()"><i class="icon-plus"></i> Create a new course</a>
                                     </div>
@@ -108,9 +108,12 @@
                 var content = @Html(content.toJson.toString());
                 ContentLoader.render({
                     content: content,
-                    userId: "@user.id.get",
-                    owner: @content.isEditableBy(user),
-                    teacher: @course.map(c => user.hasCoursePermission(c, "teacher")).getOrElse(false),
+					
+                    @if(user.isDefined) {
+                    userId: "@user.get.id.get",
+                    owner: @content.isEditableBy(user.get),
+                    teacher: @course.exists(c => user.get.hasCoursePermission(c, "teacher")),
+                    }
                     courseId: @course.map(_.id.get).getOrElse(0),
                     holder: document.getElementById("contentHolder"),
                     annotate: true,

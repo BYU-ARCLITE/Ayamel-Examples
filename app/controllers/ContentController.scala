@@ -379,9 +379,9 @@ object ContentController extends Controller {
             // Check that the user can view the content
             if (content isVisibleBy user) Ok(
                 if (MobileDetection.isMobile())
-                  views.html.content.viewMobile(content, ResourceController.baseUrl)
+                  views.html.content.viewMobile(content, ResourceController.baseUrl, user = Some(user))
                 else
-                  views.html.content.view(content, ResourceController.baseUrl)
+                  views.html.content.view(content, ResourceController.baseUrl, user = Some(user))
             ) else
               Redirect(routes.Application.home)
                 .flashing("error" -> "You do not have permission to view the requested content.")
@@ -473,10 +473,18 @@ object ContentController extends Controller {
       getContent(id) { content =>
         // Check that everything is in place to view the content
         if (content.authKey == authKey && content.shareability != Content.shareability.notShareable) {
-          val embed = request.queryString.get("embed").exists(_(0).toBoolean)
-          Ok(views.html.content.share.view(content, ResourceController.baseUrl, embed))
+          Ok(
+            if(request.queryString.get("embed").flatMap(_.lift(0)).exists(_.toBoolean)){
+              views.html.content.share.view(content, ResourceController.baseUrl)
+            } else if (MobileDetection.isMobile()) {
+              views.html.content.viewMobile(content, ResourceController.baseUrl)
+            } else {
+              views.html.content.view(content, ResourceController.baseUrl)
+            }
+          )
         } else
-          Ok("You are not allowed to view this content")
+          Redirect(routes.Application.home)
+            .flashing("error" -> "You do not have permission to view the requested content.")
       }
   }
 

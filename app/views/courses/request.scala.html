@@ -1,6 +1,6 @@
 @(course: Course)(implicit request: RequestHeader, user: User)
 
-@main("Ayamel - Request Course Action") {
+@main("Ayamel - Request Course Action", Some(user)) {
     <div class="padded">
         <h1>
             Request Course Access

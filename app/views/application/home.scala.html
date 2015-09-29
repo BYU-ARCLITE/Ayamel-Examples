@@ -1,6 +1,6 @@
 @(courseList: List[Course])(implicit request: RequestHeader, user: User)
 
-@main("Ayamel",
+@main("Ayamel", Some(user),
   Local(
     Rel("stylesheets/",
       CSS("home.css"),

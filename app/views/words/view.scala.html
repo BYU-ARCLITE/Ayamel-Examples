@@ -1,6 +1,6 @@
 @(wordList: List[WordListEntry])(implicit request: RequestHeader, user: User)
 
-@main("Ayamel - My Word List") {
+@main("Ayamel - My Word List", Some(user)) {
 
     @views.html.content.header.includes()
 

@@ -1,6 +1,6 @@
 @(helpPage: Option[HelpPage])(implicit request: RequestHeader, user: User)
 
-@main("Ayamel - Edit help page",
+@main("Ayamel - Edit help page", Some(user),
   Local(
     Rel("wysihtml5/",
       CSS("bootstrap-wysihtml5.css"),

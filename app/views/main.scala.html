@@ -1,9 +1,9 @@
-@(title: String, moreDependencies: Include*)(content: Html)(implicit request: RequestHeader, user: User)
+@(title: String, user: Option[User], moreDependencies: Include*)(content: Html)(implicit request: RequestHeader)
 
 @import views.html.resources._
 @import play.api.Play.{current, configuration}
 
-@notifications = @{user.getNotifications.filterNot(_.messageRead)}
+@notifications = @{user.map(_.getNotifications.filterNot(_.messageRead)).getOrElse(Seq())}
 
 <!DOCTYPE html>
 <html>
@@ -55,19 +55,19 @@
                         </a>
                     </div>
 
-                    @if(!user.getEnrollment.isEmpty) {
+                    @if(user.exists(!_.getEnrollment.isEmpty)) {
                         <div class="link">
                             <a class="headerDropdownLink" data-target="#coursesDropdown" href="#">
                                 <i class="icon-group"></i> My Courses
                             </a>
                             <div class="headerDropdown" id="coursesDropdown">
                                 <div class="dropdownPoint"></div>
-                                @for(course <- user.getEnrollment) {
+                                @for(course <- user.get.getEnrollment) {
                                     <div class="dropdownItem">
                                         <a href="@routes.Courses.view(course.id.get)"><i class="icon-book"></i> @course.name</a>
                                     </div>
                                 }
-                                @if(user.hasSitePermission("createCourse")) {
+                                @if(user.get.hasSitePermission("createCourse")) {
                                     <div class="dropdownItem">
                                         <a href="@routes.Courses.createPage()"><i class="icon-plus"></i> Create a new course</a>
                                     </div>
@@ -76,7 +76,7 @@
                         </div>
                     }
 
-                    @if(user.hasSitePermission("createContent")) {
+                    @if(user.exists(_.hasSitePermission("createContent"))) {
                         <div class="link">
                             <a href="@routes.ContentController.mine()">
                                 <i class="icon-folder-open"></i> My Content
@@ -90,7 +90,7 @@
                         </div>
                         <div class="link">
                             <a href="#" class="headerDropdownLink" data-target="#profileDropdown">
-                                <span class="profileIcon" style="background-image: url('@user.getPicture')"></span>
+                                <span class="profileIcon" style="background-image: url('@user.get.getPicture')"></span>
                                 @*<i class="icon-user"></i> Profile*@
                                 @if(!notifications.isEmpty) {
                                     <span class="badge badge-yellow pad-left-low">@notifications.size</span>
@@ -98,7 +98,7 @@
                             </a>
                             <div id="profileDropdown" class="headerDropdown">
                                 <div class="dropdownPoint light"></div>
-                                <div class="displayName">@user.displayName</div>
+                                <div class="displayName">@user.get.displayName</div>
                                 <div class="dropdownItem">
                                     <a href="@routes.WordLists.view()"><i class="icon-paste"></i> My Word List</a>
                                 </div>
@@ -112,7 +112,7 @@
                                         }
                                     </a>
                                 </div>
-                                @if(user.hasSitePermission("admin")) {
+                                @if(user.get.hasSitePermission("admin")) {
                                     <div class="dropdownItem">
                                         <a href="@routes.Administration.admin()"><i class="icon-wrench"></i> Admin Dashboard</a>
                                     </div>
@@ -133,13 +133,15 @@
                                 <i class="icon-question-sign"></i> Help
                             </a>
                         </div>
-                        <!--<div class="link">
-                            <i class="icon-search"></i>
-                            <input type="text" class="searchBox" id="searchBox" />
-                        </div>-->
-                        <div class="link">
-                            <a href="@controllers.authentication.routes.Authentication.logout()"><i class="icon-off"></i> Log out</a>
-                        </div>
+                        @if(user.isDefined) {
+                            <!--<div class="link">
+                                <i class="icon-search"></i>
+                                <input type="text" class="searchBox" id="searchBox" />
+                            </div>-->
+                            <div class="link">
+                                <a href="@controllers.authentication.routes.Authentication.logout()"><i class="icon-off"></i> Log out</a>
+                            </div>
+                        }
                     }
                 </div>
             </div>
@@ -155,7 +157,7 @@
                             <div class="span10 offset1">
                                 <div class="row-fluid">
                                     <div class="span3">
-                                        @if(user.hasSitePermission("joinCourse")) {
+                                        @if(user.exists(_.hasSitePermission("joinCourse"))) {
                                             <div><a href="@routes.Courses.list()">Course Directory</a></div>
                                         }
                                         <div><a href="@routes.Application.about()">About Ayamel</a></div>

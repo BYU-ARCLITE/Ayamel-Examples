@@ -1,7 +1,7 @@
 @(users: List[User])(implicit request: RequestHeader, user: User)
 @import models.SitePermissions.descriptionMap
 
-@main("Ayamel - User Accounts",
+@main("Ayamel - User Accounts", Some(user),
     Local(
         CSS("stylesheets/admin.css"),
         JS("javascripts/pageScripts/userAccounts.js"))

@@ -2,15 +2,15 @@
 
 @import dataAccess.PlayGraph
 
-@main("Ayamel - Playlist") {
+@main("Ayamel - Playlist", Some(user)) {
     
     @views.html.content.header.includes()
     @Dependencies(
-	  Local(
-	    Rel("javascripts/",
-		  JS("libraries/oauth.js"),
+      Local(
+        Rel("javascripts/",
+          JS("libraries/oauth.js"),
           JS("playGraph/player.js"))),
-	  JS(PlayGraph.host+"assets/javascripts/author/PlayGraph.js"))
+      JS(PlayGraph.host+"assets/javascripts/author/PlayGraph.js"))
     
     <div class="padded">
         <h1>@content.name</h1>

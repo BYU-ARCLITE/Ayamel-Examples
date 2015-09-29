@@ -1,6 +1,7 @@
 @(courseId: Long)(implicit request: RequestHeader, user: User)
 
-@main("Ayamel - Add Content", Local(CSS("stylesheets/content.css"))) {
+@main("Ayamel - Add Content", Some(user),
+  Local(CSS("stylesheets/content.css"))) {
 
     <div class="padded">
 

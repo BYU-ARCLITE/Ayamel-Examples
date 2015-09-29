@@ -1,6 +1,6 @@
 @()(implicit request: RequestHeader, user: User)
 
-@main("Ayamel - Account Settings",
+@main("Ayamel - Account Settings", Some(user),
   Local(
     CSS("stylesheets/course.css"),
     JS("javascripts/formFixes/fileFix.js"))

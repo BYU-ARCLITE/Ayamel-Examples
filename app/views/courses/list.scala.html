@@ -1,6 +1,6 @@
 @(courses: List[Course])(implicit request: RequestHeader, user: User)
 
-@main("Ayamel - Course Directory") {
+@main("Ayamel - Course Directory", Some(user)) {
 
     <div class="padded">
         <h1>Course Directory</h1>

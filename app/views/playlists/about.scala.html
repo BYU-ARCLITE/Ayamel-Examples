@@ -4,7 +4,7 @@
 @import play.api.Play
 @import play.api.Play.current
 
-@main("Ayamel - Playlist") {
+@main("Ayamel - About", Some(user)) {
   @defining(Play.configuration.getBoolean("HTTPS").getOrElse(false)) { isHTTPS =>
     <div class="padded">
         <h1><i class="icon-list"></i> @content.name</h1>

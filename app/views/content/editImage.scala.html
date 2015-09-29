@@ -1,6 +1,6 @@
 @(content: models.Content, resourceLibraryUrl: String, course: Option[Course] = None)(implicit request: RequestHeader, user: User)
 
-@main("Ayamel - " + content.name,
+@main("Ayamel - " + content.name, Some(user),
   Local(
     CSS("stylesheets/content.css"),
     JS("javascripts/ImageEditor.js"))

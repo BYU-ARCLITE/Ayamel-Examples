@@ -1,6 +1,6 @@
 @(courseId: Long)(implicit request: RequestHeader, user: User)
 
-@main("Ayamel - Add Content",
+@main("Ayamel - Add Content", Some(user),
   Local(
     CSS("stylesheets/content.css"),
     JS("javascripts/formFixes/labelsInput.js")),

@@ -1,6 +1,6 @@
 @(contentList: List[(models.Content, User)], resourceLibraryUrl: String)(implicit request: RequestHeader, user: User)
 
-@main("Ayamel - Manage Content", Local(CSS("stylesheets/admin.css"))) {
+@main("Ayamel - Manage Content", Some(user), Local(CSS("stylesheets/admin.css"))) {
 
     @Dependencies(Extern("Ayamel.js",Rel("js/",JS("Resource.js"), JS("LangCodes.js"))))
 

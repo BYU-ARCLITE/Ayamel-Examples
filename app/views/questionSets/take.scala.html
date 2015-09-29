@@ -1,6 +1,6 @@
 @(content: models.Content)(implicit request: RequestHeader, user: User)
 
-@main("Ayamel") {
+@main("Ayamel", Some(user)) {
 
     @views.html.content.header.includes()
 

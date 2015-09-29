@@ -1,4 +1,4 @@
-@(content: models.Content, resourceLibraryUrl: String)(implicit user: User)
+@(content: models.Content, resourceLibraryUrl: String, user: User)
 
 @background = @{
     if (content.thumbnail.isEmpty) {

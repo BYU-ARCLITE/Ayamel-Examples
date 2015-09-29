@@ -6,10 +6,11 @@
 
 @moreStyles =  @{}
 
-@main("Ayamel - " + course.name, Local(
-  Rel("stylesheets/", CSS("course.css"), CSS("content.css")),
-  Rel("javascripts/contentSelection/",
-    JS("PopupBrowser.js")))
+@main("Ayamel - " + course.name, Some(user),
+  Local(
+    Rel("stylesheets/", CSS("course.css"), CSS("content.css")),
+    Rel("javascripts/contentSelection/",
+      JS("PopupBrowser.js")))
 ) {
 
 @if(user.hasCoursePermission(course, "addContent")){

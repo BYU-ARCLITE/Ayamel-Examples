@@ -2,7 +2,7 @@
 
 @template(title: String)(content: Html)(r: RequestHeader, u: Option[User]) = @{
     if(user.isDefined)
-        main(title)(content)(r, u.get)
+        main(title, user)(content)(r)
     else
         simple(title)(content)(r, u)
 }
