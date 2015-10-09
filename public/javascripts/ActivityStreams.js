@@ -33,8 +33,8 @@ var ActivityStreams = (function() {
     return {
 
         predefined: {
-            pageload: function() {
-                save({verb: "pageload"});
+            pageLoad: function() {
+                save({verb: "pageLoad"});
             },
             playClick: function(time) {
                 save({

@@ -76,12 +76,13 @@
                     "name":"@user.name.getOrElse(user.authId)",
                     "id":@user.id.get,
                     "email":"@user.email.getOrElse("")"
-                }
+                },
+                content: content
             });
 
             // Save the page load
-            ActivityStreams.predefined.pageload();
-            xApi.predefined.pageload();
+            ActivityStreams.predefined.pageLoad();
+            xApi.predefined.pageLoad();
             
         });
     </script>

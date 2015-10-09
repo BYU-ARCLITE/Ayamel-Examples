@@ -38,8 +38,8 @@
                 xApi.registerPage("content", coursePrefix + "@{course.map(c => "course_" + c.id.get + ":").getOrElse("")}view", @{content.id.get});
 
                 // Save the page load
-                ActivityStreams.predefined.pageload();
-                xApi.predefined.pageload();
+                ActivityStreams.predefined.pageLoad();
+                xApi.predefined.pageLoad();
             });
         </script>
     </head>

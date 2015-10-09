@@ -7,14 +7,14 @@
  */
 var xApi = (function() {
 
-    var page, course, user, baseUri;
+    var page, course, user, resourceName, baseUri;
     page = course = user = {};
     baseUri = "https://ayamel.byu.edu/";
+    resourceName = "";
 
     // args: verb, type, extensions
     function send(args) {
         // create statement
-        var resourceName = args.resource?args.resource.label:content.name;
         // Agent = User, Action = Verb, Activity = Content Object
         var stmt = new ADL.XAPIStatement(
             new ADL.XAPIStatement.Agent('mailto:'+(user.email?user.email:'placeholder@some.org'), user.name),
@@ -33,7 +33,7 @@ var xApi = (function() {
 
     return {
         predefined: {
-            pageload: function() {
+            pageLoad: function() {
                 send({ verb: "started" });
             },
             ended: function(time) {
@@ -252,6 +252,9 @@ var xApi = (function() {
             page = args.page
             course = args.course?args.course:course;
             user = args.user;
+            resourceName = args.resource?args.resource.label:
+                           args.content?args.content.name:
+                           resourceName;
         },
         /**
          * First, you need to connect to the LRS
