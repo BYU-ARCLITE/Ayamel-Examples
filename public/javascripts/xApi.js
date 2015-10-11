@@ -1,10 +1,3 @@
-/**
- * Created with IntelliJ IDEA.
- * User: camman3d
- * Date: 4/23/13
- * Time: 3:59 PM
- * To change this template use File | Settings | File Templates.
- */
 var xApi = (function() {
 
     var page, course, user, resourceName, baseUri;
@@ -28,6 +21,82 @@ var xApi = (function() {
         // callback makes the send asynchronous
         ADL.XAPIWrapper.sendStatement(stmt, function(resp, obj){  
             console.log("[" + obj.id + "]: " + resp.status + " - " + resp.statusText);
+        });
+    }
+
+    /**
+     * Add the xApi event listeners to the main player.
+     * @param player js player object
+     */
+    function addListeners(player) {
+        /**
+         * Used to limit the amount of times that a function is called per wait period
+         */
+        function throttle(func, wait) {
+            var timeout;
+            return function() {
+                var context = this, args = arguments;
+                if (!timeout) {
+                    timeout = setTimeout(function() {
+                        timeout = null;
+                        func.apply(context, args);
+                    }, wait);
+                }
+            }
+        }
+        player.addEventListener("play", throttle(function(){
+            ActivityStreams.predefined.playClick("" + player.currentTime);
+            xApi.predefined.playClick("" + player.currentTime);
+        }, 500));
+        player.addEventListener("pause", function(){
+            ActivityStreams.predefined.pauseClick("" + player.currentTime);
+            xApi.predefined.pauseClick("" + player.currentTime);
+        });
+        player.addEventListener("ended", function(){
+            ActivityStreams.predefined.ended("" + player.currentTime);
+            xApi.predefined.ended("" + player.currentTime);
+        });
+        player.addEventListener("timejump", function(e){
+            ActivityStreams.predefined.timeJump(""+e.detail.oldtime, ""+e.detail.newtime);
+            xApi.predefined.timeJump(""+e.detail.oldtime, ""+e.detail.newtime);
+        });
+        player.addEventListener("captionJump", function(){
+            ActivityStreams.predefined.repeatCaption("" + player.currentTime);  
+            xApi.predefined.repeatCaption("" + player.currentTime);
+        });
+        player.addEventListener("ratechange", throttle(function(){
+            ActivityStreams.predefined.rateChange(""+player.currentTime, ""+player.playbackRate);
+            xApi.predefined.rateChange(""+player.currentTime, ""+player.playbackRate);
+        }, 1000));
+        player.addEventListener("volumechange", throttle(function(){
+            if(player.muted){ return; }
+            ActivityStreams.predefined.volumeChange(""+player.currentTime, ""+player.volume);
+            xApi.predefined.volumeChange(""+player.currentTime, ""+player.volume);
+        }, 1000));
+        player.addEventListener("mute", function(){
+            ActivityStreams.predefined.volumeChange(""+player.currentTime, "0");
+            xApi.predefined.mute(""+player.currentTime, "0");
+        });
+        player.addEventListener("unmute", function(){
+            ActivityStreams.predefined.volumeChange(""+player.currentTime, player.volume);
+            xApi.predefined.unmute(""+player.currentTime, player.volume);
+        });
+        player.addEventListener("enterfullscreen", function(){
+            ActivityStreams.predefined.enterFullscreen(""+player.currentTime);
+            xApi.predefined.enterFullscreen(""+player.currentTime);
+        });
+        player.addEventListener("exitfullscreen", function(){
+            ActivityStreams.predefined.exitFullscreen(""+player.currentTime);
+            xApi.predefined.exitFullscreen(""+player.currentTime);
+        });
+        player.addEventListener("enabletrack", function(e){
+            xApi.predefined.enableCaptionTrack(e.detail.track);
+        });
+        player.addEventListener("disabletrack", function(e){
+            xApi.predefined.disableCaptionTrack(e.detail.track);
+        });
+        player.addEventListener("watched", function(e){
+            xApi.predefined.watched(""+player.currentTime);
         });
     }
 
@@ -247,6 +316,7 @@ var xApi = (function() {
          *      page
          *      course  (course Object)
          *      user    (user Object)
+         *      player
          */
         registerPage: function(args) {
             page = args.page
@@ -255,6 +325,7 @@ var xApi = (function() {
             resourceName = args.resource?args.resource.label:
                            args.content?args.content.name:
                            resourceName;
+            addListeners(args.player);
         },
         /**
          * First, you need to connect to the LRS

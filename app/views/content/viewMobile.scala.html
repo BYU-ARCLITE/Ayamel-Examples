@@ -31,16 +31,35 @@
         @views.html.content.header.includes()
 
         <script type="text/javascript">
-            $(function() {
+            function setupXapi() {
                 ResourceLibrary.setBaseUrl("@resourceLibraryUrl");
                 // Register the page for later activity stream calls
                 ActivityStreams.registerPage("content", coursePrefix + "@{course.map(c => "course_" + c.id.get + ":").getOrElse("")}view", @{content.id.get});
-                xApi.registerPage("content", coursePrefix + "@{course.map(c => "course_" + c.id.get + ":").getOrElse("")}view", @{content.id.get});
+                xApi.registerPage({
+                    page:{
+                        "category":"content",
+                        "action":"@{course.map(c => "course_" + c.id.get + ":").getOrElse("")}view",
+                        "name":window.location.href
+                    },
+                    @if(course.isDefined) {
+                        course: {
+                            "id":@course.get.id.get,
+                            "name":"@course.get.name"
+                        },
+                    }
+                    user: {
+                        "name":"@user.flatMap(_.name).orElse(user.map(_.authId)).getOrElse("Visitor")",
+                        "id":@user.map(_.id.get).getOrElse(0),
+                        "email":"@user.flatMap(_.email).getOrElse("")"
+                    },
+                    content: content,
+                    player: args.mainPlayer
+                });
 
                 // Save the page load
                 ActivityStreams.predefined.pageLoad();
                 xApi.predefined.pageLoad();
-            });
+            }
         </script>
     </head>
     <body class="mobile">
@@ -118,7 +137,8 @@
                     holder: document.getElementById("contentHolder"),
                     annotate: true,
                     startTime: "@request.queryString.get("starttime").getOrElse("0")",
-                    endTime: "@request.queryString.get("endtime").getOrElse("-1")"
+                    endTime: "@request.queryString.get("endtime").getOrElse("-1")",
+                    callback: setupXapi
                 });
 
             });

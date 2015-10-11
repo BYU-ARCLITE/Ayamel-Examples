@@ -47,7 +47,7 @@
 
         <script type="text/javascript">
             var content = @Html(content.toJson.toString());
-            $(function() {
+            function setupXapi(args) {
                 // information for statements to learninglocker
                 var llendpoint = "@current.configuration.getString("learninglocker.endpoint")";
                 var llusername = "@current.configuration.getString("learninglocker.username")";
@@ -61,22 +61,23 @@
                 // Register the page for later activity stream calls
                 ActivityStreams.registerPage("content", "share:view", @{content.id.get});
                 xApi.registerPage({
-                    "page":{
+                    page:{
                         "category":"content",
                         "action":"view",
                         "name":window.location.href
                     },
-                    "user": {
+                    user: {
                         "name":"Visitor",
                         "id":0, "email":""
                     },
-                    content: content
+                    content: content,
+                    player: args.mainPlayer
                 });
 
                 // Save the page load
                 ActivityStreams.predefined.pageLoad();
                 xApi.predefined.pageLoad();
-            });
+            }
         </script>
     </head>
     <body class="share embed">
@@ -100,7 +101,8 @@
                 ContentLoader.render({
                     content: content,
                     holder: contentHolder,
-                    annotate: true
+                    annotate: true,
+                    callback: setupXapi
                 });
 
                 document.getElementById("ayamelLink").addEventListener('click', function(){
