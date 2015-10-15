@@ -1,0 +1,13 @@
+@()(implicit request: RequestHeader)
+window.addEventListener('load',function(){
+	var baseURL = "https://@request.host/content/";
+	[].forEach.call(document.querySelectorAll("iframe[data-ayamel-id]"),function(frame){
+		var xhr = new XMLHttpRequest();
+		xhr.responseType = "blob";
+		xhr.open('POST', baseURL+frame.dataset['ayamel-id']+'/ltiembed', true);
+		xhr.addEventListener('load',function(){
+			frame.src = URL.createObjectUrl(xhr.response);
+		},false);
+		xhr.send(iframe.textContent);
+	});
+},false);

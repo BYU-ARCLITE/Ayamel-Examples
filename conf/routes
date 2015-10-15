@@ -62,6 +62,7 @@ POST    /course/:courseId/content/:id/remove            controllers.CourseConten
 GET     /content/mine                      controllers.ContentController.mine
 GET     /content/manage                    controllers.ContentController.manageContent
 POST    /content/manage                    controllers.ContentEditing.batchUpdateContent
+GET     /content/ltiembed.js               controllers.ContentController.ltiEmbedScript
 GET     /content/create/:page              controllers.ContentController.createPage(page: String, courseId: Long = 0)
 GET     /content/create/:page/:courseId    controllers.ContentController.createPage(page: String, courseId: Long)
 POST    /content/create/url                controllers.ContentController.createFromUrl(courseId: Long)

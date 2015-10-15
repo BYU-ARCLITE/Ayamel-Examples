@@ -514,4 +514,12 @@ object ContentController extends Controller {
         Ok(views.html.content.mine())
   }
 
+  /**
+   * LTI Embedding Script
+   */
+  def ltiEmbedScript = Action {
+    implicit request =>
+      Ok(views.html.content.share.ltiembed()).as("text/javascript utf-8")
+  }
+
 }
