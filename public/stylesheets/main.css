@@ -13,6 +13,7 @@ body {
 }
 
 body.embed {
+    overflow: hidden;
     background-color: #fff;
     padding: 0;
 }

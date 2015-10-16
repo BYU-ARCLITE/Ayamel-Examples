@@ -53,6 +53,7 @@
 				var llendpoint = "@current.configuration.getString("learninglocker.endpoint")";
 				var llusername = "@current.configuration.getString("learninglocker.username")";
 				var llpwd = "@current.configuration.getString("learninglocker.password")";
+                var headerHeight = document.getElementById("header").clientHeight*1.2;
 
 				// configure the learning locker connection
 				xApi.connect(llendpoint, llusername, llpwd);
@@ -80,6 +81,14 @@
 					player: args.mainPlayer
 				});
 
+                // Set AyamelPlayer size to fill entire width & height of window
+                args.mainPlayer.setSize(window.innerWidth, window.innerHeight-headerHeight);
+
+                window.addEventListener("resize", function(){
+                    // Set AyamelPlayer size to fill entire width & height of window
+                    args.mainPlayer.setSize(window.innerWidth, window.innerHeight-headerHeight);
+                }, false);
+
 				// Save the page load
 				ActivityStreams.predefined.pageLoad();
 				xApi.predefined.pageLoad();
@@ -87,7 +96,7 @@
         </script>
     </head>
     <body class="share embed">
-        <div class="embedHeader">
+        <div class="embedHeader" id="header">
             <div class="pull-left">
                 <h3><i class="@contentIcons(content.contentType)"></i> @content.name</h3>
             </div>
@@ -95,9 +104,8 @@
                 <a id="ayamelLink" class="pad-right-med" href="@routes.Application.index()"><img src="@routes.Assets.at("images/logo-small-light.png")"></a>
             </div>
         </div>
-        <div class="embedContainer @content.embedClass">
-            <div id="contentHolder"></div>
-        </div>
+        <div id="contentHolder"></div>
+
 
         <script type="text/javascript">
             $(function() {
