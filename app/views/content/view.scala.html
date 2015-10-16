@@ -1,4 +1,4 @@
-@(content: models.Content, resourceLibraryUrl: String, course: Option[Course] = None, user: Option[User] = None)(implicit request: RequestHeader)
+@(content: models.Content, resourceLibraryUrl: String, user: Option[User] = None, course: Option[Course] = None)(implicit request: RequestHeader)
 
 @contentIcons = @{
     Map(
@@ -9,15 +9,6 @@
         'playlist -> "icon-list-ol",
         'activity -> "icon-pencil"
     )
-}
-
-@userLevelText = @{
-    if (course.isDefined)
-        "course"
-    else if (user.exists(u => content.isEditableBy(u)))
-        ""
-    else
-        "personal"
 }
 
 @import play.api.Play.{current, configuration}
@@ -84,7 +75,6 @@
             // Save the page load
             ActivityStreams.predefined.pageLoad();
             xApi.predefined.pageLoad();
-            
         }
     </script>
     <div class="padded">

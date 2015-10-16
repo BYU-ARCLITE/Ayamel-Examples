@@ -1,4 +1,4 @@
-@(content: models.Content, resourceLibraryUrl: String)
+@(content: models.Content, resourceLibraryUrl: String, user: Option[User] = None, course: Option[Course] = None)
 
 @contentIcons = @{
     Map(
@@ -46,37 +46,43 @@
         @views.html.content.header.includes()
 
         <script type="text/javascript">
+            ResourceLibrary.setBaseUrl("@resourceLibraryUrl");
             var content = @Html(content.toJson.toString());
             function setupXapi(args) {
                 // information for statements to learninglocker
-                var llendpoint = "@current.configuration.getString("learninglocker.endpoint")";
-                var llusername = "@current.configuration.getString("learninglocker.username")";
-                var llpwd = "@current.configuration.getString("learninglocker.password")";
+				var llendpoint = "@current.configuration.getString("learninglocker.endpoint")";
+				var llusername = "@current.configuration.getString("learninglocker.username")";
+				var llpwd = "@current.configuration.getString("learninglocker.password")";
 
-                // configure the learning locker connection
-                xApi.connect(llendpoint, llusername, llpwd);
+				// configure the learning locker connection
+				xApi.connect(llendpoint, llusername, llpwd);
 
-                ResourceLibrary.setBaseUrl("@resourceLibraryUrl");
+				// Register the page for later activity stream calls
+				ActivityStreams.registerPage("content", "@{course.map(c => "course_" + c.id.get + ":").getOrElse("")}view", @{content.id.get});
+				xApi.registerPage({
+					page:{
+						"category":"content",
+						"action":"@{course.map(c => "course_" + c.id.get + ":").getOrElse("")}view",
+						"name":window.location.href
+					},
+					@if(course.isDefined) {
+						course: {
+							"id":@course.get.id.get,
+							"name":"@course.get.name"
+						},
+					}
+					user: {
+						"name":"@user.flatMap(_.name).orElse(user.map(_.authId)).getOrElse("Visitor")",
+						"id":@user.map(_.id.get).getOrElse(0),
+						"email":"@user.flatMap(_.email).getOrElse("")"
+					},
+					content: content,
+					player: args.mainPlayer
+				});
 
-                // Register the page for later activity stream calls
-                ActivityStreams.registerPage("content", "share:view", @{content.id.get});
-                xApi.registerPage({
-                    page:{
-                        "category":"content",
-                        "action":"view",
-                        "name":window.location.href
-                    },
-                    user: {
-                        "name":"Visitor",
-                        "id":0, "email":""
-                    },
-                    content: content,
-                    player: args.mainPlayer
-                });
-
-                // Save the page load
-                ActivityStreams.predefined.pageLoad();
-                xApi.predefined.pageLoad();
+				// Save the page load
+				ActivityStreams.predefined.pageLoad();
+				xApi.predefined.pageLoad();
             }
         </script>
     </head>
@@ -95,12 +101,16 @@
 
         <script type="text/javascript">
             $(function() {
-
                 // Render the content
-                var contentHolder = document.getElementById("contentHolder");
                 ContentLoader.render({
                     content: content,
-                    holder: contentHolder,
+                    holder: document.getElementById('contentHolder'),
+                    @if(user.isDefined) {
+                    userId: "@user.get.id.get",
+                    owner: @content.isEditableBy(user.get),
+                    teacher: @course.exists(c => user.get.hasCoursePermission(c, "teacher")),
+                    }
+                    courseId: @course.map(_.id.get).getOrElse(0),
                     annotate: true,
                     callback: setupXapi
                 });
@@ -116,18 +126,5 @@
                 }, 1000)
             });
         </script>
-
-        <!-- Google Analytics -->
-        <script>
-            (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-            m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-            })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
-            ga('create', 'UA-39697543-1', 'byu.edu');
-            ga('send', 'pageview');
-
-        </script>
-
     </body>
 </html>

@@ -379,9 +379,9 @@ object ContentController extends Controller {
             // Check that the user can view the content
             if (content isVisibleBy user) Ok(
                 if (MobileDetection.isMobile())
-                  views.html.content.viewMobile(content, ResourceController.baseUrl, user = Some(user))
+                  views.html.content.viewMobile(content, ResourceController.baseUrl, Some(user))
                 else
-                  views.html.content.view(content, ResourceController.baseUrl, user = Some(user))
+                  views.html.content.view(content, ResourceController.baseUrl, Some(user))
             ) else
               Redirect(routes.Application.home)
                 .flashing("error" -> "You do not have permission to view the requested content.")
@@ -456,7 +456,8 @@ object ContentController extends Controller {
           // Only owners can clear stats
           if (content isEditableBy user) {
             content.getActivity("").foreach(_.delete())
-            Redirect(routes.ContentController.stats(content.id.get)).flashing("info" -> "Data cleared")
+            Redirect(routes.ContentController.stats(content.id.get))
+              .flashing("info" -> "Data cleared")
           } else
             Errors.forbidden
         }
@@ -475,16 +476,42 @@ object ContentController extends Controller {
         if (content.authKey == authKey && content.shareability != Content.shareability.notShareable) {
           Ok(
             if(request.queryString.get("embed").flatMap(_.lift(0)).exists(_.toBoolean)){
-              views.html.content.share.view(content, ResourceController.baseUrl)
+              views.html.content.share.embed(content, ResourceController.baseUrl)
             } else if (MobileDetection.isMobile()) {
               views.html.content.viewMobile(content, ResourceController.baseUrl)
             } else {
               views.html.content.view(content, ResourceController.baseUrl)
             }
           )
-        } else
+        } else //TODO: Create error page for embedding
           Redirect(routes.Application.home)
             .flashing("error" -> "You do not have permission to view the requested content.")
+      }
+  }
+
+  /**
+   * When content is shared, this is the endpoint that viewers come to. No authentication is necessary to view the
+   * content if its share settings are set appropriately.
+   * @param id The ID of the content
+   * @param authKey The content's access key
+   */
+  def ltiAccess(id: Long) = Action(parse.tolerantText) {
+    implicit request =>
+      getContent(id) { content =>
+       LMSAuth.ltiContentAuth(content) match {
+         case Some(user) => Ok(
+          if(request.queryString.get("embed").flatMap(_.lift(0)).exists(_.toBoolean)){
+            views.html.content.share.embed(content, ResourceController.baseUrl, Some(user))
+          } else if (MobileDetection.isMobile()) {
+            views.html.content.viewMobile(content, ResourceController.baseUrl, Some(user))
+          } else {
+            views.html.content.view(content, ResourceController.baseUrl, Some(user))
+          }
+        )
+        case _ => //TODO: Create error page for embedding
+          Redirect(routes.Application.home)
+            .flashing("error" -> "You do not have permission to view the requested content.")
+        }
       }
   }
 

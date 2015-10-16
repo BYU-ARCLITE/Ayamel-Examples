@@ -66,11 +66,10 @@ object Courses extends Controller {
   def ltiAuth(id: Long) = Action(parse.tolerantText) {
     implicit request =>
       getCourse(id) { course =>
-        LMSAuth.ltiAuth(course) match {
-        case Some(user) => {
-            user.copy(lastLogin = TimeTools.now()).save
-            Redirect(routes.Courses.view(id)).withSession("userId" -> user.id.get.toString)
-          }
+        LMSAuth.ltiCourseAuth(course) match {
+        case Some(user) =>
+            Redirect(routes.Courses.view(id))
+              .withSession("userId" -> user.id.get.toString)
         case _ =>
           Errors.forbidden
         }

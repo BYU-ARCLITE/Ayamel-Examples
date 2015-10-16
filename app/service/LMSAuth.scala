@@ -2,7 +2,7 @@ package service
 
 import joshmonson.oauth.{OAuthKey, OAuthRequest}
 import play.api.mvc.{AnyContent, Request}
-import models.{Course, User, SitePermissions}
+import models.{Course, Content, User, SitePermissions}
 import controllers.authentication._
 import anorm.NotAssigned
 import play.core.parsers.FormUrlEncodedParser
@@ -17,20 +17,9 @@ import play.core.parsers.FormUrlEncodedParser
  */
 object LMSAuth {
 
-  def getCourseUser(course: Course, userId: String, name: Option[String], email: Option[String]): User = {
-    val id = course.id.get + "." + userId
-    User.findByAuthInfo(id, 'ltiAuth).getOrElse {
-      val user = User(NotAssigned, id, 'ltiAuth, "user" + id, name, email).save
-        .enroll(course, teacher = false)
-      SitePermissions.assignRole(user, 'student)
-      //TODO: add course permissions
-      user
-    }
-  }
-
   /**
-   * This tries to get the guest account for a course. If it doesn't exist then it creates it and enrolls it in the
-   * course.
+   * This tries to get the guest account for a course. If it doesn't exist
+   * then it creates it and enrolls it in the course.
    * @param course The course for which the guest account is to be obtained.
    * @return The guest account
    */
@@ -45,7 +34,38 @@ object LMSAuth {
       user
     }
   }
- 
+
+  def getLTIUser(course: Option[Course] = None)(implicit request: Request[String]) = {
+    val params = FormUrlEncodedParser
+      .parse(request.body, request.charset.getOrElse("utf-8"))
+      .mapValues(_(0))
+
+    params.get("user_id").map { user_id =>  //Not used: params.get("user_image")
+      val id = course.map(_.id.get + "." + user_id)
+                     .getOrElse(user_id)
+
+      User.findByAuthInfo(id, 'ltiAuth).getOrElse {
+        val name = params.get("lis_person_name_full")
+        val email = params.get("lis_person_contact_email_primary")
+        val user = User(NotAssigned, id, 'ltiAuth, "user" + id, name, email).save
+        SitePermissions.assignRole(user, 'student)
+        if (course.isDefined) {  
+          user.enroll(course.get, teacher = false)
+          //TODO: add course permissions
+        }
+        user
+      }
+    }.orElse {
+      val uopt = Authentication.getUserFromRequest()
+      if (course.isDefined) { uopt.foreach(_.enroll(course.get, teacher = false)) }
+      uopt
+    }.orElse {
+      course.map(c => getGuestAccount(c))
+    }.map {
+      user => user.copy(lastLogin = TimeTools.now()).save
+    }
+  }
+
   /**
    * Checks that the request is signed and valid for the given course. Returns, and creates if necessary,
    * a student user enrolled in that course.
@@ -53,29 +73,36 @@ object LMSAuth {
    * @param request The incoming web request. The body must be a string in order to verify it
    * @return Some(User) if the request is valid and signed. None otherwise
    */
-  def ltiAuth(course: Course)(implicit request: Request[String]): Option[User] = {
-
+  def ltiCourseAuth(course: Course)(implicit request: Request[String]): Option[User] = {
     // Verify the request. There is no token in LTI, so give an empty string
     val key = OAuthKey(course.id.get.toString, course.lmsKey, "", "")
-
     val oauthRequest = OAuthRequest(
       request.headers.get("Authentication"), request.headers.get("Content-Type"),
       request.host, request.rawQueryString, request.body, request.method, request.path
     )
 
     if (oauthRequest.verify(key)) {
-      // Get the user info
-      val params = FormUrlEncodedParser.parse(request.body, request.charset.getOrElse("utf-8")).mapValues(_(0))
+      getLTIUser(Some(course))
+    } else
+      None
+  }
 
-      params.get("user_id").map { id =>  //Not used: params.get("user_image")
-        getCourseUser(course, id, params.get("lis_person_name_full"), params.get("lis_person_contact_email_primary"))
-      }.orElse {
-        val uopt = Authentication.getUserFromRequest()
-        uopt.foreach(_.enroll(course, teacher = false))
-        uopt
-      }.orElse {
-        Some(getGuestAccount(course))
-      }
+  /**
+   * Checks that the request is signed and valid for the given content. Returns, and creates if necessary, a student user
+   * @param course The course to view.
+   * @param request The incoming web request. The body must be a string in order to verify it
+   * @return Some(User) if the request is valid and signed. None otherwise
+   */
+  def ltiContentAuth(content: Content)(implicit request: Request[String]): Option[User] = {
+    // Verify the request. There is no token in LTI, so give an empty string
+    val key = OAuthKey(content.id.get.toString, content.authKey, "", "")
+    val oauthRequest = OAuthRequest(
+      request.headers.get("Authentication"), request.headers.get("Content-Type"),
+      request.host, request.rawQueryString, request.body, request.method, request.path
+    )
+
+    if (oauthRequest.verify(key)) {
+      getLTIUser(None)
     } else
       None
   }

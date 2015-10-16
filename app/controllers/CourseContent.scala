@@ -24,12 +24,12 @@ object CourseContent extends Controller {
     implicit request =>
       ContentController.getContent(id) { content =>
         Courses.getCourse(courseId) { course =>
-          LMSAuth.ltiAuth(course) match {
+          LMSAuth.ltiCourseAuth(course) match {
             case Some(user) => {
               // Get the custom parameters
               val query = FormUrlEncodedParser.parse(request.body, request.charset.getOrElse("utf-8"))
                 .filterKeys(_.startsWith("custom")).map(d => (d._1.substring(7), d._2))
-              user.copy(lastLogin = TimeTools.now()).save
+              //TODO: Allow embedding
               Redirect(routes.CourseContent.viewInCourse(id, courseId).toString(), query)
                 .withSession("userId" -> user.id.get.toString)
             }
@@ -111,9 +111,9 @@ object CourseContent extends Controller {
             // Check that the user can view the content
             if (content isVisibleBy user) {
               if (MobileDetection.isMobile())
-                Ok(views.html.content.viewMobile(content, ResourceController.baseUrl, Some(course)))
+                Ok(views.html.content.viewMobile(content, ResourceController.baseUrl, Some(user), Some(course)))
               else
-                Ok(views.html.content.view(content, ResourceController.baseUrl, Some(course)))
+                Ok(views.html.content.view(content, ResourceController.baseUrl, Some(user), Some(course)))
             } else
               Errors.forbidden
           }
