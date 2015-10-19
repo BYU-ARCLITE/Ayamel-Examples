@@ -31,7 +31,7 @@
             @for(content <- contentList) {
                 <tr id="@content._1.resourceId">
                     <td>@content._1.id.get</td>
-                    <td>@content._1.name</td>
+                    <td data-toggle="tooltip" title="@content._1.name">@content._1.name</td>
                     <td><a class="shortened" data-toggle="tooltip" title="@content._2.email.get">@content._2.name.get</a></td>
                     <td class="lang"></td>
                     <td>
