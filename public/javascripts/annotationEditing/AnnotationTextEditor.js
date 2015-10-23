@@ -88,7 +88,7 @@ var AnnotationTextEditor = (function(){
             var annotatedWords = document.querySelectorAll(".annotation");
             [].forEach.call(annotatedWords, function(obj){
                 obj.addEventListener('click', function() {
-                    activeAnnotation = this.innerHTML;
+                    activeAnnotation = this.textContent;
                     var annLang = language;
                     Object.keys(manifest).forEach(function(key){
                         if (manifest[key].hasOwnProperty(activeAnnotation)) {
@@ -96,7 +96,7 @@ var AnnotationTextEditor = (function(){
                             return;
                         }
                     });
-                    args.popupEditor.annotation = {"manifest" : manifest[annLang], "word" : this.innerHTML};
+                    args.popupEditor.annotation = {"manifest" : manifest[annLang], "word" : this.textContent};
                     args.popupEditor.show();
                 });
             });
