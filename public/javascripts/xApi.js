@@ -2,7 +2,7 @@ var xApi = (function() {
 
     var page, course, user, resourceName, baseUri;
     page = course = user = {};
-    baseUri = "https://ayamel.byu.edu/";
+    baseUri = window.location.origin + "/";
     resourceName = "";
 
     // args: verb, type, extensions
@@ -11,7 +11,7 @@ var xApi = (function() {
         // Agent = User, Action = Verb, Activity = Content Object
         var stmt = new ADL.XAPIStatement(
             new ADL.XAPIStatement.Agent('mailto:'+(user.email?user.email:'placeholder@some.org'), user.name),
-            new ADL.XAPIStatement.Verb('https://ayamel.byu.edu/'+args.verb, args.verb),
+            new ADL.XAPIStatement.Verb(baseUri+args.verb, args.verb),
             new ADL.XAPIStatement.Activity(page.name, resourceName)
         );
         stmt.timestamp = (new Date).toISOString();
@@ -19,8 +19,9 @@ var xApi = (function() {
         if (args.extensions) { stmt.object.definition.extensions = args.extensions; }
         // send statement and log response
         // callback makes the send asynchronous
-        ADL.XAPIWrapper.sendStatement(stmt, function(resp, obj){  
-            console.log("[" + obj.id + "]: " + resp.status + " - " + resp.statusText);
+        ADL.XAPIWrapper.sendStatement(stmt, function(resp, obj){
+            // The callback makes the xApi call asynchronous
+            //console.log("[" + obj.id + "]: " + resp.status + " - " + resp.statusText);
         });
     }
 
