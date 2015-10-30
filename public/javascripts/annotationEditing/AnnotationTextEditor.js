@@ -26,8 +26,13 @@ var AnnotationTextEditor = (function(){
     function AnnotationTextEditor(args) {
         /*
          * Text annotation
+         *
+         * manifestCopy is a copy of the manifest that is updated every time that the annotations are saved
+         * When a user leaves the page, if there are any differences, then the onbeforeunload function will warn the user
+         * about losing unsaved changes.
          */
         var manifest = new AnnotationManifest("text", {});
+        this.manifestCopy = JSON.stringify(manifest);
         var transcriptPlayer = null;
         var language = args.language;
         var activeAnnotation = null;
@@ -35,7 +40,7 @@ var AnnotationTextEditor = (function(){
         var captionTracks = null;
 
         window.onbeforeunload = function() {
-            if (Object.keys(manifest[language]).length > 0) {
+            if (JSON.stringify(manifest)!==that.manifestCopy && Object.keys(manifest[language]).length > 0) {
                 return "Your unsaved changes will be lost.";
             }
         }

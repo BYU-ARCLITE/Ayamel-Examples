@@ -157,6 +157,9 @@ $(function() {
                         $("#spinner").hide();
                         alert("Annotations saved.");
                         $('#saveAnnotationsModal').modal('hide')
+                        // Update the manifest copy on save
+                        textEditor.manifestCopy = JSON.stringify(textEditor.getAnnotations());
+
                     },
                     error: function(data) {
                         console.log(data);
