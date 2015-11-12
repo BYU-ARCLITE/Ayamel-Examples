@@ -18,21 +18,45 @@ import play.api.libs.iteratee.Enumerator
 object CourseContent extends Controller {
 
   /**
+   * Content view in course page
+   */
+  def viewInCourse(id: Long, courseId: Long) = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+        ContentController.getContent(id) { content =>
+          Courses.getCourse(courseId) { course =>
+            // Check that the user can view the content
+            if (content isVisibleBy user) Ok(
+              if(request.queryString.get("embed").flatMap(_.lift(0)).exists(_.toBoolean)){
+                views.html.content.share.embed(content, ResourceController.baseUrl, Some(user), Some(course))
+              } else if (MobileDetection.isMobile()) {
+                views.html.content.viewMobile(content, ResourceController.baseUrl, Some(user), Some(course))
+              } else {
+                views.html.content.view(content, ResourceController.baseUrl, Some(user), Some(course))
+              }
+            ) else
+              Errors.forbidden
+          }
+        }
+  }
+
+  /**
    * Content view page from an LMS
    */
-  def viewLms(id: Long, courseId: Long) = Action(parse.tolerantText) {
+  def ltiAccess(id: Long, courseId: Long) = Action(parse.tolerantText) {
     implicit request =>
       ContentController.getContent(id) { content =>
         Courses.getCourse(courseId) { course =>
           LMSAuth.ltiCourseAuth(course) match {
-            case Some(user) => {
-              // Get the custom parameters
-              val query = FormUrlEncodedParser.parse(request.body, request.charset.getOrElse("utf-8"))
-                .filterKeys(_.startsWith("custom")).map(d => (d._1.substring(7), d._2))
-              //TODO: Allow embedding
-              Redirect(routes.CourseContent.viewInCourse(id, courseId).toString(), query)
-                .withSession("userId" -> user.id.get.toString)
-            }
+            case Some(user) => Ok(
+              if(request.queryString.get("embed").flatMap(_.lift(0)).exists(_.toBoolean)){
+                views.html.content.share.embed(content, ResourceController.baseUrl, Some(user))
+              } else if (MobileDetection.isMobile()) {
+                views.html.content.viewMobile(content, ResourceController.baseUrl, Some(user))
+              } else {
+                views.html.content.view(content, ResourceController.baseUrl, Some(user))
+              }
+            )
             case _ =>
               Errors.forbidden
           }
@@ -97,26 +121,6 @@ object CourseContent extends Controller {
             }
           } else
               Errors.forbidden
-        }
-  }
-
-  /**
-   * Content view in course page
-   */
-  def viewInCourse(id: Long, courseId: Long) = Authentication.authenticatedAction() {
-    implicit request =>
-      implicit user =>
-        ContentController.getContent(id) { content =>
-          Courses.getCourse(courseId) { course =>
-            // Check that the user can view the content
-            if (content isVisibleBy user) {
-              if (MobileDetection.isMobile())
-                Ok(views.html.content.viewMobile(content, ResourceController.baseUrl, Some(user), Some(course)))
-              else
-                Ok(views.html.content.view(content, ResourceController.baseUrl, Some(user), Some(course)))
-            } else
-              Errors.forbidden
-          }
         }
   }
 

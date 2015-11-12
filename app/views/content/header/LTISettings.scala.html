@@ -16,7 +16,7 @@
                 this content, these items are the following:
             </p>
             <ul>
-                <li><strong>Launch URL:</strong> <code>@routes.CourseContent.viewLms(content.id.get, course.id.get).absoluteURL(isHTTPS)</code></li>
+                <li><strong>Launch URL:</strong> <code>@routes.CourseContent.ltiAccess(content.id.get, course.id.get).absoluteURL(isHTTPS)</code></li>
                 <li><strong>Consumer Key:</strong> <code>@course.id.get</code></li>
                 <li><strong>Consumer Secret:</strong> <code>@course.lmsKey</code></li>
             </ul>

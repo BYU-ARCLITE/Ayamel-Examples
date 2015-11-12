@@ -88,7 +88,9 @@ object LMSAuth {
   }
 
   /**
-   * Checks that the request is signed and valid for the given content. Returns, and creates if necessary, a student user
+   * Checks that the request is signed and valid for the given content.
+   * Returns, and creates if necessary, a student user
+   *
    * @param course The course to view.
    * @param request The incoming web request. The body must be a string in order to verify it
    * @return Some(User) if the request is valid and signed. None otherwise
