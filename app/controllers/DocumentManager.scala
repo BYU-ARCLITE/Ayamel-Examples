@@ -66,7 +66,7 @@ object DocumentManager extends Controller {
                     ResourceHelper.createResourceWithUri(resource, url, size, mime).flatMap {
                       case Some(json) =>
                         val subjectId = (json \ "id").as[String]
-                        AdditionalDocumentAdder.add(content, subjectId, 'annotations) { _ => Ok(subjectId) }
+                        AdditionalDocumentAdder.add(content, subjectId, 'annotations, Json.obj()) { _ => Ok(subjectId) }
                       case None =>
                         Future(InternalServerError("Could not create resource"))
                     }
@@ -158,7 +158,7 @@ object DocumentManager extends Controller {
               ResourceHelper.createResourceWithUri(resource, url, size, mime).flatMap {
                 case Some(json) =>
                 val subjectId = (json \ "id").as[String]
-                AdditionalDocumentAdder.add(content, subjectId, 'annotations) { _ => Ok(subjectId) }
+                AdditionalDocumentAdder.add(content, subjectId, 'annotations, Json.obj()) { _ => Ok(subjectId) }
                 case None =>
                     Future(InternalServerError("Could not create resource"))
               }

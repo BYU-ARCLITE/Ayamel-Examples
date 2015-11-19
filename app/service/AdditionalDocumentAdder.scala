@@ -5,7 +5,7 @@ import play.api.mvc.{Result, RequestHeader}
 import dataAccess.ResourceController
 import scala.concurrent.{ExecutionContext, Future}
 import ExecutionContext.Implicits.global
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, JsObject, JsArray}
 
 /**
  * This utility assists with adding resources as annotation or caption track documents to other resources
@@ -13,7 +13,7 @@ import play.api.libs.json.Json
 object AdditionalDocumentAdder {
 
 
-  def add(content: Content, resourceId: String, docType: Symbol)(action: Option[Course] => Result)(implicit request: RequestHeader, user: User): Future[Result] = {
+  def add(content: Content, resourceId: String, docType: Symbol, attributes: JsObject)(action: Option[Course] => Result)(implicit request: RequestHeader, user: User): Future[Result] = {
 
     val course = getCourse
 
@@ -28,7 +28,8 @@ object AdditionalDocumentAdder {
       val relation = Json.obj(
         "subjectId" -> resourceId,
         "objectId" -> content.resourceId,
-        "type" -> getRelationType(docType)
+        "type" -> getRelationType(docType),
+        "attributes" -> attributes
       )
       ResourceController.addRelation(relation).map(r => {
 
@@ -36,6 +37,20 @@ object AdditionalDocumentAdder {
         action(course)
       })
     })
+  }
+
+  def edit(content: Content, resourceId: String, docType: Symbol, attributes: JsObject)(action: Option[Course] => Result)(implicit request: RequestHeader, user: User): Future[Result] = {
+    // find & delete
+    // Get the list of relations this resource is in and delete them
+    for(result <- ResourceController.getRelations(resourceId);
+        json <- result;
+        relation <- ((json \ "relations").as[JsArray].value)
+        if (relation \ "type").as[String] == getRelationType(docType)
+        if (relation \ "objectId").as[String] == content.resourceId
+    ) {
+      ResourceController.deleteRelation((relation \ "id").as[String])
+    }
+    add(content, resourceId, docType, attributes)(action);
   }
 
   private def getRelationType(docType: Symbol): String =

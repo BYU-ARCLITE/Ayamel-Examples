@@ -69,7 +69,7 @@ object CaptionAider extends Controller {
                     // Create subtitle (subject) resource
                     val resource = ResourceHelper.make.resource(Json.obj(
                       "title" -> label,
-                      "keywords" -> kind, //This makes no sense.... kind should be recorded in relations
+                      // "keywords" -> kind, //This makes no sense.... kind should be recorded in relations
                       "type" -> "document",
                       "languages" -> Json.obj(
                         "iso639_3" -> languages
@@ -78,7 +78,7 @@ object CaptionAider extends Controller {
                     ResourceHelper.createResourceWithUri(resource, url, size, mime).flatMap {
                       case Some(json) =>
                         val subjectId = (json \ "id").as[String]
-                        AdditionalDocumentAdder.add(content, subjectId, 'captionTrack) { _ => Ok(subjectId) }
+                        AdditionalDocumentAdder.add(content, subjectId, 'captionTrack, Json.obj("kind" -> kind)) { _ => Ok(subjectId) }
                       case None =>
                         Future(InternalServerError("Could not create resource"))
                     }
@@ -102,8 +102,8 @@ object CaptionAider extends Controller {
                       case Some(url) =>
                         // Handle updating the information.
                         val updatedFile = (resource \ "content" \ "files")(0).as[JsObject] ++ Json.obj(
-                            "bytes" -> size,
-                            "attributes" -> Json.obj("kind" -> kind) //How do we do this up above?
+                            "bytes" -> size
+                            // "attributes" -> Json.obj("kind" -> kind) //How do we do this up above?
                         )
                         val updatedResource = resource.as[JsObject] ++ Json.obj(
                           "title" -> label,
@@ -114,7 +114,12 @@ object CaptionAider extends Controller {
                           "content" -> Json.obj("files" -> List(updatedFile))
                         )
                         ResourceController.updateResource(resourceId, updatedResource).map {
-                          case Some(json) => Ok(resourceId)
+                          case Some(json) => 
+                            Async{ 
+                              AdditionalDocumentAdder.edit(content, resourceId, 'captionTrack, Json.obj("kind" -> kind)) { 
+                                _ => Ok(resourceId) 
+                              }
+                            }                          
                           case None => InternalServerError("Could not update resource")
                         }
                       
