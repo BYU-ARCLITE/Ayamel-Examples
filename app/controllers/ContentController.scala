@@ -94,6 +94,7 @@ object ContentController extends Controller {
           val contentType = Symbol(data("contentType")(0))
           val title = data("title")(0)
           val description = data("description")(0)
+          val createAndAdd = data.getOrElse("createAndAdd", Nil)
 //          val categories = data.get("categories").map(_.toList).getOrElse(Nil)
           val labels = data.get("labels").map(_.toList).getOrElse(Nil)
           val keywords = labels.mkString(",")
@@ -111,20 +112,27 @@ object ContentController extends Controller {
               ResourceHelper.getUrlSize(url).flatMap { bytes =>
                 val info = ContentDescriptor(title, description, keywords, url, bytes, mime, labels = labels,
                   languages = languages)
+                // find alternate ↓ create content through annotations method
                 if (courseId == 40747105) {
                   ContentManagement.createContent(info, user, contentType).map { opt =>
                     opt.map { content =>
-                      Ok(<script type="text/javascript">window.close();</script>).as(HTML)
+                      if (createAndAdd.isEmpty) {
+                        Ok(<script type="text/javascript">window.close();</script>).as(HTML)
+                      } else {
+                        Redirect(routes.ContentController.createPage("url", courseId)).flashing("success" -> "Content Created")
+                      }
                     }.getOrElse {
                       Redirect(routes.ContentController.createPage("url", courseId)).flashing("error" -> "Failed to create content.")
                     }
                   }
                 } else if (courseId > 0) {
-                  ContentManagement.createAndAddToCourse(info, user, contentType, courseId)
+                  ContentManagement.createAndAddToCourse(info, user, contentType, courseId, if (createAndAdd.isEmpty) false else true)
                 } else {
                   ContentManagement.createContent(info, user, contentType).map { opt =>
                     opt.map { content =>
-                      Redirect(routes.ContentController.view(content.id.get)).flashing("success" -> "Content added")
+                      if (createAndAdd.isEmpty){
+                        Redirect(routes.ContentController.view(content.id.get)).flashing("success" -> "Content added")
+                      } else Redirect(routes.ContentController.createPage("url", courseId)).flashing("success" -> "Content Created")
                     }.getOrElse {
                       Redirect(routes.ContentController.createPage("url", courseId)).flashing("error" -> "Failed to create content.")
                     }
@@ -174,7 +182,7 @@ object ContentController extends Controller {
                 val info = ContentDescriptor(title, description, keywords, url, bytes, mime, labels = labels,
                   languages = languages)
                 if (courseId > 0) {
-                  ContentManagement.createAndAddToCourse(info, user, contentType, courseId).map(result => {
+                  ContentManagement.createAndAddToCourse(info, user, contentType, courseId, false).map(result => {
                     onContentAdded()
                   })
                 } else {
@@ -204,6 +212,7 @@ object ContentController extends Controller {
           val contentType = Symbol(data("contentType")(0))
           val title = data("title")(0)
           val description = data("description")(0)
+          val createAndAdd = data.getOrElse("createAndAdd", Nil)
 //          val categories = data.get("categories").map(_.toList).getOrElse(Nil)
           val labels = data.get("labels").map(_.toList).getOrElse(Nil)
           val keywords = labels.mkString(",")
@@ -220,8 +229,10 @@ object ContentController extends Controller {
                     labels = labels, languages = languages)
                   ContentManagement.createContent(info, user, contentType).map {
                     case Some(content) =>
-                      Redirect(routes.ContentController.view(content.id.get))
-                        .flashing("success" -> "Content added")
+                      if (createAndAdd.isEmpty) {
+                        Redirect(routes.ContentController.view(content.id.get))
+                          .flashing("success" -> "Content added")
+                      } else redirect.flashing("success" -> "Content Added")
                     case None =>
                       redirect.flashing("error" -> "Failed to create content")
                   }
@@ -246,6 +257,7 @@ object ContentController extends Controller {
 
           // Create from resource
           val resourceId = request.body("resourceId")(0)
+          val createAndAdd = request.body.getOrElse("createAndAdd", Nil)
           Async {
             ResourceController.getResource(resourceId).map { response =>
               response.map { json =>
@@ -263,8 +275,10 @@ object ContentController extends Controller {
                     val contentType = if(resourceType == "document") "text" else resourceType
                     val content = Content(NotAssigned, title, Symbol(contentType), "", resourceId).save
                     user.addContent(content)
-                    Redirect(routes.ContentController.view(content.id.get))
-                      .flashing("success" -> "Content added.")
+                    if (createAndAdd.isEmpty) {
+                      Redirect(routes.ContentController.view(content.id.get))
+                        .flashing("success" -> "Content added.")
+                    } else Redirect(routes.ContentController.createPage("resource", courseId)).flashing("success" -> "Content Created")
                   }
                 } else
                   Redirect(routes.ContentController.createPage("resource", courseId))

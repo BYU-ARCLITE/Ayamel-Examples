@@ -51,7 +51,7 @@ object ContentManagement {
    * @param courseId Id of target course
    * @return The content object in a future
    */
-  def createAndAddToCourse(info: ContentDescriptor, owner: User, contentType: Symbol, courseId: Long): Future[Result] = {
+  def createAndAddToCourse(info: ContentDescriptor, owner: User, contentType: Symbol, courseId: Long, createAndAdd: Boolean): Future[Result] = {
 
     val redirect = Redirect(routes.Courses.view(courseId))
 
@@ -60,9 +60,13 @@ object ContentManagement {
         createAudio(info, owner).map { opt =>
           opt.map { content =>
             addToCourse(courseId, content)
-            redirect.flashing("success" -> "Content created and added to course")
+            if (createAndAdd) {
+              Redirect(routes.ContentController.createPage("url", courseId)).flashing("success" -> "Content Created")
+            } else redirect.flashing("success" -> "Content created and added to course")
           }.getOrElse {
-            redirect.flashing("error" -> "Could not add content to course.")
+            if (createAndAdd) {
+              Redirect(routes.ContentController.createPage("url", courseId)).flashing("success" -> "Content Created")
+            } else redirect.flashing("error" -> "Could not add content to course.")
           }
         }
       }
@@ -73,9 +77,13 @@ object ContentManagement {
           createImage(imageInfo, owner).map { opt =>
             opt.map { content =>
               addToCourse(courseId, content)
-              redirect.flashing("success" -> "Content created and added to course")
+              if (createAndAdd) {
+                Redirect(routes.ContentController.createPage("url", courseId)).flashing("success" -> "Content Created")
+              } else redirect.flashing("success" -> "Content created and added to course")
             }.getOrElse {
-              redirect.flashing("error" -> "Could not add content to course.")
+              if (createAndAdd) {
+                Redirect(routes.ContentController.createPage("url", courseId)).flashing("success" -> "Content Created")
+              } else redirect.flashing("error" -> "Could not add content to course.")
             }
           }
         }
@@ -89,7 +97,9 @@ object ContentManagement {
               addToCourse(courseId, content)
               redirect.flashing("success" -> "Content created and added to course")
             }.getOrElse {
-              redirect.flashing("error" -> "Could not add content to course.")
+              if (createAndAdd) {
+                Redirect(routes.ContentController.createPage("url", courseId)).flashing("success" -> "Content Created")
+              } else redirect.flashing("error" -> "Could not add content to course.")
             }
           }
         }
@@ -98,9 +108,13 @@ object ContentManagement {
         createText(info, owner).map { opt =>
           opt.map { content =>
             addToCourse(courseId, content)
-            redirect.flashing("success" -> "Content created and added to course")
+            if (createAndAdd) {
+              Redirect(routes.ContentController.createPage("url", courseId)).flashing("success" -> "Content Created")
+            } else redirect.flashing("success" -> "Content created and added to course")
           }.getOrElse {
-            redirect.flashing("error" -> "Could not add content to course")
+            if (createAndAdd) {
+              Redirect(routes.ContentController.createPage("url", courseId)).flashing("success" -> "Content Created")
+            } else redirect.flashing("error" -> "Could not add content to course.")
           }
         }
       }
