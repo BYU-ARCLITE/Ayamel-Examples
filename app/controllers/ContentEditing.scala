@@ -288,10 +288,13 @@ object ContentEditing extends Controller {
           content =>
             if (content isEditableBy user) {
               val url = request.body("url")(0)
+              val redirect = Redirect(routes.ContentController.view(id))
               Async {
-                ResourceHelper.updateFileUri(content.resourceId, url).map(json =>
-                  Redirect(routes.ContentController.view(id)).flashing("info" -> "Media source updated")
-                )
+                ResourceHelper.updateFileUri(content.resourceId, url).map { json =>
+                  redirect.flashing("info" -> "Media source updated")
+                }.recover { case _ =>
+                  redirect.flashing("error" -> "Oops! Something went wrong!")
+                }
               }
             } else
               Errors.forbidden
