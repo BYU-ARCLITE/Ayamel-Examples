@@ -56,10 +56,9 @@ var TranscriptPlayer = (function(){
         });
         ractive.on('sync',function(e){ ractive.set('sync',!ractive.data.sync); });
         ractive.on('cueclick',function(e){
-            var target = e.original.target,
-                parent = target.parentElement,
-                ci = parent.dataset.cueindex,
-                ti = parent.dataset.trackindex,
+            var target = e.node,
+                ci = target.dataset.cueindex,
+                ti = target.dataset.trackindex,
                 track = tracks[ti];
             element.dispatchEvent(new CustomEvent("cueclick",{bubbles:true,detail:{track:track,cue:track.cues[ci]}}));
         });
