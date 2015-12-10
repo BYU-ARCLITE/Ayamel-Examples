@@ -12,11 +12,13 @@ var TranscriptPlayer = (function(){
     /* args: captionTracks, holder, sync */
     function TranscriptPlayer(args) {
 
-        var _this = this,
-            tracks = args.captionTracks,
+        var currentTime = 0,
             element = args.holder,
-            currentTime = 0,
-            ractive;
+            tracks = args.captionTracks.filter(function(track){
+                return track.kind === "captions" ||
+                       track.kind === "subtitles" ||
+                       track.kind === "descriptions";
+            }), ractive;
 
         // Create the transcript player from the template
 
@@ -83,6 +85,10 @@ var TranscriptPlayer = (function(){
             },
             addTrack: {
                 value: function(track) {
+                    if(track.kind !== "captions" &&
+                       track.kind !== "subtitles" &&
+                       track.kind !== "descriptions"
+                    ){ return; }
                     if(~tracks.indexOf(track)){ return; }
                     ractive.data.transcripts.push(track);
                 }
