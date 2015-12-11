@@ -11,7 +11,7 @@
               <div class="control-group">
                 <label class="control-label" for="courseName">Name</label>
                 <div class="controls">
-                  <input type="text" id="courseName" name="courseName" value="@course.name">
+                  <input type="text" id="courseName" name="courseName" value="@course.name" maxlength="60" pattern=".{1,60}" required />
                 </div>
               </div>
 

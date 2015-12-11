@@ -41,21 +41,35 @@ object ContentEditing extends Controller {
             // Update the name and labels of the content
             content.copy(name = title, labels = labels).save
 
+            // Validate description
+            val validated = if (description.length > 5000) {
+              description.substring(0,5000)
+            } else {
+              description
+            }
+
             // Create the JSON object
             val obj = Json.obj(
               "title" -> title,
-              "description" -> description,
+              "description" -> validated,
               "keywords" -> keywords,
-//                "categories" -> JsArray(categories.map(c => JsString(c))),
+//            "categories" -> JsArray(categories.map(c => JsString(c))),
               "languages" -> Json.obj(
                 "iso639_3" -> languages
               )
             )
 
-            // Save the metadata
-            ResourceController.updateResource(content.resourceId, obj)
+            val redirect = Redirect(routes.ContentController.view(id))
 
-            Redirect(routes.ContentController.view(id)).flashing("success" -> "Metadata updated.")
+            // Save the metadata
+            Async {
+              ResourceController.updateResource(content.resourceId, obj).map { _ =>
+                redirect.flashing("success" -> "Metadata updated.")
+              }.recover { case _ =>
+                redirect.flashing("error" -> "Oops! Something went wrong.")
+              }
+            }
+
           } else
             Errors.forbidden
         }
