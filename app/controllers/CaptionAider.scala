@@ -75,7 +75,7 @@ object CaptionAider extends Controller {
                         "iso639_3" -> languages
                       )
                     ))
-                    ResourceHelper.createResourceWithUri(resource, url, size, mime).flatMap {
+                    ResourceHelper.createResourceWithUri(resource, user, url, size, mime).flatMap {
                       case Some(json) =>
                         val subjectId = (json \ "id").as[String]
                         AdditionalDocumentAdder.add(content, subjectId, 'captionTrack, Json.obj("kind" -> kind)) { _ => Ok(subjectId) }

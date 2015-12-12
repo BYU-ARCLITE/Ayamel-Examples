@@ -2,13 +2,12 @@ package service
 
 import play.api.Logger
 import play.api.libs.json._
-import concurrent.{ExecutionContext, Future}
+import play.api.libs.ws.WS
 import play.api.libs.MimeTypes
+import concurrent.{ExecutionContext, Future}
 import ExecutionContext.Implicits.global
 import dataAccess.ResourceController
-import play.api.libs.ws.WS
-import play.api.libs.json.JsArray
-import play.api.libs.json.JsObject
+import models.User
 
 /**
  * This builds upon the Resource API wrapper in ResourceController by providing functions which do some level of data
@@ -132,10 +131,11 @@ object ResourceHelper {
    * @param mime The mime type of the file at the uri
    * @return The id of the resource in a future
    */
-  def createResourceWithUri(resource: JsObject, uri: String, bytes: Long, mime: String, fileAttributes: Map[String, String] = Map()): Future[Option[JsValue]] = {
+  def createResourceWithUri(resource: JsObject, user: User,
+    uri: String, bytes: Long, mime: String, fileAttributes: Map[String, String] = Map()): Future[Option[JsValue]] = {
 
     // Create the resource
-    ResourceController.createResource(resource).flatMap {
+    ResourceController.createResource(resource, user).flatMap {
       case Some(json) => {
         val contentUploadUrl = (json \ "contentUploadUrl").as[String]
         // Add information about the file

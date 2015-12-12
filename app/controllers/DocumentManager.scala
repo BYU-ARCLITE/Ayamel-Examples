@@ -63,7 +63,7 @@ object DocumentManager extends Controller {
                         "iso639_3" -> languages
                       )
                     ))
-                    ResourceHelper.createResourceWithUri(resource, url, size, mime).flatMap {
+                    ResourceHelper.createResourceWithUri(resource, user, url, size, mime).flatMap {
                       case Some(json) =>
                         val subjectId = (json \ "id").as[String]
                         AdditionalDocumentAdder.add(content, subjectId, 'annotations, Json.obj()) { _ => Ok(subjectId) }
@@ -155,7 +155,7 @@ object DocumentManager extends Controller {
                   "iso639_3" -> languages
                 )
               ))
-              ResourceHelper.createResourceWithUri(resource, url, size, mime).flatMap {
+              ResourceHelper.createResourceWithUri(resource, user, url, size, mime).flatMap {
                 case Some(json) =>
                 val subjectId = (json \ "id").as[String]
                 AdditionalDocumentAdder.add(content, subjectId, 'annotations, Json.obj()) { _ => Ok(subjectId) }

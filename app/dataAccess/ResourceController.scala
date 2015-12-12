@@ -2,8 +2,9 @@ package dataAccess
 
 import play.api.{Logger, Play}
 import Play.current
-import play.api.libs.json.{JsObject, JsValue, JsUndefined}
+import play.api.libs.json.{Json, JsObject, JsValue, JsUndefined}
 import play.api.libs.ws.{WS, Response}
+import models.User
 import concurrent.Future
 import concurrent.ExecutionContext.Implicits.global
 
@@ -35,9 +36,17 @@ object ResourceController {
    * @param resource The resource to be created
    * @return The future JSON result
    */
-  def createResource(resource: JsObject): Future[Option[JsValue]] = WS.url(baseResourceUrl + s"?_key=$apiKey").post(resource).map { r =>
-    Logger.info("Resource Controller: create")
-    decode(r)
+  def createResource(resource: JsObject, user: User): Future[Option[JsValue]] = {
+    val withUser = (resource \ "clientUser") match {
+      case _:JsUndefined => resource ++ Json.obj(
+        "clientUser" -> Json.obj("id" -> s"user:${user.id.get}")
+      )
+      case _ => resource
+    }
+    WS.url(baseResourceUrl + s"?_key=$apiKey").post(withUser).map { r =>
+      Logger.info("Resource Controller: create")
+      decode(r)
+    }
   }
 
   /**

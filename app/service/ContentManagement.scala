@@ -153,7 +153,7 @@ object ContentManagement {
     }
   }
 
-  def createResource(info: ContentDescriptor, resourceType: String): Future[Option[JsValue]] = {
+  def createResource(info: ContentDescriptor, resourceType: String, user: User): Future[Option[JsValue]] = {
     val resource = ResourceHelper.make.resource(Json.obj(
       "title" -> info.title,
       "description" -> info.description,
@@ -163,7 +163,7 @@ object ContentManagement {
         "iso639_3" -> info.languages
       )
     ))
-    ResourceHelper.createResourceWithUri(resource, info.url, info.bytes, info.mime)
+    ResourceHelper.createResourceWithUri(resource, user, info.url, info.bytes, info.mime)
   }
 
   /**
@@ -174,7 +174,7 @@ object ContentManagement {
    */
   def createVideo(info: ContentDescriptor, owner: User): Future[Option[Content]] = {
     // Create the resource
-    createResource(info, "video").map { resource =>
+    createResource(info, "video", owner).map { resource =>
       resource.map { json =>
         val resourceId = (json \ "id").as[String]
 
@@ -198,7 +198,7 @@ object ContentManagement {
    */
   def createAudio(info: ContentDescriptor, owner: User): Future[Option[Content]] = {
     // Create the resource
-    createResource(info, "audio").map { resource =>
+    createResource(info, "audio", owner).map { resource =>
       resource.map { json =>
         val resourceId = (json \ "id").as[String]
 
@@ -218,7 +218,7 @@ object ContentManagement {
    */
   def createText(info: ContentDescriptor, owner: User): Future[Option[Content]] = {
     // Create the resource
-    createResource(info, "document").map { resource =>
+    createResource(info, "document", owner).map { resource =>
       resource.map { json =>
         val resourceId = (json \ "id").as[String]
 
@@ -238,7 +238,7 @@ object ContentManagement {
    */
   def createImage(info: ContentDescriptor, owner: User): Future[Option[Content]] = {
     // Create the resource
-    createResource(info, "image").map { resource =>
+    createResource(info, "image", owner).map { resource =>
       resource.map { json =>
         val resourceId = (json \ "id").as[String]
 
