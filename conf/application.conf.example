@@ -106,3 +106,13 @@ exercises.gradeFormScript="https://script.google.com/macros/s/1234567890abcdefgh
 quizlet.clientId=""
 quizlet.secretKey=""
 quizlet.auth=""
+
+# Settings for learning locker
+learninglocker.endpoint=""
+learninglocker.username=""
+learninglocker.password=""
+
+#Extra MIME Types
+mimetype.m3u8="application/x-mpegurl"
+mimetype.m4v="video/mp4"
+mimetype.m4a="audio/mp4"
