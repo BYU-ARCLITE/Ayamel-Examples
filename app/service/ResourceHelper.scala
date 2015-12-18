@@ -25,6 +25,14 @@ object ResourceHelper {
     !isYouTube(uri) && !isVimeo(uri)
 
   /**
+   * Determines if the given URL is an RTMP url or not
+   * @param uri The URL to check
+   * @return
+   */
+  def isRTMP(uri: String): Boolean =
+    uri.startsWith("rtmp://") || uri.startsWith("rtmpe://")
+
+  /**
    * Determines if the given URL is to a YouTube video or not
    * @param uri The URL to check
    * @return
@@ -64,7 +72,7 @@ object ResourceHelper {
    * @param uri The URL to check
    * @return
    */
-  def isValidUrl(uri: String): Boolean = isHTTP(uri) ||
+  def isValidUrl(uri: String): Boolean = isHTTP(uri) || isRTMP(uri) ||
     isYouTube(uri) || isBrightcove(uri) || isVimeo(uri) || isOoyala(uri)
 
   /**
@@ -120,6 +128,8 @@ object ResourceHelper {
       "video/x-vimeo"
     } else if (isOoyala(uri)) {
       "video/x-ooyala"
+    } else if (isRTMP(uri)) {
+      MimeTypes.forFileName(uri).getOrElse("video/mp4")
     } else {
       MimeTypes.forFileName(uri).getOrElse("application/octet-stream")
     }
