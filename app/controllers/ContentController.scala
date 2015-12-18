@@ -126,7 +126,7 @@ object ContentController extends Controller {
                     }
                   }
                 } else if (courseId > 0) {
-                  ContentManagement.createAndAddToCourse(info, user, contentType, courseId, if (createAndAdd.isEmpty) false else true)
+                  ContentManagement.createAndAddToCourse(info, user, contentType, courseId, !createAndAdd.isEmpty)
                 } else {
                   ContentManagement.createContent(info, user, contentType).map { opt =>
                     opt.map { content =>

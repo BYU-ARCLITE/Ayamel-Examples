@@ -85,6 +85,7 @@ $(function(){
         selectedMime = "",
         maxFileSize = 20971520, // 20 MB
         uploadbtn = document.getElementById('uploadbtn'),
+        morebtn = document.getElementById('uploadmore'),
         $fileInfo = $("#fileInfo");
 
     // Set up the continue button and sliding panels
@@ -104,11 +105,19 @@ $(function(){
         setFile(this.files[0]);
     },false);
 
-    uploadbtn.addEventListener('click',uploadHandler,false);
+    uploadbtn.addEventListener('click',function(e){
+		uploadHandler(e, false);
+	},false);
 
-    function uploadHandler(e){
+    morebtn.addEventListener('click',function(e){
+		uploadHandler(e, true);
+	},false);
+
+    function uploadHandler(e, more){
         e.preventDefault();
         uploadbtn.disabled = true;
+        morebtn.disabled = true;
+
         var data = new FormData();
         data.append("file", new Blob([selectedFile],{type:selectedMime}), selectedFile.name);
         data.append("contentType", document.getElementById('contentType').value);
@@ -124,6 +133,8 @@ $(function(){
         [].forEach.call(document.getElementById('categories').options,function(option){
             if(option.selected){ data.append('categories', option.value); }
         });
+
+		if(more){ data.append('createAndAdd', ""); }
 
         Promise.resolve($.ajax({
             url: uploadTarget,
@@ -141,6 +152,7 @@ $(function(){
         },function(error){
             alert("Error occurred while uploading.");
             uploadbtn.disabled = false;
+			morebtn.disabled = false;
         });
     }
 
