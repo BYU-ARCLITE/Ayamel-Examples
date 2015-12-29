@@ -1,6 +1,6 @@
 package controllers
 
-import play.api.mvc.{Controller, Request}
+import play.api.mvc._
 import controllers.authentication.Authentication
 import play.api.libs.json.{JsString, JsArray, Json}
 import dataAccess.ResourceController
@@ -62,16 +62,14 @@ object ContentEditing extends Controller {
             val redirect = Redirect(routes.ContentController.view(id))
 
             // Save the metadata
-            Async {
-              ResourceController.updateResource(content.resourceId, obj).map { _ =>
-                redirect.flashing("success" -> "Metadata updated.")
-              }.recover { case _ =>
-                redirect.flashing("error" -> "Oops! Something went wrong.")
-              }
+            ResourceController.updateResource(content.resourceId, obj).map { _ =>
+              redirect.flashing("success" -> "Metadata updated.")
+            }.recover { case _ =>
+              redirect.flashing("error" -> "Oops! Something went wrong.")
             }
 
           } else
-            Errors.forbidden
+            Future(Errors.forbidden)
         }
   }
 
@@ -101,17 +99,19 @@ object ContentEditing extends Controller {
       implicit user =>
         ContentController.getContent(id) { content =>
           val data = request.body.dataParts
-          // Make sure the user is able to edit
-          if (content isEditableBy user) {
-            val shareability = data("shareability").lift(0)
-              .map(_.toInt).getOrElse(content.shareability)
-            val visibility = data("visibility").lift(0)
-              .map(_.toInt).getOrElse(content.visibility)
-            val newcontent = content.copy(shareability = shareability, visibility = visibility).save
-            recordSettings(newcontent, data)
-            Ok
-          } else
-            Errors.forbidden
+          Future {
+            // Make sure the user is able to edit
+            if (content isEditableBy user) {
+              val shareability = data("shareability").lift(0)
+                .map(_.toInt).getOrElse(content.shareability)
+              val visibility = data("visibility").lift(0)
+                .map(_.toInt).getOrElse(content.visibility)
+              val newcontent = content.copy(shareability = shareability, visibility = visibility).save
+              recordSettings(newcontent, data)
+              Ok
+            } else
+              Errors.forbidden
+          }
         }
   }
 
@@ -123,14 +123,13 @@ object ContentEditing extends Controller {
     implicit request =>
       implicit user =>
         ContentController.getContent(id) {  content =>
-          if (content isEditableBy user) {
-            if (content.contentType == 'image) {
+          Future {
+            if (content.isEditableBy(user) && content.contentType == 'image) {
               val course = AdditionalDocumentAdder.getCourse()
               Ok(views.html.content.editImage(content, ResourceController.baseUrl, course))
             } else
               Errors.forbidden
-          } else
-            Errors.forbidden
+          }
         }
   }
 
@@ -156,34 +155,32 @@ object ContentEditing extends Controller {
             })
 
             // Load the image
-            Async {
-              ImageTools.loadImageFromContent(content).flatMap {
-                case Some(image) =>
-                  // Make the changes to the image
-                  val newImage = ImageTools.crop(
-                    if (rotation > 0) ImageTools.rotate(image, rotation) else image,
-                    cropTop, cropLeft, cropBottom, cropRight
-                  )
+            ImageTools.loadImageFromContent(content).flatMap {
+              case Some(image) =>
+                // Make the changes to the image
+                val newImage = ImageTools.crop(
+                  if (rotation > 0) ImageTools.rotate(image, rotation) else image,
+                  cropTop, cropLeft, cropBottom, cropRight
+                )
 
-                  // Save the new image
-                  FileUploader.uploadImage(newImage, FileUploader.uniqueFilename(content.resourceId + ".jpg")).flatMap {
-                    case Some(url) =>
-                      // Update the resource
-                      ResourceHelper.updateFileUri(content.resourceId, url).map {
-                        case Some(resource) =>
-                          redirect.flashing("info" -> "Image updated")
-                        case None =>
-                          redirect.flashing("error" -> "Failed to update image")
-                      }
-                    case None =>
-                      Future(redirect.flashing("error" -> "Failed to update image"))
-                  }
-                case None =>
-                  Future(redirect.flashing("error" -> "Couldn't load image"))
-              }
+                // Save the new image
+                FileUploader.uploadImage(newImage, FileUploader.uniqueFilename(content.resourceId + ".jpg")).flatMap {
+                  case Some(url) =>
+                    // Update the resource
+                    ResourceHelper.updateFileUri(content.resourceId, url).map {
+                      case Some(resource) =>
+                        redirect.flashing("info" -> "Image updated")
+                      case None =>
+                        redirect.flashing("error" -> "Failed to update image")
+                    }
+                  case None =>
+                    Future(redirect.flashing("error" -> "Failed to update image"))
+                }
+              case None =>
+                Future(redirect.flashing("error" -> "Couldn't load image"))
             }
           } else
-            Errors.forbidden
+            Future(Errors.forbidden)
         }
   }
 
@@ -208,18 +205,18 @@ object ContentEditing extends Controller {
             } else {
               Some(ImageTools.generateThumbnail(url))
             }) match {
-              case Some(fut) => Async {
+              case Some(fut) =>
                 fut.map {
                   case Some(thumbnailUrl) =>
                     content.copy(thumbnail = thumbnailUrl).save
                     redirect.flashing("info" -> "Thumbnail changed")
                   case None => redirect.flashing("error" -> "Unknown error while attempting to create thumbnail")
                 }
-              }
-              case None => redirect.flashing("error" -> "No file provided")
+              case None => Future(redirect.flashing("error" -> "No file provided"))
             }
           } catch {
-            case _: IOException => redirect.flashing("error" -> "Error reading image file")
+            case _: IOException =>
+              Future(redirect.flashing("error" -> "Error reading image file"))
           }
         }
   }
@@ -235,57 +232,56 @@ object ContentEditing extends Controller {
         ContentController.getContent(id) { content =>
           val redirect = Redirect(routes.ContentController.view(id))
 
-          Async {
-            // Get the video resource from the content
-            ResourceController.getResource(content.resourceId).map { response =>
-              response.map { json =>
-                // Get the video file
-                (json \ "resource" \ "content" \ "files") match {
-                  case arr:JsArray =>
-                    arr.value.find { file =>
-                      (file \ "mime") match {
-                        case str:JsString => str.value.startsWith("video")
-                        case _ => false
-                      }
-                    }.map { videoObject =>
-                      (videoObject \ "downloadUri") match {
-                        case videoUrl:JsString => Async {
-                        /*
-                            The "-protocols" command will list your version of ffmpeg
-
-                            List of supported Protocols:
-                                applehttp, concat, crypto, file, gopher, http, httpproxy
-                                mmsh, mmst, pipe, rtmp, rtp, tcp, udp
-                            The default protocol is "file:" and you do not need to specify it in ffmpeg,
-                                so we can't check to see if we are using a supported protocol. However,
-                                we do know that "https:" is unsupported, so if we get one, try to convert it
-                                to "http:". If it doesn't work, we'll just get a message that the thumbnail
-                                could not be generated.
-                        */
-                         val url = if (videoUrl.value.startsWith("https://"))
-                                JsString(videoUrl.value.replaceFirst("https://","http://"))
-                            else
-                                videoUrl
-
-                         // Generate the thumbnail for that video
-                          VideoTools.generateThumbnail(url.value, time).map {
-                            case Some(thumbnailUrl) =>
-                              // Save it and be done
-                              content.copy(thumbnail = thumbnailUrl).save
-                              redirect.flashing("info" -> "Thumbnail updated")
-                            case None => redirect.flashing("error" -> "Could not generate thumbnail")
-                          }
-                        }
-                        case _ => redirect.flashing("error" -> "No video file found. Thumbnails cannot be generated from streams.")
-                      }
-                    }.getOrElse {
-                      redirect.flashing("error" -> "No video file found")
+          // Get the video resource from the content
+          ResourceController.getResource(content.resourceId).flatMap { response =>
+            response.map[Future[Result]] { json =>
+              // Get the video file
+              (json \ "resource" \ "content" \ "files") match {
+                case arr:JsArray =>
+                  arr.value.find { file =>
+                    (file \ "mime") match {
+                      case str:JsString => str.value.startsWith("video")
+                      case _ => false
                     }
-                  case _ => redirect.flashing("error" -> "No files found")
-                }
-              }.getOrElse {
-                redirect.flashing("error" -> "Could not access video.")
+                  }.map[Future[Result]] { videoObject =>
+                    (videoObject \ "downloadUri") match {
+                      case videoUrl:JsString =>
+                      /*
+                          The "-protocols" command will list your version of ffmpeg
+
+                          List of supported Protocols:
+                              applehttp, concat, crypto, file, gopher, http, httpproxy
+                              mmsh, mmst, pipe, rtmp, rtp, tcp, udp
+                          The default protocol is "file:" and you do not need to specify it in ffmpeg,
+                              so we can't check to see if we are using a supported protocol. However,
+                              we do know that "https:" is unsupported, so if we get one, try to convert it
+                              to "http:". If it doesn't work, we'll just get a message that the thumbnail
+                              could not be generated.
+                      */
+                       val url = if (videoUrl.value.startsWith("https://"))
+                              JsString(videoUrl.value.replaceFirst("https://","http://"))
+                          else
+                              videoUrl
+
+                       // Generate the thumbnail for that video
+                        VideoTools.generateThumbnail(url.value, time).map {
+                          case Some(thumbnailUrl) =>
+                            // Save it and be done
+                            content.copy(thumbnail = thumbnailUrl).save
+                            redirect.flashing("info" -> "Thumbnail updated")
+                          case None => redirect.flashing("error" -> "Could not generate thumbnail")
+                        }
+                      case _ => Future {
+					    redirect.flashing("error" -> "No video file found. Thumbnails cannot be generated from streams.")
+					  }
+                    }
+                  }.getOrElse {
+                    Future(redirect.flashing("error" -> "No video file found"))
+                  }
+                case _ => Future(redirect.flashing("error" -> "No files found"))
               }
+            }.getOrElse {
+              Future(redirect.flashing("error" -> "Could not access video."))
             }
           }
         }
@@ -298,20 +294,17 @@ object ContentEditing extends Controller {
   def setMediaSource(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
-        ContentController.getContent(id) {
-          content =>
-            if (content isEditableBy user) {
-              val url = request.body("url")(0)
-              val redirect = Redirect(routes.ContentController.view(id))
-              Async {
-                ResourceHelper.updateFileUri(content.resourceId, url).map { json =>
-                  redirect.flashing("info" -> "Media source updated")
-                }.recover { case _ =>
-                  redirect.flashing("error" -> "Oops! Something went wrong!")
-                }
-              }
-            } else
-              Errors.forbidden
+        ContentController.getContent(id) { content =>
+          if (content isEditableBy user) {
+            val url = request.body("url")(0)
+            val redirect = Redirect(routes.ContentController.view(id))
+            ResourceHelper.updateFileUri(content.resourceId, url).map { _ =>
+              redirect.flashing("info" -> "Media source updated")
+            }.recover { case _ =>
+              redirect.flashing("error" -> "Oops! Something went wrong!")
+            }
+          } else
+            Future(Errors.forbidden)
         }
   }
 
@@ -322,26 +315,28 @@ object ContentEditing extends Controller {
     implicit request =>
       implicit user =>
         val redirect = Redirect(routes.ContentController.manageContent())
-        try {
-          val params = request.body.mapValues(_(0))
-          val shareability = params("shareability").toInt
-          val visibility = params("visibility").toInt
-          val contentList = params("ids").split(",").collect {
-            case id:String if !id.isEmpty => Content.findById(id.toLong)
-          }.flatten
+        Future {
+          try {
+            val params = request.body.mapValues(_(0))
+            val shareability = params("shareability").toInt
+            val visibility = params("visibility").toInt
+            val contentList = params("ids").split(",").collect {
+              case id:String if !id.isEmpty => Content.findById(id.toLong)
+            }.flatten
 
-          if(contentList.forall(_.isEditableBy(user))) {
-            for(content <- contentList) {
-              content.copy(shareability = shareability, visibility = visibility).save
+            if(contentList.forall(_.isEditableBy(user))) {
+              for(content <- contentList) {
+                content.copy(shareability = shareability, visibility = visibility).save
+              }
+              redirect.flashing("info" -> "Content updated")
+            } else {
+              redirect.flashing("error" -> "You do not have permission to edit some of these items")
             }
-            redirect.flashing("info" -> "Content updated")
-          } else {
-            redirect.flashing("error" -> "You do not have permission to edit some of these items")
+          } catch {
+            case e: Throwable =>
+              Logger.debug("Batch Update Error: " + e.getMessage())
+              redirect.flashing("error" -> ("Error while updating: "+e.getMessage()))
           }
-        } catch {
-          case e: Throwable =>
-            Logger.debug("Batch Update Error: " + e.getMessage())
-            redirect.flashing("error" -> ("Error while updating: "+e.getMessage()))
         }
   }
 }

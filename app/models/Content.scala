@@ -1,8 +1,8 @@
 package models
 
-import anorm.{NotAssigned, ~, Pk}
-import dataAccess.sqlTraits.{SQLSelectable, SQLDeletable, SQLSavable}
+import anorm._
 import anorm.SqlParser._
+import dataAccess.sqlTraits.{SQLSelectable, SQLDeletable, SQLSavable}
 import service.{HashTools, SerializationTools, TimeTools}
 import play.api.db.DB
 import play.api.Play.current
@@ -17,7 +17,7 @@ import java.text.Normalizer
  * @param id The id of this link in the DB
  * @param resourceId The id of the resource
  */
-case class Content(id: Pk[Long], name: String, contentType: Symbol, thumbnail: String, resourceId: String,
+case class Content(id: Option[Long], name: String, contentType: Symbol, thumbnail: String, resourceId: String,
                    dateAdded: String = TimeTools.now(),
                    visibility: Int = Content.visibility.tightlyRestricted,
                    shareability: Int = Content.shareability.shareable,
@@ -30,7 +30,7 @@ case class Content(id: Pk[Long], name: String, contentType: Symbol, thumbnail: S
    */
   def save: Content = {
     if (id.isDefined) {
-      update(Content.tableName, 'id -> id, 'name -> normalize(name), 'contentType -> contentType.name, 'thumbnail -> thumbnail,
+      update(Content.tableName, 'id -> id.get, 'name -> normalize(name), 'contentType -> contentType.name, 'thumbnail -> thumbnail,
         'resourceId -> resourceId, 'dateAdded -> dateAdded, 'visibility -> visibility, 'shareability -> shareability,
         'authKey -> authKey, 'labels -> normalize(labels.mkString(",")), 'views -> views)
       this
@@ -236,7 +236,7 @@ object Content extends SQLSelectable[Content] {
   }
 
   val simple = {
-    get[Pk[Long]](tableName + ".id") ~
+    get[Option[Long]](tableName + ".id") ~
       get[String](tableName + ".name") ~
       get[String](tableName + ".contentType") ~
       get[String](tableName + ".thumbnail") ~
@@ -258,7 +258,7 @@ object Content extends SQLSelectable[Content] {
    */
   val contentOwnership = {
     // content object
-    get[Pk[Long]]("contentId") ~
+    get[Option[Long]]("contentId") ~
     get[String]("cname") ~
     get[String]("contentType") ~
     get[String]("thumbnail") ~
@@ -270,7 +270,7 @@ object Content extends SQLSelectable[Content] {
     get[String]("labels") ~
     get[Long]("views") ~
     // user object
-    get[Pk[Long]]("userId") ~
+    get[Option[Long]]("userId") ~
     get[String]("authId") ~
     get[String]("authScheme") ~
     get[String]("username") ~
@@ -331,7 +331,7 @@ object Content extends SQLSelectable[Content] {
    * @return The content
    */
   def fromFixture(data: (String, Symbol, String, String)): Content =
-    Content(NotAssigned, data._1, data._2, data._3, data._4)
+    Content(None, data._1, data._2, data._3, data._4)
 
   /**
    * Search the names of content
@@ -350,11 +350,11 @@ object Content extends SQLSelectable[Content] {
   def setSetting(content: Content, setting: String, argument: Seq[String]) =
     DB.withConnection {
       implicit connection =>
-        anorm.SQL("DELETE from " +  settingTable + " where contentId = {cid} and setting = {setting}")
-          .on('cid -> content.id, 'setting -> setting).execute()
+        SQL("DELETE from " +  settingTable + " where contentId = {cid} and setting = {setting}")
+          .on('cid -> content.id.get, 'setting -> setting).execute()
         argument.foreach { arg =>
-          anorm.SQL("INSERT into " +  settingTable + " (contentId, setting, argument) values ({cid}, {setting}, {argument})")
-          .on('cid -> content.id, 'setting -> setting, 'argument -> arg).execute()
+          SQL("INSERT into " +  settingTable + " (contentId, setting, argument) values ({cid}, {setting}, {argument})")
+          .on('cid -> content.id.get, 'setting -> setting, 'argument -> arg).execute()
         }
     }
 
@@ -363,7 +363,7 @@ object Content extends SQLSelectable[Content] {
       implicit connection =>
         argument.foreach { arg =>
           anorm.SQL("INSERT into " +  settingTable + " (contentId, setting, argument) values ({cid}, {setting}, {argument})")
-          .on('cid -> content.id, 'setting -> setting, 'argument -> arg).execute()
+          .on('cid -> content.id.get, 'setting -> setting, 'argument -> arg).execute()
         }
     }
 
@@ -372,7 +372,7 @@ object Content extends SQLSelectable[Content] {
       implicit connection =>
         argument.foreach { arg =>
           anorm.SQL("DELETE from " +  settingTable + " where contentId = {cid} and setting = {setting} and argument = {argument}")
-          .on('cid -> content.id, 'setting -> setting, 'argument -> arg).execute()
+          .on('cid -> content.id.get, 'setting -> setting, 'argument -> arg).execute()
         }
     }
 
@@ -380,14 +380,14 @@ object Content extends SQLSelectable[Content] {
     DB.withConnection {
       implicit connection =>
         anorm.SQL("SELECT argument from " +  settingTable + " where contentId = {cid} and setting = {setting}")
-          .on('cid -> content.id, 'setting -> setting).as(get[String](settingTable + ".argument") *)
+          .on('cid -> content.id.get, 'setting -> setting).as(get[String](settingTable + ".argument") *)
     }
 
   def getSettingMap(content: Content): Map[String, List[String]] =
     DB.withConnection {
       implicit connection =>
         val plist: List[(String, String)] = anorm.SQL("SELECT setting, argument from " +  settingTable + " where contentId = {cid}")
-          .on('cid -> content.id).as(
+          .on('cid -> content.id.get).as(
             get[String](settingTable + ".setting") ~
             get[String](settingTable + ".argument") map {
             case setting ~ argument => setting -> argument

@@ -1,10 +1,8 @@
-import anorm.NotAssigned
 import collection.mutable.ListBuffer
 import models._
 import play.api.Logger
 import scala.Some
 import service.HashTools
-
 
 object Fixtures {
 
@@ -181,17 +179,17 @@ object Fixtures {
 
     Logger.info("Creating course membership fixtures")
     data.courseMembership.foreach {
-      data => CourseMembership(NotAssigned, users(data._2).id.get, courses(data._1).id.get, data._3).save
+      data => CourseMembership(None, users(data._2).id.get, courses(data._1).id.get, data._3).save
     }
 
     Logger.info("Creating content listing fixtures")
     data.contentListing.foreach {
-      data => ContentListing(NotAssigned, courses(data._1).id.get, content(data._2).id.get).save
+      data => ContentListing(None, courses(data._1).id.get, content(data._2).id.get).save
     }
 
     Logger.info("Creating content ownership fixtures")
     data.contentOwnership.foreach {
-      data => ContentOwnership(NotAssigned, users(data._1).id.get, content(data._2).id.get).save
+      data => ContentOwnership(None, users(data._1).id.get, content(data._2).id.get).save
     }
 
   }
@@ -199,11 +197,11 @@ object Fixtures {
   def createHomePageContent() {
     Logger.info("Creating home page content fixtures")
 
-    HomePageContent(NotAssigned, "Enrich your studies",
+    HomePageContent(None, "Enrich your studies",
       "With Ayamel, increase your language speaking ability.",
       "", "", "/assets/images/home/byu-campus.jpg", active = true).save
 
-    HomePageContent(NotAssigned, "Pardon our dust",
+    HomePageContent(None, "Pardon our dust",
       "We're working hard to provide language learning magic, so there may be some things don't work well, or at all. Please be patient. You will be rewarded as awesomeness occurs.",
       "", "", "/assets/images/home/construction.jpg", active = true).save
   }
@@ -211,7 +209,7 @@ object Fixtures {
   def createHelpPages() {
     Logger.info("Creating help pages")
 
-    helpPages.foreach(title => HelpPage(NotAssigned, title, "", "Uncategorized").save)
+    helpPages.foreach(title => HelpPage(None, title, "", "Uncategorized").save)
   }
 
   def setupSetting() {
@@ -220,7 +218,7 @@ object Fixtures {
     settings.foreach(setting => {
       if (Setting.findByName(setting._1).isEmpty) {
         Logger.info("Adding setting: " + setting._1)
-        Setting(NotAssigned, setting._1, setting._2).save
+        Setting(None, setting._1, setting._2).save
       }
     })
   }

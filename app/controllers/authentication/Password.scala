@@ -2,7 +2,6 @@ package controllers.authentication
 
 import play.api.mvc.{Action, Controller}
 import service.HashTools
-import anorm.NotAssigned
 import models.{User, SitePermissions}
 
 /**
@@ -59,7 +58,7 @@ object Password extends Controller {
         // Check the passwords match
         if (password1 == password2) {
           val passwordHash = HashTools.sha256Base64(password1)
-          val user = User(NotAssigned, passwordHash, 'password, username, Some(name), Some(email)).save
+          val user = User(None, passwordHash, 'password, username, Some(name), Some(email)).save
           SitePermissions.assignRole(user, 'student)
           Authentication.login(user, path)
         } else

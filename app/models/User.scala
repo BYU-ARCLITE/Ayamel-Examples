@@ -1,8 +1,8 @@
 package models
 
-import anorm.{Id, NotAssigned, ~, Pk}
-import dataAccess.sqlTraits.{SQLDeletable, SQLSelectable, SQLSavable}
+import anorm._
 import anorm.SqlParser._
+import dataAccess.sqlTraits.{SQLDeletable, SQLSelectable, SQLSavable}
 import play.api.db.DB
 import play.api.Play.current
 import play.api.Logger
@@ -19,8 +19,9 @@ import service.{EmailTools, TimeTools}
  * @param email The user's email address
  * @param role The permissions of the user
  */
-case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: String, name: Option[String] = None,
-                email: Option[String] = None, picture: Option[String] = None, accountLinkId: Long = -1,
+case class User(id: Option[Long], authId: String, authScheme: Symbol, username: String,
+                name: Option[String] = None, email: Option[String] = None,
+				picture: Option[String] = None, accountLinkId: Long = -1,
                 created: String = TimeTools.now(), lastLogin: String = TimeTools.now())
   extends SQLSavable with SQLDeletable {
 
@@ -30,14 +31,18 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
    */
   def save: User = {
     if (id.isDefined) {
-      update(User.tableName, 'id -> id, 'authId -> authId, 'authScheme -> authScheme.name, 'username -> username,
-        'name -> name.getOrElse(""), 'email -> email.getOrElse(""), 'picture -> picture,
-        'accountLinkId -> accountLinkId, 'created -> created, 'lastLogin -> lastLogin)
+      update(User.tableName,
+	    'id -> id.get, 'authId -> authId, 'authScheme -> authScheme.name,
+        'username -> username, 'name -> name, 'email -> email, 'picture -> picture,
+        'accountLinkId -> accountLinkId, 'created -> created, 'lastLogin -> lastLogin
+	  )
       this
     } else {
-      val id = insert(User.tableName, 'authId -> authId, 'authScheme -> authScheme.name, 'username -> username,
-        'name -> name.getOrElse(""), 'email -> email.getOrElse(""), 'picture -> picture,
-        'accountLinkId -> accountLinkId, 'created -> created, 'lastLogin -> lastLogin)
+      val id = insert(User.tableName,
+	    'authId -> authId, 'authScheme -> authScheme.name,
+		'username -> username, 'name -> name, 'email -> email, 'picture -> picture,
+        'accountLinkId -> accountLinkId, 'created -> created, 'lastLogin -> lastLogin
+	  )
       this.copy(id)
     }
   }
@@ -71,15 +76,15 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
     // Delete all linked accounts
     getAccountLink.map { accountLink =>
       if (accountLink.primaryAccount == id.get) {
-        accountLink.userIds.filterNot(_ == id.get).foreach(uid => delete(User.tableName, Id(uid)))
+        accountLink.userIds.filterNot(_ == id.get).foreach(uid => delete(User.tableName, Some(uid)))
       }
     }
 
     //Delete site permissions
     DB.withConnection {
       implicit connection =>
-        anorm.SQL("delete from sitePermissions where userId = {id}")
-          .on('id -> id).execute()
+        SQL("delete from sitePermissions where userId = {id}")
+          .on('id -> id.get).execute()
     }
 
     delete(User.tableName, id)
@@ -111,7 +116,7 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
    */
   def enroll(course: Course, teacher: Boolean = false): User = {
     if(!this.isEnrolled(course))
-      CourseMembership(NotAssigned, id.get, course.id.get, teacher).save
+      CourseMembership(None, id.get, course.id.get, teacher).save
     this
   }
 
@@ -140,14 +145,14 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
    * @return The content ownership
    */
   def addContent(content: Content): ContentOwnership =
-    ContentOwnership(NotAssigned, this.id.get, content.id.get).save
+    ContentOwnership(None, this.id.get, content.id.get).save
 
   /**
    * Submits a teacher request for this user
    * @param reason The reason for the request
    * @return The teacher request
    */
-  def requestPermission(permission: String, reason: String): SitePermissionRequest = SitePermissionRequest(NotAssigned, this.id.get, permission, reason).save
+  def requestPermission(permission: String, reason: String): SitePermissionRequest = SitePermissionRequest(None, this.id.get, permission, reason).save
 
   /**
    * Sends a notification to this user
@@ -162,10 +167,10 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
         s"<p>You have received the following notification:</p><p>$message</p>"
       }
     }
-    Notification(NotAssigned, this.id.get, message).save
+    Notification(None, this.id.get, message).save
   }
 
-  def addWord(word: String, srcLang: String, destLang: String): WordListEntry = WordListEntry(NotAssigned, word, srcLang, destLang, id.get).save
+  def addWord(word: String, srcLang: String, destLang: String): WordListEntry = WordListEntry(None, word, srcLang, destLang, id.get).save
 
   /**
    * Moves user ownership and enrollment from the provided user to the current user
@@ -223,7 +228,7 @@ case class User(id: Pk[Long], authId: String, authScheme: Symbol, username: Stri
     if (this.accountLinkId == -1) {
       if (user.accountLinkId == -1) {
         // Case 1: Create a new account link
-        val accountLink = AccountLink(NotAssigned, Set(thisid, user.id.get), thisid).save
+        val accountLink = AccountLink(None, Set(thisid, user.id.get), thisid).save
 
         val linkId = accountLink.id.get
         this.copy(accountLinkId = linkId).save
@@ -480,7 +485,7 @@ object User extends SQLSelectable[User] {
   val tableName = "userAccount"
 
   val simple = {
-    get[Pk[Long]](tableName + ".id") ~
+    get[Option[Long]](tableName + ".id") ~
       get[String](tableName + ".authId") ~
       get[String](tableName + ".authScheme") ~
       get[String](tableName + ".username") ~
@@ -545,7 +550,7 @@ object User extends SQLSelectable[User] {
    * @return The user
    */
   def fromFixture(data: (String, Symbol, String, Option[String], Option[String], Symbol)): User = {
-    val user = User(NotAssigned, data._1, data._2, data._3, data._4, data._5)
+    val user = User(None, data._1, data._2, data._3, data._4, data._5)
     SitePermissions.assignRole(user, data._6)
     user
   }

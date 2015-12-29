@@ -1,5 +1,7 @@
 package controllers
 
+import scala.concurrent._
+import ExecutionContext.Implicits.global
 import play.api.mvc.Controller
 import play.api.Play.current
 import controllers.authentication.Authentication
@@ -31,7 +33,7 @@ object WordLists extends Controller {
     implicit request =>
       implicit user =>
         user.addWord(normalize(request.body("word")(0)), request.body("srcLang")(0), request.body("destLang")(0))
-        Ok
+        Future(Ok)
   }
 
   /**
@@ -41,7 +43,7 @@ object WordLists extends Controller {
     implicit request =>
       implicit user =>
         val wordList = user.getWordList
-        Ok(views.html.words.view(wordList))
+        Future(Ok(views.html.words.view(wordList)))
   }
 
   /**
@@ -52,7 +54,10 @@ object WordLists extends Controller {
     implicit request =>
       implicit user =>
         WordListEntry.findById(id).map(_.delete())
-        Redirect(routes.WordLists.view()).flashing("info" -> "Word deleted.")
+        Future { 
+          Redirect(routes.WordLists.view())
+            .flashing("info" -> "Word deleted.")
+        }
   }
 
   /**
@@ -77,9 +82,7 @@ object WordLists extends Controller {
         val terms = request.body.dataParts("terms[]").zip(request.body.dataParts("definitions[]")).toList
         val termsMinusAudio : List[(String,String)] = for ( term <- terms ) yield { (clean(term._1), clean(term._2.split(", <audio")(0)))}
 
-        Async {
-          Quizlet.createSet(token, title, termsMinusAudio, termLanguage, definitionLanguage).map(url => Ok(url))
-        }
+        Quizlet.createSet(token, title, termsMinusAudio, termLanguage, definitionLanguage).map(url => Ok(url))
   }
 
   /**
@@ -95,7 +98,7 @@ object WordLists extends Controller {
           "state" -> Seq(HashTools.md5Hex(request.session.toString)),
           "redirect_uri" -> Seq(routes.WordLists.authorizeCallback().absoluteURL(isHTTPS))
         )
-        Redirect("https://quizlet.com/authorize/", data)
+        Future(Redirect("https://quizlet.com/authorize/", data))
   }
 
   /**
@@ -106,7 +109,7 @@ object WordLists extends Controller {
       user =>
       // Check for an error
         if (request.queryString.contains("error")) {
-          Ok(views.html.words.authCode(success = false, ""))
+          Future(Ok(views.html.words.authCode(success = false, "")))
         } else {
 
           // Check the state
@@ -114,12 +117,10 @@ object WordLists extends Controller {
 
           // Get the auth token
           val code = request.queryString("code")(0)
-          Async {
 
-            // Get the access token from the code
-            Quizlet.getAuthToken(code).map(token => {
-              Ok(views.html.words.authCode(success = true, token))
-            })
+          // Get the access token from the code
+          Quizlet.getAuthToken(code).map { token =>
+            Ok(views.html.words.authCode(success = true, token))
           }
         }
   }

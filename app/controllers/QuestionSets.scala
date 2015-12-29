@@ -1,9 +1,10 @@
 package controllers
 
+import scala.concurrent._
+import ExecutionContext.Implicits.global
 import play.api.mvc.Controller
 import controllers.authentication.Authentication
 import dataAccess.GoogleFormScripts
-import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
  * Controller dealing with question sets
@@ -17,9 +18,9 @@ object QuestionSets extends Controller {
   def about(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        ContentController.getContent(id) {
-          content =>
-          // Check the content type
+        ContentController.getContent(id) { content =>
+          Future {
+            // Check the content type
             if (content.contentType == 'questions) {
               // Check that the user can view the content
               if (content isVisibleBy user) {
@@ -30,6 +31,7 @@ object QuestionSets extends Controller {
             } else {
               Redirect(routes.ContentController.view(id))
             }
+          }
         }
   }
 
@@ -40,11 +42,11 @@ object QuestionSets extends Controller {
   def take(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        ContentController.getContent(id) {
-          content =>
-          // Check the content type
+        ContentController.getContent(id) { content =>
+          Future {
+            // Check the content type
             if (content.contentType == 'questions) {
-              // Check that the user can view the content
+            // Check that the user can view the content
               if (content isVisibleBy user) {
                 Ok(views.html.questionSets.take(content))
               } else {
@@ -53,6 +55,7 @@ object QuestionSets extends Controller {
             } else {
               Redirect(routes.ContentController.view(id))
             }
+          }
         }
   }
 
@@ -64,22 +67,18 @@ object QuestionSets extends Controller {
   def getIndex(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        ContentController.getContent(id) {
-          content =>
-
-            // Check the content type
-            if (content.contentType == 'questions) {
-              Async {
-                GoogleFormScripts.getResponseIndex(content.resourceId).map(index => {
-                  val origin = request.headers.get("Origin").getOrElse("*")
-                  Ok(index.toString).withHeaders(
-                    "Access-Control-Allow-Origin" -> origin,
-                    "Access-Control-Allow-Credentials" -> "true"
-                  )
-                })
-              }
-            } else
-              BadRequest
+        ContentController.getContent(id) { content =>
+          // Check the content type
+          if (content.contentType == 'questions) {
+            GoogleFormScripts.getResponseIndex(content.resourceId).map { index =>
+              val origin = request.headers.get("Origin").getOrElse("*")
+              Ok(index.toString).withHeaders(
+                "Access-Control-Allow-Origin" -> origin,
+                "Access-Control-Allow-Credentials" -> "true"
+              )
+            }
+          } else
+            Future(BadRequest)
         }
   }
 
@@ -91,27 +90,23 @@ object QuestionSets extends Controller {
   def grade(id: Long, index: Int) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        ContentController.getContent(id) {
-          content =>
+        ContentController.getContent(id) { content =>
           // Check the content type
-            if (content.contentType == 'questions) {
-              // Check that the user can view the content
-              if (content isVisibleBy user) {
-
-                Async {
-                  GoogleFormScripts.grade(content.resourceId, index).map(scoring => {
-                    // Save the scoring
-                    scoring.copy(userId = user.id.get, contentId = content.id.get).save
-                    val score = scoring.percent
-                    Redirect(routes.QuestionSets.about(id)).flashing("info" -> s"Your score was: $score%")
-                  })
-                }
-              } else {
-                Errors.forbidden
+          if (content.contentType == 'questions) {
+            // Check that the user can view the content
+            if (content isVisibleBy user) {
+              GoogleFormScripts.grade(content.resourceId, index).map { scoring =>
+                // Save the scoring
+                scoring.copy(userId = user.id.get, contentId = content.id.get).save
+                val score = scoring.percent
+                Redirect(routes.QuestionSets.about(id)).flashing("info" -> s"Your score was: $score%")
               }
             } else {
-              Redirect(routes.ContentController.view(id))
+              Future(Errors.forbidden)
             }
+          } else {
+            Future(Redirect(routes.ContentController.view(id)))
+          }
         }
   }
 
@@ -123,30 +118,26 @@ object QuestionSets extends Controller {
   def gradeAjax(id: Long, index: Int) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        ContentController.getContent(id) {
-          content =>
+        ContentController.getContent(id) { content =>
           // Check the content type
-            if (content.contentType == 'questions) {
-              // Check that the user can view the content
-              if (content isVisibleBy user) {
-
-                Async {
-                  GoogleFormScripts.grade(content.resourceId, index).map(scoring => {
-                    // Save the scoring
-                    val newScoring = scoring.copy(userId = user.id.get, contentId = content.id.get).save
-                    val origin = request.headers.get("Origin").getOrElse("*")
-                    Ok(newScoring.toJson).withHeaders(
-                      "Access-Control-Allow-Origin" -> origin,
-                      "Access-Control-Allow-Credentials" -> "true"
-                    )
-                  })
-                }
-              } else {
-                Forbidden
+          if (content.contentType == 'questions) {
+            // Check that the user can view the content
+            if (content isVisibleBy user) {
+              GoogleFormScripts.grade(content.resourceId, index).map { scoring =>
+                // Save the scoring
+                val newScoring = scoring.copy(userId = user.id.get, contentId = content.id.get).save
+                val origin = request.headers.get("Origin").getOrElse("*")
+                Ok(newScoring.toJson).withHeaders(
+                  "Access-Control-Allow-Origin" -> origin,
+                  "Access-Control-Allow-Credentials" -> "true"
+                )
               }
             } else {
-              BadRequest
+              Future(Forbidden)
             }
+          } else {
+            Future(BadRequest)
+          }
         }
   }
 }

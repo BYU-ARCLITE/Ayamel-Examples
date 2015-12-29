@@ -4,7 +4,6 @@ import joshmonson.oauth.{OAuthKey, OAuthRequest}
 import play.api.mvc.{AnyContent, Request}
 import models.{Course, Content, User, SitePermissions}
 import controllers.authentication._
-import anorm.NotAssigned
 import play.core.parsers.FormUrlEncodedParser
 
 /**
@@ -27,7 +26,7 @@ object LMSAuth {
     User.findByAuthInfo(course.id.get.toString, 'keyAuth) match {
     case Some(user) => user
     case _ =>
-      val user = User(NotAssigned, course.id.get.toString, 'keyAuth, "guest", Some("Guest")).save
+      val user = User(None, course.id.get.toString, 'keyAuth, "guest", Some("Guest")).save
         .enroll(course, teacher = false)
       SitePermissions.assignRole(user, 'student)
       //TODO: add course permissions
@@ -47,7 +46,7 @@ object LMSAuth {
       User.findByAuthInfo(id, 'ltiAuth).getOrElse {
         val name = params.get("lis_person_name_full")
         val email = params.get("lis_person_contact_email_primary")
-        val user = User(NotAssigned, id, 'ltiAuth, "user" + id, name, email).save
+        val user = User(None, id, 'ltiAuth, "user" + id, name, email).save
         SitePermissions.assignRole(user, 'student)
         if (course.isDefined) {  
           user.enroll(course.get, teacher = false)

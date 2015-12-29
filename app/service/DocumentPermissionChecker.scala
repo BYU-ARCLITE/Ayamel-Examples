@@ -59,7 +59,7 @@ class DocumentPermissionChecker(user: User, content: Content, course: Option[Cou
   //TODO: update the content database so that this doesn't have to make resource requests
   def getSpecified(ids: List[String]): Future[List[JsObject]] = {
     val requests = ids.map { id => ResourceController.getResource(id) }
-    future {
+    Future {
       requests.flatMap { req =>
         Await.result(req, Duration.Inf) match {
           case Some(json) => List((json \ "resource").as[JsObject])

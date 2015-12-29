@@ -1,8 +1,8 @@
 package models
 
-import anorm.{~, Pk}
-import dataAccess.sqlTraits.{SQLSelectable, SQLDeletable, SQLSavable}
+import anorm._
 import anorm.SqlParser._
+import dataAccess.sqlTraits.{SQLSelectable, SQLDeletable, SQLSavable}
 import play.api.db.DB
 import play.api.libs.json.Json
 import play.api.Play.current
@@ -14,7 +14,7 @@ import play.api.Play.current
  * Time: 1:56 PM
  * To change this template use File | Settings | File Templates.
  */
-case class WordListEntry(id: Pk[Long], word: String, srcLang: String, destLang: String, userId: Long) extends SQLSavable with SQLDeletable {
+case class WordListEntry(id: Option[Long], word: String, srcLang: String, destLang: String, userId: Long) extends SQLSavable with SQLDeletable {
 
   /**
    * Saves the word list entry to the DB
@@ -22,7 +22,7 @@ case class WordListEntry(id: Pk[Long], word: String, srcLang: String, destLang: 
    */
   def save: WordListEntry = {
     if (id.isDefined) {
-      update(WordListEntry.tableName, 'id -> id, 'word -> word, 'srcLang -> srcLang, 'destLang -> destLang, 'userId -> userId)
+      update(WordListEntry.tableName, 'id -> id.get, 'word -> word, 'srcLang -> srcLang, 'destLang -> destLang, 'userId -> userId)
       this
     } else {
       val id = insert(WordListEntry.tableName, 'word -> word, 'srcLang -> srcLang, 'destLang -> destLang, 'userId -> userId)
@@ -43,7 +43,7 @@ object WordListEntry extends SQLSelectable[WordListEntry] {
   val tableName = "wordList"
 
   val simple = {
-    get[Pk[Long]](tableName + ".id") ~
+    get[Option[Long]](tableName + ".id") ~
       get[String](tableName + ".word") ~
       get[String](tableName + ".srcLang") ~
       get[String](tableName + ".destLang") ~
@@ -67,7 +67,8 @@ object WordListEntry extends SQLSelectable[WordListEntry] {
   def listByUser(user: User): List[WordListEntry] =
     DB.withConnection {
       implicit connection =>
-        anorm.SQL("select * from " + tableName + " where userId = {id}").on('id -> user.id).as(simple *)
+        SQL("select * from " + tableName + " where userId = {id}")
+          .on('id -> user.id.get).as(simple *)
     }
 
   /**

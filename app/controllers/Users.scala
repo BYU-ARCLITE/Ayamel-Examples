@@ -1,12 +1,12 @@
 package controllers
 
 import authentication.Authentication
-import play.api.mvc.Controller
+import play.api.mvc._
 import models._
 import service.{FileUploader, ImageTools, HashTools}
 import scala.util.{Try, Success, Failure}
 import javax.imageio.ImageIO
-import scala.concurrent.ExecutionContext
+import scala.concurrent._
 import ExecutionContext.Implicits.global
 
 /**
@@ -20,7 +20,7 @@ object Users extends Controller {
   def notifications = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        Ok(views.html.users.notifications())
+        Future(Ok(views.html.users.notifications()))
   }
 
   def modNotification(ids: Seq[String], user: User)(cb: Notification => Unit) =
@@ -43,7 +43,7 @@ object Users extends Controller {
         modNotification(request.body.dataParts("id"), user) { note =>
           note.copy(messageRead = true).save
         }
-        Ok
+        Future(Ok)
   }
 
   /**
@@ -56,7 +56,7 @@ object Users extends Controller {
          modNotification(request.body.dataParts("id"), user) { note =>
           note.delete()
         }
-        Ok
+        Future(Ok)
   }
 
   /**
@@ -65,7 +65,7 @@ object Users extends Controller {
   def accountSettings = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        Ok(views.html.users.accountSettings())
+        Future(Ok(views.html.users.accountSettings()))
   }
 
   /**
@@ -75,12 +75,15 @@ object Users extends Controller {
     implicit request =>
       implicit user =>
 
-      // Change the user information
+        // Change the user information
         val name = request.body("name")(0)
         val email = request.body("email")(0)
         user.copy(name = Some(name), email = Some(email)).save
 
-        Redirect(routes.Users.accountSettings()).flashing("info" -> "Personal information updated.")
+        Future {
+          Redirect(routes.Users.accountSettings())
+            .flashing("info" -> "Personal information updated.")
+        }
   }
 
   /**
@@ -95,11 +98,13 @@ object Users extends Controller {
         val redirect = Redirect(routes.Users.accountSettings())
 
         // Make sure the passwords match
-        if (password1 == password2) {
-          user.copy(authId = HashTools.sha256Base64(password1)).save
-          redirect.flashing("info" -> "Password changed.")
-        } else
-          redirect.flashing("alert" -> "Passwords don't match.")
+        Future {
+          if (password1 == password2) {
+            user.copy(authId = HashTools.sha256Base64(password1)).save
+            redirect.flashing("info" -> "Password changed.")
+          } else
+            redirect.flashing("alert" -> "Passwords don't match.")
+        }
   }
 
   /**
@@ -111,29 +116,34 @@ object Users extends Controller {
         val redirect = Redirect(routes.Users.accountSettings())
 
         // Load the image from the file and make it into a thumbnail
-        request.body.file("file").flatMap { picture =>
+        request.body.file("file") match {
+		case None =>
+          Future(redirect.flashing("error" -> "Missing File"))
+		case Some(picture) =>
           Try(Option(ImageIO.read(picture.ref.file))) match {
-            case Success(imgOpt) =>
-              imgOpt.map { image =>
-                ImageTools.makeThumbnail(image) match {
-                  case Some(image) => Async { // Upload the file
-                    FileUploader.uploadImage(image, picture.filename).map { url =>
-                      if(url.isDefined) {
-                        // Save the user info about the profile picture
-                        user.copy(picture = url).save
-                        redirect.flashing("info" -> "Profile picture updated")
-                      } else {
-                        redirect.flashing("error" -> "Failed to upload image")
-                      }
-                    }
-                  }
-                  case None => redirect.flashing("error" -> "Unknown error while processing image")
+          case Failure(_) =>
+            Future(redirect.flashing("error" -> "Could not read image"))
+          case Success(imgOpt) =>
+            imgOpt match {
+            case None => 
+              Future(redirect.flashing("error" -> "Error reading image."))
+            case Some(image) =>
+              ImageTools.makeThumbnail(image) match {
+			  case None =>
+                Future(redirect.flashing("error" -> "Error processing image."))
+			  case Some(thmb) =>
+			    // Upload the file
+                FileUploader.uploadImage(thmb, picture.filename).map {
+                  case None =>
+                    redirect.flashing("error" -> "Failed to upload image")
+                  case url:Some[String] =>
+                    // Save the user info about the profile picture
+                    user.copy(picture = url).save
+                    redirect.flashing("info" -> "Profile picture updated")
                 }
               }
-            case Failure(_) => Some(redirect.flashing("error" -> "Could not read image"))
+            }
           }
-        }.getOrElse {
-          redirect.flashing("error" -> "Missing file")
         }
   }
 
@@ -144,7 +154,7 @@ object Users extends Controller {
     implicit request =>
       implicit user =>
         Authentication.enforcePermission("requestPermission") {
-          Ok(views.html.users.permissionRequest.requestForm())
+          Future(Ok(views.html.users.permissionRequest.requestForm()))
         }
   }
 
@@ -159,17 +169,19 @@ object Users extends Controller {
           val reason = request.body("reason")(0)
           val desc = SitePermissions.getDescription(permission)
 
-          // Check to see if the user already has the requested permission
-          // or has already submitted a request
-          if (user.hasSitePermission(permission)) {
-            Redirect(routes.Users.permissionRequestPage())
-              .flashing("info" -> s"You already have $desc permission")
-          } else {
-            if (SitePermissionRequest.findByUser(user, permission).isEmpty) {
-              user.requestPermission(permission, reason)
+          Future {
+            // Check to see if the user already has the requested permission
+            // or has already submitted a request
+            if (user.hasSitePermission(permission)) {
+              Redirect(routes.Users.permissionRequestPage())
+                .flashing("info" -> s"You already have $desc permission")
+            } else {
+              if (SitePermissionRequest.findByUser(user, permission).isEmpty) {
+                user.requestPermission(permission, reason)
+              }
+              Redirect(routes.Users.accountSettings())
+                .flashing("success" -> s"Your request for $desc permission has been submitted.")
             }
-            Redirect(routes.Users.accountSettings())
-              .flashing("success" -> s"Your request for $desc permission has been submitted.")
           }
         }
   }

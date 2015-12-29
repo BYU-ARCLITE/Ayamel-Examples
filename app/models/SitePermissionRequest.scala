@@ -1,6 +1,6 @@
 package models
 
-import anorm.{~, Pk}
+import anorm._
 import anorm.SqlParser._
 import dataAccess.sqlTraits.{SQLSelectable, SQLDeletable, SQLSavable}
 import play.api.db.DB
@@ -12,7 +12,7 @@ import play.api.Play.current
  * @param userId The id of the user making the request
  * @param reason The reason why the user wants a permission
  */
-case class SitePermissionRequest(id: Pk[Long], userId: Long, permission: String, reason: String) extends SQLSavable with SQLDeletable {
+case class SitePermissionRequest(id: Option[Long], userId: Long, permission: String, reason: String) extends SQLSavable with SQLDeletable {
 
   /**
    * Saves the request to the DB
@@ -20,7 +20,7 @@ case class SitePermissionRequest(id: Pk[Long], userId: Long, permission: String,
    */
   def save: SitePermissionRequest = {
     if (id.isDefined) {
-      update(SitePermissionRequest.tableName, 'id -> id, 'userId -> userId, 'permission -> permission, 'reason -> reason)
+      update(SitePermissionRequest.tableName, 'id -> id.get, 'userId -> userId, 'permission -> permission, 'reason -> reason)
       this
     } else {
       val id = insert(SitePermissionRequest.tableName, 'userId -> userId, 'permission -> permission, 'reason -> reason)
@@ -94,7 +94,7 @@ object SitePermissionRequest extends SQLSelectable[SitePermissionRequest] {
   val tableName = "sitePermissionRequest"
 
   val simple = {
-    get[Pk[Long]](tableName + ".id") ~
+    get[Option[Long]](tableName + ".id") ~
       get[Long](tableName + ".userId") ~
       get[String](tableName + ".permission") ~
       get[String](tableName + ".reason") map {
@@ -117,7 +117,8 @@ object SitePermissionRequest extends SQLSelectable[SitePermissionRequest] {
   def listByUser(user: User): List[SitePermissionRequest] =
     DB.withConnection {
       implicit connection =>
-        anorm.SQL("select * from " + tableName + " where userId = {id}").on('id -> user.id).as(simple *)
+        SQL("select * from " + tableName + " where userId = {id}")
+          .on('id -> user.id.get).as(simple *)
     }
 
   /**
@@ -129,8 +130,8 @@ object SitePermissionRequest extends SQLSelectable[SitePermissionRequest] {
   def findByUser(user: User, permission: String): Option[SitePermissionRequest] =
     DB.withConnection {
       implicit connection =>
-        anorm.SQL("select * from " + tableName + " where userId = {id} and permission = {permission}")
-		  .on('id -> user.id, 'permission -> permission).as(simple.singleOpt)
+        SQL("select * from " + tableName + " where userId = {id} and permission = {permission}")
+		  .on('id -> user.id.get, 'permission -> permission).as(simple.singleOpt)
     }
 
   /**

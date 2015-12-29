@@ -1,7 +1,6 @@
-@(content: models.Content, course: Course, user: User)(implicit request: RequestHeader)
-
 @import play.api.Play
 @import play.api.Play.current
+@(content: models.Content, course: Course, user: User)(implicit request: RequestHeader)
 
 @defining(Play.configuration.getBoolean("HTTPS").getOrElse(false)) { isHTTPS =>
     <div id="lmsModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="lmsModalLabel" aria-hidden="true">

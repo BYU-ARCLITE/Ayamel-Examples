@@ -1,8 +1,8 @@
 package models
 
-import anorm.{NotAssigned, ~, Pk}
-import dataAccess.sqlTraits.{SQLSelectable, SQLDeletable, SQLSavable}
+import anorm._
 import anorm.SqlParser._
+import dataAccess.sqlTraits.{SQLSelectable, SQLDeletable, SQLSavable}
 import play.api.Logger
 import service.{TimeTools, HashTools}
 import util.Random
@@ -17,7 +17,7 @@ import play.api.Play.current
  * @param endDate When the course ceases to be functional
  * @param lmsKey A key for connecting with LMSs
  */
-case class Course(id: Pk[Long], name: String, startDate: String, endDate: String, enrollment: Symbol = 'closed,
+case class Course(id: Option[Long], name: String, startDate: String, endDate: String, enrollment: Symbol = 'closed,
                   featured: Boolean = false, lmsKey: String = HashTools.md5Hex(Random.nextString(32))) extends SQLSavable with SQLDeletable {
 
   /**
@@ -26,7 +26,7 @@ case class Course(id: Pk[Long], name: String, startDate: String, endDate: String
    */
   def save: Course = {
     if (id.isDefined) {
-      update(Course.tableName, 'id -> id, 'name -> name, 'startDate -> startDate, 'endDate -> endDate,
+      update(Course.tableName, 'id -> id.get, 'name -> name, 'startDate -> startDate, 'endDate -> endDate,
         'enrollment -> enrollment.name, 'featured -> featured, 'lmsKey -> lmsKey)
       this
     } else {
@@ -45,8 +45,8 @@ case class Course(id: Pk[Long], name: String, startDate: String, endDate: String
 
     DB.withConnection {
       implicit connection =>
-        anorm.SQL("delete from coursePermissions where courseId = {cid}")
-          .on('cid -> id).execute()
+        SQL("delete from coursePermissions where courseId = {cid}")
+          .on('cid -> id.get).execute()
     }
 
     delete(Course.tableName, id)
@@ -68,7 +68,7 @@ case class Course(id: Pk[Long], name: String, startDate: String, endDate: String
    * @param content The content to be posted
    * @return The content listing
    */
-  def addContent(content: Content): ContentListing = ContentListing(NotAssigned, this.id.get, content.id.get).save
+  def addContent(content: Content): ContentListing = ContentListing(None, this.id.get, content.id.get).save
 
   /**
    * Remove content from the course
@@ -97,7 +97,7 @@ case class Course(id: Pk[Long], name: String, startDate: String, endDate: String
    * @return The saved announcement
    */
   def makeAnnouncement(user: User, message: String): Announcement =
-    Announcement(NotAssigned, this.id.get, user.id.get, TimeTools.now(), message).save
+    Announcement(None, this.id.get, user.id.get, TimeTools.now(), message).save
 
   //       _____      _   _
   //      / ____|    | | | |
@@ -209,7 +209,7 @@ object Course extends SQLSelectable[Course] {
   val tableName = "course"
 
   val simple = {
-    get[Pk[Long]](tableName + ".id") ~
+    get[Option[Long]](tableName + ".id") ~
       get[String](tableName + ".name") ~
       get[String](tableName + ".startDate") ~
       get[String](tableName + ".endDate") ~
@@ -240,7 +240,7 @@ object Course extends SQLSelectable[Course] {
    * @return The user
    */
   def fromFixture(data: (String, String, String, Symbol, String)): Course =
-    Course(NotAssigned, data._1, data._2, data._3, data._4, false, data._5)
+    Course(None, data._1, data._2, data._3, data._4, false, data._5)
 
   /**
    * Search the names of courses

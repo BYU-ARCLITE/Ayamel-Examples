@@ -1,5 +1,7 @@
 package controllers
 
+import scala.concurrent._
+import ExecutionContext.Implicits.global
 import play.api.mvc.Controller
 import controllers.authentication.Authentication
 import dataAccess.{ResourceController, PlayGraph}
@@ -16,8 +18,8 @@ object Playlists extends Controller {
   def about(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        ContentController.getContent(id) {
-          content =>
+        ContentController.getContent(id) { content =>
+          Future {
             // Check the content type
             if (content.contentType == 'playlist) {
               // Check that the user can view the content
@@ -29,6 +31,7 @@ object Playlists extends Controller {
             } else {
               Redirect(routes.ContentController.view(id))
             }
+          }
         }
   }
 
@@ -39,8 +42,8 @@ object Playlists extends Controller {
   def view(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        ContentController.getContent(id) {
-          content =>
+        ContentController.getContent(id) { content =>
+          Future {
             // Check the content type
             if (content.contentType == 'playlist) {
               // Check that the user can view the content
@@ -52,6 +55,7 @@ object Playlists extends Controller {
             } else {
               Redirect(routes.ContentController.view(id))
             }
+          }
         }
   }
 }

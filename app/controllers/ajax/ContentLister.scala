@@ -1,5 +1,7 @@
 package controllers.ajax
 
+import scala.concurrent._
+import ExecutionContext.Implicits.global
 import play.api.mvc.Controller
 import controllers.authentication.Authentication
 import play.api.libs.json.{JsObject, JsArray}
@@ -19,10 +21,12 @@ object ContentLister extends Controller {
       implicit user =>
         val content = user.getContent.map(_.toJson)
         val origin = request.headers.get("Origin").getOrElse("*")
-        Ok(JsArray(content)).withHeaders(
-          "Access-Control-Allow-Origin" -> origin,
-          "Access-Control-Allow-Credentials" -> "true"
-        )
+        Future {
+          Ok(JsArray(content)).withHeaders(
+            "Access-Control-Allow-Origin" -> origin,
+            "Access-Control-Allow-Credentials" -> "true"
+          )
+        }
   }
 
   /**
@@ -34,10 +38,12 @@ object ContentLister extends Controller {
         val courses = user.getEnrollment
         val content = courses.map(course => (course.name, JsArray(course.getContent.map(_.toJson))))
         val origin = request.headers.get("Origin").getOrElse("*")
-        Ok(JsObject(content)).withHeaders(
-          "Access-Control-Allow-Origin" -> origin,
-          "Access-Control-Allow-Credentials" -> "true"
-        )
+        Future {
+          Ok(JsObject(content)).withHeaders(
+            "Access-Control-Allow-Origin" -> origin,
+            "Access-Control-Allow-Credentials" -> "true"
+          )
+        }
   }
 
   /**
@@ -47,13 +53,14 @@ object ContentLister extends Controller {
   def get(id: Long) = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        Content.findById(id).map {
-		  content =>
+        Future {
+          Content.findById(id).map { content =>
             val origin = request.headers.get("Origin").getOrElse("*")
             Ok(content.toJson).withHeaders(
               "Access-Control-Allow-Origin" -> origin,
               "Access-Control-Allow-Credentials" -> "true"
             )
-        }.getOrElse(Forbidden)
+          }.getOrElse(Forbidden)
+        }
   }
 }

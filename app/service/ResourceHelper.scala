@@ -4,6 +4,7 @@ import play.api.Logger
 import play.api.libs.json._
 import play.api.libs.ws.WS
 import play.api.libs.MimeTypes
+import play.api.Play.current
 import concurrent.{ExecutionContext, Future}
 import ExecutionContext.Implicits.global
 import dataAccess.ResourceController
@@ -159,7 +160,8 @@ object ResourceHelper {
         Logger.debug("Resource Helper: create with URI")
         Logger.debug(remoteFiles.toString())
         // Save this info and return the updated resource
-        ResourceController.setRemoteFiles(contentUploadUrl, remoteFiles).map(_.map(_ \ "resource"))
+        ResourceController.setRemoteFiles(contentUploadUrl, remoteFiles)
+          .map(_.map(_ \ "resource").collect { case v:JsDefined => v.get })
       }
       case None =>
         Future(None)
@@ -196,7 +198,8 @@ object ResourceHelper {
             val uploadUrl = (json \ "contentUploadUrl").as[String]
             // Set the new files
             val obj = Json.obj("remoteFiles" -> newFiles)
-            ResourceController.setRemoteFiles(uploadUrl, obj).map(_.map(_ \ "resource"))
+            ResourceController.setRemoteFiles(uploadUrl, obj)
+              .map(_.map(_ \ "resource").collect { case v:JsDefined => v.get })
           }
           case None =>
             Future(None)
@@ -260,7 +263,8 @@ object ResourceHelper {
 
                 // Set the new files
                 val obj = Json.obj("remoteFiles" -> newFiles)
-                ResourceController.setRemoteFiles(uploadUrl, obj).map(_.map(_ \ "resource"))
+                ResourceController.setRemoteFiles(uploadUrl, obj)
+                  .map(_.map(_ \ "resource").collect { case v:JsDefined => v.get })
               }
               case None =>
                 Future(None)

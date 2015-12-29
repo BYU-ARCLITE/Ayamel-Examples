@@ -1,6 +1,8 @@
 package controllers
 
 import authentication.Authentication
+import scala.concurrent._
+import ExecutionContext.Implicits.global
 import play.api.mvc._
 import models._
 import service.EmailTools
@@ -29,7 +31,7 @@ object Application extends Controller {
   def home = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        Ok(views.html.application.home(Course.list))
+        Future(Ok(views.html.application.home(Course.list)))
   }
 
   /**
@@ -38,11 +40,13 @@ object Application extends Controller {
   def search = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        request.queryString.get("query").flatMap(_.headOption).map { query =>
-          (Content.search(query), Course.search(query))
-        }.getOrElse((Nil, Nil)) match {
-          case (content, courses) =>
-            Ok(views.html.application.search(content, courses))
+        Future {
+          request.queryString.get("query").flatMap(_.headOption).map { query =>
+            (Content.search(query), Course.search(query))
+          }.getOrElse((Nil, Nil)) match {
+            case (content, courses) =>
+              Ok(views.html.application.search(content, courses))
+          }
         }
   }
 
@@ -52,7 +56,7 @@ object Application extends Controller {
   def about = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        Ok(views.html.application.about())
+        Future(Ok(views.html.application.about()))
   }
 
   /**
@@ -61,7 +65,7 @@ object Application extends Controller {
   def terms = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        Ok(views.html.application.terms())
+        Future(Ok(views.html.application.terms()))
   }
 
   /**
@@ -70,7 +74,7 @@ object Application extends Controller {
   def policy = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
-        Ok(views.html.application.policy())
+        Future(Ok(views.html.application.policy()))
   }
 
   /**
@@ -121,7 +125,7 @@ object Application extends Controller {
         case "rating" =>
           EmailTools.sendAdminNotificationEmail("notifications.notifyOn.rating", getThoughtInfo(description))
         }
-        Ok
+        Future(Ok)
   }
 
   /**
@@ -134,6 +138,6 @@ object Application extends Controller {
         val errorCode = request.body("errorCode")(0)
         val userId = user.id.get
         EmailTools.sendAdminNotificationEmail("notifications.notifyOn.errorReport", (errorCode, description, userId))
-        Ok
+        Future(Ok)
   }
 }

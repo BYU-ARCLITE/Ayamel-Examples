@@ -1,8 +1,8 @@
 package models
 
-import dataAccess.sqlTraits.{SQLSelectable, SQLDeletable, SQLSavable}
-import anorm.{~, Pk}
+import anorm._
 import anorm.SqlParser._
+import dataAccess.sqlTraits.{SQLSelectable, SQLDeletable, SQLSavable}
 import play.api.db.DB
 import play.api.Play.current
 
@@ -13,7 +13,7 @@ import play.api.Play.current
  * Time: 5:35 PM
  * To change this template use File | Settings | File Templates.
  */
-case class Setting(id: Pk[Long], name: String, value: String) extends SQLSavable with SQLDeletable {
+case class Setting(id: Option[Long], name: String, value: String) extends SQLSavable with SQLDeletable {
 
   /**
    * Saves the setting to the DB
@@ -21,7 +21,7 @@ case class Setting(id: Pk[Long], name: String, value: String) extends SQLSavable
    */
   def save: Setting = {
     if (id.isDefined) {
-      update(Setting.tableName, 'id -> id, 'name -> name, 'settingValue -> value)
+      update(Setting.tableName, 'id -> id.get, 'name -> name, 'settingValue -> value)
       this
     } else {
       val id = insert(Setting.tableName, 'name -> name, 'settingValue -> value)
@@ -43,7 +43,7 @@ object Setting extends SQLSelectable[Setting] {
   val tableName = "setting"
 
   val simple = {
-    get[Pk[Long]](tableName + ".id") ~
+    get[Option[Long]](tableName + ".id") ~
       get[String](tableName + ".name") ~
       get[String](tableName + ".settingValue") map {
       case id~name~value => Setting(id, name, value)

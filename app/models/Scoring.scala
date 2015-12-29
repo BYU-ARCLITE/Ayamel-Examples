@@ -1,8 +1,8 @@
 package models
 
-import anorm.{~, Pk}
-import dataAccess.sqlTraits.{SQLSelectable, SQLDeletable, SQLSavable}
+import anorm._
 import anorm.SqlParser._
+import dataAccess.sqlTraits.{SQLSelectable, SQLDeletable, SQLSavable}
 import play.api.db.DB
 import service.TimeTools
 import play.api.libs.json.Json
@@ -15,7 +15,7 @@ import play.api.Play.current
  * Time: 1:56 PM
  * To change this template use File | Settings | File Templates.
  */
-case class Scoring(id: Pk[Long], score: Double, possible: Double, results: List[Double], userId: Long, contentId: Long,
+case class Scoring(id: Option[Long], score: Double, possible: Double, results: List[Double], userId: Long, contentId: Long,
                     graded: String = TimeTools.now()) extends SQLSavable with SQLDeletable {
 
   /**
@@ -24,7 +24,7 @@ case class Scoring(id: Pk[Long], score: Double, possible: Double, results: List[
    */
   def save: Scoring = {
     if (id.isDefined) {
-      update(Scoring.tableName, 'id -> id, 'score -> score, 'possible -> possible, 'results -> results.mkString(","),
+      update(Scoring.tableName, 'id -> id.get, 'score -> score, 'possible -> possible, 'results -> results.mkString(","),
         'userId -> userId, 'contentId -> contentId, 'graded -> graded)
       this
     } else {
@@ -57,7 +57,7 @@ object Scoring extends SQLSelectable[Scoring] {
   val tableName = "scoring"
 
   val simple = {
-    get[Pk[Long]](tableName + ".id") ~
+    get[Option[Long]](tableName + ".id") ~
     get[Double](tableName + ".score") ~
     get[Double](tableName + ".possible") ~
     get[String](tableName + ".results") ~
@@ -84,7 +84,8 @@ object Scoring extends SQLSelectable[Scoring] {
   def listByUser(user: User): List[Scoring] =
     DB.withConnection {
       implicit connection =>
-        anorm.SQL("select * from " + tableName + " where userId = {id}").on('id -> user.id).as(simple *)
+        SQL("select * from " + tableName + " where userId = {id}")
+          .on('id -> user.id.get).as(simple *)
     }
 
   /**
@@ -95,7 +96,8 @@ object Scoring extends SQLSelectable[Scoring] {
   def listByContent(content: Content): List[Scoring] =
     DB.withConnection {
       implicit connection =>
-        anorm.SQL("select * from " + tableName + " where contentId = {id}").on('id -> content.id).as(simple *)
+        SQL("select * from " + tableName + " where contentId = {id}")
+          .on('id -> content.id.get).as(simple *)
     }
 
   /**

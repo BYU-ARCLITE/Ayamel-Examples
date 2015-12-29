@@ -1,9 +1,10 @@
 package controllers.ajax
 
+import scala.concurrent._
+import ExecutionContext.Implicits.global
 import controllers.authentication.Authentication
 import play.api.mvc.Controller
 import models.{ActivityObject, PageContext, ActivityContext, Activity, Content}
-import anorm.NotAssigned
 
 /**
  * Used for saving activity stream events
@@ -51,13 +52,13 @@ object ActivitySaver extends Controller {
           data("objectItemRef")
         )
         Activity(
-          NotAssigned,
+          None,
           user.id.get,
           data("verb"),
           activityContext,
           activityObject
         ).save
 
-        Ok
+        Future(Ok)
   }
 }

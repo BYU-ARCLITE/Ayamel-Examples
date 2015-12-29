@@ -1,0 +1,18 @@
+[info] Loading project definition from C:\Users\Logan\Documents\GitHub\Ayamel-Examples\project
+[info] Set current project to AyamelExamples (in build file:/C:/Users/Logan/Documents/GitHub/Ayamel-Examples/)
+[info] Compiling 6 Scala sources to C:\Users\Logan\Documents\GitHub\Ayamel-Examples\target\scala-2.11\classes...
+[error] C:\Users\Logan\Documents\GitHub\Ayamel-Examples\app\controllers\ContentController.scala:4: Result is renamed twice
+[error] import play.api.mvc.{Action, Result, Request, Controller, Result, ResponseHeader}
+[error]        ^
+[error] C:\Users\Logan\Documents\GitHub\Ayamel-Examples\app\service\ContentManagement.scala:14: Result is renamed twice
+[error] import play.api.mvc.{Result, Request, Controller, Result, ResponseHeader}
+[error]        ^
+[error] C:\Users\Logan\Documents\GitHub\Ayamel-Examples\app\dataAccess\GoogleFormScripts.scala:32: not found: type WSResponse
+[error]   private def runScript(url: String, parameters: Map[String, String] = Map()): Future[WSResponse] = {
+[error]                                                                                       ^
+[error] C:\Users\Logan\Documents\GitHub\Ayamel-Examples\app\dataAccess\ResourceController.scala:24: not found: type WSResponse
+[error]   def decode(r:WSResponse): Option[JsValue] = try {
+[error]                ^
+[error] four errors found
+[error] (compile:compile) Compilation failed
+[error] Total time: 19 s, completed Dec 30, 2015 5:26:02 PM

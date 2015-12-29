@@ -3,21 +3,20 @@ package controllers.authentication
 import java.security.SecureRandom
 import org.apache.commons.codec.binary.Base64
 import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, Future, blocking}
+import scala.concurrent._
+import ExecutionContext.Implicits.global
+import anorm._
 import anorm.SqlParser._
-import anorm.~
 
 import play.api.mvc.{Action, Controller}
 import play.api.mvc.Results.InternalServerError
 import play.api.db.DB
-import play.api.libs.ws.{WS, Response}
+import play.api.libs.ws.WS
 import play.api.libs.json.{Json, JsValue}
 import play.api.Logger
 import play.api.Play
 import play.api.Play.current
 import play.api.cache.Cache
-import concurrent.ExecutionContext
-import ExecutionContext.Implicits.global
 
 /**
  * Controller which handles Google authentication.
@@ -119,7 +118,7 @@ object Google extends Controller {
   /**
    * When the Google login is successful, it is redirected here, where user info is extracted and the user is logged in.
    */
-  def callback() = Action {
+  def callback() = Action.async {
     implicit request =>
 
       val redirect_uri = routes.Google.callback().absoluteURL(isHTTPS)
@@ -129,49 +128,52 @@ object Google extends Controller {
         .flatMap(retrieveStoredState)
 
       state match {
-        case None => Redirect(controllers.routes.Application.index())
-            .flashing("error" -> "Invalid Authentication. Perhaps you waited too long?")
+        case None =>
+          Future {
+            Redirect(controllers.routes.Application.index())
+              .flashing("error" -> "Invalid Authentication. Perhaps you waited too long?")
+          }
         case Some((action, path)) => try {
           val code = request.queryString.get("code").get
       
-          Async {
-            WS.url((getDiscoveryDoc \ "token_endpoint").as[String]).post(
-              Map(
-                "code" -> code,
-                "client_id" -> Seq(client_id),
-                "client_secret" -> Seq(client_secret),
-                "redirect_uri" -> Seq(redirect_uri),
-                "grant_type" -> Seq("authorization_code")
-              )
-            ).map { response =>
+          WS.url((getDiscoveryDoc \ "token_endpoint").as[String]).post(
+            Map(
+              "code" -> code,
+              "client_id" -> Seq(client_id),
+              "client_secret" -> Seq(client_secret),
+              "redirect_uri" -> Seq(redirect_uri),
+              "grant_type" -> Seq("authorization_code")
+            )
+          ).map { response =>
 
-              val id_token = (response.json \ "id_token").as[String]
-              val id_json = decodeIdTokenJson(id_token)
+            val id_token = (response.json \ "id_token").as[String]
+            val id_json = decodeIdTokenJson(id_token)
 
-              if((id_json \ "email_verified").as[Boolean]) {
-                val email = (id_json \ "email").as[String]
-                val user = Authentication.getAuthenticatedUser(email, 'google, None, Some(email))
-                if(action == "merge") {
-                  Authentication.merge(user)
-                } else {
-                  Authentication.login(user, path)
-                }
+            if((id_json \ "email_verified").as[Boolean]) {
+              val email = (id_json \ "email").as[String]
+              val user = Authentication.getAuthenticatedUser(email, 'google, None, Some(email))
+              if(action == "merge") {
+                Authentication.merge(user)
               } else {
-                Redirect(controllers.routes.Application.index())
-                  .flashing("error" ->
-                    """
-                    Sorry! We couldn't log you in because your email address has
-                    not been verified. Please go to your Google account and get
-                    your email verified before logging in with your Google account.
-                    """
-                  )
+                Authentication.login(user, path)
               }
+            } else {
+              Redirect(controllers.routes.Application.index())
+                .flashing("error" ->
+                  """
+                  Sorry! We couldn't log you in because your email address has
+                  not been verified. Please go to your Google account and get
+                  your email verified before logging in with your Google account.
+                  """
+                )
             }
           }
         } catch {
           case _ : Exception =>
-            Redirect(controllers.routes.Application.index())
-              .flashing("error" -> "Oops! Something went wrong! Try Again?")
+            Future {
+              Redirect(controllers.routes.Application.index())
+                .flashing("error" -> "Oops! Something went wrong! Try Again?")
+            }
         }
       }
   }

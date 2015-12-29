@@ -36,7 +36,7 @@ object Cas extends Controller {
       // Verify the TGT with CAS to get the user id
       val url = "https://cas.byu.edu/cas/serviceValidate?ticket=" + tgt + "&service=" + casService
 
-      // Don't use Async, but rather wait for a period of time because CAS sometimes times out.
+      // Don't use Action.async, but rather wait for a period of time because CAS sometimes times out.
       val r: Future[Result] = WS.url(url).get().map(response => {
         val xml = response.xml
         val username = ((xml \ "authenticationSuccess") \ "user").text

@@ -7,7 +7,6 @@ import service.FileUploader
 import scala.concurrent._
 import scala.concurrent.duration._
 import ExecutionContext.Implicits.global
-import anorm.NotAssigned
 import play.api.Logger
 import dataAccess.ResourceController
 
@@ -23,7 +22,7 @@ object Administration extends Controller {
     implicit request =>
       implicit user =>
         Authentication.enforcePermission("admin") {
-          Ok(views.html.admin.dashboard())
+          Future(Ok(views.html.admin.dashboard()))
         }
   }
 
@@ -35,7 +34,7 @@ object Administration extends Controller {
       implicit user =>
         Authentication.enforcePermission("admin") {
           val requests = SitePermissionRequest.list
-          Ok(views.html.admin.permissionRequests(requests))
+          Future(Ok(views.html.admin.permissionRequests(requests)))
         }
   }
 
@@ -47,10 +46,10 @@ object Administration extends Controller {
     implicit request =>
       implicit user =>
         Authentication.enforcePermission("admin") {
-		  for( id <- request.body.dataParts("reqid");
-		       req <- SitePermissionRequest.findById(id.toLong)
-		  ) { req.approve() }
-		  Ok
+          for( id <- request.body.dataParts("reqid");
+               req <- SitePermissionRequest.findById(id.toLong)
+          ) { req.approve() }
+          Future(Ok)
         }
   }
 
@@ -62,10 +61,10 @@ object Administration extends Controller {
     implicit request =>
       implicit user =>
         Authentication.enforcePermission("admin") {
-		  for( id <- request.body.dataParts("reqid");
-		       req <- SitePermissionRequest.findById(id.toLong)
-		  ) { req.deny(); }
-		  Ok
+          for( id <- request.body.dataParts("reqid");
+               req <- SitePermissionRequest.findById(id.toLong)
+          ) { req.deny(); }
+          Future(Ok)
         }
   }
 
@@ -76,7 +75,7 @@ object Administration extends Controller {
     implicit request =>
       implicit user =>
         Authentication.enforcePermission("admin") {
-          Ok(views.html.admin.users(User.list))
+          Future(Ok(views.html.admin.users(User.list)))
         }
   }
 
@@ -85,10 +84,10 @@ object Administration extends Controller {
    * @param id The ID of the user account
    * @param f The function which will be called with the user
    */
-  def getUser(id: Long)(f: User => Result)(implicit request: RequestHeader): Result = {
+  def getUser(id: Long)(f: User => Future[Result])(implicit request: RequestHeader): Future[Result] = {
     User.findById(id).map { user =>
       f(user.getAccountLink.flatMap(_.getPrimaryUser).getOrElse(user))
-    }.getOrElse(Errors.notFound)
+    }.getOrElse(Future(Errors.notFound))
   }
 
   /**
@@ -118,7 +117,10 @@ object Administration extends Controller {
                 }
               }
             }
-            Redirect(routes.Administration.manageUsers()).flashing("info" -> "User permissions updated")
+            Future {
+              Redirect(routes.Administration.manageUsers())
+                .flashing("info" -> "User permissions updated")
+            }
           }
         }
   }
@@ -137,12 +139,15 @@ object Administration extends Controller {
             // Send a notification to the user
             val message = request.body("message")(0)
             targetUser.sendNotification(message)
-            if(currentPage == 0) {
-              Redirect(routes.Administration.manageUsers()).flashing("info" -> "Notification sent to user")
-            } else if (currentPage == 1) {
-              Redirect(routes.Administration.manageCourses()).flashing("info" -> "Notification sent to user")
-            } else {
-              Redirect(routes.Application.home).flashing("info" -> "Notification sent to user")
+
+            Future {
+              Redirect(if(currentPage == 0) {
+                routes.Administration.manageUsers()
+              } else if (currentPage == 1) {
+                routes.Administration.manageCourses()
+              } else {
+                routes.Application.home
+              }).flashing("info" -> "Notification sent to user")
             }
           }
         }
@@ -156,12 +161,12 @@ object Administration extends Controller {
     implicit request =>
       implicit user =>
         Authentication.enforcePermission("admin") {
-          getUser(id) {
-            targetUser =>
-
-            // Delete the user
-              targetUser.delete()
-              Redirect(routes.Administration.manageUsers()).flashing("info" -> "User deleted")
+          getUser(id) { targetUser =>
+            targetUser.delete()
+            Future {
+              Redirect(routes.Administration.manageUsers())
+                .flashing("info" -> "User deleted")
+            }
           }
         }
   }
@@ -174,7 +179,7 @@ object Administration extends Controller {
       implicit user =>
         Authentication.enforcePermission("admin") {
           val courses = Course.list
-          Ok(views.html.admin.courses(courses))
+          Future(Ok(views.html.admin.courses(courses)))
         }
   }
 
@@ -186,11 +191,14 @@ object Administration extends Controller {
     implicit request =>
       implicit user =>
         Authentication.enforcePermission("admin") {
-          Courses.getCourse(id){  course =>
+          Courses.getCourse(id) { course =>
             // Update the course
             val params = request.body.mapValues(_(0))
             course.copy(name = params("name"), enrollment = Symbol(params("enrollment"))).save
-            Redirect(routes.Administration.manageCourses()).flashing("info" -> "Course updated")
+            Future {
+              Redirect(routes.Administration.manageCourses())
+                .flashing("info" -> "Course updated")
+            }
           }
         }
   }
@@ -203,13 +211,17 @@ object Administration extends Controller {
     implicit request =>
       implicit user =>
         Courses.getCourse(id) { course =>
-          if (user.hasCoursePermission(course, "deleteCourse")) {
-            course.delete()
-            Redirect(routes.Application.home).flashing("info" -> "Course deleted")
-          } else if(user.hasSitePermission("admin")) {
-            course.delete()
-            Redirect(routes.Administration.manageCourses()).flashing("info" -> "Course deleted")
-          } else Errors.forbidden
+          Future {
+            if (user.hasCoursePermission(course, "deleteCourse")) {
+              course.delete()
+              Redirect(routes.Application.home)
+                .flashing("info" -> "Course deleted")
+            } else if(user.hasSitePermission("admin")) {
+              course.delete()
+              Redirect(routes.Administration.manageCourses())
+                .flashing("info" -> "Course deleted")
+            } else Errors.forbidden
+          }
       }
   }
 
@@ -221,7 +233,7 @@ object Administration extends Controller {
       implicit user =>
         Authentication.enforcePermission("admin") {
           val content = Content.ownershipList
-          Ok(views.html.admin.content(content, ResourceController.baseUrl))
+          Future(Ok(views.html.admin.content(content, ResourceController.baseUrl)))
         }
   }
 
@@ -242,11 +254,11 @@ object Administration extends Controller {
                 content <- Content.findById(id.toLong)) {
               content.copy(shareability = shareability, visibility = visibility).save
             }
-            redirect.flashing("info" -> "Contents updated")
+            Future(redirect.flashing("info" -> "Contents updated"))
           } catch {
             case e: Throwable =>
               Logger.debug("Batch Update Error: " + e.getMessage())
-              redirect.flashing("error" -> ("Error while updating: "+e.getMessage()))
+              Future(redirect.flashing("error" -> ("Error while updating: "+e.getMessage())))
           }
         }
   }
@@ -258,7 +270,7 @@ object Administration extends Controller {
     implicit request =>
       implicit user =>
         Authentication.enforcePermission("admin") {
-          Ok(views.html.admin.homePageContent())
+          Future(Ok(views.html.admin.homePageContent()))
         }
   }
 
@@ -270,35 +282,37 @@ object Administration extends Controller {
       implicit user =>
         Authentication.enforcePermission("admin") {
           val redirect = Redirect(routes.Administration.homePageContent())
-          try {
-            val data = request.body.dataParts.mapValues(_(0))
-            val homePageContent = HomePageContent(NotAssigned,
-              data("title"),
-              data("text"),
-              data("link"),
-              data("linkText"),
-              data("background"),
-              active = false
-            )
+          Future {
+            try {
+              val data = request.body.dataParts.mapValues(_(0))
+              val homePageContent = HomePageContent(None,
+                data("title"),
+                data("text"),
+                data("link"),
+                data("linkText"),
+                data("background"),
+                active = false
+              )
 
-            (if (data("background").isEmpty) {
-              request.body.file("file").flatMap { file =>
-                Await.result(FileUploader.uploadFile(file), Duration.Inf).map { url =>
+              (if (data("background").isEmpty) {
+                request.body.file("file").flatMap { file =>
+                  Await.result(FileUploader.uploadFile(file), Duration.Inf).map { url =>
                     homePageContent.copy(background = url)
+                  }
                 }
+              } else {
+                  Some(homePageContent)
+              }) match {
+                case Some(hpc) =>
+                  hpc.save
+                  redirect.flashing("info" -> "Home page content created")
+                case None =>
+                  redirect.flashing("error" -> "Could not upload image")
               }
-            } else {
-                Some(homePageContent)
-            }) match {
-              case Some(hpc) =>
-                hpc.save
-                redirect.flashing("info" -> "Home page content created")
-              case None =>
-                redirect.flashing("error" -> "Could not upload image")
+            } catch {
+              case _ : Throwable =>
+                redirect.flashing("error" -> "Failed to create home page content")
             }
-          } catch {
-            case _ : Throwable =>
-              redirect.flashing("error" -> "Failed to create home page content")
           }
         }
   }
@@ -311,15 +325,17 @@ object Administration extends Controller {
     implicit request =>
       implicit user =>
         Authentication.enforcePermission("admin") {
-
-          HomePageContent.findById(id).map { homePageContent =>
-            homePageContent.copy(active = !homePageContent.active).save
-            val message =
-              if (homePageContent.active) "no longer active."
-              else "now active."
-            Redirect(routes.Administration.homePageContent()).flashing("info" -> ("Home page content is " + message))
-          }.getOrElse {
-            Errors.notFound
+          Future {
+            HomePageContent.findById(id).map { homePageContent =>
+              homePageContent.copy(active = !homePageContent.active).save
+              val message =
+                if (homePageContent.active) "no longer active."
+                else "now active."
+              Redirect(routes.Administration.homePageContent())
+                .flashing("info" -> ("Home page content is " + message))
+            }.getOrElse {
+              Errors.notFound
+            }
           }
         }
   }
@@ -332,13 +348,14 @@ object Administration extends Controller {
     implicit request =>
       implicit user =>
         Authentication.enforcePermission("admin") {
-
-          HomePageContent.findById(id).map { homePageContent =>
-            homePageContent.delete()
-            Redirect(routes.Administration.homePageContent())
-              .flashing("info" -> "Home page content deleted")
-          }.getOrElse {
-            Errors.notFound
+          Future {
+            HomePageContent.findById(id).map { homePageContent =>
+              homePageContent.delete()
+              Redirect(routes.Administration.homePageContent())
+                .flashing("info" -> "Home page content deleted")
+            }.getOrElse {
+              Errors.notFound
+            }
           }
         }
   }
@@ -350,7 +367,7 @@ object Administration extends Controller {
     implicit request =>
       implicit user =>
         Authentication.enforcePermission("admin") {
-          Ok(views.html.admin.settings(Setting.list))
+          Future(Ok(views.html.admin.settings(Setting.list)))
         }
   }
 
@@ -361,9 +378,14 @@ object Administration extends Controller {
     implicit request =>
       implicit user =>
         Authentication.enforcePermission("admin") {
-          request.body.mapValues(_(0)).foreach(data => Setting.findByName(data._1).get.copy(value = data._2).save)
-          request.body.mapValues(_(0)).foreach(data => Logger.debug(data._1 + ": " + data._2))
-          Redirect(routes.Administration.siteSettings()).flashing("info" -> "Settings updated")
+          request.body.mapValues(_(0)).foreach { data => 
+            Setting.findByName(data._1).get.copy(value = data._2).save
+            Logger.debug(data._1 + ": " + data._2)
+          }
+          Future {
+            Redirect(routes.Administration.siteSettings())
+              .flashing("info" -> "Settings updated")
+          }
         }
   }
 
@@ -375,14 +397,16 @@ object Administration extends Controller {
     implicit request =>
       implicit user =>
         Authentication.enforcePermission("admin") {
-
-          User.findById(id) match {
-          case Some(proxyUser) =>
-            Redirect(routes.Application.home()).withSession("userId" -> id.toString)
-              .flashing("info" -> ("You are now using the site as " + proxyUser.displayName + ". To end proxy you must log out then back in with your normal account."))
-          case _ =>
-            Redirect(routes.Application.home())
-              .flashing("info" -> ("Requested Proxy User Not Found"))
+          Future {
+            User.findById(id) match {
+            case Some(proxyUser) =>
+              Redirect(routes.Application.home())
+                .withSession("userId" -> id.toString)
+                .flashing("info" -> s"You are now using the site as ${proxyUser.displayName}. To end proxy you must log out then back in with your normal account.")
+            case _ =>
+              Redirect(routes.Application.home())
+                .flashing("info" -> ("Requested Proxy User Not Found"))
+            }
           }
         }
   }

@@ -1,7 +1,6 @@
-@(user: User, course: Course)(implicit request: RequestHeader)
-
 @import play.api.Play
 @import play.api.Play.current
+@(user: User, course: Course)(implicit request: RequestHeader)
 
 @defining(Play.configuration.getBoolean("HTTPS").getOrElse(false)) { isHTTPS =>
   @if(user.hasCoursePermission(course, "teacher")) {

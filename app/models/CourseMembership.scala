@@ -1,8 +1,8 @@
 package models
 
-import dataAccess.sqlTraits.{SQLSelectable, SQLDeletable, SQLSavable}
-import anorm.{~, Pk}
+import anorm._
 import anorm.SqlParser._
+import dataAccess.sqlTraits.{SQLSelectable, SQLDeletable, SQLSavable}
 import play.api.db.DB
 import play.api.Play.current
 
@@ -13,7 +13,7 @@ import play.api.Play.current
  * @param courseId The id of the course in which the user is enrolled
  * @param teacher Is the user a teacher?
  */
-case class CourseMembership(id: Pk[Long], userId: Long, courseId: Long, teacher: Boolean) extends SQLSavable with SQLDeletable {
+case class CourseMembership(id: Option[Long], userId: Long, courseId: Long, teacher: Boolean) extends SQLSavable with SQLDeletable {
 
   /**
    * Saves the course membership to the DB
@@ -21,15 +21,18 @@ case class CourseMembership(id: Pk[Long], userId: Long, courseId: Long, teacher:
    */
   def save: CourseMembership = {
     if (id.isDefined) {
-      update(CourseMembership.tableName, 'id -> id, 'userId -> userId, 'courseId -> courseId, 'teacher -> teacher)
+      update(CourseMembership.tableName, 'id -> id.get, 'userId -> userId, 'courseId -> courseId, 'teacher -> teacher)
       this
     } else {
       DB.withConnection {
         implicit connection =>
           // won't add users to the course if they are already enrolled in it
           // Don't use userIsEnrolled method because that takes objects, not IDs
-          if (anorm.SQL("select 1 from " + CourseMembership.tableName + " where userId = {uid} and courseId = {cid}")
-              .on('uid -> userId, 'cid -> courseId).list.isEmpty) {
+		  val result = SQL(s"select 1 from ${CourseMembership.tableName} where userId = {uid} and courseId = {cid}")
+            .on('uid -> userId, 'cid -> courseId)
+            .fold(0) { (c, _) => c + 1 } // fold SqlResult
+            .fold(_ => 0, c => c) // fold Either
+          if (result == 0) {
             val id = insert(CourseMembership.tableName, 'userId -> userId, 'courseId -> courseId, 'teacher -> teacher)
             this.copy(id)
           } else {
@@ -47,7 +50,7 @@ case class CourseMembership(id: Pk[Long], userId: Long, courseId: Long, teacher:
     val uid = this.userId
     DB.withConnection {
       implicit connection =>
-        anorm.SQL("delete from coursePermissions where courseId = {cid} and userId = {uid}")
+        SQL("delete from coursePermissions where courseId = {cid} and userId = {uid}")
           .on('cid -> cid, 'uid -> uid).execute()
     }
     delete(CourseMembership.tableName, id)
@@ -59,7 +62,7 @@ object CourseMembership extends SQLSelectable[CourseMembership] {
   val tableName = "courseMembership"
 
   val simple = {
-    get[Pk[Long]](tableName + ".id") ~
+    get[Option[Long]](tableName + ".id") ~
       get[Long](tableName + ".userId") ~
       get[Long](tableName + ".courseId") ~
       get[Boolean](tableName + ".teacher") map {
@@ -82,7 +85,8 @@ object CourseMembership extends SQLSelectable[CourseMembership] {
   def listByUser(user: User): List[CourseMembership] =
     DB.withConnection {
       implicit connection =>
-        anorm.SQL("select * from " + tableName + " where userId = {id}").on('id -> user.id).as(simple *)
+        SQL(s"select * from $tableName where userId = {id}")
+          .on('id -> user.id.get).as(simple *)
     }
 
   /**
@@ -93,7 +97,8 @@ object CourseMembership extends SQLSelectable[CourseMembership] {
   def listByCourse(course: Course): List[CourseMembership] =
     DB.withConnection {
       implicit connection =>
-        anorm.SQL("select * from " + tableName + " where courseId = {id}").on('id -> course.id).as(simple *)
+        SQL(s"select * from $tableName where courseId = {id}")
+          .on('id -> course.id.get).as(simple *)
     }
 
   /**
@@ -104,8 +109,12 @@ object CourseMembership extends SQLSelectable[CourseMembership] {
   def listUsersClasses(user: User): List[Course] = {
     DB.withConnection {
       implicit connection =>
-        anorm.SQL("select * from " + Course.tableName + " join " + tableName + " on " + Course.tableName + ".id = " +
-          tableName + ".courseId where " + tableName + ".userId = {id} order by name asc").on('id -> user.id).as(Course.simple *)
+        SQL(s"""
+          select * from ${Course.tableName} join $tableName
+          on ${Course.tableName}.id = ${tableName}.courseId
+          where ${tableName}.userId = {id}
+          order by name asc
+        """).on('id -> user.id.get).as(Course.simple *)
     }
   }
 
@@ -117,9 +126,12 @@ object CourseMembership extends SQLSelectable[CourseMembership] {
   def listTeacherClasses(user: User): List[Course] = {
     DB.withConnection {
       implicit connection =>
-        anorm.SQL("select * from " + Course.tableName + " join " + tableName + " on " + Course.tableName + ".id = " +
-          tableName + ".courseId where " + tableName + ".userId = {id} and " + tableName + ".teacher = true order by name asc")
-          .on('id -> user.id).as(Course.simple *)
+        SQL(s"""
+          select * from ${Course.tableName} join $tableName
+          on ${Course.tableName}.id = ${tableName}.courseId
+          where ${tableName}.userId = {id} and ${tableName}.teacher = true
+          order by name asc
+        """).on('id -> user.id.get).as(Course.simple *)
     }
   }
 
@@ -132,9 +144,12 @@ object CourseMembership extends SQLSelectable[CourseMembership] {
   def listClassMembers(course: Course, teacher: Boolean): List[User] = {
     DB.withConnection {
       implicit connection =>
-        anorm.SQL("select * from " + User.tableName + " join " + tableName + " on " + User.tableName + ".id = " +
-          tableName + ".userId where " + tableName + ".courseId = {id} and " + tableName + ".teacher = {teacher}")
-          .on('id -> course.id, 'teacher -> teacher).as(User.simple *)
+        SQL(s"""
+          select * from ${User.tableName} join $tableName
+          on ${User.tableName}.id = ${tableName}.userId
+          where ${tableName}.courseId = {id} and ${tableName}.teacher = {teacher}
+          order by name asc
+        """).on('id -> course.id.get, 'teacher -> teacher).as(User.simple *)
     }
   }
 
@@ -147,8 +162,11 @@ object CourseMembership extends SQLSelectable[CourseMembership] {
   def userIsEnrolled(user: User, course: Course): Boolean = {
     DB.withConnection {
       implicit connection =>
-        anorm.SQL("select 1 from " + tableName + " where userId = {uid} and courseId = {cid}")
-            .on('uid -> user.id, 'cid -> course.id).list.nonEmpty
+        val result = SQL(s"select 1 from $tableName where userId = {uid} and courseId = {cid}")
+          .on('uid -> user.id.get, 'cid -> course.id.get)
+          .fold(0) { (c, _) => c + 1 } // fold SqlResult
+          .fold(_ => 0, c => c) // fold Either
+        result > 0
     }
   }
 

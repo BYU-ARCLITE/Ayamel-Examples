@@ -1,8 +1,8 @@
 package models
 
-import anorm.{~, Pk}
-import dataAccess.sqlTraits.{SQLSelectable, SQLDeletable, SQLSavable}
+import anorm._
 import anorm.SqlParser._
+import dataAccess.sqlTraits.{SQLSelectable, SQLDeletable, SQLSavable}
 import play.api.db.DB
 import play.api.Play.current
 
@@ -12,7 +12,7 @@ import play.api.Play.current
  * @param userId The id of the owner
  * @param contentId The id of the content
  */
-case class ContentOwnership(id: Pk[Long], userId: Long, contentId: Long) extends SQLSavable with SQLDeletable {
+case class ContentOwnership(id: Option[Long], userId: Long, contentId: Long) extends SQLSavable with SQLDeletable {
 
   /**
    * Saves the content ownership to the DB
@@ -20,7 +20,7 @@ case class ContentOwnership(id: Pk[Long], userId: Long, contentId: Long) extends
    */
   def save: ContentOwnership = {
     if (id.isDefined) {
-      update(ContentOwnership.tableName, 'id -> id, 'userId -> userId, 'contentId -> contentId)
+      update(ContentOwnership.tableName, 'id -> id.get, 'userId -> userId, 'contentId -> contentId)
       this
     } else {
       val id = insert(ContentOwnership.tableName, 'userId -> userId, 'contentId -> contentId)
@@ -41,7 +41,7 @@ object ContentOwnership extends SQLSelectable[ContentOwnership] {
   val tableName = "contentOwnership"
 
   val simple = {
-    get[Pk[Long]](tableName + ".id") ~
+    get[Option[Long]](tableName + ".id") ~
       get[Long](tableName + ".userId") ~
       get[Long](tableName + ".contentId") map {
       case id ~ userId ~ contentId => ContentOwnership(id, userId, contentId)
@@ -69,7 +69,8 @@ object ContentOwnership extends SQLSelectable[ContentOwnership] {
   def findByContent(content: Content): ContentOwnership =
     DB.withConnection {
       implicit connection =>
-        anorm.SQL("select * from " + tableName + " where contentId = {id}").on('id -> content.id).as(simple.single)
+        SQL("select * from " + tableName + " where contentId = {id}")
+          .on('id -> content.id.get).as(simple.single)
     }
 
   /**
@@ -80,7 +81,8 @@ object ContentOwnership extends SQLSelectable[ContentOwnership] {
   def listByUser(user: User): List[ContentOwnership] =
     DB.withConnection {
       implicit connection =>
-        anorm.SQL("select * from " + tableName + " where " + tableName + ".userId = {userId}").on('userId -> user.id)
+        SQL("select * from " + tableName + " where " + tableName + ".userId = {userId}")
+          .on('userId -> user.id.get)
           .as(simple *)
     }
 	
@@ -93,7 +95,8 @@ object ContentOwnership extends SQLSelectable[ContentOwnership] {
     DB.withConnection {
       implicit connection =>
         anorm.SQL("select * from " + Content.tableName + " join " + tableName + " on " + Content.tableName + ".id = " +
-          tableName + ".contentId where " + tableName + ".userId = {userId}").on('userId -> user.id)
+          tableName + ".contentId where " + tableName + ".userId = {userId}")
+          .on('userId -> user.id.get)
           .as(Content.simple *)
     }
 }

@@ -1,9 +1,9 @@
 package models
 
-import anorm.{~, Pk}
-import service.TimeTools
-import dataAccess.sqlTraits.{SQLSelectable, SQLDeletable, SQLSavable}
+import anorm._
 import anorm.SqlParser._
+import dataAccess.sqlTraits.{SQLSelectable, SQLDeletable, SQLSavable}
+import service.TimeTools
 import play.api.db.DB
 import play.api.Play.current
 
@@ -14,7 +14,7 @@ import play.api.Play.current
  * @param message The content/message of the notification
  * @param dateSent When it was sent
  */
-case class Notification(id: Pk[Long], userId: Long, message: String, dateSent: String = TimeTools.now(),
+case class Notification(id: Option[Long], userId: Long, message: String, dateSent: String = TimeTools.now(),
                         messageRead: Boolean = false) extends SQLSavable with SQLDeletable {
 
   /**
@@ -23,7 +23,7 @@ case class Notification(id: Pk[Long], userId: Long, message: String, dateSent: S
    */
   def save: Notification = {
     if (id.isDefined) {
-      update(Notification.tableName, 'id -> id, 'userId -> userId, 'message -> message, 'dateSent -> dateSent,
+      update(Notification.tableName, 'id -> id.get, 'userId -> userId, 'message -> message, 'dateSent -> dateSent,
         'messageRead -> messageRead)
       this
     } else {
@@ -47,7 +47,7 @@ object Notification extends SQLSelectable[Notification] {
   val tableName = "notification"
 
   val simple = {
-    get[Pk[Long]](tableName + ".id") ~
+    get[Option[Long]](tableName + ".id") ~
       get[Long](tableName + ".userId") ~
       get[String](tableName + ".message") ~
       get[String](tableName + ".dateSent") ~
@@ -71,7 +71,8 @@ object Notification extends SQLSelectable[Notification] {
   def listByUser(user: User): List[Notification] =
     DB.withConnection {
       implicit connection =>
-        anorm.SQL("select * from " + tableName + " where userId = {id}").on('id -> user.id).as(simple *)
+        SQL("select * from " + tableName + " where userId = {id}")
+          .on('id -> user.id.get).as(simple *)
     }
 
   /**

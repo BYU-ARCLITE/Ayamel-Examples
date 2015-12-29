@@ -1,6 +1,5 @@
-@(title: String, moreDependencies: Include*)(content: Html)(implicit request: RequestHeader, user: User)
-
 @import views.html.resources._
+@(title: String, moreDependencies: Include*)(content: Html)(implicit request: RequestHeader, user: User)
 
 @notifications = @{user.getNotifications.filterNot(_.messageRead)}
 

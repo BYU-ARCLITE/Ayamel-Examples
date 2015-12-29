@@ -1,78 +1,75 @@
 @(content: models.Content, course: Option[Course], resourceLibraryUrl: String, user: User)
 
-@if(true) {
+<script type="text/javascript">
+	var courseId = @course.map(_.id.get).getOrElse(0);
+	var owner = @content.isEditableBy(user);
+	var teacher = @course.exists(c => user.hasCoursePermission(c, "teacher"));
+	var userId = @user.id.get;
+</script>
 
-    <script type="text/javascript">
-        var courseId = @course.map(_.id.get).getOrElse(0);
-        var owner = @content.isEditableBy(user);
-        var teacher = @course.exists(c => user.hasCoursePermission(c, "teacher"));
-        var userId = @user.id.get;
-    </script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/pageScripts/addRelatedDocs.js")"></script>
 
-    <script type="text/javascript" src="@routes.Assets.at("javascripts/pageScripts/addRelatedDocs.js")"></script>
+@if(content.contentType == 'video || content.contentType == 'audio) {
+	<div id="captionTrackModal" class="modal bigModal hide fade" tabindex="-1" role="dialog" aria-labelledby="captionTrackModalLabel" aria-hidden="true">
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">X</button>
+			<h3 id="captionTrackModalLabel">Captions/Subtitles</h3>
+		</div>
+		<div class="modal-body">
+			<div class="row-fluid">
+				<div class="span6">
+					<h4>Add/Edit Tracks</h4>
+					<div class="clearfix"></div>
+					<p>Add or edit caption tracks with CaptionAider.</p>
+					<a href="@routes.CaptionAider.view(content.id.get, 0)" class="btn btn-yellow"><i class="icon-desktop"></i> Launch CaptionAider</a>
 
-    @if(content.contentType == 'video || content.contentType == 'audio) {
-        <div id="captionTrackModal" class="modal bigModal hide fade" tabindex="-1" role="dialog" aria-labelledby="captionTrackModalLabel" aria-hidden="true">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">X</button>
-                <h3 id="captionTrackModalLabel">Captions/Subtitles</h3>
-            </div>
-            <div class="modal-body">
-                <div class="row-fluid">
-                    <div class="span6">
-                        <h4>Add/Edit Tracks</h4>
-                        <div class="clearfix"></div>
-                        <p>Add or edit caption tracks with CaptionAider.</p>
-                        <a href="@routes.CaptionAider.view(content.id.get, 0)" class="btn btn-yellow"><i class="icon-desktop"></i> Launch CaptionAider</a>
+					<hr>
 
-                        <hr>
+					<p>Upload caption track.</p>
+					<div id="captionsUpload"></div>
 
-                        <p>Upload caption track.</p>
-                        <div id="captionsUpload"></div>
+					<hr>
 
-                        <hr>
-
-                        <p>Caption tracks you can edit:</p>
-                        <div id="captionsTable"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <div>
-                    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
-                </div>
-            </div>
-        </div>
-    }
-
-    <div id="annotationsModal" class="modal bigModal hide fade" tabindex="-1" role="dialog" aria-labelledby="annotationsModalLabel" aria-hidden="true">
-        <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">X</button>
-            <h3 id="annotationsModalLabel">Annotations</h3>
-        </div>
-        <div class="modal-body">
-            <div class="row-fluid">
-                <div class="span6">
-                    <h4>Add/Edit Annotations</h4>
-                    <div class="clearfix"></div>
-                    <p>Add or edit annotations sets.</p>
-                    <a class="btn btn-yellow" href="@routes.DocumentManager.editAnnotations(content.id.get)"><i class="icon-file-text"></i> Launch Annotation Editor</a>
-
-                    <hr>
-
-                    <p>Upload annotations</p>
-                    <div id="annotationsUpload"></div>
-
-                    <hr>
-
-                    <div id="annotationsTable"></div>
-                </div>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <div>
-                <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
-            </div>
-        </div>
-    </div>
+					<p>Caption tracks you can edit:</p>
+					<div id="captionsTable"></div>
+				</div>
+			</div>
+		</div>
+		<div class="modal-footer">
+			<div>
+				<button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+			</div>
+		</div>
+	</div>
 }
+
+<div id="annotationsModal" class="modal bigModal hide fade" tabindex="-1" role="dialog" aria-labelledby="annotationsModalLabel" aria-hidden="true">
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">X</button>
+		<h3 id="annotationsModalLabel">Annotations</h3>
+	</div>
+	<div class="modal-body">
+		<div class="row-fluid">
+			<div class="span6">
+				<h4>Add/Edit Annotations</h4>
+				<div class="clearfix"></div>
+				<p>Add or edit annotations sets.</p>
+				<a class="btn btn-yellow" href="@routes.DocumentManager.editAnnotations(content.id.get)"><i class="icon-file-text"></i> Launch Annotation Editor</a>
+
+				<hr>
+
+				<p>Upload annotations</p>
+				<div id="annotationsUpload"></div>
+
+				<hr>
+
+				<div id="annotationsTable"></div>
+			</div>
+		</div>
+	</div>
+	<div class="modal-footer">
+		<div>
+			<button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+		</div>
+	</div>
+</div>

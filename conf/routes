@@ -117,7 +117,6 @@ POST    /admin/permission/approve               controllers.Administration.appro
 POST    /admin/permission/deny                  controllers.Administration.denyRequest()
 GET     /admin/users                            controllers.Administration.manageUsers
 POST    /admin/users/setPermission/:operation   controllers.Administration.setPermission(operation: String)
-POST    /admin/users/setPermission              controllers.Administration.setPermission(operation: String = "")
 POST    /admin/users/notify                     controllers.Administration.sendNotification(currentPage: Int)
 POST    /admin/users/:id/delete                 controllers.Administration.delete(id: Long)
 GET     /admin/courses                          controllers.Administration.manageCourses

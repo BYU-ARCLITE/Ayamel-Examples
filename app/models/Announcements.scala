@@ -1,8 +1,8 @@
 package models
 
-import anorm.{NotAssigned, ~, Pk}
-import dataAccess.sqlTraits.{SQLSelectable, SQLDeletable, SQLSavable}
+import anorm._
 import anorm.SqlParser._
+import dataAccess.sqlTraits.{SQLSelectable, SQLDeletable, SQLSavable}
 import play.api.db.DB
 import service.TimeTools
 import play.api.Play.current
@@ -14,7 +14,7 @@ import play.api.Play.current
  * Time: 3:48 PM
  * To change this template use File | Settings | File Templates.
  */
-case class Announcement(id: Pk[Long], courseId: Long, userId: Long, timeMade: String, content: String)
+case class Announcement(id: Option[Long], courseId: Long, userId: Long, timeMade: String, content: String)
   extends SQLSavable with SQLDeletable {
 
   /**
@@ -23,7 +23,7 @@ case class Announcement(id: Pk[Long], courseId: Long, userId: Long, timeMade: St
    */
   def save: Announcement = {
     if (id.isDefined) {
-      update(Announcement.tableName, 'id -> id, 'courseId -> courseId, 'userId -> userId, 'timeMade -> timeMade,
+      update(Announcement.tableName, 'id -> id.get, 'courseId -> courseId, 'userId -> userId, 'timeMade -> timeMade,
         'content -> content)
       this
     } else {
@@ -72,7 +72,7 @@ object Announcement extends SQLSelectable[Announcement] {
   val tableName = "announcement"
 
   val simple = {
-    get[Pk[Long]](tableName + ".id") ~
+    get[Option[Long]](tableName + ".id") ~
       get[Long](tableName + ".courseId") ~
       get[Long](tableName + ".userId") ~
       get[String](tableName + ".timeMade") ~
@@ -96,7 +96,7 @@ object Announcement extends SQLSelectable[Announcement] {
    * @return The newly created announcement
    */
   def create(course: Course, user: User, content: String): Announcement =
-    Announcement(NotAssigned, course.id.get, user.id.get, TimeTools.now(), content).save
+    Announcement(None, course.id.get, user.id.get, TimeTools.now(), content).save
 
   /**
    * Gets all announcements in the DB
@@ -112,7 +112,7 @@ object Announcement extends SQLSelectable[Announcement] {
   def listByCourse(course: Course): List[Announcement] =
     DB.withConnection {
       implicit connection =>
-        anorm.SQL("select * from " + tableName + " where courseId = {id}").on('id -> course.id).as(simple *)
+        SQL("select * from " + tableName + " where courseId = {id}").on('id -> course.id.get).as(simple *)
     }
 
   /**
@@ -123,7 +123,7 @@ object Announcement extends SQLSelectable[Announcement] {
   def listByUser(user: User): List[Announcement] =
     DB.withConnection {
       implicit connection =>
-        anorm.SQL("select * from " + tableName + " where userId = {id}").on('id -> user.id).as(simple *)
+        SQL("select * from " + tableName + " where userId = {id}").on('id -> user.id.get).as(simple *)
     }
 
   /**
@@ -132,7 +132,7 @@ object Announcement extends SQLSelectable[Announcement] {
    * @return The announcement
    */
   def fromFixture(data: (Long, Long, String, String)): Announcement =
-    Announcement(NotAssigned, data._1, data._2, data._3, data._4)
+    Announcement(None, data._1, data._2, data._3, data._4)
 
   /**
    * Delete an announcement by id

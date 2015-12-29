@@ -2,14 +2,13 @@ package dataAccess
 
 import scala.concurrent.{ExecutionContext, Future}
 import ExecutionContext.Implicits.global
-import play.api.libs.ws.{Response, WS}
+import play.api.libs.ws.{WS, WSResponse}
 import play.api.Play
 import play.api.Play.current
 import org.apache.http.client.utils.URLEncodedUtils
 import org.apache.http.message.BasicNameValuePair
 import collection.JavaConversions._
 import models.Scoring
-import anorm.NotAssigned
 
 /**
  * Question sets are just Forms in Google Drive.
@@ -29,7 +28,7 @@ object GoogleFormScripts {
    * @param parameters A key/value map of query string parameters
    * @return The response
    */
-  private def runScript(url: String, parameters: Map[String, String] = Map()): Future[Response] = {
+  private def runScript(url: String, parameters: Map[String, String] = Map()): Future[WSResponse] = {
     // Build the query string
     val queryString =
       if (parameters.isEmpty) "" else {
@@ -73,6 +72,6 @@ object GoogleFormScripts {
       val score = (json \ "score").as[Double]
       val possible = (json \ "possible").as[Double]
       val results = (json \ "results").as[List[Double]]
-      Scoring(NotAssigned, score, possible, results, 0, 0)
+      Scoring(None, score, possible, results, 0, 0)
     })
 }

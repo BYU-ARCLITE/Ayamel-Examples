@@ -1,8 +1,8 @@
 package models
 
-import anorm.{~, Pk}
-import dataAccess.sqlTraits.{SQLDeletable, SQLSavable, SQLSelectable}
+import anorm._
 import anorm.SqlParser._
+import dataAccess.sqlTraits.{SQLDeletable, SQLSavable, SQLSelectable}
 
 /**
  * Created with IntelliJ IDEA.
@@ -11,7 +11,7 @@ import anorm.SqlParser._
  * Time: 5:12 PM
  * To change this template use File | Settings | File Templates.
  */
-case class HelpPage(id: Pk[Long], title: String, contents: String, category: String) extends SQLSavable with SQLDeletable {
+case class HelpPage(id: Option[Long], title: String, contents: String, category: String) extends SQLSavable with SQLDeletable {
 
   /**
    * Saves the help page to the DB
@@ -19,7 +19,7 @@ case class HelpPage(id: Pk[Long], title: String, contents: String, category: Str
    */
   def save: HelpPage = {
     if (id.isDefined) {
-      update(HelpPage.tableName, 'id -> id, 'title -> title, 'contents -> contents, 'category -> category)
+      update(HelpPage.tableName, 'id -> id.get, 'title -> title, 'contents -> contents, 'category -> category)
       this
     } else {
       val id = insert(HelpPage.tableName, 'title -> title, 'contents -> contents, 'category -> category)
@@ -40,7 +40,7 @@ object HelpPage extends SQLSelectable[HelpPage] {
   val tableName = "helpPage"
 
   val simple = {
-    get[Pk[Long]](tableName + ".id") ~
+    get[Option[Long]](tableName + ".id") ~
       get[String](tableName + ".title") ~
       get[String](tableName + ".contents") ~
       get[String](tableName + ".category") map {

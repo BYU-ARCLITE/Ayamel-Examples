@@ -1,8 +1,8 @@
 package models
 
-import anorm.{~, Pk}
-import dataAccess.sqlTraits.{SQLSelectable, SQLDeletable, SQLSavable}
+import anorm._
 import anorm.SqlParser._
+import dataAccess.sqlTraits.{SQLSelectable, SQLDeletable, SQLSavable}
 import play.api.db.DB
 
 /**
@@ -12,7 +12,7 @@ import play.api.db.DB
  * Time: 3:26 PM
  * To change this template use File | Settings | File Templates.
  */
-case class HomePageContent(id: Pk[Long], title: String, text: String, link: String, linkText: String,
+case class HomePageContent(id: Option[Long], title: String, text: String, link: String, linkText: String,
                            background: String, active: Boolean) extends SQLSavable with SQLDeletable {
 
   /**
@@ -21,7 +21,7 @@ case class HomePageContent(id: Pk[Long], title: String, text: String, link: Stri
    */
   def save: HomePageContent = {
     if (id.isDefined) {
-      update(HomePageContent.tableName, 'id -> id, 'title -> title, 'text -> text, 'link -> link, 'linkText -> linkText,
+      update(HomePageContent.tableName, 'id -> id.get, 'title -> title, 'text -> text, 'link -> link, 'linkText -> linkText,
         'background -> background, 'active -> active)
       this
     } else {
@@ -45,7 +45,7 @@ object HomePageContent extends SQLSelectable[HomePageContent] {
   val tableName = "homePageContent"
 
   val simple = {
-    get[Pk[Long]](tableName + ".id") ~
+    get[Option[Long]](tableName + ".id") ~
       get[String](tableName + ".title") ~
       get[String](tableName + ".text") ~
       get[String](tableName + ".link") ~

@@ -3,7 +3,7 @@ package dataAccess
 import play.api.{Logger, Play}
 import Play.current
 import play.api.libs.json.{Json, JsObject, JsValue, JsUndefined}
-import play.api.libs.ws.{WS, Response}
+import play.api.libs.ws.{WS, WSResponse}
 import models.User
 import concurrent.Future
 import concurrent.ExecutionContext.Implicits.global
@@ -21,7 +21,7 @@ object ResourceController {
   val apiKey = Play.configuration.getString("resourceLibrary.apiKey").get
   val baseResourceUrl = Play.configuration.getString("resourceLibrary.baseUrl").get + "resources"
 
-  def decode(r:Response): Option[JsValue] = try {
+  def decode(r:WSResponse): Option[JsValue] = try {
     Some(r.json)
   } catch {
     case _: Exception => {

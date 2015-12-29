@@ -1,9 +1,10 @@
 package controllers.authentication
 
+import scala.concurrent._
+import ExecutionContext.Implicits.global
 import play.api.mvc._
 import play.api.Play.current
 import models.{User, SitePermissions}
-import anorm.NotAssigned
 import controllers.Errors
 import service.TimeTools
 
@@ -94,7 +95,7 @@ object Authentication extends Controller {
     // Check if the user is already created
     val user = User.findByAuthInfo(username, authScheme)
     user.getOrElse {
-      val user = User(NotAssigned, username, authScheme, username, name, email).save
+      val user = User(None, username, authScheme, username, name, email).save
       SitePermissions.assignRole(user, 'student)
       user
     }
@@ -109,11 +110,11 @@ object Authentication extends Controller {
   // ==========================
 
 
-  def enforcePermission(permission: String)(result: Result)(implicit request: Request[_], user: User): Result = {
+  def enforcePermission(permission: String)(result: Future[Result])(implicit request: Request[_], user: User): Future[Result] = {
     if (user.hasSitePermission(permission))
       result
     else
-      Errors.forbidden
+      Future { Errors.forbidden }
   }
 
   def getUserFromRequest()(implicit request: RequestHeader): Option[User] = {
@@ -123,14 +124,16 @@ object Authentication extends Controller {
   /**
    * A generic action to be used on authenticated pages.
    * @param f The action logic. A curried function which, given a request and the authenticated user, returns a result.
-   * @return The result. Either a redirect due to not being logged in, or the result returned by <strong>f</strong>.
+   * @return The result. Either a redirect due to not being logged in, or the result returned by f.
    */
-  def authenticatedAction[A](parser: BodyParser[A] = BodyParsers.parse.anyContent)(f: Request[A] => User => Result) = Action(parser) {
+  def authenticatedAction[A](parser: BodyParser[A] = BodyParsers.parse.anyContent)(f: Request[A] => User => Future[Result]) = Action.async(parser) {
     implicit request =>
-      getUserFromRequest().map( user => f(request)(user) ).getOrElse(
-        Redirect(controllers.routes.Application.index().toString(), Map("path" -> List(request.path)))
-          .flashing("alert" -> "You are not logged in")
-      )
+      getUserFromRequest().map( user => f(request)(user) ).getOrElse {
+        Future {
+          Redirect(controllers.routes.Application.index().toString(), Map("path" -> List(request.path)))
+            .flashing("alert" -> "You are not logged in")
+        }
+      }
   }
 
 }

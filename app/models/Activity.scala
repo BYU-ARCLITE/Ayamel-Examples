@@ -1,8 +1,8 @@
 package models
 
-import anorm.{~, Pk}
-import dataAccess.sqlTraits.{SQLDeletable, SQLSavable, SQLSelectable}
+import anorm._
 import anorm.SqlParser._
+import dataAccess.sqlTraits.{SQLDeletable, SQLSavable, SQLSelectable}
 import service.TimeTools
 import play.api.db.DB
 import play.api.Play.current
@@ -21,7 +21,7 @@ import play.api.Logger
  * @param activityContext An ActivityContext object describing the context wherein the user did the activity
  * @param activityObject If the activity involved an object, then this describes that object
  */
-case class Activity(id: Pk[Long], actor: Long, verb: String, activityContext: ActivityContext,
+case class Activity(id: Option[Long], actor: Long, verb: String, activityContext: ActivityContext,
                     activityObject: ActivityObject, published: String = TimeTools.now())
   extends SQLSavable with SQLDeletable {
 
@@ -31,7 +31,8 @@ case class Activity(id: Pk[Long], actor: Long, verb: String, activityContext: Ac
    */
   def save: Activity = {
     if (id.isDefined) {
-      update(Activity.tableName, 'id -> id,
+      update(Activity.tableName,
+        'id -> id.get,
         'actor -> actor,
         'verb -> verb,
         'pageCategory -> activityContext.pageContext.category,
@@ -94,7 +95,7 @@ object Activity extends SQLSelectable[Activity] {
   val tableName = "activity"
 
   val simple = {
-    get[Pk[Long]](tableName + ".id") ~
+    get[Option[Long]](tableName + ".id") ~
       get[Long](tableName + ".actor") ~
       get[String](tableName + ".verb") ~
       get[String](tableName + ".pageCategory") ~
@@ -135,7 +136,7 @@ object Activity extends SQLSelectable[Activity] {
   def listByPage(category: String, action: String, id: Long): List[Activity] =
     DB.withConnection {
       implicit connection =>
-        anorm.SQL("select * from " + tableName +
+        SQL("select * from " + tableName +
           " where pageCategory = {pageCategory} and pageAction like {pageAction} and pageId = {pageId}")
           .on('pageCategory -> category, 'pageAction -> ("%" + action), 'pageId -> id)
           .as(simple *)
@@ -149,6 +150,7 @@ object Activity extends SQLSelectable[Activity] {
   def listByUser(user: User): List[Activity] =
     DB.withConnection {
       implicit connection =>
-        anorm.SQL("select * from " + tableName + " where actor = {id}").on('id -> user.id).as(simple *)
+        SQL("select * from " + tableName + " where actor = {id}")
+          .on('id -> user.id.get).as(simple *)
     }
 }

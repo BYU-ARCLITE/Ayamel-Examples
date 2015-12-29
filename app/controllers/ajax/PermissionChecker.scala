@@ -7,7 +7,7 @@ import models.Course
 import service.DocumentPermissionChecker
 import scala.concurrent.{ExecutionContext, Future}
 import ExecutionContext.Implicits.global
-import play.api.libs.json.{JsArray, Json, JsValue}
+import play.api.libs.json._
 
 /**
  * Controller for checker users' permissions pertaining to content
@@ -36,16 +36,14 @@ object PermissionChecker extends Controller {
           val checker = new DocumentPermissionChecker(user, content, course, request.body("documentType")(0))
 
           // Look at the permission and call the appropriate function
-          Async {
-            (permission match {
-              case 'view => checker.checkViewable(ids)
-              case 'enable => checker.checkEnableable(ids)
-              case 'edit => checker.checkEditable(ids)
-              case _ => Future(Nil)
-            }).map { resources =>
-              //possible room for request minimization if this just returns complete resources instead
-              Ok(JsArray(resources.map(_ \ "id")))
-            }
+          (permission match {
+            case 'view => checker.checkViewable(ids)
+            case 'enable => checker.checkEnableable(ids)
+            case 'edit => checker.checkEditable(ids)
+            case _ => Future(Nil)
+          }).map { resources =>
+            //possible room for request minimization if this just returns complete resources instead
+            Ok(JsArray(resources.map(_ \ "id").collect { case v:JsDefined => v.get }))
           }
         }
   }

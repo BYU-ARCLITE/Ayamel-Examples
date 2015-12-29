@@ -4,6 +4,7 @@ import anorm._
 import anorm.SqlParser._
 import play.api.db.DB
 import play.api.Play.current
+import java.sql.Connection
 
 object SitePermissions {
   val tableName = "sitePermissions"
@@ -24,24 +25,30 @@ object SitePermissions {
   def listByUser(user: User): List[String] =
     DB.withConnection {
       implicit connection =>
-        anorm.SQL("select permission from " + tableName + " where userId = {uid}")
+        SQL(s"select permission from $tableName where userId = {uid}")
           .on('uid -> user.id.get)
-          .as(get[String](tableName + ".permission") *)
+          .as(get[String](s"${tableName}.permission") *)
     }
+
+  private def permissionExists(user: User, permission: String)(implicit connection: Connection): Boolean = {
+    val result = SQL(s"select 1 from $tableName where userId = {uid} and permission = {permission}")
+      .on('uid -> user.id.get, 'permission -> permission)
+      .fold(0) { (c, _) => c + 1 } // fold SqlResult
+      .fold(_ => 0, c => c) // fold Either
+    result > 0
+  }
 
   def userHasPermission(user: User, permission: String): Boolean =
     DB.withConnection {
       implicit connection =>
-        !(anorm.SQL("select 1 from " + tableName + " where userId = {uid} and permission = {permission}")
-            .on('uid -> user.id.get, 'permission -> permission).list.isEmpty)
+        permissionExists(user, permission)
     }
 
-  def addUserPermission(user: User, permission: String) = {
+  def addUserPermission(user: User, permission: String) {
     DB.withConnection {
       implicit connection =>
-        if (anorm.SQL("select 1 from " + tableName + " where userId = {uid} and permission = {permission}")
-            .on('uid -> user.id.get, 'permission -> permission).list.isEmpty) {
-          anorm.SQL("insert into " + tableName + " (userId, permission) values ({uid}, {permission})")
+        if (!permissionExists(user, permission)) {
+          SQL(s"insert into $tableName (userId, permission) values ({uid}, {permission})")
             .on('uid -> user.id.get, 'permission -> permission).executeUpdate()
         }
     }
@@ -52,14 +59,11 @@ object SitePermissions {
    * @param user User whose permission is to be removed
    * @param permission String name of the permission to search and delete
    */
-  def removeUserPermission(user: User, permission: String) = {
+  def removeUserPermission(user: User, permission: String) {
     DB.withConnection {
       implicit connection =>
-      if (anorm.SQL("select 1 from " + tableName + " where userId = {uid} and permission = {permission}")
-          .on('uid -> user.id.get, 'permission -> permission).list.nonEmpty) {
-        anorm.SQL("delete from " + tableName + " where userId = {uid} and permission = {permission}")
+        SQL(s"delete from $tableName where userId = {uid} and permission = {permission}")
           .on('uid -> user.id.get, 'permission -> permission).executeUpdate()
-      }
     }
   }
 
@@ -67,10 +71,10 @@ object SitePermissions {
    * removes all permissions for a user
    * @param user User whose permissions are to be removed
    */
-  def removeAllUserPermissions(user: User) = {
+  def removeAllUserPermissions(user: User) {
     DB.withConnection {
       implicit connection =>
-        anorm.SQL("delete from " + tableName + " where userId = {uid}")
+        SQL(s"delete from $tableName where userId = {uid}")
           .on('uid -> user.id.get).executeUpdate()
     }
   }

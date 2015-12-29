@@ -4,14 +4,13 @@ import concurrent.{ExecutionContext, Future}
 import controllers.authentication.Authentication
 import controllers._
 import models.{User, Content, Course}
-import anorm.NotAssigned
 import javax.imageio.ImageIO
 import java.io.File
 import java.net.URL
 import ExecutionContext.Implicits.global
 import play.api.libs.json.{JsValue, Json}
+import play.api.mvc._
 import play.api.mvc.Results._
-import play.api.mvc.{Result, Request, Controller, SimpleResult, ResponseHeader}
 
 case class ContentDescriptor(title: String, description: String, keywords: String, url: String, bytes: Long,
                              mime: String, thumbnail: Option[String] = None, labels: List[String] = Nil,
@@ -183,7 +182,7 @@ object ContentManagement {
           ResourceHelper.addThumbnail(resourceId, info.thumbnail.get)
 
         // Create the content and set the user and the owner
-        val content = Content(NotAssigned, info.title, 'video, info.thumbnail.getOrElse(""), resourceId, labels = info.labels).save
+        val content = Content(None, info.title, 'video, info.thumbnail.getOrElse(""), resourceId, labels = info.labels).save
         owner.addContent(content)
         content
       }
@@ -203,7 +202,7 @@ object ContentManagement {
         val resourceId = (json \ "id").as[String]
 
         // Create the content and set the user and the owner
-        val content = Content(NotAssigned, info.title, 'audio, info.thumbnail.getOrElse(""), resourceId, labels = info.labels).save
+        val content = Content(None, info.title, 'audio, info.thumbnail.getOrElse(""), resourceId, labels = info.labels).save
         owner.addContent(content)
         content
       }
@@ -223,7 +222,7 @@ object ContentManagement {
         val resourceId = (json \ "id").as[String]
 
         // Create the content and set the user and the owner
-        val content = Content(NotAssigned, info.title, 'text, info.thumbnail.getOrElse(""), resourceId, labels = info.labels).save
+        val content = Content(None, info.title, 'text, info.thumbnail.getOrElse(""), resourceId, labels = info.labels).save
         owner.addContent(content)
         content
       }
@@ -248,7 +247,7 @@ object ContentManagement {
         )
 
         // Create the content and set the user and the owner
-        val content = Content(NotAssigned, info.title, 'image, info.thumbnail.getOrElse(""), resourceId, labels = info.labels).save
+        val content = Content(None, info.title, 'image, info.thumbnail.getOrElse(""), resourceId, labels = info.labels).save
         owner.addContent(content)
         content
       }
