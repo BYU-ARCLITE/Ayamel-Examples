@@ -1,6 +1,6 @@
 package controllers
 
-import play.api.mvc._
+import play.api.mvc.Controller
 import controllers.authentication.Authentication
 import service.{DocumentPermissionChecker, AdditionalDocumentAdder, ResourceHelper, FileUploader}
 import java.io.{InputStream, ByteArrayInputStream, File}

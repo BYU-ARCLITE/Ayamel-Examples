@@ -11,7 +11,7 @@ import java.net.URL
 import ExecutionContext.Implicits.global
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Results._
-import play.api.mvc.{Action, Result, Request, Controller, SimpleResult, ResponseHeader}
+import play.api.mvc.{Result, Request, Controller, SimpleResult, ResponseHeader}
 
 case class ContentDescriptor(title: String, description: String, keywords: String, url: String, bytes: Long,
                              mime: String, thumbnail: Option[String] = None, labels: List[String] = Nil,

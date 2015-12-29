@@ -11,6 +11,7 @@ object ApplicationBuild extends Build {
     // Add your project dependencies here,
     jdbc,
     anorm,
+    cache,
     "mysql" % "mysql-connector-java" % "5.1.10",
     "commons-io" % "commons-io" % "2.4",
     "com.google.gdata" % "core" % "1.47.1",
@@ -25,7 +26,7 @@ object ApplicationBuild extends Build {
   val main = play.Project(appName, appVersion, appDependencies).settings(
     // Add your own project settings here
     resolvers += "xuggle repo" at "http://xuggle.googlecode.com/svn/trunk/repo/share/java/",
-	templatesImport += "dependencies._"
+    templatesImport += "dependencies._"
   )
 
 }

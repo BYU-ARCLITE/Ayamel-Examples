@@ -1,6 +1,6 @@
 package controllers
 
-import play.api.mvc.{Request, Controller}
+import play.api.mvc.{Controller, Request}
 import controllers.authentication.Authentication
 import play.api.libs.json.{JsString, JsArray, Json}
 import dataAccess.ResourceController
