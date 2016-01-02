@@ -46,48 +46,37 @@ var xApi = (function() {
             }
         }
         player.addEventListener("play", throttle(function(){
-            ActivityStreams.predefined.playClick("" + player.currentTime);
             xApi.predefined.playClick("" + player.currentTime);
         }, 500));
         player.addEventListener("pause", function(){
-            ActivityStreams.predefined.pauseClick("" + player.currentTime);
             xApi.predefined.pauseClick("" + player.currentTime);
         });
         player.addEventListener("ended", function(){
-            ActivityStreams.predefined.ended("" + player.currentTime);
             xApi.predefined.ended("" + player.currentTime);
         });
         player.addEventListener("timejump", function(e){
-            ActivityStreams.predefined.timeJump(""+e.detail.oldtime, ""+e.detail.newtime);
             xApi.predefined.timeJump(""+e.detail.oldtime, ""+e.detail.newtime);
         });
         player.addEventListener("captionJump", function(){
-            ActivityStreams.predefined.repeatCaption("" + player.currentTime);  
             xApi.predefined.repeatCaption("" + player.currentTime);
         });
         player.addEventListener("ratechange", throttle(function(){
-            ActivityStreams.predefined.rateChange(""+player.currentTime, ""+player.playbackRate);
             xApi.predefined.rateChange(""+player.currentTime, ""+player.playbackRate);
         }, 1000));
         player.addEventListener("volumechange", throttle(function(){
             if(player.muted){ return; }
-            ActivityStreams.predefined.volumeChange(""+player.currentTime, ""+player.volume);
             xApi.predefined.volumeChange(""+player.currentTime, ""+player.volume);
         }, 1000));
         player.addEventListener("mute", function(){
-            ActivityStreams.predefined.volumeChange(""+player.currentTime, "0");
             xApi.predefined.mute(""+player.currentTime, "0");
         });
         player.addEventListener("unmute", function(){
-            ActivityStreams.predefined.volumeChange(""+player.currentTime, player.volume);
             xApi.predefined.unmute(""+player.currentTime, player.volume);
         });
         player.addEventListener("enterfullscreen", function(){
-            ActivityStreams.predefined.enterFullscreen(""+player.currentTime);
             xApi.predefined.enterFullscreen(""+player.currentTime);
         });
         player.addEventListener("exitfullscreen", function(){
-            ActivityStreams.predefined.exitFullscreen(""+player.currentTime);
             xApi.predefined.exitFullscreen(""+player.currentTime);
         });
         player.addEventListener("enabletrack", function(e){

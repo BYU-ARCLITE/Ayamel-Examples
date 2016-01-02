@@ -1,4 +1,4 @@
-# --- Adding activity streams
+# --- Adding help page categories
 
 # --- !Ups
 

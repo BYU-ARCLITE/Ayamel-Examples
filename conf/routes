@@ -53,9 +53,6 @@ POST    /course/:id/remove/:studentId                   controllers.Courses.remo
 POST    /course/:id/setPermission/:operation            controllers.Courses.setPermission(id: Long, operation: String)
 GET     /course/:courseId/content/:id                   controllers.CourseContent.viewInCourse(id: Long, courseId: Long)
 POST    /course/:courseId/content/:id/lti               controllers.CourseContent.ltiAccess(id: Long, courseId: Long)
-GET     /course/:courseId/content/:id/stats             controllers.CourseContent.statsInCourse(id: Long, courseId: Long)
-GET     /course/:courseId/content/:id/stats/download    controllers.CourseContent.downloadStatsInCourse(id: Long, courseId: Long)
-POST    /course/:courseId/content/:id/stats/clear       controllers.CourseContent.clearStatsInCourse(id: Long, courseId: Long)
 POST    /course/:courseId/content/:id/remove            controllers.CourseContent.removeFromCourse(id: Long, courseId: Long)
 
 # Content pages
@@ -72,9 +69,6 @@ POST    /content/create/resource           controllers.ContentController.createF
 POST    /content/create/playlist           controllers.ContentController.createPlaylist(courseId: Long)
 POST    /content/create/questions          controllers.ContentController.createQuestionSet(courseId: Long)
 GET     /content/:id                       controllers.ContentController.view(id: Long)
-GET     /content/:id/stats                 controllers.ContentController.stats(id: Long)
-GET     /content/:id/stats/download        controllers.ContentController.downloadStats(id: Long)
-POST    /content/:id/stats/clear           controllers.ContentController.clearStats(id: Long)
 GET     /content/:id/json                  controllers.ContentController.getAsJson(id: Long)
 POST    /content/:id/delete                controllers.ContentController.delete(id: Long)
 POST    /content/:id/clone                 controllers.ContentController.cloneContent(id: Long)
@@ -158,7 +152,6 @@ POST    /help/:id/edit                      controllers.HelpPages.save(id: Long)
 POST    /help/:id/delete                    controllers.HelpPages.delete(id: Long)
 
 # Ajax utilities
-POST    /ajax/activity                      controllers.ajax.ActivitySaver.save
 POST    /ajax/permissionChecker             controllers.ajax.PermissionChecker.check
 GET     /ajax/content/mine                  controllers.ajax.ContentLister.mine
 GET     /ajax/content/course                controllers.ajax.ContentLister.course

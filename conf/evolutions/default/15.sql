@@ -1,4 +1,4 @@
-# --- Adding activity streams
+# --- Adding course enrollment settings
 
 # --- !Ups
 

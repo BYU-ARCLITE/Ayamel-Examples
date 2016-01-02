@@ -84,7 +84,6 @@ var ContentRenderer = (function(){
                 break;
             default: return;
             }
-            ActivityStreams.predefined[activityType](resourceMap.get(data.cue.track).id, data.cue.id, detail.text);
             xApi.predefined[activityType](resourceMap.get(data.cue.track).id, data.cue.id, detail.text);
             player.pause();
         });
@@ -191,7 +190,6 @@ var ContentRenderer = (function(){
             var trackID = trackResources.get(event.detail.track).id;
 
             player.currentTime = event.detail.cue.startTime;
-            ActivityStreams.predefined.transcriptCueClick(trackID, event.detail.cue.id);
             xApi.predefined.transcriptCueClick(trackID, event.detail.cue.id);
         });
 
@@ -264,7 +262,6 @@ var ContentRenderer = (function(){
             }
             // Find the annotation doc
             var annotationDocId = "Unknown";
-            ActivityStreams.predefined.viewTextAnnotation(annotationDocId, event.detail.text);
             xApi.predefined.viewTextAnnotation(annotationDocId, event.detail.text);
 
             tab.select();

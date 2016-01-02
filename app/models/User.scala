@@ -64,9 +64,6 @@ case class User(id: Option[Long], authId: String, authScheme: Symbol, username: 
     // Delete the user's notifications
     Notification.listByUser(this).foreach(_.delete())
 
-    // Delete the user's activities
-    Activity.listByUser(this).foreach(_.delete())
-
     // Delete add course requests
     AddCourseRequest.listByUser(this).foreach(_.delete())
 

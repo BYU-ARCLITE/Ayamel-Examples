@@ -47,8 +47,6 @@
             // configure the learning locker connection
             xApi.connect(llendpoint, llusername, llpwd);
 
-            // Register the page for later activity stream calls
-            ActivityStreams.registerPage("content", "@{course.map(c => "course_" + c.id.get + ":").getOrElse("")}view", @{content.id.get});
             xApi.registerPage({
                 page:{
                     "category":"content",
@@ -71,7 +69,6 @@
             });
 
             // Save the page load
-            ActivityStreams.predefined.pageLoad();
             xApi.predefined.pageLoad();
         }
     </script>
@@ -122,7 +119,6 @@
 											<ul class="dropdown-menu">
 											  @if(user.get.hasCoursePermission(course.get, "teacher")) {
 												<li><a href="#lmsModal" data-toggle="modal"><i class="icon-briefcase"></i> Add to LMS</a></li>
-												<li><a href="@routes.CourseContent.statsInCourse(content.id.get, course.get.id.get)"><i class="icon-bar-chart"></i> View course stats</a></li>
 											  }
 											  @if(user.get.hasCoursePermission(course.get, "removeContent")) {
 												<li><a href="#" id="courseremovebtn"><i class="icon-remove"></i> Remove from course</a></li>
@@ -167,7 +163,6 @@
                                                 <li><a href="@routes.ContentEditing.editImage(content.id.get)?course=@course.map(_.id.get).getOrElse(0)"><i class="icon-crop"></i> Edit image</a></li>
                                             }
                                             <li class="divider"></li>
-                                            <li><a href="@routes.ContentController.stats(content.id.get)"><i class="icon-bar-chart"></i> View stats</a></li>
                                             <li><a href="#deleteModal" data-toggle="modal"><i class="icon-trash"></i> Delete</a></li>
                                         </ul>
                                         @views.html.content.header.settings(content, resourceLibraryUrl, user.get)

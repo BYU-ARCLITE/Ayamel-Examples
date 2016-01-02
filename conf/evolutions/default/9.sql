@@ -1,4 +1,4 @@
-# --- Adding activity streams
+# --- Adding home page banner content
 
 # --- !Ups
 

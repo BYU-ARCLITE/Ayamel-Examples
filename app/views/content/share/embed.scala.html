@@ -34,8 +34,7 @@
                 JS("xapiwrapper.min.js")),
               JS("polyfills/Map.js"),
               JS("contentSelection/ContentItemRenderer.js"),
-              JS("xApi.js"),
-              JS("ActivityStreams.js"))),
+              JS("xApi.js"))),
           Extern("EditorWidgets",
             CSS("css/SuperSelect.css"),
             JS("js/SuperSelect.js"))
@@ -56,8 +55,6 @@
 				// configure the learning locker connection
 				xApi.connect(llendpoint, llusername, llpwd);
 
-				// Register the page for later activity stream calls
-				ActivityStreams.registerPage("content", "@{course.map(c => "course_" + c.id.get + ":").getOrElse("")}view", @{content.id.get});
 				xApi.registerPage({
 					page:{
 						"category":"content",
@@ -88,7 +85,6 @@
                 }, false);
 
 				// Save the page load
-				ActivityStreams.predefined.pageLoad();
 				xApi.predefined.pageLoad();
             }
         </script>

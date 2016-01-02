@@ -180,15 +180,9 @@ case class Content(id: Option[Long], name: String, contentType: Symbol, thumbnai
 
   val cacheTarget = this
   object cache {
-    var activity: Option[List[Activity]] = None
     var owner: Option[User] = None
     var scorings: Option[List[Scoring]] = None
 
-    def getActivity: List[Activity] = {
-      if (activity.isEmpty)
-        activity = Some(Activity.listByPage("content", "view", id.get))
-      activity.get
-    }
 
     def getOwner: Option[User] = {
       if (owner.isEmpty)
@@ -207,13 +201,6 @@ case class Content(id: Option[Long], name: String, contentType: Symbol, thumbnai
 
   def getScorings = cache.getScorings
 
-  def getActivity(coursePrefix: String) = cache.getActivity.filter(_.activityContext.pageContext.action.startsWith(coursePrefix))
-
-  def translations(coursePrefix: String) = getActivity(coursePrefix).filter(_.verb == "translate")
-
-  def annotations(coursePrefix: String) = getActivity(coursePrefix).filter(_.verb == "view annotation")
-
-  def cueClicks(coursePrefix: String) = getActivity(coursePrefix).filter(_.verb == "cueClick")
 }
 
 object Content extends SQLSelectable[Content] {

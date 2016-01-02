@@ -1,7 +1,7 @@
 package controllers
 
 import play.api.mvc.{Action, Controller, Result, ResponseHeader}
-import service.{TimeTools, MobileDetection, ExcelWriter, LMSAuth}
+import service.{TimeTools, MobileDetection, LMSAuth}
 import play.core.parsers.FormUrlEncodedParser
 import controllers.authentication.Authentication
 import play.api.Play
@@ -66,70 +66,6 @@ object CourseContent extends Controller {
           }
         }
       }
-  }
-
-  /**
-   * Content stats page within a course
-   */
-  def statsInCourse(id: Long, courseId: Long) = Authentication.authenticatedAction() {
-    implicit request =>
-      implicit user =>
-        Courses.getCourse(courseId) { course =>
-          if (user.hasCoursePermission(course, "teacher") || user.hasCoursePermission(course, "viewData")) {
-            ContentController.getContent(id) { content =>
-              Future(Ok(views.html.content.stats(content, ResourceController.baseUrl, Some(course))))
-            }
-          } else
-            Future(Errors.forbidden)
-        }
-  }
-
-  /**
-   * Takes the course stats and prepares an Excel file with them in it, then offers the file for download
-   * @param id The ID of the content for which the stats are being downloaded
-   */
-  def downloadStatsInCourse(id: Long, courseId: Long) = Authentication.authenticatedAction() {
-    implicit request =>
-      implicit user =>
-        Courses.getCourse(courseId) { course =>
-          if (user.hasCoursePermission(course, "teacher") || user.hasCoursePermission(course, "viewData")) {
-            ContentController.getContent(id) { content =>
-              val coursePrefix = "course_" + course.id.get + ":"
-              val activity = content.getActivity(coursePrefix)
-              val byteStream = ExcelWriter.writeActivity(activity)
-              val output = Enumerator.fromStream(byteStream)
-			  Future {
-                Result(
-                  header = ResponseHeader(200),
-                  body = output
-                ).withHeaders("Content-Type" -> "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-			  }
-            }
-		  } else
-            Future(Errors.forbidden)
-        }
-  }
-
-  /**
-   * Deletes the course stats pertaining to a certain content object
-   * @param id The ID of the content object
-   */
-  def clearStatsInCourse(id: Long, courseId: Long) = Authentication.authenticatedAction() {
-    implicit request =>
-      implicit user =>
-        Courses.getCourse(courseId) { course =>
-          if (user.hasCoursePermission(course, "teacher")) {
-            ContentController.getContent(id) { content =>
-              val coursePrefix = "course_" + course.id.get + ":"
-              content.getActivity(coursePrefix).foreach(_.delete())
-              Future { 
-                Redirect(routes.CourseContent.statsInCourse(content.id.get, course.id.get))
-                 .flashing("info" -> "Data cleared")
-              }
-            }
-          } else
-            Future(Errors.forbidden)
-        }
   }
 
   /**
