@@ -8,7 +8,7 @@ $(function(){
         multiple="true"\
         options="{{permissionList}}"\
     />{{/teacher}}\
-    <table class="table table-bordered table-condensed">\
+    <table class="table table-bordered table-condensed" id="studentTable" >\
         <tr>\
             <th>Username</th><th>Name</th><th>Email</th>\
             {{#teacher}}<th>Permissions</th><th>Actions</th>{{/teacher}}\
@@ -101,16 +101,24 @@ $(function(){
 
     utable.on('removeUser', function(e,uid){
         //TODO: make this more AJAX-y, so it doesn't have to reload the whole page
-        var xhr = new XMLHttpRequest();
-        xhr.addEventListener('load',function(){
-            if(history.pushState){ history.pushState(null,"",xhr.responseURL); }
-            document.open();
-            document.write(xhr.responseText);
-            document.close();
-        },false);
-        xhr.addEventListener('error',function(){ alert("Error removing course member."); },false);
-        xhr.open("POST", "/course/"+courseId+"/remove/"+uid);
-        xhr.send();
+        function getUsername(i){ return document.getElementById("studentTable").rows[i].cells[1].innerHTML; }
+        var index = Number(e.keypath.substring(6)) + 1;
+        var username = getUsername(index);
+
+        // change "this user" to actual username
+        if(confirm("Are you sure you want to remove " + username + " from the course?"))
+        {
+            var xhr = new XMLHttpRequest();
+            xhr.addEventListener('load',function(){
+                if(history.pushState){ history.pushState(null,"",xhr.responseURL); }
+                document.open();
+                document.write(xhr.responseText);
+                document.close();
+            },false);
+            xhr.addEventListener('error',function(){ alert("Error removing course member."); },false);
+            xhr.open("POST", "/course/"+courseId+"/remove/"+uid);
+            xhr.send();
+        }
     });
 
     utable.on('addsel', function(){
