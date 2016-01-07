@@ -107,13 +107,14 @@
                 text: "text",
                 application: "text"
             },
-            langList = Object.keys(Ayamel.utils.p1map).map(function (p1) {
-                    var code = Ayamel.utils.p1map[p1];
-                    return {value: code, text: Ayamel.utils.getLangName(code)};
-                }).sort(function(a,b){ return a.text.localeCompare(b.text); });
+            langList = Object.keys(Ayamel.utils.p1map).map(function (p1){
+                var code = Ayamel.utils.p1map[p1];
+                return {value: code, text: Ayamel.utils.getLangName(code)};
+            }).sort(function(a,b){ return a.text.localeCompare(b.text); });
 
-            function isSpecial(uri){
-                return (
+            function getType(uri){
+                var mime;
+                if(
                     // YouTube
                     uri.indexOf("youtube://") === 0 ||
                     /^https?:\/\/www\.youtube\.com\/watch\?v=/.test(uri) ||
@@ -129,7 +130,16 @@
                     uri.substr(0,36) === "https://player.ooyala.com/iframe.js#" ||
                     // Flash / Adobe Media Server
                     /^rtmp.?:\/\//.test(uri)
-                );
+                ){ return "video"; }
+
+                mime = Ayamel.utils.mimeFromFilename(uri);
+                if(
+                    mime === 'application/dash+xml' ||
+                    mime === 'application/x-mpegURL' ||
+                    mime === 'application/vnd.apple.mpegURL'
+                ){ return "video"; }
+
+                return typeMap[mime.split('/')[0]];
             }
 
             new EditorWidgets.SuperSelect({
@@ -148,10 +158,7 @@
 
             document.getElementById("url").addEventListener('change', function(){
                 var uri = this.value;
-                document.getElementById("contentType").value = typeMap[
-                    isSpecial(uri)?"video":
-                    Ayamel.utils.mimeFromFilename(uri).split("/")[0]
-                ];
+                document.getElementById("contentType").value = getType(uri);
             });
         });
     </script>

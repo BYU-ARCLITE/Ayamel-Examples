@@ -85,6 +85,7 @@
         JS("flowplayer/flowplayer-3.2.12.min.js"),
         JS("markdown/markdown.min.js"),
         JS("hls/HLSPlayer.min.js"),
+        JS("dash/dash.all.js"),
         JS("flashVideo.js"),
         JS("brightcove.js"),
         JS("html5Video.js"),
@@ -96,7 +97,8 @@
         JS("plainText.js"),
         JS("timedFallback.js"),
         JS("ooyala.js"),
-        JS("vimeo.js")))))
+        JS("vimeo.js"),
+        JS("dashVideo.js")))))
 
 <script>
     Ayamel.path = "@{Dependencies.config.getString("Ayamel.js").getOrElse("(function(){ throw \"Missing Ayamel.js Path\";})()")}";
