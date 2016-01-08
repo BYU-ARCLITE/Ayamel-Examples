@@ -2,7 +2,8 @@ package models
 
 import anorm._
 import anorm.SqlParser._
-import dataAccess.sqlTraits.{SQLDeletable, SQLSelectable, SQLSavable}
+import java.sql.SQLException
+import dataAccess.sqlTraits._
 import play.api.db.DB
 import play.api.Play.current
 import play.api.Logger
@@ -29,10 +30,10 @@ case class User(id: Option[Long], authId: String, authScheme: Symbol, username: 
    * Saves the user to the DB
    * @return The possibly updated user
    */
-  def save: User = {
+  def save =
     if (id.isDefined) {
       update(User.tableName,
-        'id -> id.get, 'authId -> authId, 'authScheme -> authScheme.name,
+        'authId -> authId, 'authScheme -> authScheme.name,
         'username -> username, 'name -> name, 'email -> email, 'picture -> picture,
         'accountLinkId -> accountLinkId, 'created -> created, 'lastLogin -> lastLogin
       )
@@ -45,7 +46,6 @@ case class User(id: Option[Long], authId: String, authScheme: Symbol, username: 
       )
       this.copy(id)
     }
-  }
 
   /**
    * Deletes the user from the DB
@@ -56,47 +56,37 @@ case class User(id: Option[Long], authId: String, authScheme: Symbol, username: 
 
     DB.withConnection { implicit connection =>
       try {
-        // Delete enrollment in courses
-        SQL"delete from courseMembership where userId = {id}"
-          .on('id -> id.get).execute()
+	    BatchSql(
+		  "delete from {table} where userId = {id}",
+		  List('table -> "courseMembership", 'id -> id.get),
+		  List('table -> "announcement", 'id -> id.get),
+		  List('table -> "notification", 'id -> id.get),
+		  List('table -> "addCourseRequest", 'id -> id.get),
+		  List('table -> "sitePermissionRequest", 'id -> id.get),
+		  List('table -> "sitePermissions", 'id -> id.get)
+		)
 
-        // Delete the announcements
-        SQL"delete from announcement where userId = {id}"
-          .on('id -> id.get).execute()
-
-        // Delete the notifications
-        SQL"delete from notification where userId = {id}"
-          .on('id -> id.get).execute()
-
-        // Delete add course requests
-        SQL"delete from addCourseRequest where userId = {id}"
-          .on('id -> id.get).execute()
- 
-        // Delete permission requests
-        SQL"delete from sitePermissionRequest where userId = {id}"
-          .on('id -> id.get).execute()
-
-        // Delete permissions
-        SQL"delete from sitePermissions where userId = {id}"
-          .on('id -> id.get).execute()
+        // Delete all linked accounts
+        getAccountLink.map { accountLink =>
+          if (accountLink.primaryAccount == id.get) {
+            val params = accountLink.userIds.filterNot(_ == id.get)
+              .map { uid =>  List(NamedParameter.symbol('id -> uid)) }
+			  .toList
+            BatchSql(
+              s"delete from $User.tableName where id = {id}",
+              params.head, params.tail:_*
+            ).execute()
+          }
+        }
 
       } catch {
-        case e: Exception =>
+        case e: SQLException =>
           Logger.debug("Failed to delete User data")
           Logger.debug(e.getMessage())
       }
-	}
-        
-    // Delete all linked accounts
-    getAccountLink.map { accountLink =>
-      if (accountLink.primaryAccount == id.get) {
-        accountLink.userIds.filterNot(_ == id.get).foreach { uid =>
-          delete(User.tableName, Some(uid))
-        }
-      }
     }
 
-    delete(User.tableName, id)
+    delete(User.tableName)
   }
 
 
@@ -517,7 +507,7 @@ object User extends SQLSelectable[User] {
    * @param id The id of the user.
    * @return If a user was found, then Some[User], otherwise None
    */
-  def findById(id: Long): Option[User] = findById(User.tableName, id, simple)
+  def findById(id: Long): Option[User] = findById(id, simple)
 
   /**
    * Search the DB for a user with the given authentication info
@@ -528,11 +518,11 @@ object User extends SQLSelectable[User] {
   def findByAuthInfo(authId: String, authScheme: Symbol): Option[User] = {
     DB.withConnection { implicit connection =>
       try {
-        SQL"select * from userAccount where authId = {authId} and authScheme = {authScheme}"
+        SQL("select * from userAccount where authId = {authId} and authScheme = {authScheme}")
           .on('authId -> authId, 'authScheme -> authScheme.name)
           .as(simple.singleOpt)
       } catch {
-        case e: Exception =>
+        case e: SQLException =>
           Logger.debug("Failed in User.scala / findByAuthInfo")
           Logger.debug(e.getMessage())
           None
@@ -549,11 +539,11 @@ object User extends SQLSelectable[User] {
   def findByUsername(authScheme: Symbol, username: String): Option[User] = {
     DB.withConnection { implicit connection =>
       try {
-        SQL"select * from userAccount where authScheme = {authScheme} and username = {username}"
+        SQL("select * from userAccount where authScheme = {authScheme} and username = {username}")
           .on('authScheme -> authScheme.name, 'username -> username)
           .as(simple.singleOpt)
       } catch {
-        case e: Exception =>
+        case e: SQLException =>
           Logger.debug("Failed in User.scala / findByUsername")
           Logger.debug(e.getMessage())
           None
@@ -565,7 +555,7 @@ object User extends SQLSelectable[User] {
    * Gets all users in the DB
    * @return The list of users
    */
-  def list: List[User] = list(User.tableName, simple)
+  def list: List[User] = list(simple)
 
   /**
    * Create a user from fixture data
@@ -573,7 +563,7 @@ object User extends SQLSelectable[User] {
    * @return The user
    */
   def fromFixture(data: (String, Symbol, String, Option[String], Option[String], Symbol)): User = {
-    val user = User(None, data._1, data._2, data._3, data._4, data._5)
+    val user = User(None, data._1, data._2, data._3, data._4, data._5).save
     SitePermissions.assignRole(user, data._6)
     user
   }

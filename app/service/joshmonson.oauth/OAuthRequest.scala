@@ -87,13 +87,13 @@ case class OAuthRequest(
     // 9.1 Signature base string
     // 9.1.1 Normalize Request Parameters
     var parameters = buildParameters
-    val providedSignature = parameters.find(d => d._1 == OAuthValues.parameterNames.signature).map(s => {
+    val providedSignature = parameters.find(d => d._1 == OAuthValues.parameterNames.signature).map { s =>
       val signature= s._2
       if (!signature.contains("%"))
         OAuthUtil.encode(signature)
       else
         signature
-    })
+    }
 
     // Remove the signature param
     parameters = parameters.filterKeys(_ != OAuthValues.parameterNames.signature)
@@ -226,12 +226,12 @@ case class OAuthRequest(
    * @return Parameters
    */
   private def getAuthHeaderParams: Map[String, String] = {
-    authorizationHeader.map(header => {
-      header.substring(6).split(",").map(entry => {
+    authorizationHeader.map { header =>
+      header.substring(6).split(",").map { entry =>
         val parts = entry.split("=")
         (parts(0), parts(1).replaceAll("\"", ""))
-      }).filterNot(_._1 == OAuthValues.parameterNames.realm).toMap
-    }).getOrElse(Map[String, String]())
+      }.filterNot(_._1 == OAuthValues.parameterNames.realm).toMap
+    }.getOrElse(Map[String, String]())
   }
 
   /**

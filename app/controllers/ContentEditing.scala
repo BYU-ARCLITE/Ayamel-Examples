@@ -335,7 +335,7 @@ object ContentEditing extends Controller {
           } catch {
             case e: Throwable =>
               Logger.debug("Batch Update Error: " + e.getMessage())
-              redirect.flashing("error" -> ("Error while updating: "+e.getMessage()))
+              redirect.flashing("error" -> s"Error while updating: ${e.getMessage()}")
           }
         }
   }

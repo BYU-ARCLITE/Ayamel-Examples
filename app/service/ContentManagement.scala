@@ -55,7 +55,7 @@ object ContentManagement {
     val redirect = Redirect(routes.Courses.view(courseId))
 
     contentType match {
-      case 'audio => {
+      case 'audio =>
         createAudio(info, owner).map { opt =>
           opt.map { content =>
             addToCourse(courseId, content)
@@ -68,8 +68,7 @@ object ContentManagement {
             } else redirect.flashing("error" -> "Could not add content to course.")
           }
         }
-      }
-      case 'image => {
+      case 'image =>
         // Create a thumbnail
         ImageTools.generateThumbnail(info.url).flatMap { thumbnail =>
           val imageInfo = info.copy(thumbnail = thumbnail)
@@ -86,8 +85,7 @@ object ContentManagement {
             }
           }
         }
-      }
-      case 'video => {
+      case 'video =>
         // Create a thumbnail
         VideoTools.generateThumbnail(info.url).flatMap { thumbnail =>
           val videoInfo = info.copy(thumbnail = thumbnail)
@@ -102,8 +100,7 @@ object ContentManagement {
             }
           }
         }
-      }
-      case 'text => {
+      case 'text =>
         createText(info, owner).map { opt =>
           opt.map { content =>
             addToCourse(courseId, content)
@@ -116,7 +113,6 @@ object ContentManagement {
             } else redirect.flashing("error" -> "Could not add content to course.")
           }
         }
-      }
       case _ => Future { redirect.flashing("error" -> "Error creating content") }
     }
   }
@@ -131,23 +127,20 @@ object ContentManagement {
   def createContent(info: ContentDescriptor, owner: User, contentType: Symbol): Future[Option[Content]] = {
     contentType match {
       case 'audio => createAudio(info, owner)
-      case 'image => {
+      case 'image =>
         // Create a thumbnail
         ImageTools.generateThumbnail(info.url).flatMap { thumbnail =>
           val imageInfo = info.copy(thumbnail = thumbnail)
           createImage(imageInfo, owner)
         }
-      }
-      case 'video => {
+      case 'video =>
         // Create a thumbnail
         VideoTools.generateThumbnail(info.url).flatMap { thumbnail =>
           val videoInfo = info.copy(thumbnail = thumbnail)
           createVideo(videoInfo, owner)
         }
-      }
-      case 'text => {
+      case 'text =>
         createText(info, owner)
-      }
       case _ => Future { null }
     }
   }

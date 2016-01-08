@@ -100,22 +100,19 @@ object Administration extends Controller {
           val data = request.body.dataParts
           getUser(data("userId")(0).toLong) { targetUser =>
             operation match {
-              case "remove" => {
+              case "remove" =>
                 data("permission").foreach { permission =>
                   targetUser.removeSitePermission(permission)
                 }
-              }
-              case "match" => {
+              case "match" =>
                 targetUser.removeAllSitePermissions
                 data("permission").foreach { permission =>
                   targetUser.addSitePermission(permission)
                 }
-              }
-              case _ => {
+              case _ =>
                 data("permission").foreach { permission =>
                   targetUser.addSitePermission(permission)
                 }
-              }
             }
             Future {
               Redirect(routes.Administration.manageUsers())
@@ -258,7 +255,7 @@ object Administration extends Controller {
           } catch {
             case e: Throwable =>
               Logger.debug("Batch Update Error: " + e.getMessage())
-              Future(redirect.flashing("error" -> ("Error while updating: "+e.getMessage())))
+              Future(redirect.flashing("error" -> s"Error while updating: ${e.getMessage()}"))
           }
         }
   }

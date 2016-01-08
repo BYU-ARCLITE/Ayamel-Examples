@@ -19,7 +19,7 @@ case class SitePermissionRequest(id: Option[Long], userId: Long, permission: Str
    * Saves the request to the DB
    * @return The possibly modified request
    */
-  def save: SitePermissionRequest = {
+  def save =
     if (id.isDefined) {
       update(SitePermissionRequest.tableName, 'id -> id.get, 'userId -> userId, 'permission -> permission, 'reason -> reason)
       this
@@ -27,13 +27,12 @@ case class SitePermissionRequest(id: Option[Long], userId: Long, permission: Str
       val id = insert(SitePermissionRequest.tableName, 'userId -> userId, 'permission -> permission, 'reason -> reason)
       this.copy(id)
     }
-  }
 
   /**
    * Deletes the request from the DB
    */
   def delete() {
-    delete(SitePermissionRequest.tableName, id)
+    delete(SitePermissionRequest.tableName)
   }
 
   //                  _   _
@@ -108,7 +107,7 @@ object SitePermissionRequest extends SQLSelectable[SitePermissionRequest] {
    * @param id The id of the request
    * @return If a request was found, then Some[SitePermissionRequest], otherwise None
    */
-  def findById(id: Long): Option[SitePermissionRequest] = findById(tableName, id, simple)
+  def findById(id: Long): Option[SitePermissionRequest] = findById(id, simple)
 
   /**
    * Finds requests by the requesting user
@@ -116,17 +115,7 @@ object SitePermissionRequest extends SQLSelectable[SitePermissionRequest] {
    * @return a possibly-empty list of permission requests
    */
   def listByUser(user: User): List[SitePermissionRequest] =
-    DB.withConnection { implicit connection =>
-      try {
-        SQL"select * from $tableName where userId = {id}"
-          .on('id -> user.id.get).as(simple *)
-      } catch {
-        case e: Exception =>
-          Logger.debug("Failed in SitePermissionRequest.scala / listByUser")
-          Logger.debug(e.getMessage())
-          List[SitePermissionRequest]()
-      }
-    }
+    listByCol("userId", user.id, simple)
 
   /**
    * Finds a particular request by the requesting user
@@ -135,21 +124,11 @@ object SitePermissionRequest extends SQLSelectable[SitePermissionRequest] {
    * @return an Some[SitePermissionRequest] if one was found
    */
   def findByUser(user: User, permission: String): Option[SitePermissionRequest] =
-    DB.withConnection { implicit connection =>
-      try {
-        SQL"select * from $tableName where userId = {id} and permission = {permission}"
-          .on('id -> user.id.get, 'permission -> permission).as(simple.singleOpt)
-      } catch {
-        case e: Exception =>
-          Logger.debug("Failed in SitePermissionRequest.scala / findByUser")
-          Logger.debug(e.getMessage())
-          None
-      }
-    }
+    findByCol("userId", user.id, simple)
 
   /**
    * Lists all requests
    * @return The list of requests
    */
-  def list: List[SitePermissionRequest] = list(tableName, simple)
+  def list: List[SitePermissionRequest] = list(simple)
 }

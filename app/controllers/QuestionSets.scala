@@ -99,7 +99,8 @@ object QuestionSets extends Controller {
                 // Save the scoring
                 scoring.copy(userId = user.id.get, contentId = content.id.get).save
                 val score = scoring.percent
-                Redirect(routes.QuestionSets.about(id)).flashing("info" -> s"Your score was: $score%")
+                Redirect(routes.QuestionSets.about(id))
+                  .flashing("info" -> s"Your score was: $score%")
               }
             } else {
               Future(Errors.forbidden)

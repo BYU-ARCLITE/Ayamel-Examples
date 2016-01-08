@@ -56,9 +56,9 @@ object GoogleFormScripts {
    * @return The index of the next response
    */
   def getResponseIndex(id: String): Future[Int] =
-    runScript(getResponseIndexScript, Map("id" -> id)).map(response => {
+    runScript(getResponseIndexScript, Map("id" -> id)).map { response =>
       (response.json \ "responseIndex").as[Int]
-    })
+    }
 
   /**
    * Grades the response at a particular index for a given form
@@ -67,11 +67,11 @@ object GoogleFormScripts {
    * @return A scoring summary
    */
   def grade(id: String, index: Int): Future[Scoring] =
-    runScript(gradeFormScript, Map("id" -> id, "index" -> index.toString)).map(response => {
+    runScript(gradeFormScript, Map("id" -> id, "index" -> index.toString)).map { response =>
       val json = response.json
       val score = (json \ "score").as[Double]
       val possible = (json \ "possible").as[Double]
       val results = (json \ "results").as[List[Double]]
       Scoring(None, score, possible, results, 0, 0)
-    })
+    }
 }

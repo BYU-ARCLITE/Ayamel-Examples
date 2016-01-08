@@ -13,7 +13,9 @@ import play.api.libs.json.{Json, JsObject, JsArray}
 object AdditionalDocumentAdder {
 
 
-  def add(content: Content, resourceId: String, docType: Symbol, attributes: JsObject)(action: Option[Course] => Result)(implicit request: RequestHeader, user: User): Future[Result] = {
+  def add(content: Content, resourceId: String, docType: Symbol, attributes: JsObject)
+    (action: Option[Course] => Result)
+	(implicit request: RequestHeader, user: User): Future[Result] = {
 
     val course = getCourse
 
@@ -21,8 +23,7 @@ object AdditionalDocumentAdder {
     content.addSetting(getSettingName(docType), List(resourceId))
 
     // Set the attributes on the resource
-//    ResourceHelper.setAttributes(resourceId, getClientUser(course, content)).flatMap(resource => {
-    ResourceHelper.setClientUser(resourceId, getClientUser(course, content)).flatMap(resource => {
+    ResourceHelper.setClientUser(resourceId, getClientUser(course, content)).flatMap { _ =>
 
       // Create the relation
       val relation = Json.obj(
@@ -31,12 +32,9 @@ object AdditionalDocumentAdder {
         "type" -> getRelationType(docType),
         "attributes" -> attributes
       )
-      ResourceController.addRelation(relation).map(r => {
 
-        // Do something with the result
-        action(course)
-      })
-    })
+      ResourceController.addRelation(relation)
+    }.map { _ => action(course) }
   }
 
   def edit(content: Content, resourceId: String, docType: Symbol, attributes: JsObject)(action: Option[Course] => Result)(implicit request: RequestHeader, user: User): Future[Result] = {

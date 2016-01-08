@@ -2,12 +2,14 @@ package models
 
 import anorm._
 import anorm.SqlParser._
+import java.sql.SQLException
+import dataAccess.sqlTraits.SQLSelectable
 import play.api.Logger
 import play.api.db.DB
 import play.api.Play.current
 import java.sql.Connection
 
-object SitePermissions {
+object SitePermissions extends SQLSelectable[String]  {
   val tableName = "sitePermissions"
 
   val desc_map = Map(
@@ -24,28 +26,17 @@ object SitePermissions {
   def descriptionMap = desc_map
 
   def listByUser(user: User): List[String] =
-    DB.withConnection { implicit connection =>
-      try {
-        SQL"select permission from $tableName where userId = {uid}"
-          .on('uid -> user.id.get)
-          .as(get[String](s"${tableName}.permission") *)
-      } catch {
-        case e: Exception =>
-          Logger.debug("Failed in SitePermissions.scala / listByUser")
-          Logger.debug(e.getMessage())
-		  List[String]()
-      }
-    }
+    listByCol("userId", user.id, get[String](tableName+".permission"))
 
   private def permissionExists(user: User, permission: String)(implicit connection: Connection): Boolean = {
     try {
-      val result = SQL"select 1 from $tableName where userId = {uid} and permission = {permission}"
-        .on('uid -> user.id.get, 'permission -> permission)
+      val result = SQL(s"select 1 from $tableName where userId = {uid} and permission = {permission}")
+        .on('uid -> user.id, 'permission -> permission)
         .fold(0) { (c, _) => c + 1 } // fold SqlResult
         .fold(_ => 0, c => c) // fold Either
       result > 0
     } catch {
-      case e: Exception =>
+      case e: SQLException =>
         Logger.debug("Failed in SitePermissions.scala / permissionExists")
         Logger.debug(e.getMessage())
         false
@@ -61,10 +52,11 @@ object SitePermissions {
     DB.withConnection { implicit connection =>
       if (!permissionExists(user, permission)) {
         try {
-          SQL"insert into $tableName (userId, permission) values ({uid}, {permission})"
-            .on('uid -> user.id.get, 'permission -> permission).executeUpdate()
+          SQL(s"insert into $tableName (userId,permission) values ({uid},{permission})")
+            .on('uid -> user.id, 'permission -> permission)
+			.executeUpdate()
         } catch {
-          case e: Exception =>
+          case e: SQLException =>
             Logger.debug("Failed in SitePermissions.scala / addUserPermission")
             Logger.debug(e.getMessage())
         }
@@ -80,10 +72,10 @@ object SitePermissions {
   def removeUserPermission(user: User, permission: String) {
     DB.withConnection { implicit connection =>
       try {
-        SQL"delete from $tableName where userId = {uid} and permission = {permission}"
+        SQL(s"delete from $tableName where userId = {uid} and permission = {permission}")
           .on('uid -> user.id.get, 'permission -> permission).executeUpdate()
       } catch {
-        case e: Exception =>
+        case e: SQLException =>
           Logger.debug("Failed in SitePermissions.scala / removeUserPermission")
           Logger.debug(e.getMessage())
       }
@@ -97,10 +89,10 @@ object SitePermissions {
   def removeAllUserPermissions(user: User) {
     DB.withConnection { implicit connection =>
       try {
-        SQL"delete from $tableName where userId = {uid}"
+        SQL(s"delete from $tableName where userId = {uid}")
           .on('uid -> user.id.get).executeUpdate()
       } catch {
-        case e: Exception =>
+        case e: SQLException =>
           Logger.debug("Failed in SitePermissions.scala / removeAllUserPermissions")
           Logger.debug(e.getMessage())
       }

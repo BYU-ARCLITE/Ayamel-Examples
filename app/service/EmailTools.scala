@@ -29,9 +29,9 @@ object EmailTools {
       val email = new Email()
       email.setFromAddress(name, address)
       email.setSubject(subject)
-      to.foreach(recipient => {
+      to.foreach { recipient =>
         email.addRecipient(recipient._1, recipient._2, RecipientType.TO)
-      })
+      }
       email.setText(body)
       email.setTextHTML(bodyHtml)
       mailer.sendMail(email)

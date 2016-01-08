@@ -24,10 +24,9 @@ object ResourceController {
   def decode(r:WSResponse): Option[JsValue] = try {
     Some(r.json)
   } catch {
-    case _: Exception => {
-      Logger.debug("Error decoding:\n"+r.body)
+    case _: Exception =>
+      Logger.debug("Error decoding:\n${r.body}")
       None
-    }
   }
 
   /**

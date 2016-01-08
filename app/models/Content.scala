@@ -2,6 +2,7 @@ package models
 
 import anorm._
 import anorm.SqlParser._
+import java.sql.SQLException
 import dataAccess.sqlTraits._
 import service.{HashTools, SerializationTools, TimeTools}
 import play.api.db.DB
@@ -28,7 +29,7 @@ case class Content(id: Option[Long], name: String, contentType: Symbol, thumbnai
    * Saves this content link to the DB
    * @return The optionally updated content
    */
-  def save: Content = {
+  def save =
     if (id.isDefined) {
       update(Content.tableName, 'id -> id.get, 'name -> normalize(name), 'contentType -> contentType.name, 'thumbnail -> thumbnail,
         'resourceId -> resourceId, 'dateAdded -> dateAdded, 'visibility -> visibility, 'shareability -> shareability,
@@ -40,7 +41,6 @@ case class Content(id: Option[Long], name: String, contentType: Symbol, thumbnai
         'authKey -> authKey, 'labels -> normalize(labels.mkString(",")), 'views -> views)
       this.copy(id)
     }
-  }
 
   /**
    * Deletes the content from the DB, but not from the resource library
@@ -53,7 +53,7 @@ case class Content(id: Option[Long], name: String, contentType: Symbol, thumbnai
     ContentOwnership.findByContent(this).delete()
 
     // Delete the content
-    delete(Content.tableName, id)
+    delete(Content.tableName)
   }
 
   //                  _   _
@@ -280,13 +280,13 @@ object Content extends SQLSelectable[Content] {
    * @param id The id of the content link
    * @return If a content link was found, then Some[Content], otherwise None
    */
-  def findById(id: Long): Option[Content] = findById(tableName, id, simple)
+  def findById(id: Long): Option[Content] = findById(id, simple)
 
   /**
    * Gets all the content in the DB
    * @return The list of content
    */
-  def list: List[Content] = list(tableName, simple)
+  def list: List[Content] = list(simple)
 
   /**
    * Gets all content and owners information
@@ -295,15 +295,15 @@ object Content extends SQLSelectable[Content] {
   def ownershipList: List[(Content, User)] = {
     DB.withConnection { implicit connection =>
       try {
-        SQL"""select * from (
-          (
-            select content.name as cname, content.*, contentOwnership.contentId, contentOwnership.userId
-            from content join contentOwnership on content.id = contentOwnership.contentid
-          ) as listing
-          join userAccount on userAccount.id = listing.userId
-        )""".as(contentOwnership *)
+        SQL("""
+		  select * from userAccount join (
+            ( select content.name as cname, content.*, contentOwnership.contentId, contentOwnership.userId
+              from content join contentOwnership on content.id = contentOwnership.contentid
+            ) as listing
+          ) on userAccount.id = listing.userId
+		""").as(contentOwnership *)
       } catch {
-        case e: Exception =>
+        case e: SQLException =>
           Logger.debug("Failed in Content.scala / ownershipList")
           Logger.debug(e.getMessage())
           List[(Content, User)]()
@@ -319,10 +319,10 @@ object Content extends SQLSelectable[Content] {
     DB.withConnection {
       implicit connection =>
         try {
-          SQL"select * from $tableName where visibility = 4 order by id desc limit {count}"
+          SQL(s"select * from $tableName where visibility = 4 order by id desc limit {count}")
             .on('count -> count).as(simple *)
         } catch {
-          case e: Exception =>
+          case e: SQLException =>
             Logger.debug("Failed in Content.scala / listPublic")
             Logger.debug(e.getMessage())
             List[Content]()
@@ -344,13 +344,12 @@ object Content extends SQLSelectable[Content] {
    */
   def search(query: String): List[Content] =
     DB.withConnection { implicit connection =>
-      val sqlQuery = "%" + query + "%"
       // TODO: Search the resource library metadata. Issue # 51
       try {
-        SQL"select * from $tableName where name like {query} and visibility = {public}"
-          .on('query -> sqlQuery, 'public -> visibility.public).as(simple *)
+        SQL(s"select * from $tableName where name like {query} and visibility = 4")
+          .on('query -> ("%" + query + "%")).as(simple *)
       } catch {
-        case e: Exception =>
+        case e: SQLException =>
           Logger.debug("Failed in Content.scala / search")
           Logger.debug(e.getMessage())
           List[Content]()
@@ -362,15 +361,16 @@ object Content extends SQLSelectable[Content] {
     DB.withConnection { implicit connection =>
       try {
         val cid = content.id.get
-        SQL"delete from $settingTable where contentId = $cid and setting = $setting"
-          .execute()
+        SQL(s"delete from $settingTable where contentId = {cid} and setting = {setting}")
+          .on('cid -> content.id, 'setting -> setting)
+		  .execute()
         val params = arguments.map { arg => List(NamedParameter.symbol('arg -> arg)) }
         BatchSql(
           s"insert into $settingTable (contentId, setting, argument) values ($cid, $setting, {arg})",
           params.head, params.tail:_*
         ).execute()
       } catch {
-        case e: Exception =>
+        case e: SQLException =>
           Logger.debug("Failed in Content.scala / setSetting")
           Logger.debug(e.getMessage())
       }
@@ -388,7 +388,7 @@ object Content extends SQLSelectable[Content] {
           params.head, params.tail:_*
         ).execute()
       } catch {
-        case e: Exception =>
+        case e: SQLException =>
           Logger.debug("Failed in Content.scala / addSetting")
           Logger.debug(e.getMessage())
       }
@@ -406,7 +406,7 @@ object Content extends SQLSelectable[Content] {
           params.head, params.tail:_*
         ).execute()
       } catch {
-        case e: Exception =>
+        case e: SQLException =>
           Logger.debug("Failed in Content.scala / removeSetting")
           Logger.debug(e.getMessage())
       }
@@ -416,11 +416,11 @@ object Content extends SQLSelectable[Content] {
   def getSetting(content: Content, setting: String): List[String] =
     DB.withConnection { implicit connection =>
       try {
-        SQL"select argument from $settingTable where contentId = {cid} and setting = {setting}"
+        SQL(s"select argument from $settingTable where contentId = {cid} and setting = {setting}")
           .on('cid -> content.id.get, 'setting -> setting)
           .as(get[String](settingTable + ".argument") *)
       } catch {
-        case e: Exception =>
+        case e: SQLException =>
           Logger.debug("Failed in Content.scala / getSetting")
           Logger.debug(e.getMessage())
           List[String]()
@@ -430,14 +430,14 @@ object Content extends SQLSelectable[Content] {
   def getSettingMap(content: Content): Map[String, List[String]] =
     DB.withConnection { implicit connection =>
       try {
-        val query = SQL"select setting, argument from $settingTable where contentId = {id}"
-          .on('id -> content.id.get)
-        val plist = query.as(
-          get[String](settingTable + ".setting") ~
-          get[String](settingTable + ".argument") map {
-            case setting ~ argument => setting -> argument
-          } *
-        )
+        val plist = SQL(s"select setting, argument from $settingTable where contentId = {id}")
+		  .on('id -> content.id)
+		  .as(
+            get[String](settingTable + ".setting") ~
+            get[String](settingTable + ".argument") map {
+              case setting ~ argument => setting -> argument
+            } *
+          )
 
         (Map[String, List[String]]() /: plist) { (acc, next) =>
           next match {
@@ -447,7 +447,7 @@ object Content extends SQLSelectable[Content] {
           }
         }
       } catch {
-        case e: Exception =>
+        case e: SQLException =>
           Logger.debug("Failed in Content.scala / getSettingMap")
           Logger.debug(e.getMessage())
           Map[String, List[String]]()
@@ -461,10 +461,10 @@ object Content extends SQLSelectable[Content] {
   def incrementViews(id: Long) =
     DB.withConnection { implicit connection =>
       try {
-        SQL"update $tableName set views = views + 1 where id = $id"
-          .executeUpdate()
+        SQL(s"update $tableName set views = views + 1 where id = {id}")
+		  .on('id -> id).executeUpdate()
       } catch {
-        case e: Exception =>
+        case e: SQLException =>
           Logger.debug("Failed to increment content view count")
           Logger.debug(e.getMessage())
       }

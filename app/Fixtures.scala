@@ -211,11 +211,11 @@ object Fixtures {
   def setupSetting() {
     Logger.info("Checking settings...")
 
-    settings.foreach(setting => {
+    settings.foreach { setting =>
       if (Setting.findByName(setting._1).isEmpty) {
         Logger.info("Adding setting: " + setting._1)
         Setting(None, setting._1, setting._2).save
       }
-    })
+    }
   }
 }

@@ -19,7 +19,7 @@ case class HomePageContent(id: Option[Long], title: String, text: String, link: 
    * Saves the home page content to the DB
    * @return The possibly modified home page content
    */
-  def save: HomePageContent = {
+  def save =
     if (id.isDefined) {
       update(HomePageContent.tableName, 'id -> id.get, 'title -> title, 'text -> text, 'link -> link, 'linkText -> linkText,
         'background -> background, 'active -> active)
@@ -29,13 +29,12 @@ case class HomePageContent(id: Option[Long], title: String, text: String, link: 
         'background -> background, 'active -> active)
       this.copy(id)
     }
-  }
 
   /**
    * Deletes the home page content from the DB
    */
   def delete() {
-    delete(HomePageContent.tableName, id)
+    delete(HomePageContent.tableName)
   }
 
 }
@@ -61,12 +60,12 @@ object HomePageContent extends SQLSelectable[HomePageContent] {
    * @param id The id of the membership
    * @return If a home page content was found, then Some[HomePageContent], otherwise None
    */
-  def findById(id: Long): Option[HomePageContent] = findById(tableName, id, simple)
+  def findById(id: Long): Option[HomePageContent] = findById(id, simple)
 
 
   /**
    * Lists all home page contents
    * @return The list of home page contents
    */
-  def list: List[HomePageContent] = list(tableName, simple)
+  def list: List[HomePageContent] = list(simple)
 }

@@ -2,6 +2,7 @@ package models
 
 import anorm._
 import anorm.SqlParser._
+import java.sql.SQLException
 import dataAccess.sqlTraits._
 import play.api.Logger
 import play.api.db.DB
@@ -19,7 +20,7 @@ case class ContentListing(id: Option[Long], courseId: Long, contentId: Long) ext
    * Saves the content listing to the DB
    * @return The possibly updated content listing
    */
-  def save: ContentListing = {
+  def save =
     if (id.isDefined) {
       update(ContentListing.tableName, 'id -> id.get, 'courseId -> courseId, 'contentId -> contentId)
       this
@@ -27,13 +28,12 @@ case class ContentListing(id: Option[Long], courseId: Long, contentId: Long) ext
       val id = insert(ContentListing.tableName, 'courseId -> courseId, 'contentId -> contentId)
       this.copy(id)
     }
-  }
 
   /**
    * Deletes the content listing from the DB
    */
   def delete() {
-    delete(ContentListing.tableName, id)
+    delete(ContentListing.tableName)
   }
 
 }
@@ -54,13 +54,13 @@ object ContentListing extends SQLSelectable[ContentListing] {
    * @param id The id of the content listing.
    * @return If a content listing was found, then Some[ContentListing], otherwise None
    */
-  def findById(id: Long): Option[ContentListing] = findById(ContentListing.tableName, id, simple)
+  def findById(id: Long): Option[ContentListing] = findById(id, simple)
 
   /**
    * Gets all content listing in the DB
    * @return The list of content listing
    */
-  def list: List[ContentListing] = list(ContentListing.tableName, simple)
+  def list: List[ContentListing] = list(simple)
 
   /**
    * Lists the content listing pertaining to a certain course
@@ -68,17 +68,7 @@ object ContentListing extends SQLSelectable[ContentListing] {
    * @return The list of content listings
    */
   def listByCourse(course: Course): List[ContentListing] =
-    DB.withConnection { implicit connection =>
-	  try {
-        SQL"select * from $tableName where courseId = {id}"
-          .on('id -> course.id.get).as(simple *)
-	  } catch {
-	    case e: Exception =>
-		  Logger.debug("Failed in ContentListing.scala / listByCourse")
-		  Logger.debug(e.getMessage())
-		  List[ContentListing]()
-	  }
-    }
+    listByCol("courseId", course.id, simple)
 
   /**
    * Lists the content listing pertaining to a certain content object
@@ -86,17 +76,7 @@ object ContentListing extends SQLSelectable[ContentListing] {
    * @return The list of content listings
    */
   def listByContent(content: Content): List[ContentListing] =
-    DB.withConnection { implicit connection =>
-	  try {
-        SQL"select * from $tableName where contentId = {id}"
-          .on('id -> content.id.get).as(simple *)
-	  } catch {
-	    case e: Exception =>
-		  Logger.debug("Failed in ContentListing.scala / listByContent")
-		  Logger.debug(e.getMessage())
-		  List[ContentListing]()
-	  }
-    }
+    listByCol("contentId", content.id, simple)
 
   /**
    * Gets all content belonging to a certain course
@@ -105,16 +85,21 @@ object ContentListing extends SQLSelectable[ContentListing] {
    */
   def listClassContent(course: Course): List[Content] =
     DB.withConnection { implicit connection =>
-	  try {
-        SQL"""select * from ${Content.tableName} join $tableName
-		  on ${Content.tableName}.id = ${tableName}.contentId
-		  where ${tableName}.courseId = ${course.id.get}"""
+      try {
+        SQL(
+          s"""
+          select * from ${Content.tableName} join $tableName
+          on ${Content.tableName}.id = ${tableName}.contentId
+          where ${tableName}.courseId = {id}
+          """
+        )
+          .on('id -> course.id)
           .as(Content.simple *)
-	  } catch {
-	    case e: Exception =>
-		  Logger.debug("Failed in ContentListing.scala / listClassContent")
-		  Logger.debug(e.getMessage())
-		  List[Content]()
-	  }
+      } catch {
+        case e: SQLException =>
+          Logger.debug("Failed in ContentListing.scala / listClassContent")
+          Logger.debug(e.getMessage())
+          List[Content]()
+      }
     }
 }

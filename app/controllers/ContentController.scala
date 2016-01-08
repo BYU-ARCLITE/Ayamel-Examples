@@ -166,16 +166,9 @@ object ContentController extends Controller {
 
           val file = request.body.file("file").get.ref.file
           val data = io.Source.fromFile(file).getLines().toList
-          var count = 0
-          val onContentAdded = () => {
-            count += 1
-            if(count == data.size) {
-              user.sendNotification("Your batch file upload has finished.")
-            }
-          }
 
-          Future {
-            data.map(line => Future {
+          val processes = data.map { line =>
+			Future {
               // Collect the data
               val parts = line.split("\t")
               val title = parts(0)
@@ -188,20 +181,21 @@ object ContentController extends Controller {
               val keywords = labels.mkString(",")
               val mime = ResourceHelper.getMimeFromUri(url)
 
-              ResourceHelper.getUrlSize(url).flatMap(bytes => {
+              ResourceHelper.getUrlSize(url).flatMap { bytes =>
                 val info = ContentDescriptor(title, description, keywords, url, bytes, mime, labels = labels,
                   languages = languages)
                 if (courseId > 0) {
-                  ContentManagement.createAndAddToCourse(info, user, contentType, courseId, false).map(result => {
-                    onContentAdded()
-                  })
+                  ContentManagement.createAndAddToCourse(info, user, contentType, courseId, false)
                 } else {
                   ContentManagement.createContent(info, user, contentType)
-                    .map { _ => onContentAdded() }
                 }
-              })
-            })
+              }
+            }
           }
+		  
+		  Future.sequence(processes).map { _ =>
+              user.sendNotification("Your batch file upload has finished.")
+		  }
 
           Future { 
             Redirect(routes.Application.home())
@@ -311,15 +305,15 @@ object ContentController extends Controller {
         Authentication.enforcePermission("createContent") {
 
           // Create the node content
-          PlayGraph.Author.NodeContent.create("").flatMap(nodeContentJson => {
+          PlayGraph.Author.NodeContent.create("").flatMap { nodeContentJson =>
             val nodeContentId = (nodeContentJson \ "nodeContent" \ "id").as[Long]
 
             // Create the node
-            PlayGraph.Author.Node.create(nodeContentId, "data").flatMap(nodeJson => {
+            PlayGraph.Author.Node.create(nodeContentId, "data").flatMap { nodeJson =>
               val nodeId = (nodeJson \ "node" \ "id").as[Long]
 
               // Create the graph
-              PlayGraph.Author.Graph.create(nodeId).map(graphJson => {
+              PlayGraph.Author.Graph.create(nodeId).map { graphJson =>
                 val graphId = (graphJson \ "graph" \ "id").as[Long]
 
                 // Create playlist
@@ -331,9 +325,9 @@ object ContentController extends Controller {
                 user.addContent(content)
 
                 Redirect(routes.Playlists.about(content.id.get))
-              })
-            })
-          })
+              }
+            }
+          }
         }
   }
 
@@ -350,13 +344,13 @@ object ContentController extends Controller {
           val labels = request.body.get("labels").map(_.toList).getOrElse(Nil)
           val description = request.body("description")(0)
 
-          GoogleFormScripts.createForm(title, user.email.get).map(formId => {
+          GoogleFormScripts.createForm(title, user.email.get).map { formId =>
             val content = Content(None, title, 'questions, "", formId, labels = labels).save
             content.setSetting("description", List(description))
             user.addContent(content)
 
             Redirect(routes.QuestionSets.about(content.id.get))
-          })
+          }
         }
   }
 

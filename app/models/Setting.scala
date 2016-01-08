@@ -20,7 +20,7 @@ case class Setting(id: Option[Long], name: String, value: String) extends SQLSav
    * Saves the setting to the DB
    * @return The possibly modified setting
    */
-  def save: Setting = {
+  def save =
     if (id.isDefined) {
       update(Setting.tableName, 'id -> id.get, 'name -> name, 'settingValue -> value)
       this
@@ -28,13 +28,12 @@ case class Setting(id: Option[Long], name: String, value: String) extends SQLSav
       val id = insert(Setting.tableName, 'name -> name, 'settingValue -> value)
       this.copy(id)
     }
-  }
 
   /**
    * Deletes the setting from the DB
    */
   def delete() {
-    delete(Setting.tableName, id)
+    delete(Setting.tableName)
   }
 
 }
@@ -56,30 +55,19 @@ object Setting extends SQLSelectable[Setting] {
    * @param id The id of the setting
    * @return If a setting was found, then Some[Setting], otherwise None
    */
-  def findById(id: Long): Option[Setting] = findById(tableName, id, simple)
+  def findById(id: Long): Option[Setting] = findById(id, simple)
 
   /**
    * Finds a setting by the name
    * @param name The name of the setting
    * @return If a setting was found, then Some[Setting], otherwise None
    */
-  def findByName(name: String): Option[Setting] = {
-    DB.withConnection { implicit connection =>
-      try {
-        SQL"select * from $tableName where name = {name}"
-          .on('name -> name).as(simple.singleOpt)
-      } catch {
-        case e: Exception =>
-          Logger.debug("Failed in Setting.scala / findByName")
-          Logger.debug(e.getMessage())
-          None
-      }
-    }
-  }
+  def findByName(name: String): Option[Setting] =
+    findByCol("name", name, simple)
 
   /**
    * Lists all settings
    * @return The list of settings
    */
-  def list: List[Setting] = list(tableName, simple)
+  def list: List[Setting] = list(simple)
 }

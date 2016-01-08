@@ -21,7 +21,7 @@ case class WordListEntry(id: Option[Long], word: String, srcLang: String, destLa
    * Saves the word list entry to the DB
    * @return The possibly modified word list entry
    */
-  def save: WordListEntry = {
+  def save =
     if (id.isDefined) {
       update(WordListEntry.tableName, 'id -> id.get, 'word -> word, 'srcLang -> srcLang, 'destLang -> destLang, 'userId -> userId)
       this
@@ -29,13 +29,12 @@ case class WordListEntry(id: Option[Long], word: String, srcLang: String, destLa
       val id = insert(WordListEntry.tableName, 'word -> word, 'srcLang -> srcLang, 'destLang -> destLang, 'userId -> userId)
       this.copy(id)
     }
-  }
 
   /**
    * Deletes the word list entry from the DB
    */
   def delete() {
-    delete(WordListEntry.tableName, id)
+    delete(WordListEntry.tableName)
   }
 
 }
@@ -58,7 +57,7 @@ object WordListEntry extends SQLSelectable[WordListEntry] {
    * @param id The id of the membership
    * @return If a word list entry was found, then Some[WordListEntry], otherwise None
    */
-  def findById(id: Long): Option[WordListEntry] = findById(tableName, id, simple)
+  def findById(id: Long): Option[WordListEntry] = findById(id, simple)
 
   /**
    * Finds a word list entry by the user
@@ -66,21 +65,11 @@ object WordListEntry extends SQLSelectable[WordListEntry] {
    * @return If a word list entry was found, then Some[WordListEntry], otherwise None
    */
   def listByUser(user: User): List[WordListEntry] =
-    DB.withConnection { implicit connection =>
-	  try {
-        SQL"select * from $tableName where userId = {id}"
-          .on('id -> user.id.get).as(simple *)
-	  } catch {
-        case e: Exception =>
-          Logger.debug("Failed in WordList.scala / listByUser")
-          Logger.debug(e.getMessage())
-          List[WordListEntry]()
-      }
-    }
+    listByCol("userId", user.id, simple)
 
   /**
    * Lists all word list entrys
    * @return The list of word list entrys
    */
-  def list: List[WordListEntry] = list(tableName, simple)
+  def list: List[WordListEntry] = list(simple)
 }

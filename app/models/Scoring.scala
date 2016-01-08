@@ -23,7 +23,7 @@ case class Scoring(id: Option[Long], score: Double, possible: Double, results: L
    * Saves the scoring to the DB
    * @return The possibly modified scoring
    */
-  def save: Scoring = {
+  def save =
     if (id.isDefined) {
       update(Scoring.tableName, 'id -> id.get, 'score -> score, 'possible -> possible, 'results -> results.mkString(","),
         'userId -> userId, 'contentId -> contentId, 'graded -> graded)
@@ -33,13 +33,12 @@ case class Scoring(id: Option[Long], score: Double, possible: Double, results: L
         'userId -> userId, 'contentId -> contentId, 'graded -> graded)
       this.copy(id)
     }
-  }
 
   /**
    * Deletes the scoring from the DB
    */
   def delete() {
-    delete(Scoring.tableName, id)
+    delete(Scoring.tableName)
   }
 
   def toJson = Json.obj(
@@ -75,7 +74,7 @@ object Scoring extends SQLSelectable[Scoring] {
    * @param id The id of the membership
    * @return If a scoring was found, then Some[Scoring], otherwise None
    */
-  def findById(id: Long): Option[Scoring] = findById(tableName, id, simple)
+  def findById(id: Long): Option[Scoring] = findById(id, simple)
 
   /**
    * Finds a scoring by the user
@@ -83,17 +82,7 @@ object Scoring extends SQLSelectable[Scoring] {
    * @return If a scoring was found, then Some[Scoring], otherwise None
    */
   def listByUser(user: User): List[Scoring] =
-    DB.withConnection { implicit connection =>
-      try {
-        SQL"select * from $tableName where userId = {id}"
-          .on('id -> user.id.get).as(simple *)
-      } catch {
-        case e: Exception =>
-          Logger.debug("Failed in Scoring.scala / listByUser")
-          Logger.debug(e.getMessage())
-          List[Scoring]()
-      }
-    }
+    listByCol("userId", user.id, simple)
 
   /**
    * Finds a scoring by the content
@@ -101,21 +90,11 @@ object Scoring extends SQLSelectable[Scoring] {
    * @return If a scoring was found, then Some[Scoring], otherwise None
    */
   def listByContent(content: Content): List[Scoring] =
-    DB.withConnection { implicit connection =>
-      try {
-        SQL"select * from $tableName where contentId = {id}"
-          .on('id -> content.id.get).as(simple *)
-      } catch {
-        case e: Exception =>
-          Logger.debug("Failed in Scoring.scala / listByContent")
-          Logger.debug(e.getMessage())
-          List[Scoring]()
-      }
-    }
+    listByCol("contentId", content.id, simple)
 
   /**
    * Lists all scorings
    * @return The list of scorings
    */
-  def list: List[Scoring] = list(tableName, simple)
+  def list: List[Scoring] = list(simple)
 }

@@ -2,6 +2,7 @@ package models
 
 import anorm._
 import anorm.SqlParser._
+import java.sql.SQLException
 import dataAccess.sqlTraits._
 import play.api.Logger
 import service.{TimeTools, HashTools}
@@ -24,7 +25,7 @@ case class Course(id: Option[Long], name: String, startDate: String, endDate: St
    * Saves the course to the DB
    * @return The possibly updated course
    */
-  def save: Course = {
+  def save =
     if (id.isDefined) {
       update(Course.tableName, 'id -> id.get, 'name -> name, 'startDate -> startDate, 'endDate -> endDate,
         'enrollment -> enrollment.name, 'featured -> featured, 'lmsKey -> lmsKey)
@@ -34,7 +35,6 @@ case class Course(id: Option[Long], name: String, startDate: String, endDate: St
         'enrollment -> enrollment.name, 'featured -> featured, 'lmsKey -> lmsKey)
       this.copy(id)
     }
-  }
 
   /**
    * Deletes the course from the DB
@@ -42,18 +42,20 @@ case class Course(id: Option[Long], name: String, startDate: String, endDate: St
   def delete() {
     DB.withConnection { implicit connection =>
       try {
-        val cid = id.get
-        SQL"delete from coursePermissions where courseId = $cid".execute()
-        SQL"delete from courseMembership where courseId = $cid".execute()
-        SQL"delete from contentListing where courseId = $cid".execute()
+        BatchSql(
+		  "delete from {table} where courseId = {id}",
+		  List('table -> "coursePermissions", 'id -> id),
+		  List('table -> "courseMembership", 'id -> id),
+		  List('table -> "contentListing", 'id -> id)
+		).execute()
       } catch {
-        case e: Exception =>
+        case e: SQLException =>
           Logger.debug("Failed in Course.scala / delete")
           Logger.debug(e.getMessage())
       }
     }
 
-    delete(Course.tableName, id)
+    delete(Course.tableName)
   }
 
   //                  _   _
@@ -230,13 +232,13 @@ object Course extends SQLSelectable[Course] {
    * @param id The id of the course
    * @return If a course was found, then Some[Course], otherwise None
    */
-  def findById(id: Long): Option[Course] = findById(tableName, id, simple)
+  def findById(id: Long): Option[Course] = findById(id, simple)
 
   /**
    * Gets all the courses in the DB
    * @return The list of courses
    */
-  def list: List[Course] = list(tableName, simple)
+  def list: List[Course] = list(simple)
 
   /**
    * Create a course from fixture data
@@ -255,10 +257,10 @@ object Course extends SQLSelectable[Course] {
     DB.withConnection { implicit connection =>
       val sqlQuery = "%" + query + "%"
       try {
-        SQL("select * from $tableName where name like {query} order by name asc")
+        SQL(s"select * from $tableName where name like {query} order by name asc")
           .on('query -> sqlQuery).as(simple *)
       } catch {
-        case e: Exception =>
+        case e: SQLException =>
           Logger.debug("Failed in Course.scala / search")
           Logger.debug(e.getMessage())
           List[Course]()

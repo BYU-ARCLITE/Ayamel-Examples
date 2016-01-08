@@ -1,6 +1,7 @@
 package controllers.authentication
 
 import java.security.SecureRandom
+import java.sql.SQLException
 import org.apache.commons.codec.binary.Base64
 import scala.concurrent.duration.Duration
 import scala.concurrent._
@@ -46,22 +47,22 @@ object Google extends Controller {
   def retrieveStoredState(token: String): Option[(String, String)] = {
     DB.withConnection { implicit connection =>
       val stateOpt = try {
-        SQL"select action, redirect from $tableName where token = {token}"
+        SQL(s"select action, redirect from $tableName where token = {token}")
           .on('token -> token).as(simple.singleOpt)
       } catch {
-        case e: Exception =>
-          Logger.debug("In Google.scala retrieveStoredState select")
+        case e: SQLException =>
+          Logger.debug("Failed in Google.scala / retrieveStoredState select")
           Logger.debug(e.getMessage())
           None
       }
 
       if(stateOpt.isDefined){ //delete retrieved state so it can't be re-used
         try {
-          SQL"delete from $tableName where token = {token}"
+          SQL(s"delete from $tableName where token = {token}")
             .on('token -> token).execute()
         } catch {
-          case e: Exception =>
-            Logger.debug("In Google.scala retrieveStoredState delete")
+          case e: SQLException =>
+            Logger.debug("Failed in Google.scala / retrieveStoredState delete")
             Logger.debug(e.getMessage())
         }
       }
@@ -79,11 +80,11 @@ object Google extends Controller {
     //store token in the database
     DB.withConnection { implicit connection =>
       try {
-        SQL"insert into $tableName (token, action, redirect) values ({token}, {action}, {path})"
+        SQL(s"insert into $tableName (token, action, redirect) values ({token}, {action}, {path})")
           .on('token -> token, 'action -> action, 'path -> path).executeInsert()
       } catch {
-        case e: Exception =>
-          Logger.debug("In Google.scala registerStateToken:")
+        case e: SQLException =>
+          Logger.debug("Failed in Google.scala / registerStateToken")
           Logger.debug(e.getMessage())
           throw e
       }

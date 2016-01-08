@@ -2,6 +2,7 @@ package models
 
 import anorm._
 import anorm.SqlParser._
+import java.sql.SQLException
 import play.api.Logger
 import dataAccess.sqlTraits._
 import play.api.db.DB
@@ -20,7 +21,7 @@ case class CourseMembership(id: Option[Long], userId: Long, courseId: Long, teac
    * Saves the course membership to the DB
    * @return The possibly modified course membership
    */
-  def save: CourseMembership = {
+  def save =
     if (id.isDefined) {
       update(CourseMembership.tableName, 'id -> id.get, 'userId -> userId, 'courseId -> courseId, 'teacher -> teacher)
       this
@@ -40,14 +41,13 @@ case class CourseMembership(id: Option[Long], userId: Long, courseId: Long, teac
             this
           }
         } catch {
-          case e: Exception =>
+          case e: SQLException =>
             Logger.debug("Failed in CourseMembership.scala / save")
             Logger.debug(e.getMessage())
             throw e
         }
       }
     }
-  }
 
   /**
    * Deletes the course membership from the DB
@@ -60,12 +60,12 @@ case class CourseMembership(id: Option[Long], userId: Long, courseId: Long, teac
         SQL("delete from coursePermissions where courseId = {cid} and userId = {uid}")
           .on('cid -> cid, 'uid -> uid).execute()
       } catch {
-        case e: Exception =>
+        case e: SQLException =>
           Logger.debug("Failed in CourseMembership.scala / delete")
           Logger.debug(e.getMessage())
       }
     }
-    delete(CourseMembership.tableName, id)
+    delete(CourseMembership.tableName)
   }
 
 }
@@ -87,7 +87,7 @@ object CourseMembership extends SQLSelectable[CourseMembership] {
    * @param id The id of the membership
    * @return If a course membership was found, then Some[CourseMembership], otherwise None
    */
-  def findById(id: Long): Option[CourseMembership] = findById(tableName, id, simple)
+  def findById(id: Long): Option[CourseMembership] = findById(id, simple)
 
   /**
    * Lists the membership pertaining to a certain user
@@ -95,17 +95,7 @@ object CourseMembership extends SQLSelectable[CourseMembership] {
    * @return The list of course membership
    */
   def listByUser(user: User): List[CourseMembership] =
-    DB.withConnection { implicit connection =>
-      try {
-        SQL"select * from $tableName where userId = {id}"
-          .on('id -> user.id.get).as(simple *)
-      } catch {
-        case e: Exception =>
-          Logger.debug("Failed in CourseMembership.scala / userIsEnrolled")
-          Logger.debug(e.getMessage())
-          List[CourseMembership]()
-      }
-    }
+    listByCol("userId", user.id, simple)
 
   /**
    * Lists the membership pertaining to a certain course
@@ -113,17 +103,7 @@ object CourseMembership extends SQLSelectable[CourseMembership] {
    * @return The list of course membership
    */
   def listByCourse(course: Course): List[CourseMembership] =
-    DB.withConnection { implicit connection =>
-      try {
-        SQL"select * from $tableName where courseId = {id}"
-          .on('id -> course.id.get).as(simple *)
-      } catch {
-        case e: Exception =>
-          Logger.debug("Failed in CourseMembership.scala / listByCourse")
-          Logger.debug(e.getMessage())
-          List[CourseMembership]()
-      }
-    }
+    listByCol("courseId", course.id, simple)
 
   /**
    * Finds all courses that a certain user is enrolled in
@@ -133,14 +113,18 @@ object CourseMembership extends SQLSelectable[CourseMembership] {
   def listUsersClasses(user: User): List[Course] = {
     DB.withConnection { implicit connection =>
       try {
-        SQL"""
+        SQL(
+          s"""
           select * from ${Course.tableName} join $tableName
           on ${Course.tableName}.id = ${tableName}.courseId
           where ${tableName}.userId = {id}
-          order by name asc"""
-          .on('id -> user.id.get).as(Course.simple *)
+          order by name asc
+          """
+        )
+          .on('id -> user.id.get)
+          .as(Course.simple *)
       } catch {
-        case e: Exception =>
+        case e: SQLException =>
           Logger.debug("Failed in CourseMembership.scala / listUsersClasses")
           Logger.debug(e.getMessage())
           List[Course]()
@@ -156,14 +140,18 @@ object CourseMembership extends SQLSelectable[CourseMembership] {
   def listTeacherClasses(user: User): List[Course] = {
     DB.withConnection { implicit connection =>
       try {
-        SQL"""
+        SQL(
+          s"""
           select * from ${Course.tableName} join $tableName
           on ${Course.tableName}.id = ${tableName}.courseId
           where ${tableName}.userId = {id} and ${tableName}.teacher = true
-          order by name asc"""
-          .on('id -> user.id.get).as(Course.simple *)
+          order by name asc
+          """
+        )
+          .on('id -> user.id.get)
+          .as(Course.simple *)
       } catch {
-        case e: Exception =>
+        case e: SQLException =>
           Logger.debug("Failed in CourseMembership.scala / listTeacherClassesd")
           Logger.debug(e.getMessage())
           List[Course]()
@@ -180,15 +168,18 @@ object CourseMembership extends SQLSelectable[CourseMembership] {
   def listClassMembers(course: Course, teacher: Boolean): List[User] = {
     DB.withConnection { implicit connection =>
       try {
-        SQL"""
+        SQL(
+          s"""
           select * from ${User.tableName} join $tableName
           on ${User.tableName}.id = ${tableName}.userId
           where ${tableName}.courseId = {id} and ${tableName}.teacher = {teacher}
-          order by name asc"""
+          order by name asc
+          """
+        )
           .on('id -> course.id.get, 'teacher -> teacher)
           .as(User.simple *)
       } catch {
-        case e: Exception =>
+        case e: SQLException =>
           Logger.debug("Failed in CourseMembership.scala / listClassMembers")
           Logger.debug(e.getMessage())
           List[User]()
@@ -205,13 +196,13 @@ object CourseMembership extends SQLSelectable[CourseMembership] {
   def userIsEnrolled(user: User, course: Course): Boolean =
     DB.withConnection { implicit connection =>
       try {
-        val result = SQL"select 1 from $tableName where userId = {uid} and courseId = {cid}"
-          .on('uid -> user.id.get, 'cid -> course.id.get)
+        val result = SQL(s"select 1 from $tableName where userId = {uid} and courseId = {cid}")
+          .on('uid -> user.id, 'cid -> course.id)
           .fold(0) { (c, _) => c + 1 } // fold SqlResult
           .fold(_ => 0, c => c) // fold Either
         result > 0
       } catch {
-        case e: Exception =>
+        case e: SQLException =>
           Logger.debug("Failed in CourseMembership.scala / userIsEnrolled")
           Logger.debug(e.getMessage())
           false
@@ -222,5 +213,5 @@ object CourseMembership extends SQLSelectable[CourseMembership] {
    * Lists all course membership
    * @return The list of course memberships
    */
-  def list: List[CourseMembership] = list(tableName, simple)
+  def list: List[CourseMembership] = list(simple)
 }

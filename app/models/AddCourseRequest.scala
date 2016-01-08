@@ -14,21 +14,20 @@ case class AddCourseRequest (id:Option [Long], userId:Long, courseId:Long, messa
    * Saves the content ownership to the DB
    * @return The possibly updated content ownership
    */
-  def save: AddCourseRequest = {
+  def save =
     if (id.isDefined) {
-      update(AddCourseRequest.tableName, 'id -> id.get, 'userId -> userId, 'courseId -> courseId, 'message -> message)
+      update(AddCourseRequest.tableName, 'userId -> userId, 'courseId -> courseId, 'message -> message)
       this
     } else {
       val id = insert(AddCourseRequest.tableName, 'userId -> userId, 'courseId -> courseId, 'message -> message)
       this.copy(id)
     }
-  }
 
   /**
    * Deletes the content ownership from the DB
    */
   def delete() {
-    delete(AddCourseRequest.tableName, id)
+    delete(AddCourseRequest.tableName)
   }
 
   //                  _   _
@@ -109,37 +108,17 @@ object AddCourseRequest extends SQLSelectable[AddCourseRequest] {
    * @param id The id of the membership
    * @return If a course membership was found, then Some[AddCourseRequest], otherwise None
    */
-  def findById(id: Long): Option[AddCourseRequest] = findById(tableName, id, simple)
+  def findById(id: Long): Option[AddCourseRequest] = findById(id, simple)
 
   /**
    * Lists all course membership
    * @return The list of course memberships
    */
-  def list: List[AddCourseRequest] = list(tableName, simple)
+  def list: List[AddCourseRequest] = list(simple)
 
   def listByCourse (course: Course): List[AddCourseRequest] =
-    DB.withConnection { implicit connection =>
-      try {
-        SQL"select * from $tableName where courseId = {id}"
-          .on('id -> course.id.get).as(simple *)
-      } catch {
-        case e: Exception =>
-          Logger.debug("Failed in AddCourseRequest.scala / listByCourse")
-          Logger.debug(e.getMessage())
-          List[AddCourseRequest]()
-      }
-    }
+    listByCol("courseId", course.id, simple)
     
   def listByUser (user: User): List[AddCourseRequest] =
-    DB.withConnection { implicit connection =>
-      try {
-        SQL"select * from $tableName where userId = {id}"
-          .on('id -> user.id.get).as(simple *)
-      } catch {
-        case e: Exception =>
-          Logger.debug("Failed in AddCourseRequest.scala / listByUser")
-          Logger.debug(e.getMessage())
-          List[AddCourseRequest]()
-      }
-    }
+    listByCol("userId", user.id, simple)
 }

@@ -2,6 +2,7 @@ package models
 
 import anorm._
 import anorm.SqlParser._
+import java.sql.SQLException
 import dataAccess.sqlTraits._
 import play.api.db.DB
 import play.api.Logger
@@ -22,9 +23,9 @@ case class Announcement(id: Option[Long], courseId: Long, userId: Long, timeMade
    * Saves the announcement to the DB
    * @return The possibly updated announcement
    */
-  def save: Announcement = {
+  def save =
     if (id.isDefined) {
-      update(Announcement.tableName, 'id -> id.get, 'courseId -> courseId, 'userId -> userId, 'timeMade -> timeMade,
+      update(Announcement.tableName, 'courseId -> courseId, 'userId -> userId, 'timeMade -> timeMade,
         'content -> content)
       this
     } else {
@@ -32,13 +33,12 @@ case class Announcement(id: Option[Long], courseId: Long, userId: Long, timeMade
         'content -> content)
       this.copy(id)
     }
-  }
 
   /**
    * Deletes the announcement from the DB
    */
   def delete() {
-    delete(Announcement.tableName, id)
+    delete(Announcement.tableName)
   }
 
   //       _____      _   _
@@ -87,7 +87,7 @@ object Announcement extends SQLSelectable[Announcement] {
    * @param id The id of the announcement.
    * @return If a announcement was found, then Some[Announcement], otherwise None
    */
-  def findById(id: Long): Option[Announcement] = findById(Announcement.tableName, id, simple)
+  def findById(id: Long): Option[Announcement] = findById(id, simple)
 
   /**
    * Create an announcement
@@ -103,7 +103,7 @@ object Announcement extends SQLSelectable[Announcement] {
    * Gets all announcements in the DB
    * @return The list of announcements
    */
-  def list: List[Announcement] = list(Announcement.tableName, simple)
+  def list: List[Announcement] = list(simple)
 
   /**
    * Lists all announcements made in a certain course
@@ -111,17 +111,7 @@ object Announcement extends SQLSelectable[Announcement] {
    * @return The list of announcements
    */
   def listByCourse(course: Course): List[Announcement] =
-    DB.withConnection { implicit connection =>
-      try {
-        SQL"select * from $tableName where courseId = {id}"
-          .on('id -> course.id.get).as(simple *)
-      } catch {
-        case e: Exception =>
-          Logger.debug("Failed in Announcements.scala / listByCourse")
-          Logger.debug(e.getMessage())
-          List[Announcement]()
-      }
-    }
+    listByCol("courseId", course.id, simple)
 
   /**
    * Lists all announcements made by a certain user
@@ -129,17 +119,7 @@ object Announcement extends SQLSelectable[Announcement] {
    * @return The list of announcements
    */
   def listByUser(user: User): List[Announcement] =
-    DB.withConnection { implicit connection =>
-      try {
-        SQL"select * from $tableName where userId = {id}"
-          .on('id -> user.id.get).as(simple *)
-      } catch {
-        case e: Exception =>
-          Logger.debug("Failed in Announcements.scala / listByUser")
-          Logger.debug(e.getMessage())
-          List[Announcement]()
-      }
-    }
+    listByCol("userId", user.id, simple)
 
   /**
    * Create a announcement from fixture data
@@ -156,10 +136,11 @@ object Announcement extends SQLSelectable[Announcement] {
   def deleteAnnouncement(id: Long, courseId: Long) {
     DB.withConnection { implicit connection =>
       try { 
-        SQL"delete from $tableName where id = {id} and courseId = {cid}"
-          .on('id -> id, 'cid -> courseId).executeUpdate()
+        SQL(s"delete from $tableName where id = {id} and courseId = {cid}")
+          .on('id -> id, 'cid -> courseId)
+          .executeUpdate()
       } catch {
-        case e: Exception =>
+        case e: SQLException =>
          Logger.debug("Failed in deleteAnnouncement")
          Logger.debug(e.getMessage())
       }

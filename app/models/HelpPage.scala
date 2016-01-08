@@ -17,7 +17,7 @@ case class HelpPage(id: Option[Long], title: String, contents: String, category:
    * Saves the help page to the DB
    * @return The possibly updated help page
    */
-  def save: HelpPage = {
+  def save =
     if (id.isDefined) {
       update(HelpPage.tableName, 'id -> id.get, 'title -> title, 'contents -> contents, 'category -> category)
       this
@@ -25,13 +25,12 @@ case class HelpPage(id: Option[Long], title: String, contents: String, category:
       val id = insert(HelpPage.tableName, 'title -> title, 'contents -> contents, 'category -> category)
       this.copy(id)
     }
-  }
 
   /**
    * Deletes the help page from the DB
    */
   def delete() {
-    delete(HelpPage.tableName, id)
+    delete(HelpPage.tableName)
   }
   
 }
@@ -44,9 +43,8 @@ object HelpPage extends SQLSelectable[HelpPage] {
       get[String](tableName + ".title") ~
       get[String](tableName + ".contents") ~
       get[String](tableName + ".category") map {
-      case id ~ title ~ contents ~ category => {
+      case id ~ title ~ contents ~ category =>
         HelpPage(id, title, contents, category)
-      }
     }
   }
 
@@ -55,12 +53,12 @@ object HelpPage extends SQLSelectable[HelpPage] {
    * @param id The id of the help page.
    * @return If a help page was found, then Some[User], otherwise None
    */
-  def findById(id: Long): Option[HelpPage] = findById(HelpPage.tableName, id, simple)
+  def findById(id: Long): Option[HelpPage] = findById(id, simple)
 
   /**
    * Gets all help pages in the DB
    * @return The list of help pages
    */
-  def list: List[HelpPage] = list(HelpPage.tableName, simple)
+  def list: List[HelpPage] = list(simple)
 
 }

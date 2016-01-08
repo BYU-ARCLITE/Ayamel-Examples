@@ -35,26 +35,16 @@ play.i18n.langs="en"
 #
 db.default.driver=com.mysql.jdbc.Driver
 db.default.url="jdbc:mysql://localhost/ayamel?characterEncoding=UTF-8"
-db.default.user=root
+db.default.username=root
 db.default.password=root
 
 # Evolutions
 # ~~~~~
-# You can disable evolutions if needed
-# evolutionplugin=disabled
 
-# Logger
-# ~~~~~
-# You can also configure logback (http://logback.qos.ch/), by providing a logger.xml file in the conf directory .
-
-# Root logger:
-logger.root=ERROR
-
-# Logger used by the framework:
-logger.play=INFO
-
-# Logger provided to your application:
-logger.application=DEBUG
+play.evolutions.enabled=true
+play.evolutions.useLocks=true
+play.evolutions.autoApply=true
+play.evolutions.autoDowns=true
 
 # Resource Library information
 resourceLibrary.baseUrl="http://api.ayamel.org/api/v1/"

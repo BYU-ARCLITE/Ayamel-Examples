@@ -334,7 +334,7 @@ object Courses extends Controller {
                 AddCourseRequest(None, user.id.get, course.id.get, message).save
 
                 // Notify the teachers
-                val notificationMessage = "A student has requested to join your course \"${course.name}\"."
+                val notificationMessage = s"A student has requested to join your course ${course.name}."
                 course.getTeachers.foreach {
                   _.sendNotification(notificationMessage)
                 }
@@ -343,7 +343,7 @@ object Courses extends Controller {
               } else if (course.enrollment == 'open) {
 
                 // Notify the teachers
-                val notificationMessage = "A student has joined your course \"${course.name}\"."
+                val notificationMessage = s"A student has joined your course ${course.name}."
                 course.getTeachers.foreach {
                   _.sendNotification(notificationMessage)
                 }
@@ -507,17 +507,15 @@ object Courses extends Controller {
             if(user.hasCoursePermission(course, "teacher")) {
               User.findById(data("userId")(0).toLong) foreach { member =>
                 operation match {
-                  case "remove" => {
+                  case "remove" =>
                     data("permission").foreach { permission =>
                       member.removeCoursePermission(course, permission)
                     }
-                  }
-                  case "match" => {
+                  case "match" =>
                     user.removeAllCoursePermissions(course)
                     data("permission").foreach { permission =>
                       member.addCoursePermission(course, permission)
                     }
-                  }
                   case _ => data("permission").foreach { permission =>
                     member.addCoursePermission(course, permission)
                   }

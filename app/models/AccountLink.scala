@@ -16,21 +16,20 @@ case class AccountLink(id: Option[Long], userIds: Set[Long], primaryAccount: Lon
    * Saves the account link to the DB
    * @return The possibly updated account link
    */
-  def save: AccountLink = {
+  def save =
     if (id.isDefined) {
-      update(AccountLink.tableName, 'id -> id.get, 'userIds -> userIds.mkString(","), 'primaryAccount -> primaryAccount)
+      update(AccountLink.tableName, 'userIds -> userIds.mkString(","), 'primaryAccount -> primaryAccount)
       this
     } else {
       val id = insert(AccountLink.tableName, 'userIds -> userIds.mkString(","), 'primaryAccount -> primaryAccount)
       this.copy(id)
     }
-  }
 
   /**
    * Deletes the account link from the DB
    */
   def delete() {
-    delete(AccountLink.tableName, id)
+    delete(AccountLink.tableName)
   }
 
   //                  _   _
@@ -94,10 +93,9 @@ object AccountLink extends SQLSelectable[AccountLink] {
     get[Option[Long]](tableName + ".id") ~
       get[String](tableName + ".userIds") ~
       get[Long](tableName + ".primaryAccount") map {
-      case id ~ userIds ~ primaryAccount => {
+      case id ~ userIds ~ primaryAccount =>
         val _userIds = if (userIds.isEmpty) Set[Long]() else userIds.split(",").map(_.toLong).toSet
         AccountLink(id, _userIds, primaryAccount)
-      }
     }
   }
 
@@ -106,12 +104,12 @@ object AccountLink extends SQLSelectable[AccountLink] {
    * @param id The id of the user.
    * @return If a user was found, then Some[AccountLink], otherwise None
    */
-  def findById(id: Long): Option[AccountLink] = findById(AccountLink.tableName, id, simple)
+  def findById(id: Long): Option[AccountLink] = findById(id, simple)
 
   /**
    * Gets all users in the DB
    * @return The list of users
    */
-  def list: List[AccountLink] = list(AccountLink.tableName, simple)
+  def list: List[AccountLink] = list(simple)
 
 }

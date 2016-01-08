@@ -1,6 +1,7 @@
 package dataAccess.sqlTraits
 
 import anorm._
+import java.sql.SQLException
 import play.api.db.DB
 import play.api.Logger
 import play.api.Play.current
@@ -10,27 +11,56 @@ import play.api.Play.current
  * @tparam T The type of object to return.
  */
 trait SQLSelectable[T] {
-  def findById(tablename: String, id: Long, parser: RowParser[T]): Option[T] = {
+  val tableName: String
+
+  def findById(id: Long, parser: RowParser[T]): Option[T] = {
     DB.withConnection { implicit connection =>
       try {
-        SQL"select * from $tablename where id = {id}"
+        SQL(s"select * from $tableName where id = {id} limit 1")
           .on('id -> id).as(parser.singleOpt)
       } catch {
-        case e: Exception =>
-          Logger.debug(s"Failed to find $id in $tablename")
+        case e: SQLException =>
+          Logger.debug(s"Failed to find $id in $tableName")
           Logger.debug(e.getMessage())
           None
       }
     }
   }
 
-  def list(tablename: String, parser: RowParser[T]): List[T] =
+  def findByCol(col: String, value: ParameterValue, parser: RowParser[T]): Option[T] = {
     DB.withConnection { implicit connection =>
       try {
-        SQL"select * from $tablename".as(parser *)
+        SQL(s"select * from $tableName where {col} = {value} limit 1")
+          .on('col -> value, 'value -> value).as(parser.singleOpt)
       } catch {
-        case e: Exception =>
-          Logger.debug(s"Failed to list $tablename")
+        case e: SQLException =>
+          Logger.debug(s"Failed to find $col = $value in $tableName")
+          Logger.debug(e.getMessage())
+          None
+      }
+    }
+  }
+
+  def list(parser: RowParser[T]): List[T] =
+    DB.withConnection { implicit connection =>
+      try {
+        SQL(s"select * from $tableName").as(parser *)
+      } catch {
+        case e: SQLException =>
+          Logger.debug(s"Failed to list $tableName")
+          Logger.debug(e.getMessage())
+          List[T]()
+      }
+    }
+
+  def listByCol(col: String, value: ParameterValue, parser: RowParser[T]): List[T] =
+    DB.withConnection { implicit connection =>
+      try {
+        SQL(s"select * from $tableName where {col} = {value}")
+		.on('col -> col, 'value -> value).as(parser *)
+      } catch {
+        case e: SQLException =>
+          Logger.debug(s"Failed to list $tableName for $col = $value")
           Logger.debug(e.getMessage())
           List[T]()
       }

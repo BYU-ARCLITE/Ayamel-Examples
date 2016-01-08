@@ -22,7 +22,7 @@ case class Notification(id: Option[Long], userId: Long, message: String, dateSen
    * Saves the notification to the DB
    * @return The possibly modified notification
    */
-  def save: Notification = {
+  def save =
     if (id.isDefined) {
       update(Notification.tableName, 'id -> id.get, 'userId -> userId, 'message -> message, 'dateSent -> dateSent,
         'messageRead -> messageRead)
@@ -32,13 +32,12 @@ case class Notification(id: Option[Long], userId: Long, message: String, dateSen
         'messageRead -> messageRead)
       this.copy(id)
     }
-  }
 
   /**
    * Deletes the notification from the DB
    */
   def delete() {
-    delete(Notification.tableName, id)
+    delete(Notification.tableName)
   }
 
 }
@@ -62,7 +61,7 @@ object Notification extends SQLSelectable[Notification] {
    * @param id The id of the membership
    * @return If a notification was found, then Some[Notification], otherwise None
    */
-  def findById(id: Long): Option[Notification] = findById(tableName, id, simple)
+  def findById(id: Long): Option[Notification] = findById(id, simple)
 
   /**
    * Lists a user's notifications
@@ -70,21 +69,11 @@ object Notification extends SQLSelectable[Notification] {
    * @return The list of notifications
    */
   def listByUser(user: User): List[Notification] =
-    DB.withConnection { implicit connection =>
-      try {
-        SQL"select * from $tableName where userId = {id}"
-          .on('id -> user.id.get).as(simple *)
-      } catch {
-        case e: Exception =>
-          Logger.debug("Failed in Notification.scala / listByUser")
-          Logger.debug(e.getMessage())
-          List[Notification]()
-      }
-    }
+    listByCol("userId", user.id, simple)
 
   /**
    * Lists all notifications
    * @return The list of notifications
    */
-  def list: List[Notification] = list(tableName, simple)
+  def list: List[Notification] = list(simple)
 }
