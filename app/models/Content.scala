@@ -261,8 +261,8 @@ object Content extends SQLSelectable[Content] {
     get[String]("authId") ~
     get[String]("authScheme") ~
     get[String]("username") ~
-    get[String]("name") ~
-    get[String]("email") ~
+    get[Option[String]]("name") ~
+    get[Option[String]]("email") ~
     get[Option[String]]("picture") ~
     get[Long]("accountLinkId") ~
     get[String]("created") ~
@@ -271,7 +271,7 @@ object Content extends SQLSelectable[Content] {
         userId ~ authId ~ authScheme ~ username ~ name ~ email ~ picture ~ accountLinkId ~ created ~ lastLogin =>
           Content(contentId, cname, Symbol(contentType), thumbnail, resourceId, dateAdded, visibility, shareability,
           authKey, labels.split(",").toList.filterNot(_.isEmpty), views) -> 
-          User(userId, authId, Symbol(authScheme), username, Some(name), Some(email), picture, accountLinkId, created, lastLogin)
+          User(userId, authId, Symbol(authScheme), username, name, email, picture, accountLinkId, created, lastLogin)
     }
   }
 

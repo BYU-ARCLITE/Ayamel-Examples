@@ -486,15 +486,15 @@ object User extends SQLSelectable[User] {
       get[String](tableName + ".authId") ~
       get[String](tableName + ".authScheme") ~
       get[String](tableName + ".username") ~
-      get[String](tableName + ".name") ~
-      get[String](tableName + ".email") ~
+      get[Option[String]](tableName + ".name") ~
+      get[Option[String]](tableName + ".email") ~
       get[Option[String]](tableName + ".picture") ~
       get[Long](tableName + ".accountLinkId") ~
       get[String](tableName + ".created") ~
       get[String](tableName + ".lastLogin") map {
       case id ~ authId ~ authScheme ~ username ~ name ~ email ~ picture ~ accountLinkId ~ created ~ lastLogin => {
-        val _name = if (name.isEmpty) None else Some(name)
-        val _email = if (email.isEmpty) None else Some(email)
+        val _name = if (name.isEmpty) None else name
+        val _email = if (email.isEmpty) None else email
         User(id, authId, Symbol(authScheme), username, _name, _email, picture, accountLinkId, created, lastLogin)
       }
     }

@@ -28,44 +28,46 @@
                 <th>Actions</th>
                 <th></th>
             </tr>
-            @for(content <- contentList) {
-                <tr id="@content._1.resourceId">
-                    <td>@content._1.id.get</td>
-                    <td data-toggle="tooltip" title="@content._1.name">@content._1.name</td>
-                    <td><a class="shortened" data-toggle="tooltip" title="@content._2.email.get">@content._2.name.get</a></td>
+            @for((content, user) <- contentList) {
+                <tr id="@content.resourceId">
+                    <td>@content.id.get</td>
+                    <td>@content.name</td>
+                    <td data-toggle="tooltip" @if(user.email.isDefined) { title="@user.email.get" }>
+						@user.username
+					</td>
                     <td class="lang"></td>
                     <td>
-                        @if(content._1.shareability == models.Content.shareability.notShareable) {
+                        @if(content.shareability == models.Content.shareability.notShareable) {
                             Not Shareable
                         }
-                        @if(content._1.shareability == models.Content.shareability.byMeOnly) {
+                        @if(content.shareability == models.Content.shareability.byMeOnly) {
                             By Owner Only
                         }
-                        @if(content._1.shareability == models.Content.shareability.shareable) {
+                        @if(content.shareability == models.Content.shareability.shareable) {
                             Shareable
                         }
                     </td>
                     <td>
-                        @if(content._1.visibility == models.Content.visibility._private) {
+                        @if(content.visibility == models.Content.visibility._private) {
                             Private
                         }
-                        @if(content._1.visibility == models.Content.visibility.tightlyRestricted) {
+                        @if(content.visibility == models.Content.visibility.tightlyRestricted) {
                             Tightly Restricted
                         }
-                        @if(content._1.visibility == models.Content.visibility.looselyRestricted) {
+                        @if(content.visibility == models.Content.visibility.looselyRestricted) {
                             Loosely Restricted
                         }
-                        @if(content._1.visibility == models.Content.visibility.public) {
+                        @if(content.visibility == models.Content.visibility.public) {
                             Public
                         }
                     </td>
-                    <td>@content._1.resourceId</td>
-                    <td>@content._1.contentType.name</td>
+                    <td>@content.resourceId</td>
+                    <td>@content.contentType.name</td>
                     <td>
-                        <a href="@routes.ContentController.view(content._1.id.get)" class="btn">View</a>
+                        <a href="@routes.ContentController.view(content.id.get)" class="btn">View</a>
                     </td>
                     <td>
-                        <input type="checkbox" class="contentSelector" data-id="@content._1.id.get">
+                        <input type="checkbox" class="contentSelector" data-id="@content.id.get">
                     </td>
                 </tr>
             }
