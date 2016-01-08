@@ -118,16 +118,28 @@ object AddCourseRequest extends SQLSelectable[AddCourseRequest] {
   def list: List[AddCourseRequest] = list(tableName, simple)
 
   def listByCourse (course: Course): List[AddCourseRequest] =
-    DB.withConnection {
-      implicit connection =>
-        SQL(s"select * from $tableName where courseId = {id}")
-		  .on('id -> course.id.get).as(simple *)
+    DB.withConnection { implicit connection =>
+      try {
+        SQL"select * from $tableName where courseId = {id}"
+          .on('id -> course.id.get).as(simple *)
+      } catch {
+        case e: Exception =>
+          Logger.debug("Failed in AddCourseRequest.scala / listByCourse")
+          Logger.debug(e.getMessage())
+          List[AddCourseRequest]()
+      }
     }
-	
+    
   def listByUser (user: User): List[AddCourseRequest] =
-    DB.withConnection {
-      implicit connection =>
-        SQL(s"select * from $tableName where userId = {id}")
+    DB.withConnection { implicit connection =>
+      try {
+        SQL"select * from $tableName where userId = {id}"
           .on('id -> user.id.get).as(simple *)
+      } catch {
+        case e: Exception =>
+          Logger.debug("Failed in AddCourseRequest.scala / listByUser")
+          Logger.debug(e.getMessage())
+          List[AddCourseRequest]()
+      }
     }
 }

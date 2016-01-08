@@ -2,7 +2,7 @@ package models
 
 import anorm._
 import anorm.SqlParser._
-import dataAccess.sqlTraits.{SQLSelectable, SQLDeletable, SQLSavable}
+import dataAccess.sqlTraits._
 import play.api.db.DB
 
 /**

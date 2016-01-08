@@ -2,7 +2,8 @@ package models
 
 import anorm._
 import anorm.SqlParser._
-import dataAccess.sqlTraits.{SQLSelectable, SQLDeletable, SQLSavable}
+import dataAccess.sqlTraits._
+import play.api.Logger
 import play.api.db.DB
 import play.api.Play.current
 
@@ -67,10 +68,16 @@ object ContentListing extends SQLSelectable[ContentListing] {
    * @return The list of content listings
    */
   def listByCourse(course: Course): List[ContentListing] =
-    DB.withConnection {
-      implicit connection =>
-        SQL("select * from " + tableName + " where courseId = {id}")
+    DB.withConnection { implicit connection =>
+	  try {
+        SQL"select * from $tableName where courseId = {id}"
           .on('id -> course.id.get).as(simple *)
+	  } catch {
+	    case e: Exception =>
+		  Logger.debug("Failed in ContentListing.scala / listByCourse")
+		  Logger.debug(e.getMessage())
+		  List[ContentListing]()
+	  }
     }
 
   /**
@@ -79,10 +86,16 @@ object ContentListing extends SQLSelectable[ContentListing] {
    * @return The list of content listings
    */
   def listByContent(content: Content): List[ContentListing] =
-    DB.withConnection {
-      implicit connection =>
-        SQL("select * from " + tableName + " where contentId = {id}")
+    DB.withConnection { implicit connection =>
+	  try {
+        SQL"select * from $tableName where contentId = {id}"
           .on('id -> content.id.get).as(simple *)
+	  } catch {
+	    case e: Exception =>
+		  Logger.debug("Failed in ContentListing.scala / listByContent")
+		  Logger.debug(e.getMessage())
+		  List[ContentListing]()
+	  }
     }
 
   /**
@@ -91,11 +104,17 @@ object ContentListing extends SQLSelectable[ContentListing] {
    * @return The list of content
    */
   def listClassContent(course: Course): List[Content] =
-    DB.withConnection {
-      implicit connection =>
-        SQL("select * from " + Content.tableName + " join " + tableName + " on " + Content.tableName + ".id = " +
-          tableName + ".contentId where " + tableName + ".courseId = {courseId}")
-          .on('courseId -> course.id.get)
+    DB.withConnection { implicit connection =>
+	  try {
+        SQL"""select * from ${Content.tableName} join $tableName
+		  on ${Content.tableName}.id = ${tableName}.contentId
+		  where ${tableName}.courseId = ${course.id.get}"""
           .as(Content.simple *)
+	  } catch {
+	    case e: Exception =>
+		  Logger.debug("Failed in ContentListing.scala / listClassContent")
+		  Logger.debug(e.getMessage())
+		  List[Content]()
+	  }
     }
 }

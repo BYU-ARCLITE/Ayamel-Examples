@@ -2,7 +2,7 @@ package models
 
 import anorm._
 import anorm.SqlParser._
-import dataAccess.sqlTraits.{SQLSelectable, SQLDeletable, SQLSavable}
+import dataAccess.sqlTraits._
 import service.{HashTools, SerializationTools, TimeTools}
 import play.api.db.DB
 import play.api.Play.current
@@ -293,11 +293,21 @@ object Content extends SQLSelectable[Content] {
    * @return map of contentId's to tuple (owner, email)
    */
   def ownershipList: List[(Content, User)] = {
-    DB.withConnection {
-      implicit connection =>
-        anorm.SQL("""SELECT * FROM ((SELECT content.name AS cname, content . * , contentOwnership.contentId, contentOwnership.userId
-          FROM content JOIN contentOwnership ON content.id = contentOwnership.contentid) AS listing
-          JOIN userAccount ON userAccount.id = listing.userId)""").as(contentOwnership *)
+    DB.withConnection { implicit connection =>
+      try {
+        SQL"""select * from (
+          (
+            select content.name as cname, content.*, contentOwnership.contentId, contentOwnership.userId
+            from content join contentOwnership on content.id = contentOwnership.contentid
+          ) as listing
+          join userAccount on userAccount.id = listing.userId
+        )""".as(contentOwnership *)
+      } catch {
+        case e: Exception =>
+          Logger.debug("Failed in Content.scala / ownershipList")
+          Logger.debug(e.getMessage())
+          List[(Content, User)]()
+      }
     }
   }
 
@@ -308,8 +318,15 @@ object Content extends SQLSelectable[Content] {
   def listPublic(count: Long): List[Content] =
     DB.withConnection {
       implicit connection =>
-        anorm.SQL("select * from " + tableName + " where visibility = 4 order by id desc limit {count}")
-          .on('count -> count).as(simple *)
+        try {
+          SQL"select * from $tableName where visibility = 4 order by id desc limit {count}"
+            .on('count -> count).as(simple *)
+        } catch {
+          case e: Exception =>
+            Logger.debug("Failed in Content.scala / listPublic")
+            Logger.debug(e.getMessage())
+            List[Content]()
+        }
     }
 
   /**
@@ -326,59 +343,102 @@ object Content extends SQLSelectable[Content] {
    * @return The list of content that match
    */
   def search(query: String): List[Content] =
-    DB.withConnection {
-      implicit connection =>
-        val sqlQuery = "%" + query + "%"
-        // TODO: Search the resource library metadata. Issue # 51
-        anorm.SQL("SELECT * from " + tableName + " where name like {query} and visibility = {public}")
+    DB.withConnection { implicit connection =>
+      val sqlQuery = "%" + query + "%"
+      // TODO: Search the resource library metadata. Issue # 51
+      try {
+        SQL"select * from $tableName where name like {query} and visibility = {public}"
           .on('query -> sqlQuery, 'public -> visibility.public).as(simple *)
+      } catch {
+        case e: Exception =>
+          Logger.debug("Failed in Content.scala / search")
+          Logger.debug(e.getMessage())
+          List[Content]()
+      }
     }
 
-  def setSetting(content: Content, setting: String, argument: Seq[String]) =
-    DB.withConnection {
-      implicit connection =>
-        SQL("DELETE from " +  settingTable + " where contentId = {cid} and setting = {setting}")
-          .on('cid -> content.id.get, 'setting -> setting).execute()
-        argument.foreach { arg =>
-          SQL("INSERT into " +  settingTable + " (contentId, setting, argument) values ({cid}, {setting}, {argument})")
-          .on('cid -> content.id.get, 'setting -> setting, 'argument -> arg).execute()
-        }
+  def setSetting(content: Content, setting: String, arguments: Seq[String]) {
+    if (arguments.size == 0) { return }
+    DB.withConnection { implicit connection =>
+      try {
+        val cid = content.id.get
+        SQL"delete from $settingTable where contentId = $cid and setting = $setting"
+          .execute()
+        val params = arguments.map { arg => List(NamedParameter.symbol('arg -> arg)) }
+        BatchSql(
+          s"insert into $settingTable (contentId, setting, argument) values ($cid, $setting, {arg})",
+          params.head, params.tail:_*
+        ).execute()
+      } catch {
+        case e: Exception =>
+          Logger.debug("Failed in Content.scala / setSetting")
+          Logger.debug(e.getMessage())
+      }
     }
+  }
 
-  def addSetting(content: Content, setting: String, argument: Seq[String]) =
-    DB.withConnection {
-      implicit connection =>
-        argument.foreach { arg =>
-          anorm.SQL("INSERT into " +  settingTable + " (contentId, setting, argument) values ({cid}, {setting}, {argument})")
-          .on('cid -> content.id.get, 'setting -> setting, 'argument -> arg).execute()
-        }
+  def addSetting(content: Content, setting: String, arguments: Seq[String]) {
+    if (arguments.size == 0) { return }
+    DB.withConnection { implicit connection =>
+      try {
+        val cid = content.id.get
+        val params = arguments.map { arg => List(NamedParameter.symbol('arg -> arg)) }
+        BatchSql(
+          s"insert into $settingTable (contentId, setting, argument) values ($cid, $setting, {arg})",
+          params.head, params.tail:_*
+        ).execute()
+      } catch {
+        case e: Exception =>
+          Logger.debug("Failed in Content.scala / addSetting")
+          Logger.debug(e.getMessage())
+      }
     }
+  }
 
-  def removeSetting(content: Content, setting: String, argument: Seq[String]) =
-    DB.withConnection {
-      implicit connection =>
-        argument.foreach { arg =>
-          anorm.SQL("DELETE from " +  settingTable + " where contentId = {cid} and setting = {setting} and argument = {argument}")
-          .on('cid -> content.id.get, 'setting -> setting, 'argument -> arg).execute()
-        }
+  def removeSetting(content: Content, setting: String, arguments: Seq[String]) {
+    if (arguments.size == 0) { return }
+    DB.withConnection { implicit connection =>
+      try {
+        val cid = content.id.get
+        val params = arguments.map { arg => List(NamedParameter.symbol('arg -> arg)) }
+        BatchSql(
+          s"delete from $settingTable where contentId = $cid and setting = $setting and argument = {arg}",
+          params.head, params.tail:_*
+        ).execute()
+      } catch {
+        case e: Exception =>
+          Logger.debug("Failed in Content.scala / removeSetting")
+          Logger.debug(e.getMessage())
+      }
     }
+  }
 
   def getSetting(content: Content, setting: String): List[String] =
-    DB.withConnection {
-      implicit connection =>
-        anorm.SQL("SELECT argument from " +  settingTable + " where contentId = {cid} and setting = {setting}")
-          .on('cid -> content.id.get, 'setting -> setting).as(get[String](settingTable + ".argument") *)
+    DB.withConnection { implicit connection =>
+      try {
+        SQL"select argument from $settingTable where contentId = {cid} and setting = {setting}"
+          .on('cid -> content.id.get, 'setting -> setting)
+          .as(get[String](settingTable + ".argument") *)
+      } catch {
+        case e: Exception =>
+          Logger.debug("Failed in Content.scala / getSetting")
+          Logger.debug(e.getMessage())
+          List[String]()
+      }
     }
 
   def getSettingMap(content: Content): Map[String, List[String]] =
-    DB.withConnection {
-      implicit connection =>
-        val plist: List[(String, String)] = anorm.SQL("SELECT setting, argument from " +  settingTable + " where contentId = {cid}")
-          .on('cid -> content.id.get).as(
-            get[String](settingTable + ".setting") ~
-            get[String](settingTable + ".argument") map {
+    DB.withConnection { implicit connection =>
+      try {
+        val query = SQL"select setting, argument from $settingTable where contentId = {id}"
+          .on('id -> content.id.get)
+        val plist = query.as(
+          get[String](settingTable + ".setting") ~
+          get[String](settingTable + ".argument") map {
             case setting ~ argument => setting -> argument
-          } *)
+          } *
+        )
+
         (Map[String, List[String]]() /: plist) { (acc, next) =>
           next match {
             case (setting, argument) =>
@@ -386,6 +446,12 @@ object Content extends SQLSelectable[Content] {
               else acc + (setting -> List(argument))
           }
         }
+      } catch {
+        case e: Exception =>
+          Logger.debug("Failed in Content.scala / getSettingMap")
+          Logger.debug(e.getMessage())
+          Map[String, List[String]]()
+      }
     }
 
   /**
@@ -393,8 +459,14 @@ object Content extends SQLSelectable[Content] {
    * @param id The content id
    */
   def incrementViews(id: Long) =
-    DB.withConnection {
-      implicit connection =>
-        anorm.SQL("UPDATE " + tableName + " set views = views + 1 where id = {cid}").on('cid -> id).executeUpdate()
+    DB.withConnection { implicit connection =>
+      try {
+        SQL"update $tableName set views = views + 1 where id = $id"
+          .executeUpdate()
+      } catch {
+        case e: Exception =>
+          Logger.debug("Failed to increment content view count")
+          Logger.debug(e.getMessage())
+      }
     }
 }

@@ -43,20 +43,31 @@ object Google extends Controller {
       Await.result(req, Duration.Inf).json
     }
 
-  def retrieveStoredState(token: String) = {
-    val stateOpt = DB.withConnection { implicit connection =>
-      anorm.SQL("select action, redirect from "+tableName+" where token = {token}")
-        .on('token -> token).as(simple.singleOpt)
-    }
-
-    if(stateOpt.isDefined){ //delete retrieved state so it can't be re-used
-      DB.withConnection { implicit connection =>
-        anorm.SQL("delete from " + tableName + " where token = {token}")
-          .on('token -> token).execute()
+  def retrieveStoredState(token: String): Option[(String, String)] = {
+    DB.withConnection { implicit connection =>
+      val stateOpt = try {
+        SQL"select action, redirect from $tableName where token = {token}"
+          .on('token -> token).as(simple.singleOpt)
+      } catch {
+        case e: Exception =>
+          Logger.debug("In Google.scala retrieveStoredState select")
+          Logger.debug(e.getMessage())
+          None
       }
-    }
 
-    stateOpt
+      if(stateOpt.isDefined){ //delete retrieved state so it can't be re-used
+        try {
+          SQL"delete from $tableName where token = {token}"
+            .on('token -> token).execute()
+        } catch {
+          case e: Exception =>
+            Logger.debug("In Google.scala retrieveStoredState delete")
+            Logger.debug(e.getMessage())
+        }
+      }
+
+      stateOpt
+    }
   }
 
   def registerStateToken(action: String, path: String) = {
@@ -66,10 +77,16 @@ object Google extends Controller {
     val token = byte_array.mkString
 
     //store token in the database
-    DB.withConnection {
-      implicit connection =>
-        anorm.SQL("insert into "+tableName+" (token, action, redirect) values ({token}, {action}, {path})")
+    DB.withConnection { implicit connection =>
+      try {
+        SQL"insert into $tableName (token, action, redirect) values ({token}, {action}, {path})"
           .on('token -> token, 'action -> action, 'path -> path).executeInsert()
+      } catch {
+        case e: Exception =>
+          Logger.debug("In Google.scala registerStateToken:")
+          Logger.debug(e.getMessage())
+          throw e
+      }
     }
 
     Future {

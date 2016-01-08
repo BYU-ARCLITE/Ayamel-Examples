@@ -21,7 +21,7 @@ import service.{EmailTools, TimeTools}
  */
 case class User(id: Option[Long], authId: String, authScheme: Symbol, username: String,
                 name: Option[String] = None, email: Option[String] = None,
-				picture: Option[String] = None, accountLinkId: Long = -1,
+                picture: Option[String] = None, accountLinkId: Long = -1,
                 created: String = TimeTools.now(), lastLogin: String = TimeTools.now())
   extends SQLSavable with SQLDeletable {
 
@@ -32,17 +32,17 @@ case class User(id: Option[Long], authId: String, authScheme: Symbol, username: 
   def save: User = {
     if (id.isDefined) {
       update(User.tableName,
-	    'id -> id.get, 'authId -> authId, 'authScheme -> authScheme.name,
+        'id -> id.get, 'authId -> authId, 'authScheme -> authScheme.name,
         'username -> username, 'name -> name, 'email -> email, 'picture -> picture,
         'accountLinkId -> accountLinkId, 'created -> created, 'lastLogin -> lastLogin
-	  )
+      )
       this
     } else {
       val id = insert(User.tableName,
-	    'authId -> authId, 'authScheme -> authScheme.name,
-		'username -> username, 'name -> name, 'email -> email, 'picture -> picture,
+        'authId -> authId, 'authScheme -> authScheme.name,
+        'username -> username, 'name -> name, 'email -> email, 'picture -> picture,
         'accountLinkId -> accountLinkId, 'created -> created, 'lastLogin -> lastLogin
-	  )
+      )
       this.copy(id)
     }
   }
@@ -50,38 +50,50 @@ case class User(id: Option[Long], authId: String, authScheme: Symbol, username: 
   /**
    * Deletes the user from the DB
    */
-  def delete() {
-
+  def delete() {  
     // Delete the user's content
     getContent.foreach(_.delete())
 
-    // Delete the user's enrollment in courses
-    CourseMembership.listByUser(this).foreach(_.delete())
+    DB.withConnection { implicit connection =>
+      try {
+        // Delete enrollment in courses
+        SQL"delete from courseMembership where userId = {id}"
+          .on('id -> id.get).execute()
 
-    // Delete the user's announcements
-    Announcement.listByUser(this).foreach(_.delete())
+        // Delete the announcements
+        SQL"delete from announcement where userId = {id}"
+          .on('id -> id.get).execute()
 
-    // Delete the user's notifications
-    Notification.listByUser(this).foreach(_.delete())
+        // Delete the notifications
+        SQL"delete from notification where userId = {id}"
+          .on('id -> id.get).execute()
 
-    // Delete add course requests
-    AddCourseRequest.listByUser(this).foreach(_.delete())
+        // Delete add course requests
+        SQL"delete from addCourseRequest where userId = {id}"
+          .on('id -> id.get).execute()
+ 
+        // Delete permission requests
+        SQL"delete from sitePermissionRequest where userId = {id}"
+          .on('id -> id.get).execute()
 
-    // Delete permission requests
-    SitePermissionRequest.listByUser(this).foreach(_.delete())
+        // Delete permissions
+        SQL"delete from sitePermissions where userId = {id}"
+          .on('id -> id.get).execute()
 
+      } catch {
+        case e: Exception =>
+          Logger.debug("Failed to delete User data")
+          Logger.debug(e.getMessage())
+      }
+	}
+        
     // Delete all linked accounts
     getAccountLink.map { accountLink =>
       if (accountLink.primaryAccount == id.get) {
-        accountLink.userIds.filterNot(_ == id.get).foreach(uid => delete(User.tableName, Some(uid)))
+        accountLink.userIds.filterNot(_ == id.get).foreach { uid =>
+          delete(User.tableName, Some(uid))
+        }
       }
-    }
-
-    //Delete site permissions
-    DB.withConnection {
-      implicit connection =>
-        SQL("delete from sitePermissions where userId = {id}")
-          .on('id -> id.get).execute()
     }
 
     delete(User.tableName, id)
@@ -514,10 +526,17 @@ object User extends SQLSelectable[User] {
    * @return If a user was found, then Some[User], otherwise None
    */
   def findByAuthInfo(authId: String, authScheme: Symbol): Option[User] = {
-    DB.withConnection {
-      implicit connection =>
-        anorm.SQL("select * from userAccount where authId = {authId} and authScheme = {authScheme}")
-          .on('authId -> authId, 'authScheme -> authScheme.name).as(simple.singleOpt)
+    DB.withConnection { implicit connection =>
+      try {
+        SQL"select * from userAccount where authId = {authId} and authScheme = {authScheme}"
+          .on('authId -> authId, 'authScheme -> authScheme.name)
+          .as(simple.singleOpt)
+      } catch {
+        case e: Exception =>
+          Logger.debug("Failed in User.scala / findByAuthInfo")
+          Logger.debug(e.getMessage())
+          None
+      }
     }
   }
 
@@ -528,10 +547,17 @@ object User extends SQLSelectable[User] {
    * @return If a user was found, then Some[User], otherwise None
    */
   def findByUsername(authScheme: Symbol, username: String): Option[User] = {
-    DB.withConnection {
-      implicit connection =>
-        anorm.SQL("select * from userAccount where authScheme = {authScheme} and username = {username}")
-          .on('authScheme -> authScheme.name, 'username -> username).as(simple.singleOpt)
+    DB.withConnection { implicit connection =>
+      try {
+        SQL"select * from userAccount where authScheme = {authScheme} and username = {username}"
+          .on('authScheme -> authScheme.name, 'username -> username)
+          .as(simple.singleOpt)
+      } catch {
+        case e: Exception =>
+          Logger.debug("Failed in User.scala / findByUsername")
+          Logger.debug(e.getMessage())
+          None
+      }
     }
   }
 

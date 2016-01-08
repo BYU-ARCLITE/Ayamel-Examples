@@ -2,7 +2,8 @@ package models
 
 import anorm._
 import anorm.SqlParser._
-import dataAccess.sqlTraits.{SQLSelectable, SQLDeletable, SQLSavable}
+import dataAccess.sqlTraits._
+import play.api.Logger
 import play.api.db.DB
 import play.api.Play.current
 
@@ -67,10 +68,16 @@ object ContentOwnership extends SQLSelectable[ContentOwnership] {
    * @return The content ownership
    */
   def findByContent(content: Content): ContentOwnership =
-    DB.withConnection {
-      implicit connection =>
-        SQL("select * from " + tableName + " where contentId = {id}")
+    DB.withConnection { implicit connection =>
+      try {
+        SQL"select * from $tableName where contentId = {id}"
           .on('id -> content.id.get).as(simple.single)
+      } catch {
+        case e: Exception =>
+          Logger.debug("Failed in ContentListing.scala / findByContent")
+          Logger.debug(e.getMessage())
+          throw e
+      }
     }
 
   /**
@@ -79,24 +86,36 @@ object ContentOwnership extends SQLSelectable[ContentOwnership] {
    * @return The list of content ownerships
    */
   def listByUser(user: User): List[ContentOwnership] =
-    DB.withConnection {
-      implicit connection =>
-        SQL("select * from " + tableName + " where " + tableName + ".userId = {userId}")
+    DB.withConnection { implicit connection =>
+      try {
+        SQL"select * from $tableName where ${tableName}.userId = {userId}"
           .on('userId -> user.id.get)
           .as(simple *)
+      } catch {
+        case e: Exception =>
+          Logger.debug("Failed in ContentOwnership.scala / listByUser")
+          Logger.debug(e.getMessage())
+          List[ContentOwnership]()
+      }
     }
-	
+    
   /**
    * Gets all content belonging to a certain user
    * @param user The user who owns the content
    * @return The list of content
    */
   def listUserContent(user: User): List[Content] =
-    DB.withConnection {
-      implicit connection =>
-        anorm.SQL("select * from " + Content.tableName + " join " + tableName + " on " + Content.tableName + ".id = " +
-          tableName + ".contentId where " + tableName + ".userId = {userId}")
-          .on('userId -> user.id.get)
+    DB.withConnection { implicit connection =>
+      try {
+        SQL"""select * from ${Content.tableName} join $tableName
+          on ${Content.tableName}.id = ${tableName}.contentId
+          where ${tableName}.userId = ${user.id.get}"""
           .as(Content.simple *)
+      } catch {
+        case e: Exception =>
+          Logger.debug("Failed in ContentOwnership / listUserContent")
+          Logger.debug(e.getMessage())
+          List[Content]()
+      }
     }
 }

@@ -2,7 +2,8 @@ package models
 
 import anorm._
 import anorm.SqlParser._
-import dataAccess.sqlTraits.{SQLSelectable, SQLDeletable, SQLSavable}
+import dataAccess.sqlTraits._
+import play.api.Logger
 import play.api.db.DB
 import play.api.Play.current
 
@@ -63,9 +64,16 @@ object Setting extends SQLSelectable[Setting] {
    * @return If a setting was found, then Some[Setting], otherwise None
    */
   def findByName(name: String): Option[Setting] = {
-    DB.withConnection {
-      implicit connection =>
-        anorm.SQL("select * from " + tableName + " where name = {name}").on('name -> name).as(simple.singleOpt)
+    DB.withConnection { implicit connection =>
+      try {
+        SQL"select * from $tableName where name = {name}"
+          .on('name -> name).as(simple.singleOpt)
+      } catch {
+        case e: Exception =>
+          Logger.debug("Failed in Setting.scala / findByName")
+          Logger.debug(e.getMessage())
+          None
+      }
     }
   }
 

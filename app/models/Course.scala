@@ -2,7 +2,7 @@ package models
 
 import anorm._
 import anorm.SqlParser._
-import dataAccess.sqlTraits.{SQLSelectable, SQLDeletable, SQLSavable}
+import dataAccess.sqlTraits._
 import play.api.Logger
 import service.{TimeTools, HashTools}
 import util.Random
@@ -40,13 +40,17 @@ case class Course(id: Option[Long], name: String, startDate: String, endDate: St
    * Deletes the course from the DB
    */
   def delete() {
-    ContentListing.listByCourse(this).foreach(_.delete())
-    CourseMembership.listByCourse(this).foreach(_.delete())
-
-    DB.withConnection {
-      implicit connection =>
-        SQL("delete from coursePermissions where courseId = {cid}")
-          .on('cid -> id.get).execute()
+    DB.withConnection { implicit connection =>
+      try {
+        val cid = id.get
+        SQL"delete from coursePermissions where courseId = $cid".execute()
+        SQL"delete from courseMembership where courseId = $cid".execute()
+        SQL"delete from contentListing where courseId = $cid".execute()
+      } catch {
+        case e: Exception =>
+          Logger.debug("Failed in Course.scala / delete")
+          Logger.debug(e.getMessage())
+      }
     }
 
     delete(Course.tableName, id)
@@ -248,10 +252,16 @@ object Course extends SQLSelectable[Course] {
    * @return The list of courses that match
    */
   def search(query: String): List[Course] =
-    DB.withConnection {
-      implicit connection =>
-        val sqlQuery = "%" + query + "%"
-        anorm.SQL("SELECT * from " + tableName + " where name like {query} order by name asc")
+    DB.withConnection { implicit connection =>
+      val sqlQuery = "%" + query + "%"
+      try {
+        SQL("select * from $tableName where name like {query} order by name asc")
           .on('query -> sqlQuery).as(simple *)
+      } catch {
+        case e: Exception =>
+          Logger.debug("Failed in Course.scala / search")
+          Logger.debug(e.getMessage())
+          List[Course]()
+      }
     }
 }

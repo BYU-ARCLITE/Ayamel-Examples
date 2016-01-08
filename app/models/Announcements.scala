@@ -2,8 +2,9 @@ package models
 
 import anorm._
 import anorm.SqlParser._
-import dataAccess.sqlTraits.{SQLSelectable, SQLDeletable, SQLSavable}
+import dataAccess.sqlTraits._
 import play.api.db.DB
+import play.api.Logger
 import service.TimeTools
 import play.api.Play.current
 
@@ -110,9 +111,16 @@ object Announcement extends SQLSelectable[Announcement] {
    * @return The list of announcements
    */
   def listByCourse(course: Course): List[Announcement] =
-    DB.withConnection {
-      implicit connection =>
-        SQL("select * from " + tableName + " where courseId = {id}").on('id -> course.id.get).as(simple *)
+    DB.withConnection { implicit connection =>
+      try {
+        SQL"select * from $tableName where courseId = {id}"
+          .on('id -> course.id.get).as(simple *)
+      } catch {
+        case e: Exception =>
+          Logger.debug("Failed in Announcements.scala / listByCourse")
+          Logger.debug(e.getMessage())
+          List[Announcement]()
+      }
     }
 
   /**
@@ -121,9 +129,16 @@ object Announcement extends SQLSelectable[Announcement] {
    * @return The list of announcements
    */
   def listByUser(user: User): List[Announcement] =
-    DB.withConnection {
-      implicit connection =>
-        SQL("select * from " + tableName + " where userId = {id}").on('id -> user.id.get).as(simple *)
+    DB.withConnection { implicit connection =>
+      try {
+        SQL"select * from $tableName where userId = {id}"
+          .on('id -> user.id.get).as(simple *)
+      } catch {
+        case e: Exception =>
+          Logger.debug("Failed in Announcements.scala / listByUser")
+          Logger.debug(e.getMessage())
+          List[Announcement]()
+      }
     }
 
   /**
@@ -138,11 +153,16 @@ object Announcement extends SQLSelectable[Announcement] {
    * Delete an announcement by id
    * @param id The announcement ID
    */
-  def deleteAnnouncement(id: Long, courseId: Long) = {
-    DB.withConnection {
-      implicit connection =>
-        anorm.SQL("delete from " + tableName + " where id = {id} and courseId = {cid}")
+  def deleteAnnouncement(id: Long, courseId: Long) {
+    DB.withConnection { implicit connection =>
+      try { 
+        SQL"delete from $tableName where id = {id} and courseId = {cid}"
           .on('id -> id, 'cid -> courseId).executeUpdate()
+      } catch {
+        case e: Exception =>
+         Logger.debug("Failed in deleteAnnouncement")
+         Logger.debug(e.getMessage())
+      }
     }
   }
 }

@@ -2,6 +2,7 @@ package models
 
 import anorm._
 import anorm.SqlParser._
+import play.api.Logger
 import play.api.db.DB
 import play.api.Play.current
 import java.sql.Connection
@@ -23,34 +24,51 @@ object SitePermissions {
   def descriptionMap = desc_map
 
   def listByUser(user: User): List[String] =
-    DB.withConnection {
-      implicit connection =>
-        SQL(s"select permission from $tableName where userId = {uid}")
+    DB.withConnection { implicit connection =>
+      try {
+        SQL"select permission from $tableName where userId = {uid}"
           .on('uid -> user.id.get)
           .as(get[String](s"${tableName}.permission") *)
+      } catch {
+        case e: Exception =>
+          Logger.debug("Failed in SitePermissions.scala / listByUser")
+          Logger.debug(e.getMessage())
+		  List[String]()
+      }
     }
 
   private def permissionExists(user: User, permission: String)(implicit connection: Connection): Boolean = {
-    val result = SQL(s"select 1 from $tableName where userId = {uid} and permission = {permission}")
-      .on('uid -> user.id.get, 'permission -> permission)
-      .fold(0) { (c, _) => c + 1 } // fold SqlResult
-      .fold(_ => 0, c => c) // fold Either
-    result > 0
+    try {
+      val result = SQL"select 1 from $tableName where userId = {uid} and permission = {permission}"
+        .on('uid -> user.id.get, 'permission -> permission)
+        .fold(0) { (c, _) => c + 1 } // fold SqlResult
+        .fold(_ => 0, c => c) // fold Either
+      result > 0
+    } catch {
+      case e: Exception =>
+        Logger.debug("Failed in SitePermissions.scala / permissionExists")
+        Logger.debug(e.getMessage())
+        false
+    }
   }
 
   def userHasPermission(user: User, permission: String): Boolean =
-    DB.withConnection {
-      implicit connection =>
-        permissionExists(user, permission)
+    DB.withConnection { implicit connection =>
+      permissionExists(user, permission)
     }
 
   def addUserPermission(user: User, permission: String) {
-    DB.withConnection {
-      implicit connection =>
-        if (!permissionExists(user, permission)) {
-          SQL(s"insert into $tableName (userId, permission) values ({uid}, {permission})")
+    DB.withConnection { implicit connection =>
+      if (!permissionExists(user, permission)) {
+        try {
+          SQL"insert into $tableName (userId, permission) values ({uid}, {permission})"
             .on('uid -> user.id.get, 'permission -> permission).executeUpdate()
+        } catch {
+          case e: Exception =>
+            Logger.debug("Failed in SitePermissions.scala / addUserPermission")
+            Logger.debug(e.getMessage())
         }
+      }
     }
   }
 
@@ -60,10 +78,15 @@ object SitePermissions {
    * @param permission String name of the permission to search and delete
    */
   def removeUserPermission(user: User, permission: String) {
-    DB.withConnection {
-      implicit connection =>
-        SQL(s"delete from $tableName where userId = {uid} and permission = {permission}")
+    DB.withConnection { implicit connection =>
+      try {
+        SQL"delete from $tableName where userId = {uid} and permission = {permission}"
           .on('uid -> user.id.get, 'permission -> permission).executeUpdate()
+      } catch {
+        case e: Exception =>
+          Logger.debug("Failed in SitePermissions.scala / removeUserPermission")
+          Logger.debug(e.getMessage())
+      }
     }
   }
 
@@ -72,10 +95,15 @@ object SitePermissions {
    * @param user User whose permissions are to be removed
    */
   def removeAllUserPermissions(user: User) {
-    DB.withConnection {
-      implicit connection =>
-        SQL(s"delete from $tableName where userId = {uid}")
+    DB.withConnection { implicit connection =>
+      try {
+        SQL"delete from $tableName where userId = {uid}"
           .on('uid -> user.id.get).executeUpdate()
+      } catch {
+        case e: Exception =>
+          Logger.debug("Failed in SitePermissions.scala / removeAllUserPermissions")
+          Logger.debug(e.getMessage())
+      }
     }
   }
     

@@ -2,7 +2,8 @@ package models
 
 import anorm._
 import anorm.SqlParser._
-import dataAccess.sqlTraits.{SQLSelectable, SQLDeletable, SQLSavable}
+import dataAccess.sqlTraits._
+import play.api.Logger
 import play.api.db.DB
 import service.TimeTools
 import play.api.libs.json.Json
@@ -82,10 +83,16 @@ object Scoring extends SQLSelectable[Scoring] {
    * @return If a scoring was found, then Some[Scoring], otherwise None
    */
   def listByUser(user: User): List[Scoring] =
-    DB.withConnection {
-      implicit connection =>
-        SQL("select * from " + tableName + " where userId = {id}")
+    DB.withConnection { implicit connection =>
+      try {
+        SQL"select * from $tableName where userId = {id}"
           .on('id -> user.id.get).as(simple *)
+      } catch {
+        case e: Exception =>
+          Logger.debug("Failed in Scoring.scala / listByUser")
+          Logger.debug(e.getMessage())
+          List[Scoring]()
+      }
     }
 
   /**
@@ -94,10 +101,16 @@ object Scoring extends SQLSelectable[Scoring] {
    * @return If a scoring was found, then Some[Scoring], otherwise None
    */
   def listByContent(content: Content): List[Scoring] =
-    DB.withConnection {
-      implicit connection =>
-        SQL("select * from " + tableName + " where contentId = {id}")
+    DB.withConnection { implicit connection =>
+      try {
+        SQL"select * from $tableName where contentId = {id}"
           .on('id -> content.id.get).as(simple *)
+      } catch {
+        case e: Exception =>
+          Logger.debug("Failed in Scoring.scala / listByContent")
+          Logger.debug(e.getMessage())
+          List[Scoring]()
+      }
     }
 
   /**

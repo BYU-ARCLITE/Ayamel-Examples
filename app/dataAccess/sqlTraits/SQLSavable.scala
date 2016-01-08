@@ -2,6 +2,7 @@ package dataAccess.sqlTraits
 
 import anorm._
 import play.api.db.DB
+import play.api.Logger
 import play.api.Play.current
 
 /**
@@ -12,11 +13,19 @@ trait SQLSavable {
     val fieldNames = fields.map(_._1.name).mkString(", ")
     val fieldValues = fields.map("{" + _._1.name + "}").mkString(", ")
 
-    DB.withConnection {
-      implicit connection =>
-        val id: Option[Long] = SQL("insert into "+tablename+" ("+fieldNames+") values ("+fieldValues+")")
-          .on(fields.map(t => NamedParameter.symbol(t)): _*).executeInsert()
+    DB.withConnection { implicit connection =>
+      try {
+        val query = SQL"insert into $tablename ($fieldNames) values ($fieldValues)"
+        val id: Option[Long] = query
+          .on(fields.map(t => NamedParameter.symbol(t)): _*)
+          .executeInsert()
         Some(id.get)
+      } catch {
+        case e: Exception =>
+          Logger.debug(s"Failed to save to $tablename")
+          Logger.debug(e.getMessage())
+          throw e
+      }
     }
   }
 
@@ -24,10 +33,17 @@ trait SQLSavable {
     assert(fields.map(_._1.name).contains("id"))
     val fieldEntries = fields.map(_._1.name).filterNot(_ == "id").map(n => n + " = {" + n + "}").mkString(", ")
 
-    DB.withConnection {
-      implicit connection =>
-        SQL("update "+tablename+" set "+fieldEntries+" where id = {id}")
-          .on(fields.map(t => NamedParameter.symbol(t)): _*).executeUpdate()
+    DB.withConnection { implicit connection =>
+      try {
+        SQL"update $tablename set $fieldEntries where id = {id}"
+          .on(fields.map(t => NamedParameter.symbol(t)): _*)
+          .executeUpdate()
+      } catch {
+        case e: Exception =>
+          Logger.debug(s"Failed to update $tablename")
+          Logger.debug(e.getMessage())
+          throw e
+      }
     }
   }
 }

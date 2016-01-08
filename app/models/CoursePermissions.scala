@@ -2,6 +2,7 @@ package models
 
 import anorm._
 import anorm.SqlParser._
+import play.api.Logger
 import play.api.db.DB
 import play.api.Play.current
 import java.sql.Connection
@@ -27,45 +28,68 @@ object CoursePermissions {
   def descriptionMap = desc_map
 
   def listByUser(course: Course, user: User): List[String] =
-    DB.withConnection {
-      implicit connection =>
-        SQL(s"select permission from $tableName where courseId = {cid} and userId = {uid}")
+    DB.withConnection { implicit connection =>
+      try {
+        SQL"select permission from $tableName where courseId = {cid} and userId = {uid}"
           .on('cid -> course.id.get, 'uid -> user.id.get)
           .as(get[String](tableName + ".permission") *)
+      } catch {
+        case e: Exception =>
+          Logger.debug("Failed in CoursePermissions.scala / listByUser")
+          Logger.debug(e.getMessage())
+          List[String]()
+      }
     }
 
   private def permissionExists(course: Course, user: User, permission: String)(implicit connection: Connection): Boolean = {
-    val result = SQL(s"select 1 from $tableName where courseId = {cid} and userId = {uid} and permission = {permission}")
-      .on('cid -> course.id.get, 'uid -> user.id.get, 'permission -> permission)
-      .fold(0) { (c, _) => c + 1 } // fold SqlResult
-      .fold(_ => 0, c => c) // fold Either
-    result > 0
+    try {
+      val result = SQL(s"select 1 from $tableName where courseId = {cid} and userId = {uid} and permission = {permission}")
+        .on('cid -> course.id.get, 'uid -> user.id.get, 'permission -> permission)
+        .fold(0) { (c, _) => c + 1 } // fold SqlResult
+        .fold(_ => 0, c => c) // fold Either
+      result > 0
+    } catch {
+      case e: Exception =>
+        Logger.debug("Failed in CoursePermissions.scala / permissionExists")
+        Logger.debug(e.getMessage())
+        false
+    }
   }
 
   def userHasPermission(course: Course, user: User, permission: String): Boolean =
-    DB.withConnection {
-      implicit connection =>
-        permissionExists(course, user, permission)
+    DB.withConnection { implicit connection =>
+      permissionExists(course, user, permission)
     }
 
-  def addUserPermission(course: Course, user: User, permission: String) = {
-    DB.withConnection {
-      implicit connection =>
-        if (!permissionExists(course, user, permission)) {
-          SQL(s"insert into $tableName (courseId, userId, permission) values ({cid}, {uid}, {permission})")
-            .on('cid -> course.id.get, 'uid -> user.id.get, 'permission -> permission).executeUpdate()
+  def addUserPermission(course: Course, user: User, permission: String) =
+    DB.withConnection { implicit connection =>
+      if (!permissionExists(course, user, permission)) {
+        try {
+          SQL"insert into $tableName (courseId, userId, permission) values ({cid}, {uid}, {permission})"
+            .on('cid -> course.id.get, 'uid -> user.id.get, 'permission -> permission)
+            .executeUpdate()
+        } catch {
+          case e: Exception =>
+            Logger.debug("Failed in CoursePermissions.scala / addUserPermissions")
+            Logger.debug(e.getMessage())
         }
+      }
     }
-  }
 
   /**
    * remove a permission from a user
    */
   def removeUserPermission(course: Course, user: User, permission: String) = {
-    DB.withConnection {
-      implicit connection =>
-        SQL(s"delete from $tableName where courseId = {cid} and userId = {uid} and permission = {permission}")
-          .on('cid -> course.id.get, 'uid -> user.id.get, 'permission -> permission).executeUpdate()
+    DB.withConnection { implicit connection =>
+      try {
+        SQL"delete from $tableName where courseId = {cid} and userId = {uid} and permission = {permission}"
+          .on('cid -> course.id.get, 'uid -> user.id.get, 'permission -> permission)
+          .executeUpdate()
+      } catch {
+        case e: Exception =>
+          Logger.debug("Failed in CoursePermissions.scala / removeUserPermission")
+          Logger.debug(e.getMessage())
+      }
     }
   }
 
@@ -73,10 +97,15 @@ object CoursePermissions {
    * Removes all the permissions a user has for a course
    */
   def removeAllUserPermissions(course: Course, user: User) = {
-    DB.withConnection {
-      implicit connection =>
-        SQL(s"delete from $tableName where courseId = {cid} and userId = {uid}")
+    DB.withConnection { implicit connection =>
+      try {
+        SQL"delete from $tableName where courseId = {cid} and userId = {uid}"
           .on('cid -> course.id.get, 'uid -> user.id.get).executeUpdate()
+      } catch {
+        case e: Exception =>
+          Logger.debug("Failed in CoursePermissions.scala / removeAllUserPermissions")
+          Logger.debug(e.getMessage())
+      }
     }
   }
 

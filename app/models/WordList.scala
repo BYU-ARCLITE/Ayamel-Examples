@@ -2,7 +2,8 @@ package models
 
 import anorm._
 import anorm.SqlParser._
-import dataAccess.sqlTraits.{SQLSelectable, SQLDeletable, SQLSavable}
+import dataAccess.sqlTraits._
+import play.api.Logger
 import play.api.db.DB
 import play.api.libs.json.Json
 import play.api.Play.current
@@ -65,10 +66,16 @@ object WordListEntry extends SQLSelectable[WordListEntry] {
    * @return If a word list entry was found, then Some[WordListEntry], otherwise None
    */
   def listByUser(user: User): List[WordListEntry] =
-    DB.withConnection {
-      implicit connection =>
-        SQL("select * from " + tableName + " where userId = {id}")
+    DB.withConnection { implicit connection =>
+	  try {
+        SQL"select * from $tableName where userId = {id}"
           .on('id -> user.id.get).as(simple *)
+	  } catch {
+        case e: Exception =>
+          Logger.debug("Failed in WordList.scala / listByUser")
+          Logger.debug(e.getMessage())
+          List[WordListEntry]()
+      }
     }
 
   /**

@@ -2,8 +2,9 @@ package models
 
 import anorm._
 import anorm.SqlParser._
-import dataAccess.sqlTraits.{SQLSelectable, SQLDeletable, SQLSavable}
+import dataAccess.sqlTraits._
 import service.TimeTools
+import play.api.Logger
 import play.api.db.DB
 import play.api.Play.current
 
@@ -69,10 +70,16 @@ object Notification extends SQLSelectable[Notification] {
    * @return The list of notifications
    */
   def listByUser(user: User): List[Notification] =
-    DB.withConnection {
-      implicit connection =>
-        SQL("select * from " + tableName + " where userId = {id}")
+    DB.withConnection { implicit connection =>
+      try {
+        SQL"select * from $tableName where userId = {id}"
           .on('id -> user.id.get).as(simple *)
+      } catch {
+        case e: Exception =>
+          Logger.debug("Failed in Notification.scala / listByUser")
+          Logger.debug(e.getMessage())
+          List[Notification]()
+      }
     }
 
   /**

@@ -1,7 +1,7 @@
 package models
 
 import anorm._
-import dataAccess.sqlTraits.{SQLSelectable, SQLDeletable, SQLSavable}
+import dataAccess.sqlTraits._
 import anorm.SqlParser._
 
 /**

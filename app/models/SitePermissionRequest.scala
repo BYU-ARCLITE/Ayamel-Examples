@@ -2,7 +2,8 @@ package models
 
 import anorm._
 import anorm.SqlParser._
-import dataAccess.sqlTraits.{SQLSelectable, SQLDeletable, SQLSavable}
+import dataAccess.sqlTraits._
+import play.api.Logger
 import play.api.db.DB
 import play.api.Play.current
 
@@ -48,9 +49,9 @@ case class SitePermissionRequest(id: Option[Long], userId: Long, permission: Str
 
   def approve() {
     getUser.foreach { user =>
-		user.addSitePermission(this.permission)
-		user.sendNotification("Your request for " + getDescription + " permission has been approved.")
-	}
+        user.addSitePermission(this.permission)
+        user.sendNotification("Your request for " + getDescription + " permission has been approved.")
+    }
     delete()
   }
 
@@ -115,10 +116,16 @@ object SitePermissionRequest extends SQLSelectable[SitePermissionRequest] {
    * @return a possibly-empty list of permission requests
    */
   def listByUser(user: User): List[SitePermissionRequest] =
-    DB.withConnection {
-      implicit connection =>
-        SQL("select * from " + tableName + " where userId = {id}")
+    DB.withConnection { implicit connection =>
+      try {
+        SQL"select * from $tableName where userId = {id}"
           .on('id -> user.id.get).as(simple *)
+      } catch {
+        case e: Exception =>
+          Logger.debug("Failed in SitePermissionRequest.scala / listByUser")
+          Logger.debug(e.getMessage())
+          List[SitePermissionRequest]()
+      }
     }
 
   /**
@@ -128,10 +135,16 @@ object SitePermissionRequest extends SQLSelectable[SitePermissionRequest] {
    * @return an Some[SitePermissionRequest] if one was found
    */
   def findByUser(user: User, permission: String): Option[SitePermissionRequest] =
-    DB.withConnection {
-      implicit connection =>
-        SQL("select * from " + tableName + " where userId = {id} and permission = {permission}")
-		  .on('id -> user.id.get, 'permission -> permission).as(simple.singleOpt)
+    DB.withConnection { implicit connection =>
+      try {
+        SQL"select * from $tableName where userId = {id} and permission = {permission}"
+          .on('id -> user.id.get, 'permission -> permission).as(simple.singleOpt)
+      } catch {
+        case e: Exception =>
+          Logger.debug("Failed in SitePermissionRequest.scala / findByUser")
+          Logger.debug(e.getMessage())
+          None
+      }
     }
 
   /**
