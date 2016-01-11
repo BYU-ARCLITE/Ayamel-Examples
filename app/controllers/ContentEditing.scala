@@ -140,7 +140,7 @@ object ContentEditing extends Controller {
   def saveImageEdits(id: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
     implicit request =>
       implicit user =>
-        ContentController.getContent(id) {  content =>
+        ContentController.getContent(id) { content =>
           if ((content isEditableBy user) && (content.contentType == 'image)) {
 
             // Get the rotation and crop info
@@ -155,29 +155,27 @@ object ContentEditing extends Controller {
             })
 
             // Load the image
-            ImageTools.loadImageFromContent(content).flatMap {
-              case Some(image) =>
-                // Make the changes to the image
-                val newImage = ImageTools.crop(
-                  if (rotation > 0) ImageTools.rotate(image, rotation) else image,
-                  cropTop, cropLeft, cropBottom, cropRight
-                )
+            ImageTools.loadImageFromContent(content).flatMap { image =>
+              // Make the changes to the image
+              val newImage = ImageTools.crop(
+                if (rotation > 0) ImageTools.rotate(image, rotation) else image,
+                cropTop, cropLeft, cropBottom, cropRight
+              )
 
-                // Save the new image
-                FileUploader.uploadImage(newImage, FileUploader.uniqueFilename(content.resourceId + ".jpg")).flatMap {
-                  case Some(url) =>
-                    // Update the resource
-                    ResourceHelper.updateFileUri(content.resourceId, url).map {
-                      case Some(resource) =>
-                        redirect.flashing("info" -> "Image updated")
-                      case None =>
-                        redirect.flashing("error" -> "Failed to update image")
-                    }
-                  case None =>
-                    Future(redirect.flashing("error" -> "Failed to update image"))
-                }
-              case None =>
-                Future(redirect.flashing("error" -> "Couldn't load image"))
+              // Save the new image
+              FileUploader.uploadImage(newImage, FileUploader.uniqueFilename(content.resourceId + ".jpg")).flatMap { url =>
+                // Update the resource
+                ResourceHelper.updateFileUri(content.resourceId, url)
+                  .map { _ =>
+                    redirect.flashing("info" -> "Image updated")
+                  }.recover { case _ =>
+                    redirect.flashing("error" -> "Failed to update image")
+                  }
+              }.recover { case _ =>
+                redirect.flashing("error" -> "Failed to update image")
+              }
+            }.recover { case _ =>
+              redirect.flashing("error" -> "Couldn't load image")
             }
           } else
             Future(Errors.forbidden)
@@ -206,11 +204,11 @@ object ContentEditing extends Controller {
               Some(ImageTools.generateThumbnail(url))
             }) match {
               case Some(fut) =>
-                fut.map {
-                  case Some(thumbnailUrl) =>
-                    content.copy(thumbnail = thumbnailUrl).save
-                    redirect.flashing("info" -> "Thumbnail changed")
-                  case None => redirect.flashing("error" -> "Unknown error while attempting to create thumbnail")
+                fut.map { url =>
+                  content.copy(thumbnail = url).save
+                  redirect.flashing("info" -> "Thumbnail changed")
+                }.recover { case _ =>
+                  redirect.flashing("error" -> "Unknown error while attempting to create thumbnail")
                 }
               case None => Future(redirect.flashing("error" -> "No file provided"))
             }
@@ -233,56 +231,54 @@ object ContentEditing extends Controller {
           val redirect = Redirect(routes.ContentController.view(id))
 
           // Get the video resource from the content
-          ResourceController.getResource(content.resourceId).flatMap { response =>
-            response.map[Future[Result]] { json =>
-              // Get the video file
-              (json \ "resource" \ "content" \ "files") match {
-                case arr:JsArray =>
-                  arr.value.find { file =>
-                    (file \ "mime") match {
-                      case str:JsString => str.value.startsWith("video")
-                      case _ => false
-                    }
-                  }.map[Future[Result]] { videoObject =>
-                    (videoObject \ "downloadUri") match {
-                      case videoUrl:JsString =>
-                      /*
-                          The "-protocols" command will list your version of ffmpeg
-
-                          List of supported Protocols:
-                              applehttp, concat, crypto, file, gopher, http, httpproxy
-                              mmsh, mmst, pipe, rtmp, rtp, tcp, udp
-                          The default protocol is "file:" and you do not need to specify it in ffmpeg,
-                              so we can't check to see if we are using a supported protocol. However,
-                              we do know that "https:" is unsupported, so if we get one, try to convert it
-                              to "http:". If it doesn't work, we'll just get a message that the thumbnail
-                              could not be generated.
-                      */
-                       val url = if (videoUrl.value.startsWith("https://"))
-                              JsString(videoUrl.value.replaceFirst("https://","http://"))
-                          else
-                              videoUrl
-
-                       // Generate the thumbnail for that video
-                        VideoTools.generateThumbnail(url.value, time).map {
-                          case Some(thumbnailUrl) =>
-                            // Save it and be done
-                            content.copy(thumbnail = thumbnailUrl).save
-                            redirect.flashing("info" -> "Thumbnail updated")
-                          case None => redirect.flashing("error" -> "Could not generate thumbnail")
-                        }
-                      case _ => Future {
-					    redirect.flashing("error" -> "No video file found. Thumbnails cannot be generated from streams.")
-					  }
-                    }
-                  }.getOrElse {
-                    Future(redirect.flashing("error" -> "No video file found"))
+          ResourceController.getResource(content.resourceId).flatMap { json =>
+            // Get the video file
+            (json \ "resource" \ "content" \ "files") match {
+              case arr:JsArray =>
+                arr.value.find { file =>
+                  (file \ "mime") match {
+                    case str:JsString => str.value.startsWith("video")
+                    case _ => false
                   }
-                case _ => Future(redirect.flashing("error" -> "No files found"))
-              }
-            }.getOrElse {
-              Future(redirect.flashing("error" -> "Could not access video."))
+                }.map[Future[Result]] { videoObject =>
+                  (videoObject \ "downloadUri") match {
+                    case videoUrl:JsString =>
+                    /*
+                        The "-protocols" command will list your version of ffmpeg
+                        List of supported Protocols:
+                            applehttp, concat, crypto, file, gopher, http, httpproxy
+                            mmsh, mmst, pipe, rtmp, rtp, tcp, udp
+                        The default protocol is "file:" and you do not need to specify it in ffmpeg,
+                        so we can't check to see if we are using a supported protocol. However,
+                        we do know that "https:" is unsupported, so if we get one, try to convert it
+                        to "http:". If it doesn't work, we'll just get a message that the thumbnail
+                        could not be generated.
+                    */
+                     val url = if (videoUrl.value.startsWith("https://"))
+                            JsString(videoUrl.value.replaceFirst("https://","http://"))
+                        else
+                            videoUrl
+
+                      // Generate the thumbnail for that video
+                      VideoTools.generateThumbnail(url.value, time)
+                        .map { url =>
+                          // Save it and be done
+                          content.copy(thumbnail = url).save
+                          redirect.flashing("info" -> "Thumbnail updated")
+                        }.recover { case e: Exception =>
+                          redirect.flashing("error" -> e.getMessage())
+                        }
+                    case _ => Future {
+                      redirect.flashing("error" -> "No video file found. Thumbnails cannot be generated from streams.")
+                    }
+                  }
+                }.getOrElse {
+                  Future(redirect.flashing("error" -> "No video file found"))
+                }
+              case _ => Future(redirect.flashing("error" -> "No files found"))
             }
+          }.recover { case _ =>
+            redirect.flashing("error" -> "Could not access video.")
           }
         }
   }

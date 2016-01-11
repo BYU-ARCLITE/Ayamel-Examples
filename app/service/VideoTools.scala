@@ -36,35 +36,34 @@ object VideoTools {
    * @param time The time, in seconds, of the frame to retrieve. Defaults to the time defined in the conf file.
    * @return A future containing the URL of the thumbnail
    */
-  def generateThumbnail(videoUrl: String, time: Double = thumbnailTime): Future[Option[String]] = {
+  def generateThumbnail(videoUrl: String, time: Double = thumbnailTime): Future[String] = {
     // Check that we are able to get the video
-    if (ffmpegExists && ResourceHelper.isHTTP(videoUrl)) {
+    if (!ffmpegExists) {
+	  return Future.failed(new Exception("Missing ffmpeg"))
+	}
+	if (!ResourceHelper.isHTTP(videoUrl)) {
+	  return Future.failed(new Exception("Not a Video"))
+	}
 
-      try {
-        // Make a unique file to save the image to
-        val filename = "/tmp/" + FileUploader.uniqueFilename("out.jpg")
-        val file = new File(filename)
+    // Make a unique file to save the image to
+    val filename = "/tmp/" + FileUploader.uniqueFilename("out.jpg")
+    val file = new File(filename)
 
-        // Execute ffmpeg to get the frame and wait for it to finish
-        val timeCode = getTimeCodeFromSeconds(time)
-        val command = s"$ffmpeg -ss $timeCode -i $videoUrl -f image2 -vframes 1 $filename"
-        Logger.debug(s"Command: $command")
-        val process = Runtime.getRuntime.exec(command)
-        process.waitFor()
+    // Execute ffmpeg to get the frame and wait for it to finish
+    val timeCode = getTimeCodeFromSeconds(time)
+    val command = s"$ffmpeg -ss $timeCode -i $videoUrl -f image2 -vframes 1 $filename"
+    Logger.debug(s"Command: $command")
+    val process = Runtime.getRuntime.exec(command)
+    process.waitFor()
 
-        // Now process the image and upload it
-        val image = ImageIO.read(file)
-        file.delete()
-        ImageTools.makeThumbnail(image) match {
-          case Some(thumbnail) =>
-            FileUploader.uploadImage(thumbnail, FileUploader.uniqueFilename("thumbnail.jpg"))
-          case None => Future(None)
-        }
-      } catch {
-        case _: Throwable => Future(None)
-      }
-    } else
-      Future(None)
+    // Now process the image and upload it
+    val image = ImageIO.read(file)
+    file.delete()
+    ImageTools.makeThumbnail(image) match {
+    case Some(thumbnail) =>
+      FileUploader.uploadImage(thumbnail, FileUploader.uniqueFilename("thumbnail.jpg"))
+    case None => Future.failed(new Exception("Could Not Generate Thumbnail"))
+    }
   }
 
 }

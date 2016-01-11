@@ -13,9 +13,9 @@ import play.api.mvc.MultipartFormData.FilePart
 
 
 trait UploadEngine {
-  def upload(inputStream: InputStream, filename: String, contentLength: Long, contentType: String): Future[Option[String]]
+  def upload(inputStream: InputStream, filename: String, contentLength: Long, contentType: String): Future[String]
 
-  def upload(file: File, filename: String, contentType: String): Future[Option[String]] = {
+  def upload(file: File, filename: String, contentType: String): Future[String] = {
     val contentLength = file.length()
     val inputStream = new FileInputStream(file)
     upload(inputStream, filename, contentLength, contentType)
@@ -30,7 +30,7 @@ object FileUploader {
 
   val engine = uploadEngines(Play.configuration.getString("uploadEngine").get)
 
-  def normalizeAndUploadFile(tempFile: FilePart[TemporaryFile]): Future[Option[String]] = {
+  def normalizeAndUploadFile(tempFile: FilePart[TemporaryFile]): Future[String] = {
     val file = tempFile.ref.file
     val filename = uniqueFilename(tempFile.filename)
     val contentType = tempFile.contentType.getOrElse("application/octet-stream")
@@ -52,20 +52,20 @@ object FileUploader {
     )
   }
 
-  def uploadFile(file: File, filename: String, contentType: String): Future[Option[String]] =
+  def uploadFile(file: File, filename: String, contentType: String): Future[String] =
     engine.upload(file, filename, contentType)
 
-  def uploadFile(tempFile: FilePart[TemporaryFile]): Future[Option[String]] = {
+  def uploadFile(tempFile: FilePart[TemporaryFile]): Future[String] = {
     val file = tempFile.ref.file
     val filename = uniqueFilename(tempFile.filename)
     val contentType = tempFile.contentType.getOrElse("application/octet-stream")
     uploadFile(file, filename, contentType)
   }
 
-  def uploadStream(inputStream: InputStream, filename: String, contentLength: Long, contentType: String): Future[Option[String]] =
+  def uploadStream(inputStream: InputStream, filename: String, contentLength: Long, contentType: String): Future[String] =
     engine.upload(inputStream, filename, contentLength, contentType)
 
-  def uploadImage(image: BufferedImage, filename: String): Future[Option[String]] = {
+  def uploadImage(image: BufferedImage, filename: String): Future[String] = {
 
     // Convert the BufferedImage to an input stream so we can upload it
     val outputStream = new ByteArrayOutputStream()

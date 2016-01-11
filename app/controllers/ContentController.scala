@@ -114,37 +114,11 @@ object ContentController extends Controller {
             ResourceHelper.getUrlSize(url).flatMap { bytes =>
               val info = ContentDescriptor(title, description, keywords, url, bytes, mime, labels = labels,
                 languages = languages)
-              // find alternate ↓ create content through annotations method
-              if (courseId == 40747105) {
-                ContentManagement.createContent(info, user, contentType).map { opt =>
-                  opt.map { content =>
-                    if (createAndAdd.isEmpty) {
-                      Ok(<script type="text/javascript">window.close();</script>).as(HTML)
-                    } else {
-                      Redirect(routes.ContentController.createPage("url", courseId))
-                        .flashing("success" -> "Content Created")
-                    }
-                  }.getOrElse {
-                    Redirect(routes.ContentController.createPage("url", courseId))
-                      .flashing("error" -> "Failed to create content.")
-                  }
-                }
-              } else if (courseId > 0) {
+              // find alternate create content ↓ through annotations method
+              if (courseId > 0 && courseId != 40747105) {
                 ContentManagement.createAndAddToCourse(info, user, contentType, courseId, !createAndAdd.isEmpty)
               } else {
-                ContentManagement.createContent(info, user, contentType).map { opt =>
-                  opt.map { content =>
-                    if (createAndAdd.isEmpty){
-                      Redirect(routes.ContentController.view(content.id.get))
-                        .flashing("success" -> "Content added")
-                    } else
-                      Redirect(routes.ContentController.createPage("url", courseId))
-                        .flashing("success" -> "Content Created")
-                  }.getOrElse {
-                    Redirect(routes.ContentController.createPage("url", courseId))
-                      .flashing("error" -> "Failed to create content.")
-                  }
-                }
+                ContentManagement.createContent(info, user, contentType, !createAndAdd.isEmpty)
               }
             }
           } else
@@ -168,7 +142,7 @@ object ContentController extends Controller {
           val data = io.Source.fromFile(file).getLines().toList
 
           val processes = data.map { line =>
-			Future {
+            Future {
               // Collect the data
               val parts = line.split("\t")
               val title = parts(0)
@@ -187,15 +161,15 @@ object ContentController extends Controller {
                 if (courseId > 0) {
                   ContentManagement.createAndAddToCourse(info, user, contentType, courseId, false)
                 } else {
-                  ContentManagement.createContent(info, user, contentType)
+                  ContentManagement.createContent(info, user, contentType, false)
                 }
               }
             }
           }
-		  
-		  Future.sequence(processes).map { _ =>
+          
+          Future.sequence(processes).map { _ =>
               user.sendNotification("Your batch file upload has finished.")
-		  }
+          }
 
           Future { 
             Redirect(routes.Application.home())
@@ -227,22 +201,17 @@ object ContentController extends Controller {
 
           // Upload the file
           request.body.file("file").map { file =>
-            FileUploader.normalizeAndUploadFile(file).flatMap {
-              case Some(url) =>
-                // Create the content
-                val info = ContentDescriptor(title, description, keywords, url, file.ref.file.length(), file.contentType.get,
-                  labels = labels, languages = languages)
-                ContentManagement.createContent(info, user, contentType).map {
-                  case Some(content) =>
-                    if (createAndAdd.isEmpty) {
-                      Redirect(routes.ContentController.view(content.id.get))
-                        .flashing("success" -> "Content added")
-                    } else redirect.flashing("success" -> "Content Added")
-                  case None =>
-                    redirect.flashing("error" -> "Failed to create content")
-                }
-              case None =>
-                Future(redirect.flashing("error" -> "Failed to upload file"))
+            FileUploader.normalizeAndUploadFile(file).flatMap { url =>
+              // Create the content
+              val info = ContentDescriptor(title, description, keywords, url, file.ref.file.length(), file.contentType.get,
+                labels = labels, languages = languages)
+              if (courseId > 0) {
+                ContentManagement.createAndAddToCourse(info, user, contentType, courseId, !createAndAdd.isEmpty)
+              } else {
+                ContentManagement.createContent(info, user, contentType, !createAndAdd.isEmpty)
+              }
+            }.recover { case _ =>
+              redirect.flashing("error" -> "Failed to upload file")
             }
           }.getOrElse {
             Future(redirect.flashing("error" -> "Missing file"))
@@ -263,34 +232,38 @@ object ContentController extends Controller {
           val resourceId = request.body("resourceId")(0)
           val createAndAdd = request.body.getOrElse("createAndAdd", Nil)
 
-          ResourceController.getResource(resourceId).map { response =>
-            response.map { json =>
-              val code = (json \ "response" \ "code").as[Int]
-              if (code == 200) {
-                val title = (json \ "resource" \ "title").as[String]
-                val resourceType = (json \ "resource" \ "type").as[String]
+          ResourceController.getResource(resourceId).map { json =>
+            val code = (json \ "response" \ "code").as[Int]
+            if (code == 200) {
+              val title = (json \ "resource" \ "title").as[String]
+              val resourceType = (json \ "resource" \ "type").as[String]
 
-                if (resourceType == "data" || resourceType == "archive") {
-                  Redirect(routes.ContentController.createPage("resource", courseId))
-                  .flashing("error" -> "Can't create content from a data or archive resources.")
-                } else {
-                  //TODO: properly handle collections
-                  //TODO: update our code to match the resource library, rather than special-casing "text"
-                  val contentType = if(resourceType == "document") "text" else resourceType
-                  val content = Content(None, title, Symbol(contentType), "", resourceId).save
-                  user.addContent(content)
-                  if (createAndAdd.isEmpty) {
-                    Redirect(routes.ContentController.view(content.id.get))
-                      .flashing("success" -> "Content added.")
-                  } else Redirect(routes.ContentController.createPage("resource", courseId)).flashing("success" -> "Content Created")
-                }
-              } else
+              if (resourceType == "data" || resourceType == "archive") {
                 Redirect(routes.ContentController.createPage("resource", courseId))
-                  .flashing("error" -> "That resource doesn't exist")
-            }.getOrElse {
+                .flashing("error" -> "Can't create content from a data or archive resources.")
+              } else {
+                //TODO: properly handle collections
+                //TODO: update our code to match the resource library, rather than special-casing "text"
+                val contentType = if(resourceType == "document") "text" else resourceType
+                val content = Content(None, title, Symbol(contentType), "", resourceId).save
+                user.addContent(content)
+                if (courseId > 0) {
+                  ContentManagement.addToCourse(courseId, content)
+                }
+                if (createAndAdd.isEmpty) {
+                  Redirect(routes.ContentController.view(content.id.get))
+                    .flashing("success" -> "Content Added.")
+                } else {
+                  Redirect(routes.ContentController.createPage("resource", courseId))
+                    .flashing("success" -> "Content Created")
+                }
+              }
+            } else
               Redirect(routes.ContentController.createPage("resource", courseId))
-                .flashing("error" -> "Couldn't access resource")
-            }
+                .flashing("error" -> "That resource doesn't exist")
+          }.recover { case _ =>
+            Redirect(routes.ContentController.createPage("resource", courseId))
+              .flashing("error" -> "Couldn't access resource")
           }
         }
   }

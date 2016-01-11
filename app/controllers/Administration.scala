@@ -291,21 +291,15 @@ object Administration extends Controller {
                 active = false
               )
 
-              (if (data("background").isEmpty) {
-                request.body.file("file").flatMap { file =>
-                  Await.result(FileUploader.uploadFile(file), Duration.Inf).map { url =>
-                    homePageContent.copy(background = url)
-                  }
-                }
+              if (data("background").isEmpty) {
+                val file = request.body.file("file").get
+				val url = Await.result(FileUploader.uploadFile(file), Duration.Inf)
+                homePageContent.copy(background = url).save
               } else {
-                  Some(homePageContent)
-              }) match {
-                case Some(hpc) =>
-                  hpc.save
-                  redirect.flashing("info" -> "Home page content created")
-                case None =>
-                  redirect.flashing("error" -> "Could not upload image")
+                homePageContent.save
               }
+
+              redirect.flashing("info" -> "Home page content created")
             } catch {
               case _ : Throwable =>
                 redirect.flashing("error" -> "Failed to create home page content")

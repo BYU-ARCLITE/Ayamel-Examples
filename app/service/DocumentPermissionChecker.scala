@@ -2,7 +2,7 @@ package service
 
 import models.{Course, User, Content}
 import play.api.Logger
-import play.api.libs.json.{JsArray, JsObject, JsString}
+import play.api.libs.json._
 import dataAccess.ResourceController
 import scala.concurrent._
 import scala.concurrent.duration._
@@ -58,15 +58,12 @@ class DocumentPermissionChecker(user: User, content: Content, course: Option[Cou
 
   //TODO: update the content database so that this doesn't have to make resource requests
   def getSpecified(ids: List[String]): Future[List[JsObject]] = {
-    val requests = ids.map { id => ResourceController.getResource(id) }
-    Future {
-      requests.flatMap { req =>
-        Await.result(req, Duration.Inf) match {
-          case Some(json) => List((json \ "resource").as[JsObject])
-          case None => Nil
-        }
-      }
-    }
+    val requests = ids.map { id =>
+	  ResourceController.getResource(id)
+	    .map(_ \ "resource")
+		.collect { case json:JsDefined => json.as[JsObject] }
+	}
+    Future.sequence(requests)
   }
 
   def checkViewable(ids: List[String]) = getSpecified(ids).map(_.filter(canView))

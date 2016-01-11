@@ -133,14 +133,13 @@ object Users extends Controller {
                 Future(redirect.flashing("error" -> "Error processing image."))
 			  case Some(thmb) =>
 			    // Upload the file
-                FileUploader.uploadImage(thmb, picture.filename).map {
-                  case None =>
-                    redirect.flashing("error" -> "Failed to upload image")
-                  case url:Some[String] =>
-                    // Save the user info about the profile picture
-                    user.copy(picture = url).save
-                    redirect.flashing("info" -> "Profile picture updated")
-                }
+                FileUploader.uploadImage(thmb, picture.filename).map { url =>
+                  // Save the user info about the profile picture
+                  user.copy(picture = Some(url)).save
+                  redirect.flashing("info" -> "Profile picture updated")
+                }.recover { case _ =>
+                  redirect.flashing("error" -> "Failed to upload image")
+				}
               }
             }
           }

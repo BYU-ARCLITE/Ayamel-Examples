@@ -21,12 +21,12 @@ object ResourceController {
   val apiKey = Play.configuration.getString("resourceLibrary.apiKey").get
   val baseResourceUrl = Play.configuration.getString("resourceLibrary.baseUrl").get + "resources"
 
-  def decode(r:WSResponse): Option[JsValue] = try {
-    Some(r.json)
+  def decode(r:WSResponse): JsValue = try {
+    r.json
   } catch {
-    case _: Exception =>
+    case e: Throwable =>
       Logger.debug("Error decoding:\n${r.body}")
-      None
+      throw e
   }
 
   /**
@@ -35,7 +35,7 @@ object ResourceController {
    * @param resource The resource to be created
    * @return The future JSON result
    */
-  def createResource(resource: JsObject, user: User): Future[Option[JsValue]] = {
+  def createResource(resource: JsObject, user: User): Future[JsValue] = {
     val withUser = (resource \ "clientUser") match {
       case _:JsUndefined => resource ++ Json.obj(
         "clientUser" -> Json.obj("id" -> s"user:${user.id.get}")
@@ -55,10 +55,11 @@ object ResourceController {
    * @param uri The uri to scan
    * @return The future JSON results
    */
-  def scan(uri: String): Future[Option[JsValue]] = WS.url(baseResourceUrl + "/scan?uri=" + uri).get().map { r =>
-    Logger.info("Resource Controller: scan")
-    decode(r)
-  }
+  def scan(uri: String): Future[JsValue] =
+    WS.url(baseResourceUrl + "/scan?uri=" + uri).get().map { r =>
+      Logger.info("Resource Controller: scan")
+      decode(r)
+    }
 
   /**
    * Resource retrieval
@@ -66,9 +67,10 @@ object ResourceController {
    * @param id The ID of the resource to get
    * @return The future JSON result
    */
-  def getResource(id: String): Future[Option[JsValue]] = WS.url(baseResourceUrl + "/" + id).get().map { r =>
-    decode(r)
-  }
+  def getResource(id: String): Future[JsValue] =
+    WS.url(baseResourceUrl + "/" + id).get().map { r =>
+      decode(r)
+    }
 
   /**
    * Updates the resource
@@ -77,7 +79,7 @@ object ResourceController {
    * @param resource The JSON object describing the resource
    * @return The future JSON result
    */
-  def updateResource(id: String, resource: JsValue): Future[Option[JsValue]] =
+  def updateResource(id: String, resource: JsValue): Future[JsValue] =
     WS.url(baseResourceUrl + "/" + id + s"?_key=$apiKey").put(resource).map { r =>
       Logger.info("Resource Controller: update")
       Logger.debug(resource.toString())
@@ -90,10 +92,11 @@ object ResourceController {
    * @param id The ID of the resource to delete
    * @return The future JSON result
    */
-  def deleteResource(id: String): Future[Option[JsValue]] = WS.url(baseResourceUrl + "/" + id + s"?_key=$apiKey").delete().map { r =>
-    Logger.info("Resource Controller: delete")
-    decode(r)
-  }
+  def deleteResource(id: String): Future[JsValue] =
+    WS.url(baseResourceUrl + "/" + id + s"?_key=$apiKey").delete().map { r =>
+      Logger.info("Resource Controller: delete")
+      decode(r)
+    }
 
   /**
    * Adding remote files to the resource
@@ -102,15 +105,11 @@ object ResourceController {
    * @param remoteFiles The JSON object describing the remote files
    * @return The future JSON result
    */
-  def setRemoteFiles(url: String, remoteFiles: JsValue): Future[Option[JsValue]] = WS.url(url + s"?_key=$apiKey").post(remoteFiles).map { r =>
-    Logger.info("Resource Controller: set remote files")
-    decode(r).flatMap { json =>
-      (json \ "resource") match {
-        case _:JsUndefined => None
-        case _ => Some(json)
-      }
+  def setRemoteFiles(url: String, remoteFiles: JsValue): Future[JsValue] =
+    WS.url(url + s"?_key=$apiKey").post(remoteFiles).map { r =>
+      Logger.info("Resource Controller: set remote files")
+      decode(r)
     }
-  }
 
   /**
    * Get resource relations
@@ -119,7 +118,11 @@ object ResourceController {
    * @return The future JSON result
    */
   def getRelations(id: String, relationType: Symbol = 'id) = {
-    val idKey = if (relationType == 'subject) "subjectId" else if (relationType == 'object) "objectId" else "id"
+    val idKey = relationType match {
+	  case 'subject => "subjectId"
+	  case 'object => "objectId"
+	  case _ => "id"
+	}
     WS.url(baseUrl + s"relations?$idKey=$id").get().map { r =>
       decode(r)
     }
@@ -130,17 +133,18 @@ object ResourceController {
    * @param relation The relation to create
    * @return The future JSON result
    */
-  def addRelation(relation: JsObject): Future[Option[JsValue]] = WS.url(baseUrl + s"relations?_key=$apiKey").post(relation).map { r =>
-    Logger.info("Resource Controller: add relation")
-    decode(r)
-  }
+  def addRelation(relation: JsObject): Future[JsValue] =
+    WS.url(baseUrl + s"relations?_key=$apiKey").post(relation).map { r =>
+      Logger.info("Resource Controller: add relation")
+      decode(r)
+    }
 
   /**
    * Deletes a relation
    * @param id The ID of the relation to delete
    * @return The future JSON result
    */
-  def deleteRelation(id: String): Future[Option[JsValue]] =
+  def deleteRelation(id: String): Future[JsValue] =
     WS.url(baseUrl + "relations/" + id + s"?_key=$apiKey").delete().map { r =>
       Logger.info("Resource Controller: delete relation")
       decode(r)
@@ -152,7 +156,7 @@ object ResourceController {
    * @param id The ID of the resource for which the upload url is being obtained
    * @return The future JSON result
    */
-  def requestUploadUrl(id: String): Future[Option[JsValue]] =
+  def requestUploadUrl(id: String): Future[JsValue] =
     WS.url(baseResourceUrl + "/" + id + s"/request-upload-url?_key=$apiKey").get().map { r =>
       Logger.info("Resource Controller: request upload url")
       decode(r)

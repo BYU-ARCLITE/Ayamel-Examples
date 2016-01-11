@@ -25,8 +25,8 @@ object CaptionAider extends Controller {
         ContentController.getContent(id) { content =>
           val course = Course.findById(courseId)
           Future {
-		    Ok(views.html.captionAider.view(content, course, ResourceController.baseUrl))
-		  }
+            Ok(views.html.captionAider.view(content, course, ResourceController.baseUrl))
+          }
         }
   }
 
@@ -65,65 +65,65 @@ object CaptionAider extends Controller {
               // Create a new resource
               // Upload the data
               val name = FileUploader.uniqueFilename(tmpFile.filename)
-              FileUploader.uploadFile(file, name, mime).flatMap {
-                case Some(url) =>
-                  // Create subtitle (subject) resource
-                  val resource = ResourceHelper.make.resource(Json.obj(
-                    "title" -> label,
-                    // "keywords" -> kind, //This makes no sense.... kind should be recorded in relations
-                    "type" -> "document",
-                    "languages" -> Json.obj(
-                      "iso639_3" -> languages
-                    )
-                  ))
-                  ResourceHelper.createResourceWithUri(resource, user, url, size, mime).flatMap {
-                    case Some(json) =>
-                      val subjectId = (json \ "id").as[String]
-                      AdditionalDocumentAdder.add(content, subjectId, 'captionTrack, Json.obj("kind" -> kind)) { _ => Ok(subjectId) }
-                    case None =>
-                      Future(InternalServerError("Could not create resource"))
+              FileUploader.uploadFile(file, name, mime).flatMap { url =>
+                // Create subtitle (subject) resource
+                val resource = ResourceHelper.make.resource(Json.obj(
+                  "title" -> label,
+                  // "keywords" -> kind, //This makes no sense.... kind should be recorded in relations
+                  "type" -> "document",
+                  "languages" -> Json.obj(
+                    "iso639_3" -> languages
+                  )
+                ))
+                ResourceHelper.createResourceWithUri(resource, user, url, size, mime)
+                  .flatMap { json =>
+                    val subjectId = (json \ "id").as[String]
+                    AdditionalDocumentAdder.add(content, subjectId, 'captionTrack, Json.obj("kind" -> kind)) { _ => Ok(subjectId) }
+                  }.recover { case _ =>
+                    InternalServerError("Could not create resource")
                   }
-                case None =>
-                 Future(InternalServerError("Could not upload file"))
+              }.recover { case _ =>
+                InternalServerError("Could not upload file")
               }
             } else {
               //TODO: Check permissions
               // Figure out which file we are replacing
               // First get the resource
-              ResourceController.getResource(resourceId).flatMap {
-                case None => Future(InternalServerError("Could not access resource"))
-                case Some(json) =>
-                  val resource = json \ "resource"
+              ResourceController.getResource(resourceId).flatMap { json =>
+                val resource = json \ "resource"
                   
-                  // Now find the file
-                  val url = ((resource \ "content" \ "files")(0) \ "downloadUri").as[String]
-                  val name = url.substring(url.lastIndexOf("/") + 1)
+                // Now find the file
+                val url = ((resource \ "content" \ "files")(0) \ "downloadUri").as[String]
+                val name = url.substring(url.lastIndexOf("/") + 1)
                     
-                  // Replace the file
-                  FileUploader.uploadFile(file, name, mime).flatMap {
-                    case None => Future(InternalServerError("Could not replace file"))
-                    case Some(url) =>
-                      // Handle updating the information.
-                      val updatedFile = (resource \ "content" \ "files")(0).as[JsObject] ++ Json.obj(
-                          "bytes" -> size
-                          // "attributes" -> Json.obj("kind" -> kind) //How do we do this up above?
-                      )
-                      val updatedResource = resource.as[JsObject] ++ Json.obj(
-                        "title" -> label,
-                        "type" -> "document",
-                        "languages" -> Json.obj(
-                          "iso639_3" -> languages
-                        ),
-                        "content" -> Json.obj("files" -> List(updatedFile))
-                      )
-                      ResourceController.updateResource(resourceId, updatedResource).flatMap {
-                        case Some(_) =>  
-                          AdditionalDocumentAdder.edit(content, resourceId, 'captionTrack, Json.obj("kind" -> kind)) { 
-                            _ => Ok(resourceId) 
-                          }                        
-                        case None => Future(InternalServerError("Could not update resource"))
+                // Replace the file
+                FileUploader.uploadFile(file, name, mime).flatMap { url =>
+                  // Handle updating the information.
+                  val updatedFile = (resource \ "content" \ "files")(0).as[JsObject] ++ Json.obj(
+                      "bytes" -> size
+                      // "attributes" -> Json.obj("kind" -> kind) //How do we do this up above?
+                  )
+                  val updatedResource = resource.as[JsObject] ++ Json.obj(
+                    "title" -> label,
+                    "type" -> "document",
+                    "languages" -> Json.obj(
+                      "iso639_3" -> languages
+                    ),
+                    "content" -> Json.obj("files" -> List(updatedFile))
+                  )
+                  ResourceController.updateResource(resourceId, updatedResource)
+                    .flatMap { _ =>  
+                      AdditionalDocumentAdder.edit(content, resourceId, 'captionTrack, Json.obj("kind" -> kind)) { 
+                        _ => Ok(resourceId) 
                       }
-				  }
+                    }.recover { case _ =>
+                      InternalServerError("Could not update resource")
+                    }
+                }.recover { case _ =>
+                  InternalServerError("Could not replace file")
+                }
+              }.recover { case _ =>
+                InternalServerError("Could not access resource")
               }
             }
           }.getOrElse {

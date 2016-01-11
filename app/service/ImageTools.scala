@@ -58,17 +58,18 @@ object ImageTools {
 
   def makeThumbnail(image: BufferedImage): Option[BufferedImage] = scaleImage(image, 250, 250, Color.black)
 
-  def generateThumbnail(source: Any): Future[Option[String]] = {
-    val orig = source match {
+  def generateThumbnail(source: Any): Future[String] = {
+    Future {
+      source match {
       case url:String => ImageIO.read(new URL(url))
       case file:File => ImageIO.read(file)
       case _ => throw new IOException("unknown source type")
-    }
-    makeThumbnail(orig) match {
-      case Some(image) =>
-        val filename = FileUploader.uniqueFilename("thumbnail.jpg")
-        FileUploader.uploadImage(image, filename)
-      case None => Future(None)
+      }
+	}.map { orig =>
+	  makeThumbnail(orig).get
+	}.flatMap { image =>
+      val filename = FileUploader.uniqueFilename("thumbnail.jpg")
+      FileUploader.uploadImage(image, filename)
     }
   }
 
@@ -106,18 +107,16 @@ object ImageTools {
     newImage
   }
 
-  def loadImageFromContent(content: Content): Future[Option[BufferedImage]] = {
+  def loadImageFromContent(content: Content): Future[BufferedImage] = {
     // Load the resource
-    ResourceController.getResource(content.resourceId).map { response =>
-      response.map { json =>
-        // Look at the files to find the one that has the URL we want
-        val files = json \ "resource" \ "content" \ "files"
-        val file = files.as[JsArray].value.find(obj => (obj \ "representation").as[String] == "original").get
+    ResourceController.getResource(content.resourceId).map { json =>
+      // Look at the files to find the one that has the URL we want
+      val files = json \ "resource" \ "content" \ "files"
+      val file = files.as[JsArray].value.find(obj => (obj \ "representation").as[String] == "original").get
 
-        // Load the image from the URL
-        val url = new URL((file \ "downloadUri").as[String])
-        ImageIO.read(url)
-      }
+      // Load the image from the URL
+      val url = new URL((file \ "downloadUri").as[String])
+      ImageIO.read(url)
     }
   }
 }

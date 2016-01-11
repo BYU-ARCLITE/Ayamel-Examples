@@ -5,11 +5,11 @@ import concurrent.{ExecutionContext, Future}
 import ExecutionContext.Implicits.global
 import play.api.Play
 import play.api.Logger
-import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.auth.AWSCredentials
+import com.amazonaws.services.s3.AmazonS3Client
+import com.amazonaws.services.s3.model.{CannedAccessControlList, ObjectMetadata}
 import com.amazonaws.{AmazonClientException, AmazonServiceException}
 import play.api.Play.current
-import com.amazonaws.services.s3.model.{CannedAccessControlList, ObjectMetadata}
 
 /**
  * Created with IntelliJ IDEA.
@@ -19,7 +19,7 @@ import com.amazonaws.services.s3.model.{CannedAccessControlList, ObjectMetadata}
  * To change this template use File | Settings | File Templates.
  */
 object S3Uploader extends UploadEngine {
-  override def upload(inputStream: InputStream, filename: String, contentLength: Long, contentType: String): Future[Option[String]] = {
+  override def upload(inputStream: InputStream, filename: String, contentLength: Long, contentType: String): Future[String] = {
 
     // Set up the connection
     val s3Client = new AmazonS3Client(new AWSCredentials {
@@ -42,14 +42,14 @@ object S3Uploader extends UploadEngine {
         inputStream.close()
 
         // Return the URL
-        Some("https://s3.amazonaws.com/" + bucket + "/" + filename)
+        "https://s3.amazonaws.com/" + bucket + "/" + filename
       } catch {
         case e:AmazonClientException =>
           Logger.debug("Amazon Client Exception: " + e.getMessage())
-          None
+          throw e
         case e:AmazonServiceException =>
           Logger.debug("Amazon Service Exception: " + e.getMessage())
-          None
+          throw e
       }
     }
   }

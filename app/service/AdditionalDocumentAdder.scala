@@ -40,8 +40,7 @@ object AdditionalDocumentAdder {
   def edit(content: Content, resourceId: String, docType: Symbol, attributes: JsObject)(action: Option[Course] => Result)(implicit request: RequestHeader, user: User): Future[Result] = {
     // find & delete
     // Get the list of relations this resource is in and delete them
-    for(result <- ResourceController.getRelations(resourceId);
-        json <- result;
+    for(json <- ResourceController.getRelations(resourceId);
         relation <- ((json \ "relations").as[JsArray].value)
         if (relation \ "type").as[String] == getRelationType(docType)
         if (relation \ "objectId").as[String] == content.resourceId

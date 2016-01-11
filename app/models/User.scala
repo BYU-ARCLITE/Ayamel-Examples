@@ -56,22 +56,22 @@ case class User(id: Option[Long], authId: String, authScheme: Symbol, username: 
 
     DB.withConnection { implicit connection =>
       try {
-	    BatchSql(
-		  "delete from {table} where userId = {id}",
-		  List('table -> "courseMembership", 'id -> id.get),
-		  List('table -> "announcement", 'id -> id.get),
-		  List('table -> "notification", 'id -> id.get),
-		  List('table -> "addCourseRequest", 'id -> id.get),
-		  List('table -> "sitePermissionRequest", 'id -> id.get),
-		  List('table -> "sitePermissions", 'id -> id.get)
-		)
+        BatchSql(
+          "delete from {table} where userId = {id}",
+          List('table -> "courseMembership", 'id -> id.get),
+          List('table -> "announcement", 'id -> id.get),
+          List('table -> "notification", 'id -> id.get),
+          List('table -> "addCourseRequest", 'id -> id.get),
+          List('table -> "sitePermissionRequest", 'id -> id.get),
+          List('table -> "sitePermissions", 'id -> id.get)
+        )
 
         // Delete all linked accounts
         getAccountLink.map { accountLink =>
           if (accountLink.primaryAccount == id.get) {
             val params = accountLink.userIds.filterNot(_ == id.get)
               .map { uid =>  List(NamedParameter.symbol('id -> uid)) }
-			  .toList
+              .toList
             BatchSql(
               s"delete from $User.tableName where id = {id}",
               params.head, params.tail:_*
