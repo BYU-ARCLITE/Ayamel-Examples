@@ -65,7 +65,7 @@
                 });
 
                 // The getting started video
-                var gettingStartedId = @{Setting.findByName("help.gettingStartedContent").get.value};
+                var gettingStartedId = "@{Setting.findByName("help.gettingStartedContent").get.value}";
                 ResourceLibrary.setBaseUrl("@resourceLibraryUrl");
                 if (gettingStartedId) {
                     ContentLoader.render({
