@@ -33,8 +33,8 @@
                     <td>@content.id.get</td>
                     <td>@content.name</td>
                     <td data-toggle="tooltip" @if(user.email.isDefined) { title="@user.email.get" }>
-						@user.username
-					</td>
+                        @user.username
+                    </td>
                     <td class="lang"></td>
                     <td>
                         @if(content.shareability == models.Content.shareability.notShareable) {

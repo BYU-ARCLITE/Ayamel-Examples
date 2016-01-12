@@ -296,12 +296,12 @@ object Content extends SQLSelectable[Content] {
     DB.withConnection { implicit connection =>
       try {
         SQL("""
-		  select * from userAccount join (
+          select * from userAccount join (
             ( select content.name as cname, content.*, contentOwnership.contentId, contentOwnership.userId
               from content join contentOwnership on content.id = contentOwnership.contentid
             ) as listing
           ) on userAccount.id = listing.userId
-		""").as(contentOwnership *)
+        """).as(contentOwnership *)
       } catch {
         case e: SQLException =>
           Logger.debug("Failed in Content.scala / ownershipList")
@@ -362,11 +362,17 @@ object Content extends SQLSelectable[Content] {
       try {
         val cid = content.id.get
         SQL(s"delete from $settingTable where contentId = {cid} and setting = {setting}")
-          .on('cid -> content.id, 'setting -> setting)
-		  .execute()
-        val params = arguments.map { arg => List(NamedParameter.symbol('arg -> arg)) }
+          .on('cid -> cid, 'setting -> setting)
+          .execute()
+        val params = arguments.map { arg =>
+          List(
+            NamedParameter.symbol('cid -> cid),
+            NamedParameter.symbol('setting -> setting),
+            NamedParameter.symbol('arg -> arg)
+          )
+        }
         BatchSql(
-          s"insert into $settingTable (contentId, setting, argument) values ($cid, $setting, {arg})",
+          s"insert into $settingTable (contentId, setting, argument) values ({cid}, {setting}, {arg})",
           params.head, params.tail:_*
         ).execute()
       } catch {
@@ -382,9 +388,15 @@ object Content extends SQLSelectable[Content] {
     DB.withConnection { implicit connection =>
       try {
         val cid = content.id.get
-        val params = arguments.map { arg => List(NamedParameter.symbol('arg -> arg)) }
+        val params = arguments.map { arg =>
+          List(
+            NamedParameter.symbol('cid -> cid),
+            NamedParameter.symbol('setting -> setting),
+            NamedParameter.symbol('arg -> arg)
+          )
+        }
         BatchSql(
-          s"insert into $settingTable (contentId, setting, argument) values ($cid, $setting, {arg})",
+          s"insert into $settingTable (contentId, setting, argument) values ({cid}, {setting}, {arg})",
           params.head, params.tail:_*
         ).execute()
       } catch {
@@ -400,9 +412,15 @@ object Content extends SQLSelectable[Content] {
     DB.withConnection { implicit connection =>
       try {
         val cid = content.id.get
-        val params = arguments.map { arg => List(NamedParameter.symbol('arg -> arg)) }
+        val params = arguments.map { arg =>
+          List(
+            NamedParameter.symbol('cid -> cid),
+            NamedParameter.symbol('setting -> setting),
+            NamedParameter.symbol('arg -> arg)
+          )
+        }
         BatchSql(
-          s"delete from $settingTable where contentId = $cid and setting = $setting and argument = {arg}",
+          s"delete from $settingTable where contentId = {cid} and setting = {setting} and argument = {arg}",
           params.head, params.tail:_*
         ).execute()
       } catch {
@@ -431,8 +449,8 @@ object Content extends SQLSelectable[Content] {
     DB.withConnection { implicit connection =>
       try {
         val plist = SQL(s"select setting, argument from $settingTable where contentId = {id}")
-		  .on('id -> content.id)
-		  .as(
+          .on('id -> content.id)
+          .as(
             get[String](settingTable + ".setting") ~
             get[String](settingTable + ".argument") map {
               case setting ~ argument => setting -> argument
@@ -462,7 +480,7 @@ object Content extends SQLSelectable[Content] {
     DB.withConnection { implicit connection =>
       try {
         SQL(s"update $tableName set views = views + 1 where id = {id}")
-		  .on('id -> id).executeUpdate()
+          .on('id -> id).executeUpdate()
       } catch {
         case e: SQLException =>
           Logger.debug("Failed to increment content view count")

@@ -293,7 +293,7 @@ object Administration extends Controller {
 
               if (data("background").isEmpty) {
                 val file = request.body.file("file").get
-				val url = Await.result(FileUploader.uploadFile(file), Duration.Inf)
+                val url = Await.result(FileUploader.uploadFile(file), Duration.Inf)
                 homePageContent.copy(background = url).save
               } else {
                 homePageContent.save
