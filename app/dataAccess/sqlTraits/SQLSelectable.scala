@@ -30,8 +30,8 @@ trait SQLSelectable[T] {
   def findByCol(col: String, value: ParameterValue, parser: RowParser[T]): Option[T] = {
     DB.withConnection { implicit connection =>
       try {
-        SQL(s"select * from $tableName where {col} = {value} limit 1")
-          .on('col -> value, 'value -> value).as(parser.singleOpt)
+        SQL(s"select * from $tableName where $col = {value} limit 1")
+          .on('value -> value).as(parser.singleOpt)
       } catch {
         case e: SQLException =>
           Logger.debug(s"Failed to find $col = $value in $tableName")
@@ -56,8 +56,8 @@ trait SQLSelectable[T] {
   def listByCol(col: String, value: ParameterValue, parser: RowParser[T]): List[T] =
     DB.withConnection { implicit connection =>
       try {
-        SQL(s"select * from $tableName where {col} = {value}")
-		.on('col -> col, 'value -> value).as(parser *)
+        SQL(s"select * from $tableName where $col = {value}")
+          .on('value -> value).as(parser *)
       } catch {
         case e: SQLException =>
           Logger.debug(s"Failed to list $tableName for $col = $value")
