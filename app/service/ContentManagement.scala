@@ -63,8 +63,9 @@ object ContentManagement {
       addToCourse(courseId, content)
       redirect.flashing("success" -> "Content created and added to course")
     }.recover { case e: Exception =>
-      Logger.debug("Error creating content: " + e.getMessage())
-      redirect.flashing("error" -> "Could not add content to course.")
+      val message = e.getMessage()
+      Logger.debug(s"Error creating content in course $courseId: $message")
+      redirect.flashing("error" -> s"Could not add content to course: $message")
     }
   }
 
@@ -86,9 +87,10 @@ object ContentManagement {
           .flashing("success" -> "Content Added")
       }
     }.recover { case e: Exception =>
-      Logger.debug("Error creating content: " + e.getMessage())
+      val message = e.getMessage()
+      Logger.debug("Error creating content: " + message)
       Redirect(routes.ContentController.createPage("url", 0))
-        .flashing("error" -> "Failed to create content.")
+        .flashing("error" -> s"Failed to create content: $message")
     }
   }
 

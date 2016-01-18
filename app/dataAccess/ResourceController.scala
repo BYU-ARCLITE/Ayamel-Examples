@@ -119,10 +119,10 @@ object ResourceController {
    */
   def getRelations(id: String, relationType: Symbol = 'id) = {
     val idKey = relationType match {
-	  case 'subject => "subjectId"
-	  case 'object => "objectId"
-	  case _ => "id"
-	}
+      case 'subject => "subjectId"
+      case 'object => "objectId"
+      case _ => "id"
+    }
     WS.url(baseUrl + s"relations?$idKey=$id").get().map { r =>
       decode(r)
     }

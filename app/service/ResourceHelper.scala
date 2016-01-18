@@ -147,7 +147,19 @@ object ResourceHelper {
 
     // Create the resource
     ResourceController.createResource(resource, user).flatMap { json =>
-      val contentUploadUrl = (json \ "contentUploadUrl").as[String]
+      val message = (json \ "response" \ "message").asOpt[String]
+      
+      val id = (json \ "resource" \ "id").asOpt[String]
+      if (!id.isDefined) {
+        throw new Exception(message.getOrElse("Could not create resource."))
+      }
+
+      val uploadUrl = (json \ "contentUploadUrl").asOpt[String]
+      if (!uploadUrl.isDefined) {
+        ResourceController.deleteResource(id.get)
+        throw new Exception(message.getOrElse("Could not create resource."))
+      }
+
       // Add information about the file
       val file = make.file(Json.obj(
         getUrlName(uri) -> uri,
@@ -155,12 +167,23 @@ object ResourceHelper {
         "bytes" -> bytes,
         "attributes" -> fileAttributes
       ))
+
       val remoteFiles = Json.obj("remoteFiles" -> Json.arr(file))
       Logger.debug("Resource Helper: create with URI")
       Logger.debug(remoteFiles.toString())
+
       // Save this info and return the updated resource
-      ResourceController.setRemoteFiles(contentUploadUrl, remoteFiles)
-    }.map { json => (json \ "resource").get }
+      ResourceController.setRemoteFiles(uploadUrl.get, remoteFiles).map { json =>
+        (json \ "resource") match {
+        case JsDefined(res) => res
+        case _ =>
+          Logger.debug(s"Response from setRemoteFiles: ${json.toString()}")
+          ResourceController.deleteResource(id.get)
+          val message = (json \ "response" \ "message").asOpt[String]
+          throw new Exception(message.getOrElse("Could not set resource files."))
+        }
+      }
+    }
   }
 
   /**
@@ -193,7 +216,15 @@ object ResourceHelper {
         val obj = Json.obj("remoteFiles" -> newFiles)
         ResourceController.setRemoteFiles(uploadUrl, obj)
       }
-	}.map { json => (json \ "resource").get }
+    }.map { json =>
+      (json \ "resource") match {
+      case JsDefined(res) => res
+      case _ =>
+        Logger.debug(s"Response from setRemoteFiles: ${json.toString()}")
+        val message = (json \ "response" \ "message").asOpt[String]
+        throw new Exception(message.getOrElse("Could not set resource files."))
+      }
+    }
   }
 
   /**
@@ -246,7 +277,7 @@ object ResourceHelper {
         // Set the new files
         val obj = Json.obj("remoteFiles" -> newFiles)
         ResourceController.setRemoteFiles(uploadUrl, obj)
-	  }
+      }
     }.map { json => (json \ "resource").get }
   }
 

@@ -1,7 +1,6 @@
 package controllers
 
 import authentication.Authentication
-import play.api.mvc._
 import service._
 import models.{User, Content}
 import scala.concurrent.{Future, ExecutionContext}
@@ -9,6 +8,8 @@ import ExecutionContext.Implicits.global
 import service.ContentDescriptor
 import dataAccess.{GoogleFormScripts, PlayGraph, ResourceController}
 import java.net.{URLDecoder, URI, URL}
+import play.api.mvc._
+import play.api.Logger
 import play.api.libs.ws.WS
 import play.api.libs.iteratee.Enumerator
 import java.text.SimpleDateFormat
@@ -98,7 +99,7 @@ object ContentController extends Controller {
           val title = data("title")(0)
           val description = data("description")(0)
           val createAndAdd = data.getOrElse("createAndAdd", Nil)
-//          val categories = data.get("categories").map(_.toList).getOrElse(Nil)
+        //val categories = data.get("categories").map(_.toList).getOrElse(Nil)
           val labels = data.get("labels").map(_.toList).getOrElse(Nil)
           val keywords = labels.mkString(",")
           val languages = data.get("languages").map(_.toList).getOrElse(List("eng"))
@@ -109,11 +110,16 @@ object ContentController extends Controller {
 
           if (ResourceHelper.isValidUrl(url)) {
             val mime = ResourceHelper.getMimeFromUri(url)
+            Logger.debug(s"Got mime: $mime")
 
             // Create the content
-            ResourceHelper.getUrlSize(url).flatMap { bytes =>
-              val info = ContentDescriptor(title, description, keywords, url, bytes, mime, labels = labels,
-                languages = languages)
+            ResourceHelper.getUrlSize(url).recover[Long] { case _ =>
+              Logger.debug(s"Could not access $url to determine size.")  
+              0
+            }.flatMap { bytes =>
+              val info = ContentDescriptor(title, description, keywords, url, bytes, mime,
+                                           labels = labels, languages = languages)
+
               // find alternate create content ↓ through annotations method
               if (courseId > 0 && courseId != 40747105) {
                 ContentManagement.createAndAddToCourse(info, user, contentType, courseId, !createAndAdd.isEmpty)
