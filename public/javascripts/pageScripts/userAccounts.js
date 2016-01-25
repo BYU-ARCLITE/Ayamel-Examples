@@ -21,32 +21,32 @@ $(function(){
                 <td>{{{(.email?shorten(.email):"<em>Not set</em>")}}}</td>\
                 <td>{{{(.linked === -1 ? "No" : "Yes: #"+.linked)}}}</td>\
                 <td>\
-                    {{#is_missing(.permissions, activePermissions)}}<a proxy-tap="add:{{index}}" class="btn btn-small btn-yellow">Add Missing</a>{{/missing}}\
-                    {{#has_extra(.permissions, activePermissions)}}<a proxy-tap="remove:{{index}}" class="btn btn-small btn-yellow">Remove Extra</a>{{/extra}}\
+                    {{#is_missing(.permissions, activePermissions)}}<a on-tap="add:{{index}}" class="btn btn-small btn-yellow">Add Missing</a>{{/missing}}\
+                    {{#has_extra(.permissions, activePermissions)}}<a on-tap="remove:{{index}}" class="btn btn-small btn-yellow">Remove Extra</a>{{/extra}}\
                     {{#(is_missing(.permissions, activePermissions) && has_extra(.permissions, activePermissions))}}\
-                        <a proxy-tap="match:{{index}}" class="btn btn-small btn-yellow">Match Filter</a>\
+                        <a on-tap="match:{{index}}" class="btn btn-small btn-yellow">Match Filter</a>\
                     {{/match}}\
                 </td><td>\
                     {{#(.id !== viewer_id)}}\
-                        <a proxy-tap="proxy:{{.id}}" class="btn btn-small btn-yellow">Proxy</a>\
-                        <a proxy-tap="notify:{{.id}}" class="btn btn-small btn-blue sendNote">Notify</a>\
-                        <a proxy-tap="delete:{{.id}}" class="btn btn-small btn-magenta deleteUser">Delete</a>\
+                        <a on-tap="proxy:{{.id}}" class="btn btn-small btn-yellow">Proxy</a>\
+                        <a on-tap="notify:{{.id}}" class="btn btn-small btn-blue sendNote">Notify</a>\
+                        <a on-tap="delete:{{.id}}" class="btn btn-small btn-magenta deleteUser">Delete</a>\
                     {{/is_viewer}}\
                 </td>\
             </tr>\
         {{/users}}\
         <tr><td colspan="8">\
             <b>For selected:</b>\
-            <!--<a proxy-tap="deletesel" class="btn btn-small btn-magenta deleteUser">Delete</a>-->\
-            <a proxy-tap="addsel" class="btn btn-small btn-yellow">Add Missing</a>\
-            <a proxy-tap="removesel" class="btn btn-small btn-yellow">Remove Extra</a>\
-            <a proxy-tap="matchsel" class="btn btn-small btn-yellow">Match Filter</a>\
+            <!--<a on-tap="deletesel" class="btn btn-small btn-magenta deleteUser">Delete</a>-->\
+            <a on-tap="addsel" class="btn btn-small btn-yellow">Add Missing</a>\
+            <a on-tap="removesel" class="btn btn-small btn-yellow">Remove Extra</a>\
+            <a on-tap="matchsel" class="btn btn-small btn-yellow">Match Filter</a>\
         </td></tr>\
     </table>';
 
     /* Add back when setting the selection outside of superselect works:
                     {{#(is_missing(.permissions, activePermissions) || has_extra(.permissions, activePermissions))}}\
-                        <a proxy-tap="select:{{index}}" class="btn btn-small btn-yellow">Select Permissions</a>\
+                        <a on-tap="select:{{index}}" class="btn btn-small btn-yellow">Select Permissions</a>\
                     {{/match}}\
     */
     
@@ -97,7 +97,7 @@ $(function(){
     });
     
     /*utable.on('select', function(e,index){
-        utable.set('activePermissions', utable.data.users[index].permissions);
+        utable.set('activePermissions', utable.get("users")[index].permissions);
     });*/
 
     utable.on('proxy', function(e,id){
@@ -115,19 +115,19 @@ $(function(){
     });
 
     utable.on('addsel', function(){
-        Promise.all(utable.data.selectedUsers.map(addUserPermissions))
+        Promise.all(utable.get("selectedUsers").map(addUserPermissions))
         .then(null,function(e){
             alert("Error updating permissions");
         });
     });
     utable.on('removesel', function(){
-        utable.data.selectedUsers.map(removeUserPermissions)
+        utable.get("selectedUsers").map(removeUserPermissions)
         .then(null,function(e){
             alert("Error updating permissions");
         });
     });
     utable.on('matchsel', function(){
-        utable.data.selectedUsers.map(matchUserPermissions)
+        utable.get("selectedUsers").map(matchUserPermissions)
         .then(null,function(e){
             alert("Error updating permissions");
         });
@@ -136,7 +136,7 @@ $(function(){
 
     function updateUserPermissions(index, perms, operation){
         var data = new FormData();
-        data.append("userId", utable.data.users[index].id);
+        data.append("userId", utable.get("users")[index].id);
         perms.forEach(function(p){ data.append("permission", p); });
         return Promise.resolve($.ajax({
             url: permUrl + (operation || ""),

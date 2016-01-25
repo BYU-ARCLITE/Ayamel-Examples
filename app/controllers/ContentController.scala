@@ -12,8 +12,10 @@ import play.api.mvc._
 import play.api.Logger
 import play.api.libs.ws.WS
 import play.api.libs.iteratee.Enumerator
+import play.api.libs.json.Json
 import java.text.SimpleDateFormat
 import java.util.Calendar
+
 
 /**
  * The controller for dealing with content.
@@ -87,14 +89,76 @@ object ContentController extends Controller {
   /**
    * Creates content based on the posted data (URL)
    */
-  def createFromUrl(courseId: Long) = Authentication.authenticatedAction(parse.urlFormEncoded) {
+  def createFromBatch(courseId: Long) = Authentication.authenticatedAction(parse.multipartFormData) {
     implicit request =>
       implicit user =>
 
         Authentication.enforcePermission("createContent") {
 
           // Collect the information
-          val data = request.body
+          val data = request.body.dataParts
+          val contentType = Symbol(data("contentType")(0))
+          val title = data("title")(0)
+          val description = data("description")(0)
+        //val categories = data.get("categories").map(_.toList).getOrElse(Nil)
+          val labels = data.get("labels").map(_.toList).getOrElse(Nil)
+          val keywords = labels.mkString(",")
+          val languages = data.get("languages").map(_.toList).getOrElse(List("eng"))
+
+          // Get the URL and MIME. Process the URL if it is not "special"
+          val raw_url = data("url")(0)
+          val url = if (ResourceHelper.isHTTP(raw_url)) processUrl(raw_url) else raw_url
+
+          if (ResourceHelper.isValidUrl(url)) {
+            val mime = ResourceHelper.getMimeFromUri(url)
+            Logger.debug(s"Got mime: $mime")
+
+            // Create the content
+            ResourceHelper.getUrlSize(url).recover[Long] { case _ =>
+              Logger.debug(s"Could not access $url to determine size.")  
+              0
+            }.flatMap { bytes =>
+              val info = ContentDescriptor(title, description, keywords, url, bytes, mime,
+                                           labels = labels, languages = languages)
+
+              // find alternate create content ↓ through annotations method
+              if (courseId > 0 && courseId != 40747105) {
+                ContentManagement.createAndAddToCourse(info, user, contentType, courseId)
+                  .map { cid => Ok(Json.obj("contentId" -> cid)) }
+                  .recover { case e: Exception =>
+                    val message = e.getMessage()
+                    Logger.debug(s"Error creating content in course $courseId: $message")
+					InternalServerError(Json.obj("message" -> s"Could not add content to course: $message"))
+                  }
+              } else {
+                ContentManagement.createContent(info, user, contentType)
+                .map { cid => Ok(Json.obj("contentId" -> cid)) }
+                  .recover { case e: Exception =>
+                    val message = e.getMessage()
+                    Logger.debug(s"Error creating content: $message")
+                    InternalServerError(Json.obj("message" -> s"Could not add content: $message"))
+                  }
+              }
+            }
+          } else
+            Future{
+              BadRequest(Json.obj("message" -> "The given URL is invalid."))
+            }
+        }
+  }
+
+
+  /**
+   * Creates content based on the posted data (URL)
+   */
+  def createFromUrl(courseId: Long) = Authentication.authenticatedAction(parse.multipartFormData) {
+    implicit request =>
+      implicit user =>
+
+        Authentication.enforcePermission("createContent") {
+
+          // Collect the information
+          val data = request.body.dataParts
           val contentType = Symbol(data("contentType")(0))
           val title = data("title")(0)
           val description = data("description")(0)
@@ -122,9 +186,37 @@ object ContentController extends Controller {
 
               // find alternate create content ↓ through annotations method
               if (courseId > 0 && courseId != 40747105) {
-                ContentManagement.createAndAddToCourse(info, user, contentType, courseId, !createAndAdd.isEmpty)
+      			    val redirect = if (!createAndAdd.isEmpty) {
+        				  Redirect(routes.ContentController.createPage("url", courseId))
+        				} else {
+        				  Redirect(routes.Courses.view(courseId))
+        				}
+                ContentManagement.createAndAddToCourse(info, user, contentType, courseId)
+                  .map { _ => 
+                    redirect.flashing("success" -> "Content created and added to course")
+                  }
+                  .recover { case e: Exception =>
+                    val message = e.getMessage()
+                    Logger.debug(s"Error creating content in course $courseId: $message")
+                    redirect.flashing("error" -> s"Could not add content to course: $message")
+                  }
               } else {
-                ContentManagement.createContent(info, user, contentType, !createAndAdd.isEmpty)
+                ContentManagement.createContent(info, user, contentType)
+                .map{ contentid => 
+                    if (!createAndAdd.isEmpty) {
+                    Redirect(routes.ContentController.createPage("url", 0))
+                      .flashing("success" -> "Content Created")
+                  } else {
+                    Redirect(routes.ContentController.view(contentid))
+                      .flashing("success" -> "Content Added")
+                  }
+                } 
+                .recover { case e: Exception =>
+                  val message = e.getMessage()
+                  Logger.debug("Error creating content: " + message)
+                  Redirect(routes.ContentController.createPage("url", 0))
+                    .flashing("error" -> s"Failed to create content: $message")
+                }
               }
             }
           } else
@@ -132,55 +224,6 @@ object ContentController extends Controller {
               Redirect(routes.ContentController.createPage("url", courseId))
                 .flashing("error" -> "The given URL is invalid.")
             }
-        }
-  }
-
-  /**
-   * Creates content based on the posted data (URL)
-   */
-  def createFromUrlBatch(courseId: Long) = Authentication.authenticatedAction(parse.multipartFormData) {
-    implicit request =>
-      implicit user =>
-
-        Authentication.enforcePermission("createContent") {
-
-          val file = request.body.file("file").get.ref.file
-          val data = io.Source.fromFile(file).getLines().toList
-
-          val processes = data.map { line =>
-            Future {
-              // Collect the data
-              val parts = line.split("\t")
-              val title = parts(0)
-              val description = parts(1)
-              val url = parts(2)
-              val contentType = Symbol(parts(3))
-              val labels = parts(4).split(",").toList
-              val languages = parts(5).split(",").toList
-//              val categories = Nil
-              val keywords = labels.mkString(",")
-              val mime = ResourceHelper.getMimeFromUri(url)
-
-              ResourceHelper.getUrlSize(url).flatMap { bytes =>
-                val info = ContentDescriptor(title, description, keywords, url, bytes, mime, labels = labels,
-                  languages = languages)
-                if (courseId > 0) {
-                  ContentManagement.createAndAddToCourse(info, user, contentType, courseId, false)
-                } else {
-                  ContentManagement.createContent(info, user, contentType, false)
-                }
-              }
-            }
-          }
-          
-          Future.sequence(processes).map { _ =>
-              user.sendNotification("Your batch file upload has finished.")
-          }
-
-          Future { 
-            Redirect(routes.Application.home())
-              .flashing("info" -> "We have started processing your batch file. You will receive a notification when it is done.")
-          }
         }
   }
 
@@ -212,9 +255,30 @@ object ContentController extends Controller {
               val info = ContentDescriptor(title, description, keywords, url, file.ref.file.length(), file.contentType.get,
                 labels = labels, languages = languages)
               if (courseId > 0) {
-                ContentManagement.createAndAddToCourse(info, user, contentType, courseId, !createAndAdd.isEmpty)
+				val redirect = if (!createAndAdd.isEmpty) {
+				  Redirect(routes.ContentController.createPage("url", courseId))
+				} else {
+				  Redirect(routes.Courses.view(courseId))
+				}
+                ContentManagement.createAndAddToCourse(info, user, contentType, courseId)
+                  .map { _ => 
+                    redirect.flashing("success" -> "Content created and added to course")
+                  }
+                  .recover { case e: Exception =>
+                    val message = e.getMessage()
+                    Logger.debug(s"Error creating content in course $courseId: $message")
+                    redirect.flashing("error" -> s"Could not add content to course: $message")
+                  }
               } else {
-                ContentManagement.createContent(info, user, contentType, !createAndAdd.isEmpty)
+                ContentManagement.createContent(info, user, contentType)
+                .map { _ => 
+                    redirect.flashing("success" -> "Content created")
+                  }
+                  .recover { case e: Exception =>
+                    val message = e.getMessage()
+                    Logger.debug(s"Error creating content: $message")
+                    redirect.flashing("error" -> s"Could not add content: $message")
+                  }
               }
             }.recover { case _ =>
               redirect.flashing("error" -> "Failed to upload file")

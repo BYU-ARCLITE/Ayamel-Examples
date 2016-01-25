@@ -70,7 +70,7 @@
         ResourceLibrary.setBaseUrl("@resourceLibraryUrl");
     </script>
     <script id='createTrackTemplate' type='text/ractive'>
-        <form class="form-horizontal">
+        <span class="form-horizontal">
             <div class="control-group">
                 <label class="control-label">Name</label>
                 <div class="controls">
@@ -87,10 +87,10 @@
                 </div>
             </div>
             {{>trackLangSelect}}
-        </form>
+        </span>
     </script>
     <script id='editTrackTemplate' type='text/ractive'>
-        <form class="form-horizontal">
+        <span class="form-horizontal">
             {{#(trackList.length === 0)}}
             There are no tracks loaded for editing.
             {{/(trackList)}}
@@ -116,10 +116,10 @@
                 {{>trackLangSelect}}
             </div>
             {{/(trackList)}}
-        </form>
+        </span>
     </script>
     <script id='setLocTemplate' type='text/ractive'>
-        <form class="form-horizontal">
+        <span class="form-horizontal">
             <div class="control-group">
                 <label class="control-label">Current Save Location</label>
                 <div class="controls">
@@ -135,7 +135,7 @@
                     </div>
                 </div>
             </div>
-        </form>
+        </span>
     </script>
     <script id='saveTrackTemplate' type='text/ractive'>
         <div class="form-horizontal">
@@ -143,7 +143,7 @@
         </div>
     </script>
     <script id='loadTrackTemplate' type='text/ractive'>
-        <form class="form-horizontal">
+        <span class="form-horizontal">
             {{>trackKindSelect}}
             {{>trackLangSelect}}
             <div class="control-group">
@@ -154,12 +154,12 @@
                     {{/sources}}
                 </div>
             </div>
-        </form>
+        </span>
     </script>
     <script id='showTrackTemplate' type='text/ractive'>
-        <div class="form-horizontal">
+        <span class="form-horizontal">
             <superselect icon="icon-laptop" text="Select Track" selection="{{selectedTracks}}" button="left" open="{{selectOpen}}" multiple="true" options="{{tracks}}" modalId="{{modalId}}">
-        </div>
+        </span>
     </script>
 }
 

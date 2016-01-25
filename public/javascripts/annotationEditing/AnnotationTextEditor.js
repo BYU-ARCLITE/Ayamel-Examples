@@ -155,11 +155,11 @@ var AnnotationTextEditor = (function(){
                 if (tracks.length > 0) {
                     // Sets the annotation language to the language of the first track.
                     if (tracks[0].track.language !== "zxx") {
-                        args.ractive.data.selection.push(tracks[0].track.language);
+                        args.ractive.get("selection").push(tracks[0].track.language);
                         that.language = tracks[0].track.language;
                     }
                     else {
-                        args.ractive.data.selection.push("eng");
+                        args.ractive.get("selection").push("eng");
                         that.language = "eng";
                     }
                 }

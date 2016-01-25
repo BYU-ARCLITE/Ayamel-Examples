@@ -63,7 +63,7 @@ GET     /content/ltiembed.js               controllers.ContentController.ltiEmbe
 GET     /content/create/:page              controllers.ContentController.createPage(page: String, courseId: Long = 0)
 GET     /content/create/:page/:courseId    controllers.ContentController.createPage(page: String, courseId: Long)
 POST    /content/create/url                controllers.ContentController.createFromUrl(courseId: Long)
-POST    /content/create/batch              controllers.ContentController.createFromUrlBatch(courseId: Long)
+POST    /content/create/batch              controllers.ContentController.createFromBatch(courseId: Long)
 POST    /content/create/file               controllers.ContentController.createFromFile(courseId: Long)
 POST    /content/create/resource           controllers.ContentController.createFromResource(courseId: Long)
 POST    /content/create/playlist           controllers.ContentController.createPlaylist(courseId: Long)

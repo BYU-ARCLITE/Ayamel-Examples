@@ -54,7 +54,7 @@ $(function() {
                     <td>{{getLanguage(this)}}</td>\
                     <td>{{#.content.files}}<a href="{{.downloadUri}}" download="{{calcName(title, .mime)}}">{{.mime}}&nbsp;</a>{{/.content.files}}</td>\
                     <td>\
-                        <button class="btn btn-magenta" proxy-tap="delete:{{.id}}"><i class="icon-trash"></i> Delete</button>\
+                        <button class="btn btn-magenta" on-tap="delete:{{.id}}"><i class="icon-trash"></i> Delete</button>\
                     </td>\
                 </tr>{{/resources}}\
             </tbody>\
@@ -69,7 +69,7 @@ $(function() {
                     <td>{{getLanguage(this)}}</td>\
                     <td>{{#.content.files}}<a href="{{.downloadUri}}" download="{{calcName(title, .mime)}}">{{.mime}}&nbsp;</a>{{/.content.files}}</td>\
                     <td>\
-                        <button class="btn btn-magenta" proxy-tap="delete:{{.id}}"><i class="icon-trash"></i> Delete</button>\
+                        <button class="btn btn-magenta" on-tap="delete:{{.id}}"><i class="icon-trash"></i> Delete</button>\
                     </td>\
                 </tr>{{/resources}}\
             </tbody>\

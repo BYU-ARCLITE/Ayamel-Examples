@@ -115,7 +115,7 @@ $(function() {
                 var title = metadataTitle.value;
                 fileNameEl.value = title;
                 fileName = title;
-                textEditor.language = language = ractive.data.selection[0];
+                textEditor.language = language = ractive.get("selection")[0];
                 if (fileNameEl.value.toString().trim() != "")
                     saveButton.disabled = false;
                 $("#metadataModal").modal("hide");

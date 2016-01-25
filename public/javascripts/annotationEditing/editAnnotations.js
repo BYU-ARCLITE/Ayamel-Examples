@@ -54,13 +54,13 @@ $(function(){
     document.addEventListener("annotationFileDelete", function(fileName) {
         /* updates the save and edit modals when an annotation file is deleted */
         for (var i = 0; i < saveAnnotations.data.resources.length; i++) {
-            if (saveAnnotations.data.resources[i].title === fileName.detail) {
-                saveAnnotations.data.resources.splice(i, 1);
+            if (saveAnnotations.get("resources")[i].title === fileName.detail) {
+                saveAnnotations.get("resources").splice(i, 1);
             }
         }
         for (var i = 0; i < editAnnotations.data.resources.length; i++) {
-            if (editAnnotations.data.resources[i].title === fileName.detail) {
-                editAnnotations.data.resources.splice(i, 1);
+            if (editAnnotations.get("resources")[i].title === fileName.detail) {
+                editAnnotations.get("resources").splice(i, 1);
             }
         }
     }); 

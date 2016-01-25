@@ -401,7 +401,7 @@ var ContentSettings = (function() {
                     if(control.type === 'button'){ return; }
                     var setting = ractive.get('controls['+index+'].setting'),
                         name = control.name;
-                    if(control.type === 'superselect'){ setting = targetLanguages.data.selection; }
+                    if(control.type === 'superselect'){ setting = targetLanguages.get("selection"); }
                     (setting instanceof Array?setting:[setting]).forEach(function(value){
                         fd.append(name, ""+value);
                     });

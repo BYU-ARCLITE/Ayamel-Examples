@@ -17,12 +17,12 @@ $(function() {
         <div class="modal-body">{{>dialogBody}}</div>\
         <div class="modal-footer">\
             {{#buttons}}\
-            <button class="btn btn-blue" proxy-tap="buttonpress:{{.event}}">{{.label}}</button>\
+            <button class="btn btn-blue" on-tap="buttonpress:{{.event}}">{{.label}}</button>\
             {{/buttons}}\
             <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>\
         </div>',
-        init: function(opts){
-            var actions = opts.actions;
+        onrender: function(){
+            var actions = this.actions;
             this.on('buttonpress',function(event,which){
                 if(typeof actions[which] !== 'function'){ return; }
                 actions[which].call(this,event);
@@ -103,14 +103,14 @@ $(function() {
             components:{ superselect: EditorWidgets.SuperSelect },
             actions: {
                 create: function(event){
-                    var data = this.data;
+					var that = this;
                     $('#newTrackModal').modal('hide');
                     resolver(datalist.map(function(key){
                         switch(key){
-                        case 'kind': return data.trackKind;
-                        case 'name': return data.trackName || "Untitled";
-                        case 'lang': return data.trackLang[0];
-                        case 'mime': return data.trackMime;
+                        case 'kind': return that.get("trackKind");
+                        case 'name': return that.get("trackName") || "Untitled";
+                        case 'lang': return that.get("trackLang")[0];
+                        case 'mime': return that.get("trackMime");
                         case 'overwrite': return true;
                         case 'handler':
                             return function(tp){
@@ -153,8 +153,8 @@ $(function() {
             components:{ superselect: EditorWidgets.SuperSelect },
             actions: {
                 save: function(event){
-                    var data = this.data;
-                    if(data.trackToEdit === "" || data.trackName === ""){
+					var that = this;
+                    if(this.get("trackToEdit") === "" || this.get("trackName") === ""){
                         failer("cancel");
                         return;
                     }
@@ -164,10 +164,10 @@ $(function() {
 
                     resolver(datalist.map(function(key){
                         switch(key){
-                        case 'tid': return data.trackToEdit;
-                        case 'kind': return data.trackKind;
-                        case 'name': return data.trackName || "Untitled";
-                        case 'lang': return data.trackLang[0];
+                        case 'tid': return that.get("trackToEdit");
+                        case 'kind': return that.get("trackKind");
+                        case 'name': return that.get("trackName") || "Untitled";
+                        case 'lang': return that.get("trackLang")[0];
                         case 'overwrite': return true;
                         }
                     }));
@@ -220,8 +220,7 @@ $(function() {
             components:{ superselect: EditorWidgets.SuperSelect },
             actions: {
                 save: function(event){
-                    var data = this.data,
-                        tracks = stracks;
+                    var tracks = stracks;
 
                     $("#saveTrackModal").modal("hide");
                     this.set({selectOpen: false});
@@ -356,20 +355,20 @@ $(function() {
             components:{ superselect: EditorWidgets.SuperSelect },
             actions: {
                 load: function(event){
-                    var data = this.data;
+					var that = this;
                     $("#loadTrackModal").modal("hide");
                     this.set({selectOpen: false});
 
-                    EditorWidgets.LocalFile(data.loadSource,/.*\.(vtt|srt|ass|ttml|sub|sbv|lrc|stl)/,function(fileObj){
+                    EditorWidgets.LocalFile(this.get("loadSource"),/.*\.(vtt|srt|ass|ttml|sub|sbv|lrc|stl)/,function(fileObj){
                         //If the label is omitted, it will be filled in with the file name stripped of extension
                         //That's easier than doing the stripping here, so leave out that parameter unless we can
                         //fill it with user input in the future
                         resolver(datalist.map(function(key){
                             switch(key){
                             case 'tracksrc': return fileObj;
-                            case 'kind': return data.trackKind;
-                            case 'lang': return data.trackLang[0];
-                            case 'location': return data.loadSource;
+                            case 'kind': return that.get("trackKind");
+                            case 'lang': return that.get("trackLang")[0];
+                            case 'location': return that.get("loadSource");
                             case 'overwrite': return true;
                             case 'handler':
                                 return function(trackp){
@@ -416,13 +415,13 @@ $(function() {
             components:{ superselect: EditorWidgets.SuperSelect },
             actions: {
                 showT: function(event){
-                    var data = this.data;
+                    var that = this;
                     $("#showTrackModal").modal("hide");
                     this.set({selectOpen: false});
 
                     resolver(datalist.map(function(key){
                         switch(key){
-                        case 'tracks': return data.selectedTracks;
+                        case 'tracks': return that.get("selectedTracks");
                         }
                     }));
                 }
@@ -501,10 +500,10 @@ $(function() {
             partials:{ dialogBody: document.getElementById('setLocTemplate').textContent },
             actions: {
                 save: function(event){
-                    var data = this.data;
+					var that = this;
                     $("#setLocModal").modal("hide");
                     resolver(datalist.map(function(key){
-                        return key === 'location'?data.saveLocation:void 0;
+                        return key === 'location'?that.get("saveLocation"):void 0;
                     }));
                 }
             }

@@ -51,21 +51,11 @@ object ContentManagement {
    * @param courseId Id of target course
    * @return The content object in a future
    */
-  def createAndAddToCourse(info: ContentDescriptor, owner: User, contentType: Symbol, courseId: Long, createAndAdd: Boolean): Future[Result] = {
-
-    val redirect = if (createAndAdd) {
-      Redirect(routes.ContentController.createPage("url", courseId))
-    } else {
-      Redirect(routes.Courses.view(courseId))
-    }
+  def createAndAddToCourse(info: ContentDescriptor, owner: User, contentType: Symbol, courseId: Long): Future[Long] = {
 
     createContentObject(info, owner, contentType).map { content =>
       addToCourse(courseId, content)
-      redirect.flashing("success" -> "Content created and added to course")
-    }.recover { case e: Exception =>
-      val message = e.getMessage()
-      Logger.debug(s"Error creating content in course $courseId: $message")
-      redirect.flashing("error" -> s"Could not add content to course: $message")
+	  content.id.get
     }
   }
 
@@ -77,20 +67,8 @@ object ContentManagement {
    * @param contentType The type of content
    * @return The content object in a future
    */
-  def createContent(info: ContentDescriptor, owner: User, contentType: Symbol, createAndAdd: Boolean): Future[Result] = {
-    createContentObject(info, owner, contentType).map { content =>
-      if (createAndAdd) {
-        Redirect(routes.ContentController.createPage("url", 0))
-          .flashing("success" -> "Content Created")
-      } else {
-        Redirect(routes.ContentController.view(content.id.get))
-          .flashing("success" -> "Content Added")
-      }
-    }.recover { case e: Exception =>
-      val message = e.getMessage()
-      Logger.debug("Error creating content: " + message)
-      Redirect(routes.ContentController.createPage("url", 0))
-        .flashing("error" -> s"Failed to create content: $message")
+  def createContent(info: ContentDescriptor, owner: User, contentType: Symbol): Future[Long] = {
+      createContentObject(info, owner, contentType).map { content => content.id.get
     }
   }
 

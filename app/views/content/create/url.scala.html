@@ -22,7 +22,7 @@
 
         <h2>Content information</h2>
 
-        <form class="form-horizontal" method="post" action="@routes.ContentController.createFromUrl(courseId)">
+        <form class="form-horizontal" method="post" enctype="multipart/form-data" action="@routes.ContentController.createFromUrl(courseId)">
             <div class="control-group">
                 <label class="control-label" for="url">URL</label>
                 <div class="controls">

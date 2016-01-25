@@ -1,10 +1,12 @@
 @(courseId: Long)(implicit request: RequestHeader, user: User)
 
-
 @main("Ayamel - Add Content", Some(user),
   Local(
     CSS("stylesheets/content.css"),
-    JS("javascripts/formFixes/fileFix.js"))
+    CSS("stylesheets/batchUpload.css"),
+    JS("javascripts/formFixes/fileFix.js"),
+    JS("javascripts/libraries/papaparse.min.js"),
+    JS("javascripts/pageScripts/batchUpload.js"))
 ){
     <div class="padded">
 
@@ -17,42 +19,66 @@
             <li><a href="@routes.ContentController.createPage("resource", courseId)">Load from Resource</a></li>
         </ul>
 
+        <h2>Ayamel Batch Upload Utility 2.0</h2>
 
-        <h2>Information</h2>
+        <div class="grid-container">
+            <div class="grid-75">
 
-        <p>
-            Include a file where each line is an item you want to upload. On each line, the fields are delimited with a
-            tab. The order of fields is as follows:
-        </p>
-        <table class="table table-bordered">
-            <tbody>
-                <tr>
-                    <td>Title</td>
-                    <td>Description</td>
-                    <td>URL</td>
-                    <td>Content Type (video, audio, image, text)</td>
-                    <td>Labels (comma separated)</td>
-                    <td>Languages (3-letter code, comma separated)</td>
-                </tr>
-            </tbody>
-        </table>
+                <br><br>
+                Add your CSV Here:&nbsp;
+                <input type="file" id="files" accept=".csv" multiple>
+                <br><br><br>
 
-        <p>Upload the file here:</p>
-
-        <form class="form-horizontal" method="post" action="@routes.ContentController.createFromUrlBatch(courseId)" enctype="multipart/form-data">
-            <div class="control-group">
-                <label class="control-label" for="file">File</label>
-                <div class="controls">
-                    <input type="file" id="file" name="file">
-                </div>
+                <!-- TODO: implement uploading content...
+                Select Media Files here:<br>
+                <input type="file" id="files" multiple>
+                <br><br>
+                -->
             </div>
-            <div class="control-group">
-                <div class="controls">
-                    <button type="submit" class="btn btn-blue">Start batch</button>
-                </div>
-            </div>
-        </form>
 
+            <div id="populatedItems"></div>
+        </div>
     </div>
+
+	<script id="tableTemplate" type="text/ractive">
+		<table class="table table-bordered table-condensed">
+			<tr>
+				<th>Add/Remove</th>
+				<th>Content Type</th>
+				<th>Title</th>
+				<th>URL</th>
+				<th>Description</th>
+				<th>Labels</th>
+				<th>Languages</th>
+				<th>View</th>
+			</tr>
+			{{#content:index}}
+			<tr class="addedItems" style="background-color:{{.color||"transparent"}}">
+				<td align="center">
+					<button class="addRemoveLineButton" on-tap="addRow:{{index}}" {{~/disabled?"disabled=true":""}}>+</button>&nbsp;
+					<button class="addRemoveLineButton" on-tap="removeRow:{{index}}" {{~/disabled?"disabled=true":""}}>-</button>
+				</td>
+				<td><input type="text" value="{{.contentType}}" name="contentType" class="short"></td>
+				<td><input type="text" value="{{.title}}"       name="title"       class="med"></td>
+				<td><input type="text" value="{{.url}}"         name="url"         class="long"></td>
+				<td><input type="text" value="{{.description}}" name="description" class="long"></td>
+				<td><input type="text" value="{{.labels}}"      name="labels"      class="short"></td>
+				<td><input type="text" value="{{.languages}}"   name="languages"   class="short"></td>
+				<td>{{#(.contentId)}}
+					<a href="/content/{{contentId}}" target="_blank" class="btn btn-small"><i class="icon-eye-open"></i></a>
+				{{/id}}</td>
+			</tr>
+			{{/content}}
+		</table>		
+		<div>
+			<button class="btn btn-blue" on-tap="start" {{disabled?'disabled="true"':''}}>Start Batch</button>
+			<button class="btn btn-yellow" on-tap="clear" {{disabled?'disabled="true"':''}}>Clear Table</button>
+		</div>
+	</script>
+
+    <script>
+		Ractive.DEBUG = false;
+		initBatchTable("@routes.ContentController.createFromBatch(courseId)");
+    </script>
 
 }

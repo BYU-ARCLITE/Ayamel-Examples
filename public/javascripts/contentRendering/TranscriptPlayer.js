@@ -29,12 +29,12 @@ var TranscriptPlayer = (function(){
                     <select value="{{activeIndex}}">\
                         {{#transcripts:i}}<option value="{{i}}">{{.label}}</option>{{/transcripts}}\
                     </select>\
-                    <button proxy-tap="sync" type="button" class="{{sync?"btn active":"btn"}}" title="Sync with media"><i class="icon-refresh"></i></button>\
+                    <button on-tap="sync" type="button" class="{{sync?"btn active":"btn"}}" title="Sync with media"><i class="icon-refresh"></i></button>\
                 </div>\
                 <div class="transcriptContentHolder">\
                     {{#transcripts:ti}}\
                     <div class="transcriptContent" style="display:{{ ti === activeIndex ? "block" : "none" }}" data-trackindex="{{ti}}">\
-                        {{#.cues:ci}}\
+                        {{#[].slice.call(.cues):ci}}\
                         <div class="transcriptCue {{direction(.)}}" on-tap="cueclick" data-cueindex="{{ci}}" data-trackindex="{{ti}}">{{{HTML(.)}}}</div>\
                         {{/.cues}}\
                     </div>\
@@ -56,7 +56,7 @@ var TranscriptPlayer = (function(){
                 }
             }
         });
-        ractive.on('sync',function(e){ ractive.set('sync',!ractive.data.sync); });
+        ractive.on('sync',function(e){ ractive.set('sync',!ractive.get("sync")); });
         ractive.on('cueclick',function(e){
             var target = e.node,
                 ci = target.dataset.cueindex,
@@ -72,13 +72,13 @@ var TranscriptPlayer = (function(){
             sync: {
                 set: function(value){
                     ractive.set('sync', !!value);
-                    return ractive.data.sync;
+                    return ractive.get("sync");
                 },
-                get: function(){ return ractive.data.sync; }
+                get: function(){ return ractive.get("sync"); }
             },
             activeTranscript: {
                 set: function(value) { ractive.set('activeIndex', value); },
-                get: function() { return ractive.data.activeIndex; }
+                get: function() { return ractive.get("activeIndex"); }
             },
             addEventListener: {
                 value: function(event, callback, capture){ element.addEventListener(event, callback, capture||false); }
@@ -90,7 +90,7 @@ var TranscriptPlayer = (function(){
                        track.kind !== "descriptions"
                     ){ return; }
                     if(~tracks.indexOf(track)){ return; }
-                    ractive.data.transcripts.push(track);
+                    ractive.get("transcripts").push(track);
                 }
             },
             updateTrack: {
@@ -103,16 +103,16 @@ var TranscriptPlayer = (function(){
                 get: function(){ return currentTime; },
                 set: function(value) {
                     var activeCue, parent,
-                        track = ractive.data.transcripts[ractive.data.activeIndex];
+                        track = ractive.get("transcripts")[ractive.get("activeIndex")];
                     currentTime = +value;
-                    [].forEach.call(document.querySelectorAll('.transcriptContent[data-trackindex="'+ractive.data.activeIndex+'"] > .transcriptCue'),
+                    [].forEach.call(document.querySelectorAll('.transcriptContent[data-trackindex="'+ractive.get("activeIndex")+'"] > .transcriptCue'),
                         function(node){
                             var cue = track.cues[node.dataset.cueindex];
                             node.classList[(currentTime >= cue.startTime && currentTime <= cue.endTime)?'add':'remove']('active');
                         }
                     );
                     // Possibly scroll
-                    if(!ractive.data.sync){ return; }
+                    if(!ractive.get("sync")){ return; }
                     activeCue = document.querySelector('.transcriptCue.active');
                     if(activeCue){
                         parent = activeCue.parentNode.parentNode;
