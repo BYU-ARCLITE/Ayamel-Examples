@@ -7,19 +7,28 @@
  */
 var AnnotationTextEditor = (function(){
     function loadTracks(content, callback){
-        // TODO: Determine which course we're operating in
-        ResourceLibrary.load(content.resourceId).then(function(resource){
-            return ContentLoader.getTranscriptWhitelist({
-                courseId: 0,
-                contentId: content.id,
-                resource: resource,
-                permission: "view"
+
+ // TODO: Determine which course we're operating in
+       ResourceLibrary.load(content.resourceId).then(function(resource){
+           return ContentLoader.getTranscriptWhitelist({
+               courseId: 0,
+               contentId: content.id,
+               resource: resource,
+               permission: "view"
+           })
+            .then(ResourceLibrary.loadAll) // Turn IDs into resources
+            .then(function(transcripts){
+                return Promise.all(transcripts.map(function(transres){
+                    var kind = resource.relations.filter(function(relation){
+                        return relation.type == "transcript_of" &&
+                        relation.subjectId == transres.id;
+                    },this).map(function(relation){
+                        return relation.attributes.kind || "subtitles";
+                    })[0];
+                    return Ayamel.utils.loadCaptionTrack(transres, kind);
+                }));
             });
-        })
-        .then(ResourceLibrary.loadAll) // Turn IDs into resources
-        .then(function(resources){
-            return Promise.all(resources.map(Ayamel.utils.loadCaptionTrack));
-        }).then(callback);
+       }).then(callback);
     }
 
     /* args: manifest, content, holder, popupEditor, language, ractive */
