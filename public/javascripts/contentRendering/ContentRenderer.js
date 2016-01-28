@@ -326,7 +326,7 @@ var ContentRenderer = (function(){
 
         window.addEventListener('resize', function(event){
             if(!args.screenAdaption || !args.screenAdaption.fit){ return; }
-            player.resetSize();
+            player.maxHeight = document.documentElement.clientHeight;
         }, false);
 
         var tabs = [];
