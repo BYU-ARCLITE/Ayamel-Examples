@@ -147,7 +147,7 @@ $(function() {
         }
     });
     addCapR.on('upload', function(){
-        var data, file, mime,
+        var data, file, mime, dup = "",
             files = this.get('files'),
             label = this.get('label');
 
@@ -167,6 +167,15 @@ $(function() {
             return;
         }
 
+		viewCapR.get('resources').forEach(function(r){
+			if(r.title === label){ dup = r.id; }
+		});
+
+		if(dup !== "" && !confirm("Replace existing document with same name?")){
+            document.getElementById("uplCaptionsBtn").disabled = false;
+            return;
+		}
+
         //TODO: Validate the file
         data = new FormData();
         data.append("file", new Blob([file],{type:mime}), file.name);
@@ -174,6 +183,7 @@ $(function() {
         data.append("language", this.get('lang'));
         data.append("kind", this.get('kind'));
         data.append("contentId", content.id);
+        data.append("resourceId", dup);
         return $.ajax({
             url: "/captionaider/save",
             data: data,
