@@ -380,6 +380,10 @@ var ContentRenderer = (function(){
             tabs: tabs
         });
 
+		player.addEventListener("play", function(){
+			player.restoreTabs();
+		},false);
+
         if(typeof args.callback === 'function'){
             setTimeout(function(){
                 args.callback({
