@@ -562,6 +562,9 @@ $(function() {
         return false;
     }
 
+	// Turn off xAPI
+	if(xApi){ xApi.record(false); }
+
     ContentLoader.castContentObject(content).then(function(content){
         if(content.contentType !== 'video'){ throw new Error("Non-Video Content"); }
         else return ResourceLibrary.load(content.resourceId).then(function(resource){

@@ -1,12 +1,15 @@
 var xApi = (function() {
 
-    var page, course, user, resourceName, baseUri;
-    page = course = user = {};
-    baseUri = window.location.origin + "/";
-    resourceName = "";
+    var page = {},
+		course = {},
+		user = {},
+		record = true,
+		resourceName = "",
+		baseUri = window.location.origin + "/";
 
     // args: verb, type, extensions
     function send(args) {
+		if(!record){ return; }
         // create statement
         // Agent = User, Action = Verb, Activity = Content Object
         var stmt = new ADL.XAPIStatement(
@@ -329,6 +332,10 @@ var xApi = (function() {
                 "auth" : "Basic " + toBase64(u+":"+p),
             };
             ADL.XAPIWrapper.changeConfig(conf);
-        }
+        },
+		/** Turn recording on and off. */
+		record: function(b){
+			record = !!b;
+		}
     };
 }());
