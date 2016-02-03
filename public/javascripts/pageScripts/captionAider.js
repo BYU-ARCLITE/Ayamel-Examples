@@ -259,14 +259,13 @@ $(function() {
             var success = true,
                 savep = Promise.all(exportedTracks.map(function(fObj){
                 var data = new FormData(),
+                    resource = trackResources.get(textTrack),
                     textTrack = fObj.track;
                 data.append("file", new Blob([fObj.data],{type:fObj.mime}), fObj.name);
                 data.append("label", textTrack.label);
                 data.append("language", textTrack.language);
                 data.append("kind", textTrack.kind);
-                data.append("resourceId", trackResources.has(textTrack)?
-                                          trackResources.get(textTrack).id
-                                          :"");
+                data.append("resourceId", resource?resource.id:"");
                 data.append("contentId", content.id);
                 return Promise.resolve($.ajax({
                     url: "/captionaider/save?course=" + courseId,
