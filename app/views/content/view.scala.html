@@ -62,7 +62,8 @@
                 user: {
                     "name":"@user.flatMap(_.name).orElse(user.map(_.authId)).getOrElse("Visitor")",
                     "id":@user.map(_.id.get).getOrElse(0),
-                    "email":"@user.flatMap(_.email).getOrElse("")"
+                    "email":"@user.flatMap(_.email).getOrElse("")",
+                    "authScheme":"@user.map(_.authScheme.toString.replaceFirst("'", "")).getOrElse("Not Authenticated")"
                 },
                 content: content,
                 player: args.mainPlayer

@@ -47,34 +47,35 @@
             var content = @Html(content.toJson.toString());
             function setupXapi(args) {
                 // information for statements to learninglocker
-				var llendpoint = "@current.configuration.getString("learninglocker.endpoint")";
-				var llusername = "@current.configuration.getString("learninglocker.username")";
-				var llpwd = "@current.configuration.getString("learninglocker.password")";
+                var llendpoint = "@current.configuration.getString("learninglocker.endpoint")";
+                var llusername = "@current.configuration.getString("learninglocker.username")";
+                var llpwd = "@current.configuration.getString("learninglocker.password")";
                 var headerHeight = document.getElementById("header").clientHeight*1.2;
 
-				// configure the learning locker connection
-				xApi.connect(llendpoint, llusername, llpwd);
+                // configure the learning locker connection
+                xApi.connect(llendpoint, llusername, llpwd);
 
-				xApi.registerPage({
-					page:{
-						"category":"content",
-						"action":"@{course.map(c => "course_" + c.id.get + ":").getOrElse("")}view",
-						"name":window.location.href
-					},
-					@if(course.isDefined) {
-						course: {
-							"id":@course.get.id.get,
-							"name":"@course.get.name"
-						},
-					}
-					user: {
-						"name":"@user.flatMap(_.name).orElse(user.map(_.authId)).getOrElse("Visitor")",
-						"id":@user.map(_.id.get).getOrElse(0),
-						"email":"@user.flatMap(_.email).getOrElse("")"
-					},
-					content: content,
-					player: args.mainPlayer
-				});
+                xApi.registerPage({
+                    page:{
+                        "category":"content",
+                        "action":"@{course.map(c => "course_" + c.id.get + ":").getOrElse("")}view",
+                        "name":window.location.href
+                    },
+                    @if(course.isDefined) {
+                        course: {
+                            "id":@course.get.id.get,
+                            "name":"@course.get.name"
+                        },
+                    }
+                    user: {
+                        "name":"@user.flatMap(_.name).orElse(user.map(_.authId)).getOrElse("Visitor")",
+                        "id":@user.map(_.id.get).getOrElse(0),
+                        "email":"@user.flatMap(_.email).getOrElse("")",
+                        "authScheme":"@user.map(_.authScheme.toString.replaceFirst("'", "")).getOrElse("Not Authenticated")"
+                    },
+                    content: content,
+                    player: args.mainPlayer
+                });
 
                 // Set AyamelPlayer size to fill entire width & height of window
                 args.mainPlayer.setSize(window.innerWidth, window.innerHeight-headerHeight);
@@ -84,8 +85,8 @@
                     args.mainPlayer.setSize(window.innerWidth, window.innerHeight-headerHeight);
                 }, false);
 
-				// Save the page load
-				xApi.predefined.pageLoad();
+                // Save the page load
+                xApi.predefined.pageLoad();
             }
         </script>
     </head>

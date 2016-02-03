@@ -96,7 +96,9 @@ var xApi = (function() {
     return {
         predefined: {
             pageLoad: function() {
-                send({ verb: "started" });
+                var extensions = {};
+                extensions[baseUri+"authScheme"] = user.authScheme;
+                send({ verb: "started", extensions: extensions });
             },
             ended: function(time) {
                 var extensions = {};
