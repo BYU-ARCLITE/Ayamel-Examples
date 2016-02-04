@@ -6,6 +6,9 @@ import scala.xml.Elem
 trait IncFile { val path: String }
 trait Include { def xml: Seq[Elem] }
 
+case class Meta(property: String, content: String) extends Include {
+  def xml = Seq(<meta property={ property } content={ content } />)
+}
 case class Icon(path: String, mime: String) extends Include with IncFile {
   def xml = Seq(<link rel="shortcut icon" type={ mime } href={ path } />)
 }
