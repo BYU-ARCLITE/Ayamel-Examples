@@ -103,7 +103,7 @@ $(function() {
             components:{ superselect: EditorWidgets.SuperSelect },
             actions: {
                 create: function(event){
-					var that = this;
+                    var that = this;
                     $('#newTrackModal').modal('hide');
                     resolver(datalist.map(function(key){
                         switch(key){
@@ -153,7 +153,7 @@ $(function() {
             components:{ superselect: EditorWidgets.SuperSelect },
             actions: {
                 save: function(event){
-					var that = this;
+                    var that = this;
                     if(this.get("trackToEdit") === "" || this.get("trackName") === ""){
                         failer("cancel");
                         return;
@@ -355,7 +355,7 @@ $(function() {
             components:{ superselect: EditorWidgets.SuperSelect },
             actions: {
                 load: function(event){
-					var that = this;
+                    var that = this;
                     $("#loadTrackModal").modal("hide");
                     this.set({selectOpen: false});
 
@@ -500,7 +500,7 @@ $(function() {
             partials:{ dialogBody: document.getElementById('setLocTemplate').textContent },
             actions: {
                 save: function(event){
-					var that = this;
+                    var that = this;
                     $("#setLocModal").modal("hide");
                     resolver(datalist.map(function(key){
                         return key === 'location'?that.get("saveLocation"):void 0;
@@ -561,8 +561,8 @@ $(function() {
         return false;
     }
 
-	// Turn off xAPI
-	if(xApi){ xApi.record(false); }
+    // Turn off xAPI
+    if(xApi){ xApi.record(false); }
 
     ContentLoader.castContentObject(content).then(function(content){
         return ResourceLibrary.load(content.resourceId).then(function(resource){
@@ -589,6 +589,8 @@ $(function() {
     }).then(ContentRenderer.render);
 
     function callback(args) {
+        var translator = new Ayamel.classes.Translator();
+
         commandStack = new EditorWidgets.CommandStack();
         trackResources = args.trackResources;
         trackMimes = args.trackMimes;
@@ -654,6 +656,49 @@ $(function() {
 
         timeline.on('removetrack', function(evt){
             updateSpacing();
+        });
+
+        timeline.addMenuItem(['Track','Clone', "Clone with Translation"], {
+            name:"Clone with Translation",
+            action:function(){
+                var tl = this.timeline,
+                    tid = this.track.id;
+                tl.getFor('newtrack',
+                    ['kind','lang','name','mime','overwrite'],
+                    {
+                        kind: void 0,
+                        lang: void 0,
+                        mime: void 0,
+                        overwrite: false
+                    }
+                ).then(function(values){
+                    tl.cloneTrack(
+                        tid,
+                        {
+                            kind: values[0],
+                            lang: values[1],
+                            name: values[2],
+                            mime: values[3]
+                        },
+                        function(cue, ott, ntt, mime){
+                            var txt = cue.getCueAsHTML().textContent;
+                            if(ott.language === ntt.language){
+                                return txt;
+                            }
+                            return translator.translate({
+                                srcLang: ott.language,
+                                destLang: ntt.language,
+                                text: txt
+                            }).then(function(data){
+                                return data.translations[0];
+                            }).catch(function(){
+                                return txt;
+                            });
+                        },  
+                        values[4]
+                    );
+                });
+            }
         });
     }
 });
