@@ -78,7 +78,11 @@ $(function() {
     langList = Object.keys(Ayamel.utils.p1map).map(function (p1) {
         var code = Ayamel.utils.p1map[p1];
         return {value: code, text: Ayamel.utils.getLangName(code)};
-    }).sort(function(a,b){ return a.text.localeCompare(b.text); });
+    });
+
+	langList.push({ value: "apc", text: "North Levantine Arabic"});
+	langList.push({ value: "arz", text: "Egyptian Arabic"});
+	langList.sort(function(a,b){ return a.text.localeCompare(b.text); });
 
     function getLanguage(resource) {
         var langs = resource.languages.iso639_3;
