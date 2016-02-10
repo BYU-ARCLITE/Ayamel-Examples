@@ -45,7 +45,7 @@
                     <td>@course.getAnnouncements.size</td>
                     <td>@course.lmsKey</td>
                     <td>
-                        <a href="@routes.Courses.view(course.id.get)" class="btn btn-small"><i class="icon-eye-open"></i></a>
+                        <a href="@routes.Courses.view(course.id.get)" target="_blank" class="btn btn-small"><i class="icon-eye-open"></i></a>
                         <a href="#editModal" role="button" data-toggle="modal" class="btn btn-small btn-yellow editCourse" data-id="@course.id.get" data-name="@course.name" data-enrollment="@course.enrollment.name" data-status="@{if (course.featured) "featured" else "normal"}"><i class="icon-pencil"></i></a>
                         <a href="#deleteModal" role="button" data-toggle="modal" class="btn btn-small btn-magenta deleteCourse" data-id="@course.id.get"><i class="icon-trash"></i></a>
                         @if(course.getTeachers.size > 0 && course.getTeachers(0) != user) {
