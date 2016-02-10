@@ -191,7 +191,11 @@ object Administration extends Controller {
           Courses.getCourse(id) { course =>
             // Update the course
             val params = request.body.mapValues(_(0))
-            course.copy(name = params("name"), enrollment = Symbol(params("enrollment"))).save
+            course.copy(
+			  name = params("name"),
+			  enrollment = Symbol(params("enrollment")),
+			  featured = (params("status") == "featured")
+			).save
             Future {
               Redirect(routes.Administration.manageCourses())
                 .flashing("info" -> "Course updated")

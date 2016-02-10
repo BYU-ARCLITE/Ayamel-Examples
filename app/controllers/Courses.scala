@@ -125,10 +125,10 @@ object Courses extends Controller {
         getCourse(id) { course =>
 		  Future {
             if (user.hasCoursePermission(course, "editCourse")) {
-              val name = request.body("courseName")(0)
-              val enrollment = Symbol(request.body("courseEnrollment")(0))
+              val name = request.body("name")(0)
+              val enrollment = Symbol(request.body("enrollment")(0))
               val featured = if (SitePermissions.userHasPermission(user, "admin")){
-                request.body("courseStatus")(0) == "featured"
+                request.body("status")(0) == "featured"
               } else { course.featured }
               course.copy(name = name, enrollment = enrollment, featured = featured).save
               Redirect(routes.Courses.view(id)).flashing("info" -> "Course updated")

@@ -11,14 +11,14 @@
               <div class="control-group">
                 <label class="control-label" for="courseName">Name</label>
                 <div class="controls">
-                  <input type="text" id="courseName" name="courseName" value="@course.name" maxlength="60" pattern=".{1,60}" required />
+                  <input type="text" id="courseName" name="name" value="@course.name" maxlength="60" pattern=".{1,60}" required />
                 </div>
               </div>
 
               <div class="control-group">
                   <label class="control-label" for="courseEnrollment">Enrollment</label>
                   <div class="controls">
-                      <select name="courseEnrollment" id="courseEnrollment">
+                      <select name="enrollment" id="courseEnrollment">
                       @if(course.enrollment == 'open) {
                           <option value="open" selected="selected">Open</option>
                           <option value="closed">Closed</option>
@@ -34,7 +34,7 @@
               <div class="control-group">
                   <label class="control-label" for="courseStatus">Status</label>
                   <div class="controls">
-                      <select name="courseStatus" id="courseStatus">
+                      <select name="status" id="courseStatus">
                       @if(course.featured) {
                           <option value="featured" selected="selected">Featured</option>
                           <option value="normal">Normal</option>
@@ -46,7 +46,7 @@
                   </div>
               </div>
               }else{
-                <input type="hidden" name="courseStatus" id="courseStatus" value="@{if (course.featured) "featured" else "normal"}" />
+                <input type="hidden" name="status" value="@{if (course.featured) "featured" else "normal"}" />
               }
 
               <div class="control-group">
