@@ -18,7 +18,9 @@ var xApi = (function() {
         stmt.timestamp = (new Date).toISOString();
         if (args.type) { stmt.object.definition.extensions = args.type; }
         if (args.extensions) {
+            // some universal xApi extensions that should be included in each request
             args.extensions[baseUri+"contextId"] = course.id || -1;
+            args.extensions[baseUri+"authScheme"] = user.authScheme;
             stmt.object.definition.extensions = args.extensions;
         }
         // send statement and log response
@@ -98,7 +100,6 @@ var xApi = (function() {
         predefined: {
             pageLoad: function() {
                 var extensions = {};
-                extensions[baseUri+"authScheme"] = user.authScheme;
                 send({ verb: "started", extensions: extensions });
             },
             ended: function(time) {
