@@ -1,8 +1,6 @@
 var xApi = (function() {
 
-    var page = {},
-		course = {},
-		user = {},
+    var page = course = user = {},
 		record = true,
 		resourceName = "",
 		baseUri = window.location.origin + "/";
@@ -19,7 +17,10 @@ var xApi = (function() {
         );
         stmt.timestamp = (new Date).toISOString();
         if (args.type) { stmt.object.definition.extensions = args.type; }
-        if (args.extensions) { stmt.object.definition.extensions = args.extensions; }
+        if (args.extensions) {
+            args.extensions[baseUri+"contextId"] = course.id || -1;
+            stmt.object.definition.extensions = args.extensions;
+        }
         // send statement and log response
         // callback makes the send asynchronous
         ADL.XAPIWrapper.sendStatement(stmt, function(resp, obj){
