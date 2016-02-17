@@ -25,6 +25,16 @@ object Cas extends Controller {
   }
 
   /**
+   * Gets the specified attribute as an Option[String]
+   */
+  private def getAttribute(xml: scala.xml.Elem, attributeName: String): Option[String] = {
+    (xml \ "authenticationSuccess" \ "attributes" \ attributeName).text match {
+      case "" => None
+      case attribute => Some(attribute)
+    }
+  }
+
+  /**
    * When the CAS login is successful, it is redirected here, where the TGT and login are taken care of.
    */
   def callback(action: String, path: String = "") = Action {
@@ -40,7 +50,7 @@ object Cas extends Controller {
       val r: Future[Result] = WS.url(url).get().map { response =>
         val xml = response.xml
         val username = ((xml \ "authenticationSuccess") \ "user").text
-        val user = Authentication.getAuthenticatedUser(username, 'cas)
+        val user = Authentication.getAuthenticatedUser(username, 'cas, getAttribute(xml, "name"), getAttribute(xml, "emailAddress"))
 
         if (action == "merge")
           Authentication.merge(user)

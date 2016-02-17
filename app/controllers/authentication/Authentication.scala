@@ -94,7 +94,16 @@ object Authentication extends Controller {
   def getAuthenticatedUser(username: String, authScheme: Symbol, name: Option[String] = None, email: Option[String] = None): User = {
     // Check if the user is already created
     val user = User.findByAuthInfo(username, authScheme)
-    user.getOrElse {
+    
+    // Add the email and username if they are empty
+    val updatedUser = user.map { user =>
+      if ((user.email.filterNot(_.length!=0).isEmpty && !email.isEmpty) ||
+       (user.name.filterNot(_.length!=0).isEmpty && !name.isEmpty)) {
+        user.copy(email = email, name = name).save
+      } else user
+    }
+
+    updatedUser.getOrElse {
       val user = User(None, username, authScheme, username, name, email).save
       SitePermissions.assignRole(user, 'student)
       user
