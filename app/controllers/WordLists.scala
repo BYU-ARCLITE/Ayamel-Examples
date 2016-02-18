@@ -11,6 +11,7 @@ import scala.concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
 import models.WordListEntry
 import java.text.Normalizer
+import play.api.libs.json.Json
 
 /**
  * Controller dealing with word lists
@@ -37,13 +38,25 @@ object WordLists extends Controller {
   }
 
   /**
-   * View the user's word list
+   * View the user's word list (in html)
    */
   def view = Authentication.authenticatedAction() {
     implicit request =>
       implicit user =>
         val wordList = user.getWordList
         Future(Ok(views.html.words.view(wordList)))
+  }
+
+  /**
+   * View the user's word list (in JSON)
+   */
+  def viewJSON = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+        val wordList = user.getWordList
+        .map{word => Json.obj("id"-> word.id, "word"-> word.word, "srcLang"-> word.srcLang, "destLang"-> word.destLang)}
+        // Future(Ok(views.html.words.view(wordList)))
+        Future(Ok(Json.obj("wordList"-> wordList)))
   }
 
   /**

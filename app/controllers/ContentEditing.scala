@@ -88,6 +88,7 @@ object ContentEditing extends Controller {
     content.setSetting("showAnnotations", List(data.get("showAnnotations").map(_(0)).getOrElse("false")))
     content.setSetting("allowDefinitions", List(data.get("allowDefinitions").map(_(0)).getOrElse("false")))
     content.setSetting("showTranscripts", List(data.get("showTranscripts").map(_(0)).getOrElse("false")))
+    content.setSetting("showWordList", List(data.get("showWordList").map(_(0)).getOrElse("false")))
   }
 
   /**

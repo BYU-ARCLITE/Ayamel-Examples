@@ -138,6 +138,7 @@ POST    /content/:contentId/delete/:docId   controllers.DocumentManager.deleteDo
 
 # Word List pages
 GET     /words                              controllers.WordLists.view
+GET     /wordList                           controllers.WordLists.viewJSON
 POST    /words                              controllers.WordLists.add
 POST    /words/delete/:id                   controllers.WordLists.deleteWord(id: Long)
 POST    /words/export                       controllers.WordLists.export

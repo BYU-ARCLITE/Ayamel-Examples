@@ -153,6 +153,21 @@ var ContentSettings = (function() {
             },
             items: function(){}
         },
+        showWordList: {
+            type: "checkbox",
+            label: "Show Word List:",
+            name: "showWordList",
+            none: "No wordlists to show",
+            include: function(context, content){
+                // logical because you wont be able to add to a wordlist unless you have captions
+                // however, may need to change if we have different criteria
+                return !!content.enableableCaptionTracks.length;
+            },
+            setting: function(context, content) {
+                return content.settings.showWordList === "true";
+            },
+            items: function(){}
+        },
         enabledCaptionTracks: {
             type: "multicheck",
             label: "Enabled Caption Tracks:",
@@ -254,6 +269,7 @@ var ContentSettings = (function() {
             predefined.allowDefinitions,
             predefined.targetLanguages,
             predefined.showTranscripts,
+            predefined.showWordList,
             predefined.showCaptions,
             predefined.enabledCaptionTracks,
             predefined.showAnnotations,

@@ -25,6 +25,10 @@ var ContentRenderer = (function(){
         return content.settings.allowDefinitions === "true";
     }
 
+    function showWordList(content){
+        return true;
+    }
+
     function getDefaultLanguage(languages) {
         for(var i = 0; i < languages.length; i++) {
             var langObj = languages[i];
@@ -270,6 +274,28 @@ var ContentRenderer = (function(){
         return display;
     }
 
+    function setupWordListPane(tab, player){
+        var display = document.createElement('div'),
+        request = new XMLHttpRequest();
+        request.responseType = "json";
+        request.open("GET", "/wordList", true);
+        request.send();
+        request.addEventListener("load", function(e){
+            if(this.status !== 200){
+                console.log("Error loading word list");
+            } else {
+                request.response.wordList.forEach(function(myWord){
+                    var element = document.createElement('p');
+                    // element.textContent = JSON.stringify(myWord.word);
+                    element.textContent = myWord.word;
+                    display.appendChild(element);
+                })
+            }
+        })
+
+        return display;
+    }
+
     /* args: components, transcripts, content, screenAdaption, holder, resource,
         startTime, endTime, renderCue, annotator, translate */
     function setupMainPlayer(args){
@@ -348,13 +374,17 @@ var ContentRenderer = (function(){
             });
         }
 
-
         if(args.annotations.length){
             tabs.push({
                 title: "Annotations",
                 content: setupAnnotatorPane
             });
         }
+
+        tabs.push({
+            title: "My Word List",
+            content: setupWordListPane
+        });
 
         player = new Ayamel.classes.AyamelPlayer({
             components: components,
