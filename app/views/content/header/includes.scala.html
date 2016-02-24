@@ -86,22 +86,24 @@
         JS("markdown/markdown.min.js"),
         JS("hls/HLSPlayer.min.js"),
         JS("dash/dash.all.js"),
-        JS("flashVideo.js"),
-        JS("brightcove.js"),
-        JS("html5Video.js"),
-        JS("HLSVideo.js"),
         JS("html5Audio.js"),
+        JS("html5Video.js"),
+        JS("flashVideo.js"),
+        JS("HLSVideo.js"),
+        JS("dashVideo.js"),
+        JS("brightcove.js"),
+        JS("scola.js"),
         JS("youtube.js"),
+        JS("ooyala.js"),
+        JS("vimeo.js"),
         JS("transcriptText.js"),
         JS("markdownText.js"),
         JS("plainText.js"),
-        JS("timedFallback.js"),
-        JS("ooyala.js"),
-        JS("vimeo.js"),
-        JS("dashVideo.js")))))
+        JS("timedFallback.js")))))
 
 <script>
     Ayamel.path = "@{Dependencies.config.getString("Ayamel.js").getOrElse("(function(){ throw \"Missing Ayamel.js Path\";})()")}";
     Ayamel.classes.Translator.endpoint = "@{Play.configuration.getString("translation.endpoint").getOrElse("(function(){ throw \"Missing Translation Endpoint\";})()")}";
     Ayamel.classes.Translator.key = "@{Play.configuration.getString("translation.key").getOrElse("(function(){ throw \"Missing Translation Key\";})()")}";
+	var SCOLAEndpoint = "@{routes.Scola.buildUrl()}";
 </script>

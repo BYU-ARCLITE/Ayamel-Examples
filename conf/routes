@@ -125,7 +125,7 @@ POST    /admin/homePageContent/:id/delete       controllers.Administration.delet
 GET     /admin/settings                         controllers.Administration.siteSettings
 POST    /admin/settings                         controllers.Administration.saveSiteSettings
 GET     /admin/proxy/:id                        controllers.Administration.proxy(id: Long)
-    
+
 # CaptionAider pages
 GET     /captionaider/:id/:courseId         controllers.CaptionAider.view(id: Long, courseId: Long)
 POST    /captionaider/save                  controllers.CaptionAider.save
@@ -153,6 +153,7 @@ POST    /help/:id/edit                      controllers.HelpPages.save(id: Long)
 POST    /help/:id/delete                    controllers.HelpPages.delete(id: Long)
 
 # Ajax utilities
+POST    /scola                              controllers.Scola.buildUrl
 POST    /ajax/permissionChecker             controllers.ajax.PermissionChecker.check
 GET     /ajax/content/mine                  controllers.ajax.ContentLister.mine
 GET     /ajax/content/course                controllers.ajax.ContentLister.course

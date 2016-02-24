@@ -34,6 +34,13 @@ object ResourceHelper {
     uri.startsWith("rtmp://") || uri.startsWith("rtmpe://")
 
   /**
+   * Determines if the given URL is a SCOLA url or not
+   * @param uri The URL to check
+   * @return
+   */
+  def isSCOLA(uri: String): Boolean = uri.startsWith("scola://")
+
+  /**
    * Determines if the given URL is to a YouTube video or not
    * @param uri The URL to check
    * @return
@@ -73,7 +80,8 @@ object ResourceHelper {
    * @param uri The URL to check
    * @return
    */
-  def isValidUrl(uri: String): Boolean = isHTTP(uri) || isRTMP(uri) ||
+  def isValidUrl(uri: String): Boolean =
+    isHTTP(uri) || isRTMP(uri) || isSCOLA(uri) ||
     isYouTube(uri) || isBrightcove(uri) || isVimeo(uri) || isOoyala(uri)
 
   /**

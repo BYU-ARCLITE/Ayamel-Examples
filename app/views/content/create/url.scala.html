@@ -132,6 +132,8 @@
                     uri.indexOf("ooyala://") === 0 ||
                     uri.substr(0,35) === "http://player.ooyala.com/iframe.js#" ||
                     uri.substr(0,36) === "https://player.ooyala.com/iframe.js#" ||
+                    // SCOLA
+                    uri.indexOf("scola://") === 0 ||
                     // Flash / Adobe Media Server
                     /^rtmp.?:\/\//.test(uri)
                 ){ return "video"; }
