@@ -1,15 +1,7 @@
-/**
- * Created with IntelliJ IDEA.
- * User: josh
- * Date: 7/16/13
- * Time: 1:59 PM
- * To change this template use File | Settings | File Templates.
- */
-$(function() {
-
+$(function(){
     var viewCapR, addCapR,
         addAnnR, viewAnnR,
-        langList,
+        langList, altered = false,
         courseQuery = courseId ? "?course=" + courseId : "",
         addCapTemplate = '<table class="table table-bordered">\
             <thead><tr>\
@@ -116,7 +108,8 @@ $(function() {
                 } else if (type === "annotations") {
                     resourceArr = viewAnnR.get('resources');
                 }
-                resourceArr.splice(resourceArr.indexOf(resource),1)
+                resourceArr.splice(resourceArr.indexOf(resource),1);
+                altered = true;
                 alert("File Deleted.");
             },
             error: function(data) {
@@ -135,6 +128,7 @@ $(function() {
             calcName: calcName
         }
     });
+
     viewCapR.on('delete', function(_, which){ deleteDoc(which, "subtitles", _.context); });
 
     addCapR = new Ractive({
@@ -171,14 +165,14 @@ $(function() {
             return;
         }
 
-		viewCapR.get('resources').forEach(function(r){
-			if(r.title === label){ dup = r.id; }
-		});
+        viewCapR.get('resources').forEach(function(r){
+            if(r.title === label){ dup = r.id; }
+        });
 
-		if(dup !== "" && !confirm("Replace existing document with same name?")){
+        if(dup !== "" && !confirm("Replace existing document with same name?")){
             document.getElementById("uplCaptionsBtn").disabled = false;
             return;
-		}
+        }
 
         //TODO: Validate the file
         data = new FormData();
@@ -200,13 +194,11 @@ $(function() {
             //TODO: save a roundtrip by having this ajax call return the complete updated resource
             ResourceLibrary.load(data).then(function(resource){
                 viewCapR.get('resources').push(resource);
+                altered = true;
                 alert("Captions saved.");
             });
 
             document.getElementById("uplCaptionsBtn").disabled = false;
-
-            // If it was saved correctly, reload the page when the user closes the modal
-            $('#captionTrackModal').on("hidden", function () { document.location.reload();});
 
         },function(xhr, status, error){
             alert("Error occurred while saving\n"+status)
@@ -224,16 +216,7 @@ $(function() {
         }
     });
 
-    viewAnnR.on('delete', function(_, which){
-        var toDelete = deleteDoc(which, "annotations", _.context);
-        toDelete = (toDelete == null) ? true : toDelete;
-        if (toDelete === true) {
-            document.dispatchEvent(new CustomEvent("annotationFileDelete", {
-                bubbles: true,
-                detail: _.context.title
-            }));
-        }
-    });
+    viewAnnR.on('delete', function(_, which){ deleteDoc(which, "annotations", _.context); });
 
     addAnnR = new Ractive({
         el: "#annotationsUpload",
@@ -271,16 +254,21 @@ $(function() {
         }).then(function (data) {
             ResourceLibrary.load(data).then(function(resource){
                 viewAnnR.get('resources').push(resource);
+                altered = true;
                 alert("Annotations saved.");
             });
-
-            // If it was saved correctly, reload the page when the user closes the modal
-            $('#annotationsModal').on("hidden", function () { document.location.reload();});
         },function(data) {
             console.log(data);
             alert("There was a problem while saving the annotations.");
         });
     });
+
+    // If files were uploaded or deleted, reload the page when the user closes the modal
+    function refresh(){
+        if(altered){ document.location.reload(); }
+    }
+    $('#captionTrackModal').on("hidden", refresh);
+    $('#annotationsModal').on("hidden", refresh);
 
     ResourceLibrary.load(content.resourceId, function(resource){
         var captionTrackIds = resource.relations
