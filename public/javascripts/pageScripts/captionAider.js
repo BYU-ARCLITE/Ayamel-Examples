@@ -259,8 +259,7 @@ $(function() {
         });
 
         function serverSaver(exportedTracks){
-            var success = true,
-                savep = Promise.all(exportedTracks.map(function(fObj){
+            var savep = Promise.all(exportedTracks.map(function(fObj){
                 var data = new FormData(),
                     resource = trackResources.get(textTrack),
                     textTrack = fObj.track;
@@ -289,12 +288,14 @@ $(function() {
                     return textTrack.label;
                 },function(error){
                     alert("Error occurred while saving "+textTrack.label);
-                    success = false;
+                    return null;
                 });
-            }));
-            savep.then(function(){
-                if(!success){ return; }
-                alert("Saved Successfully");
+            })).then(function(savedTracks){
+                return savedTracks.filter(function(t){ return t !== null; });
+            });
+            savep.then(function(savedTracks){
+                if(savedTracks.length === 0){ return; }
+                alert("Saved Successfully:\n" + savedTracks.join('\n'));
             });
             return savep;
         }
@@ -698,7 +699,7 @@ $(function() {
                             }).catch(function(){
                                 return txt;
                             });
-                        },  
+                        },
                         values[4]
                     );
                 });
