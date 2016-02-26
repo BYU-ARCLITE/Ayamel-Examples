@@ -128,7 +128,7 @@ object ContentController extends Controller {
                   .recover { case e: Exception =>
                     val message = e.getMessage()
                     Logger.debug(s"Error creating content in course $courseId: $message")
-					InternalServerError(Json.obj("message" -> s"Could not add content to course: $message"))
+                    InternalServerError(Json.obj("message" -> s"Could not add content to course: $message"))
                   }
               } else {
                 ContentManagement.createContent(info, user, contentType)
@@ -186,11 +186,11 @@ object ContentController extends Controller {
 
               // find alternate create content ↓ through annotations method
               if (courseId > 0 && courseId != 40747105) {
-      			    val redirect = if (!createAndAdd.isEmpty) {
-        				  Redirect(routes.ContentController.createPage("url", courseId))
-        				} else {
-        				  Redirect(routes.Courses.view(courseId))
-        				}
+                    val redirect = if (!createAndAdd.isEmpty) {
+                          Redirect(routes.ContentController.createPage("url", courseId))
+                        } else {
+                          Redirect(routes.Courses.view(courseId))
+                        }
                 ContentManagement.createAndAddToCourse(info, user, contentType, courseId)
                   .map { _ => 
                     redirect.flashing("success" -> "Content created and added to course")
@@ -255,11 +255,11 @@ object ContentController extends Controller {
               val info = ContentDescriptor(title, description, keywords, url, file.ref.file.length(), file.contentType.get,
                 labels = labels, languages = languages)
               if (courseId > 0) {
-				val redirect = if (!createAndAdd.isEmpty) {
-				  Redirect(routes.ContentController.createPage("url", courseId))
-				} else {
-				  Redirect(routes.Courses.view(courseId))
-				}
+                val redirect = if (!createAndAdd.isEmpty) {
+                  Redirect(routes.ContentController.createPage("url", courseId))
+                } else {
+                  Redirect(routes.Courses.view(courseId))
+                }
                 ContentManagement.createAndAddToCourse(info, user, contentType, courseId)
                   .map { _ => 
                     redirect.flashing("success" -> "Content created and added to course")
@@ -331,7 +331,8 @@ object ContentController extends Controller {
             } else
               Redirect(routes.ContentController.createPage("resource", courseId))
                 .flashing("error" -> "That resource doesn't exist")
-          }.recover { case _ =>
+          }.recover { case e =>
+            Logger.debug("Couldn't access resource: " + e.getMessage())
             Redirect(routes.ContentController.createPage("resource", courseId))
               .flashing("error" -> "Couldn't access resource")
           }

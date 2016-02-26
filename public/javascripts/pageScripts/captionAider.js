@@ -269,24 +269,20 @@ $(function() {
                 data.append("kind", textTrack.kind);
                 data.append("resourceId", resource?resource.id:"");
                 data.append("contentId", content.id);
-                return Promise.resolve($.ajax({
-                    url: "/captionaider/save?course=" + courseId,
-                    data: data,
-                    cache: false,
-                    contentType: false,
-                    processData: false,
-                    type: "post",
-                    dataType: "text"
-                })).then(function(data){
-                    //We really need some way to update cached resources as well as just retrieving newly created ones
-                    //That might allow us to save a roundtrip by having this ajax call return the complete updated resource
-                    if(!trackResources.has(textTrack)){
-                        ResourceLibrary.load(data).then(function(resource){
-                            trackResources.set(textTrack, resource);
-                        });
-                    }
-                    return textTrack.label;
-                },function(error){
+                return new Promise(function(resolve, reject){
+                    var xhr = new XMLHttpRequest();
+                    xhr.responseType = "json";
+                    xhr.open("POST", "/captionaider/save?course=" + courseId, true);
+                    xhr.addEventListener('load', function(){
+                        if(xhr.status < 200 || xhr.status > 299){ reject(); }
+                        else{
+                            trackResources.set(textTrack, xhr.response)
+                            resolve(textTrack.label);
+                        }
+                    }, false);
+                    xhr.addEventListener('error', reject, false);
+                    xhr.send(data);
+                }).catch(function(){
                     alert("Error occurred while saving "+textTrack.label);
                     return null;
                 });

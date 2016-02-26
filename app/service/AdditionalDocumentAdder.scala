@@ -12,10 +12,9 @@ import play.api.libs.json.{Json, JsObject, JsArray}
  */
 object AdditionalDocumentAdder {
 
-
   def add(content: Content, resourceId: String, docType: Symbol, attributes: JsObject)
     (action: Option[Course] => Result)
-	(implicit request: RequestHeader, user: User): Future[Result] = {
+    (implicit request: RequestHeader, user: User): Future[Result] = {
 
     val course = getCourse
 
@@ -37,7 +36,10 @@ object AdditionalDocumentAdder {
     }.map { _ => action(course) }
   }
 
-  def edit(content: Content, resourceId: String, docType: Symbol, attributes: JsObject)(action: Option[Course] => Result)(implicit request: RequestHeader, user: User): Future[Result] = {
+  def edit(content: Content, resourceId: String, docType: Symbol, attributes: JsObject)
+    (action: Option[Course] => Result)
+    (implicit request: RequestHeader, user: User): Future[Result] = {
+
     // find & delete
     // Get the list of relations this resource is in and delete them
     for(json <- ResourceController.getRelations(resourceId);
@@ -52,7 +54,7 @@ object AdditionalDocumentAdder {
 
   private def getRelationType(docType: Symbol): String =
     docType match {
-	  case 'captionTrack => "transcript_of"
+      case 'captionTrack => "transcript_of"
       case 'annotations => "references"
       case _ => "unknown"
     }

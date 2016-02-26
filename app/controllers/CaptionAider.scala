@@ -1,6 +1,7 @@
 package controllers
 
 import play.api.mvc._
+import play.api.Logger
 import controllers.authentication.Authentication
 import models.Course
 import service.{AdditionalDocumentAdder, FileUploader, ResourceHelper}
@@ -79,10 +80,12 @@ object CaptionAider extends Controller {
                   .flatMap { json =>
                     val subjectId = (json \ "id").as[String]
                     AdditionalDocumentAdder.add(content, subjectId, 'captionTrack, Json.obj("kind" -> kind)) { _ => Ok(subjectId) }
-                  }.recover { case _ =>
+                  }.recover { case e =>
+                    Logger.debug("Could not create resource: " + e.getMessage())
                     InternalServerError("Could not create resource")
                   }
-              }.recover { case _ =>
+              }.recover { case e =>
+                Logger.debug("Could not upload file: " + e.getMessage())
                 InternalServerError("Could not upload file")
               }
             } else {
@@ -112,17 +115,21 @@ object CaptionAider extends Controller {
                     "content" -> Json.obj("files" -> List(updatedFile))
                   )
                   ResourceController.updateResource(resourceId, updatedResource)
-                    .flatMap { _ =>  
+                    .flatMap { response =>
+					  val resource = (response \ "resource").as[JsObject]
                       AdditionalDocumentAdder.edit(content, resourceId, 'captionTrack, Json.obj("kind" -> kind)) { 
-                        _ => Ok(resourceId) 
+                        _ => Ok(resource) 
                       }
-                    }.recover { case _ =>
+                    }.recover { case e =>
+                      Logger.debug("Could not update resource: " + e.getMessage())
                       InternalServerError("Could not update resource")
                     }
-                }.recover { case _ =>
+                }.recover { case e =>
+                  Logger.debug("Could not replace file: " + e.getMessage())
                   InternalServerError("Could not replace file")
                 }
-              }.recover { case _ =>
+              }.recover { case e =>
+                Logger.debug("Could not access resource: " + e.getMessage())
                 InternalServerError("Could not access resource")
               }
             }
