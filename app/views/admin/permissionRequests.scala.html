@@ -68,8 +68,8 @@
                 },false);
             });
 
-            document.getElementById("appbtn").addEventListener('click',resolveRequests.bind(null,"@{routes.Administration.approveRequest()}"),false);
-            document.getElementById("denybtn").addEventListener('click',resolveRequests.bind(null,"@{routes.Administration.denyRequest()}"),false);
+            document.getElementById("appbtn").addEventListener('click',resolveBatch.bind(null,"@{routes.Administration.approveRequest()}"),false);
+            document.getElementById("denybtn").addEventListener('click',resolveBatch.bind(null,"@{routes.Administration.denyRequest()}"),false);
 
             function resolveBatch(url){
                 if(!checks.length){ return; }
