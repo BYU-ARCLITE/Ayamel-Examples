@@ -175,6 +175,7 @@ var ContentRenderer = (function(){
 
         pane = document.createDocumentFragment();
         pane.appendChild(selectHolder);
+        pane.appendChild(document.createElement('hr'));
         pane.appendChild(translationsHolder);
         return pane;
     }
