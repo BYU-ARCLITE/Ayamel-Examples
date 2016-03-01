@@ -86,7 +86,7 @@
                                 <em>There are no announcements at this time.</em>
                             } else {
                                 @for((announcement, course) <- user.getAnnouncementFeed(3)) {
-                                    @courses.announcement(announcement, course)
+                                    @courses.announcement(announcement, course, true)
                                 }
                             }
                         </div>
@@ -225,5 +225,4 @@
             $("#myAyamel").show();
         });
     </script>
-
 }

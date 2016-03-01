@@ -1,11 +1,11 @@
-@(announcement: Announcement, course: Course)(implicit user: User)
+@(announcement: Announcement, course: Course, home: Boolean = false)(implicit user: User)
 
 @defining(announcement.getUser){ announcer =>
     <div class="announcement">
-        @announcement.content
-        @if(user.hasCoursePermission(course, "makeAnnouncement")) {
+        @if(!home && user.hasCoursePermission(course, "makeAnnouncement")) {
             <a data-id="@announcement.id.get" role="button" class="btn btn-mini btn-magenta"><i class="icon-trash"></i></a>
         }
+        @announcement.content
         <div class="info">
             By @announcer.displayName on @service.TimeTools.prettyTime(announcement.timeMade)
             <br>for <a href="@routes.Courses.view(course.id.get)">@course.name</a>
