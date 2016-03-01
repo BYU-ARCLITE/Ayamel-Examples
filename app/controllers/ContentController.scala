@@ -100,9 +100,9 @@ object ContentController extends Controller {
           val contentType = Symbol(data("contentType")(0))
           val title = data("title")(0)
           val description = data("description")(0)
-        //val categories = data.get("categories").map(_.toList).getOrElse(Nil)
+          val categories = data.get("categories").map(_.toList).getOrElse(Nil)
           val labels = data.get("labels").map(_.toList).getOrElse(Nil)
-          val keywords = labels.mkString(",")
+          val keywords = data.get("keywords").map(_.toList).getOrElse(Nil).mkString(",")
           val languages = data.get("languages").map(_.toList).getOrElse(List("eng"))
 
           // Get the URL and MIME. Process the URL if it is not "special"
@@ -119,7 +119,8 @@ object ContentController extends Controller {
               0
             }.flatMap { bytes =>
               val info = ContentDescriptor(title, description, keywords, url, bytes, mime,
-                                           labels = labels, languages = languages)
+                                           labels = labels, categories = categories,
+                                           languages = languages)
 
               // find alternate create content ↓ through annotations method
               if (courseId > 0 && courseId != 40747105) {
@@ -162,10 +163,10 @@ object ContentController extends Controller {
           val contentType = Symbol(data("contentType")(0))
           val title = data("title")(0)
           val description = data("description")(0)
+          val categories = data.get("categories").map(_.toList).getOrElse(Nil)
           val createAndAdd = data.getOrElse("createAndAdd", Nil)
-        //val categories = data.get("categories").map(_.toList).getOrElse(Nil)
           val labels = data.get("labels").map(_.toList).getOrElse(Nil)
-          val keywords = labels.mkString(",")
+          val keywords = data.get("keywords").map(_.toList).getOrElse(Nil).mkString(",")
           val languages = data.get("languages").map(_.toList).getOrElse(List("eng"))
 
           // Get the URL and MIME. Process the URL if it is not "special"
@@ -182,7 +183,8 @@ object ContentController extends Controller {
               0
             }.flatMap { bytes =>
               val info = ContentDescriptor(title, description, keywords, url, bytes, mime,
-                                           labels = labels, languages = languages)
+                                           labels = labels, categories = categories,
+                                           languages = languages)
 
               // find alternate create content ↓ through annotations method
               if (courseId > 0 && courseId != 40747105) {
@@ -241,10 +243,10 @@ object ContentController extends Controller {
           val contentType = Symbol(data("contentType")(0))
           val title = data("title")(0)
           val description = data("description")(0)
+          val categories = data.get("categories").map(_.toList).getOrElse(Nil)
           val createAndAdd = data.getOrElse("createAndAdd", Nil)
-//          val categories = data.get("categories").map(_.toList).getOrElse(Nil)
           val labels = data.get("labels").map(_.toList).getOrElse(Nil)
-          val keywords = labels.mkString(",")
+          val keywords = data.get("keywords").map(_.toList).getOrElse(Nil).mkString(",")
           val languages = data.get("languages").map(_.toList).getOrElse(List("eng"))
           lazy val redirect = Redirect(routes.ContentController.createPage("file", courseId))
 
@@ -252,8 +254,10 @@ object ContentController extends Controller {
           request.body.file("file").map { file =>
             FileUploader.normalizeAndUploadFile(file).flatMap { url =>
               // Create the content
-              val info = ContentDescriptor(title, description, keywords, url, file.ref.file.length(), file.contentType.get,
-                labels = labels, languages = languages)
+              val info = ContentDescriptor(title, description, keywords, url,
+                                           file.ref.file.length(), file.contentType.get,
+                                           labels = labels, categories = categories,
+                                           languages = languages)
               if (courseId > 0) {
                 val redirect = if (!createAndAdd.isEmpty) {
                   Redirect(routes.ContentController.createPage("url", courseId))

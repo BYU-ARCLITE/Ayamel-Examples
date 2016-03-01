@@ -35,7 +35,7 @@ object ContentEditing extends Controller {
             val description = request.body("description")(0)
             val categories = request.body.get("categories").map(_.toList).getOrElse(Nil)
             val labels = request.body.get("labels").map(_.toList).getOrElse(Nil)
-            val keywords = labels.mkString(",")
+            val keywords = request.body.get("keywords").map(_.toList).getOrElse(Nil).mkString(",")
             val languages = request.body.get("languages").map(_.toList).getOrElse(List("eng"))
 
             // Update the name and labels of the content
@@ -53,7 +53,7 @@ object ContentEditing extends Controller {
               "title" -> title,
               "description" -> validated,
               "keywords" -> keywords,
-//            "categories" -> JsArray(categories.map(c => JsString(c))),
+              "categories" -> categories,
               "languages" -> Json.obj(
                 "iso639_3" -> languages
               )

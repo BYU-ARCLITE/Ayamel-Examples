@@ -70,7 +70,6 @@ object CaptionAider extends Controller {
                 // Create subtitle (subject) resource
                 val resource = ResourceHelper.make.resource(Json.obj(
                   "title" -> label,
-                  // "keywords" -> kind, //This makes no sense.... kind should be recorded in relations
                   "type" -> "document",
                   "languages" -> Json.obj(
                     "iso639_3" -> languages

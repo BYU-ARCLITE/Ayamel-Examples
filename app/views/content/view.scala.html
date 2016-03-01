@@ -261,8 +261,7 @@
                         }).join('');
 
                     document.getElementById("metadataLabels").firstChild.innerHTML =
-                        resource.keywords.split(",")
-                        .filter(function(w){return !!w;})
+                        content.labels
                         .map(function(w){return "<span class='label label-info pad-left-med'>" + w + "</span>";})
                         .join('');
 

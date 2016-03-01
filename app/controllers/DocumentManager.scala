@@ -53,7 +53,6 @@ object DocumentManager extends Controller {
                 // Next create a resource
                 val resource = ResourceHelper.make.resource(Json.obj(
                   "title" -> title,
-                  "keywords" -> "annotations",
                   "type" -> "data",
                   "languages" -> Json.obj(
                     "iso639_3" -> languages
@@ -144,7 +143,6 @@ object DocumentManager extends Controller {
               // Next create a resource
               val resource = ResourceHelper.make.resource(Json.obj(
                 "title" -> params("filename"),
-                "keywords" -> "annotations",
                 "type" -> "data",
                 "languages" -> Json.obj(
                   "iso639_3" -> languages
