@@ -5,17 +5,25 @@
 
     <div class="padded">
 
-        <div>
-            <h1 class="pull-left">Manage My Content</h1>
-            @if(user.hasSitePermission("createContent")) {
-              <!-- This should be a menu with all add methods, not just file upload -->
-              <a href="@routes.ContentController.createPage("file", 0)" class="btn btn-blue pull-right pad-right-high pad-top-med">Add Content</a>
-            }
-        </div>
+        <h1 class="pull-left">Manage My Content</h1>
 
         <div class="clearfix"></div>
 
         <a href="#batchEditModal" role="button" class="btn btn-blue pad-bottom-high" data-toggle="modal"><i class="icon-edit"></i> Batch edit</a>
+
+        @if(user.hasSitePermission("createContent")) {
+		  <div class="btn-group pull-right pad-right-high pad-bottom-high">
+            <button type="button" class="btn btn-blue dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Add Content&nbsp;<span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu">
+                <li><a href="@routes.ContentController.createPage("file", 0)">Upload File</a></li>
+                <li><a href="@routes.ContentController.createPage("url", 0)">Link to URL</a></li>
+                <li><a href="@routes.ContentController.createPage("batch", 0)">Batch Upload</a></li>
+                <li><a href="@routes.ContentController.createPage("resource", 0)">From Resource</a></li>
+            </ul>
+          </div>
+        }
 
         <table class="table table-bordered table-striped table-condensed">
             <tr>
@@ -61,6 +69,9 @@
                     <td>@content.contentType.name</td>
                     <td>
                         <a href="@routes.ContentController.view(content.id.get)" class="btn">View</a>
+					    <form method="POST" action="@routes.ContentController.delete(content.id.get)">
+                            <button class="btn btn-magenta">Delete</button>
+                        </form>
                     </td>
                     <td>
                         <input type="checkbox" class="contentSelector" data-id="@content.id.get">
