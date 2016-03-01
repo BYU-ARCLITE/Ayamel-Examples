@@ -102,22 +102,28 @@ var TranscriptPlayer = (function(){
             currentTime: {
                 get: function(){ return currentTime; },
                 set: function(value) {
-                    var activeCue, parent,
-                        track = ractive.get("transcripts")[ractive.get("activeIndex")];
+                    var activeCues, parent, top = 1/0, bottom = -1/0,
+                        activeIndex = ractive.get("activeIndex"),
+                        track = ractive.get("transcripts")[activeIndex];
                     currentTime = +value;
-                    [].forEach.call(document.querySelectorAll('.transcriptContent[data-trackindex="'+ractive.get("activeIndex")+'"] > .transcriptCue'),
+                    [].forEach.call(document.querySelectorAll('.transcriptContent[data-trackindex="'+activeIndex+'"] > .transcriptCue'),
                         function(node){
                             var cue = track.cues[node.dataset.cueindex];
                             node.classList[(currentTime >= cue.startTime && currentTime <= cue.endTime)?'add':'remove']('active');
                         }
                     );
+
                     // Possibly scroll
                     if(!ractive.get("sync")){ return; }
-                    activeCue = document.querySelector('.transcriptCue.active');
-                    if(activeCue){
-                        parent = activeCue.parentNode.parentNode;
-                        parent.scrollTop = activeCue.offsetTop - parent.offsetTop - (parent.offsetHeight - activeCue.offsetHeight)/2;
-                    }
+                    activeCues = document.querySelectorAll('.transcriptContent[data-trackindex="'+activeIndex+'"] > .active');
+					if(activeCues.length === 0){ return; }
+                    [].forEach.call(activeCues, function(activeCue){
+                        top = Math.min(top, activeCue.offsetTop);
+						bottom = Math.max(bottom, activeCue.offsetTop + activeCue.offsetHeight);
+                    });
+
+					parent = document.querySelector('.transcriptContentHolder');
+					parent.scrollTop = (top - parent.offsetHeight + bottom)/2 - parent.offsetTop;
                 }
             },
             update: { value: function(){ ractive.set('transcripts', tracks); } }
