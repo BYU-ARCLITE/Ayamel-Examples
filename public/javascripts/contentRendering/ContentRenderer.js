@@ -217,6 +217,8 @@ var ContentRenderer = (function(){
             data = null,
             newplayer = null;
 
+        display.style.overflow = "scroll";
+		display.style.height = "100%";
         player.addEventListener("annotation", function(event){
             player.pause();
 
@@ -411,9 +413,9 @@ var ContentRenderer = (function(){
             tabs: tabs
         });
 
-		player.addEventListener("play", function(){
-			player.restoreTabs();
-		},false);
+        player.addEventListener("play", function(){
+            player.restoreTabs();
+        },false);
 
         if(typeof args.callback === 'function'){
             setTimeout(function(){
@@ -433,12 +435,12 @@ var ContentRenderer = (function(){
         /* args: resource, content, courseId, contentId, holder, components,
             screenAdaption, startTime, endTime, renderCue, permission, callback */
         render: function(args){
-			// Temporary hack to show current source
-			var srcFile, srcUrlEl = document.getElementById('sourceUrl');
-			if(srcUrlEl){
-				srcFile = args.resource.content.files[0];
-				srcUrlEl.value = srcFile.downloadUri || srcFile.streamUri;
-			}
+            // Temporary hack to show current source
+            var srcFile, srcUrlEl = document.getElementById('sourceUrl');
+            if(srcUrlEl){
+                srcFile = args.resource.content.files[0];
+                srcUrlEl.value = srcFile.downloadUri || srcFile.streamUri;
+            }
             Promise.all([
                 // Load the caption tracks
                 (showCaptions(args.content) || showTranscript(args.content)) ?
