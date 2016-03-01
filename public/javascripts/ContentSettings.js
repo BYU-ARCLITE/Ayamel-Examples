@@ -316,47 +316,23 @@ var ContentSettings = (function() {
         ]
     };
 
-    function getPermittedResources(data){
-        if(data.ids.length){
-            return Promise.resolve($.ajax("/ajax/permissionChecker", {
-                type: "post",
-                data: data
-            })).then(function(data) {
-                // Now turn those IDs into resources
-                var rps = data.map(function(id){
-                    return ResourceLibrary.load(id);
-                });
-                return Promise.all(rps);
-            });
-        }
-        return Promise.resolve([]);
+    function getResources(ids){
+        return Promise.all(ids.map(function(id){
+            return ResourceLibrary.load(id);
+        }));
     }
 
-    function getCaptionTracks(content, resource, context) {
+    function getCaptionTracks(resource) {
         var captionTrackIds = resource.relations
             .filter(function(r){return r.type==="transcript_of";})
-            .map(function(r){return r.subjectId;}).join(',');
-        // Get the list of enableable caption tracks
-        return getPermittedResources({
-            contentId: content.id,
-            courseId: context.courseId,
-            permission: "enable",
-            documentType: "captionTrack",
-            ids: captionTrackIds
-        });
+            .map(function(r){return r.subjectId;});
+        return getResources(captionTrackIds);
     }
-    function getAnnotationDocs(content, resource, context) {
+    function getAnnotationDocs(resource) {
         var annotationIds = resource.relations
             .filter(function(r){return r.type==="references";})
-            .map(function(r){return r.subjectId;}).join(',');
-        // Get the list of enableable annotation sets
-        return getPermittedResources({
-            contentId: content.id,
-            courseId: context.courseId,
-            permission: "enable",
-            documentType: "annotationDocument",
-            ids: annotationIds
-        });
+            .map(function(r){return r.subjectId;});
+        return getResources(annotationIds);
     }
 
     function createControls(config, context, content) {
@@ -372,7 +348,6 @@ var ContentSettings = (function() {
         return control;
     }
 
-
     /* args: courseId, owner, userId, content, resource, holder, action */
     function ContentSettings(args) {
 
@@ -383,11 +358,10 @@ var ContentSettings = (function() {
             userId: args.userId || 0
         };
 
-        var captionTracks = getCaptionTracks(args.content, args.resource, context);
-        var annotationDocs = getAnnotationDocs(args.content, args.resource, context);
-
-        Promise.all([captionTracks,annotationDocs])
-        .then(function(data){
+        Promise.all([
+            getCaptionTracks(args.resource),
+            getAnnotationDocs(args.resource)
+        ]).then(function(data){
             var targetLanguages, ractive, controls, controlsSettings;
 
             args.content.enableableCaptionTracks = data[0];
