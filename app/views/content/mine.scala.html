@@ -1,4 +1,5 @@
 @()(implicit request: RequestHeader, user: User)
+@import scala.reflect.runtime.universe._
 
 @main("Ayamel - My Content", Some(user),
   Local(CSS("stylesheets/content.css")),
@@ -41,7 +42,7 @@
                     format: "auto",
                     sizing: true,
                     sorting: true,
-                    labels: [@Html(user.getContent.flatMap(_.labels).map(s => "\"" + s + "\"").mkString(","))],
+                    labels: [@Html(user.getContent.flatMap(_.labels).distinct.map(s => Literal(Constant(s)).toString).mkString(","))],
                     filters: ContentItemRenderer.standardFilters
                 });
             });
