@@ -15,7 +15,7 @@ import play.api.mvc.Results._
 
 case class ContentDescriptor(title: String, description: String, keywords: String, url: String, bytes: Long,
                              mime: String, thumbnail: Option[String] = None, labels: List[String] = Nil,
-                             languages: List[String])
+                             categories: List[String] = Nil, languages: List[String] = Nil)
 
 /**
  * This service helps with the creation and management of content objects and their corresponding resources.
@@ -110,6 +110,7 @@ object ContentManagement {
     val resource = ResourceHelper.make.resource(Json.obj(
       "title" -> info.title,
       "description" -> info.description,
+	  "categories" -> info.categories,
       "keywords" -> info.keywords,
       "type" -> resourceType,
       "languages" -> Json.obj(

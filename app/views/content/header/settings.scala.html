@@ -1,4 +1,5 @@
 @(content: models.Content, resourceLibraryUrl: String, user: User)
+@import scala.reflect.runtime.universe._
 
 @background = @{
     if (content.thumbnail.isEmpty) {
@@ -109,7 +110,7 @@
                     ResourceLibrary.load("@content.resourceId", function(resource) {
                         document.getElementById("title").value = resource.title;
                         document.getElementById("description").value = resource.description;
-                        document.getElementById("labels").value = resource.keywords;
+                        document.getElementById("labels").value = "@{content.labels.map(s => Literal(Constant(s)).toString).mkString(",")}";
                         new EditorWidgets.SuperSelect({
                             el: "langLocation",
                             data:{

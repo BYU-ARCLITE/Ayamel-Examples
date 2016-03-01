@@ -92,6 +92,12 @@
                     </div>
                 </div>
                 <div class="control-group">
+                    <label class="control-label" for="labels">Keywords</label>
+                    <div class="controls">
+                        <input type="labels" id="keywords" name="keywords" value="">
+                    </div>
+                </div>
+                <div class="control-group">
                     <label class="control-label" for="labels">Labels</label>
                     <div class="controls">
                         <input type="labels" id="labels" name="labels" value="">
@@ -116,9 +122,9 @@
                     return {value: code, text: Ayamel.utils.getLangName(code)};
                 });
 
-                langList.push({ value: "apc", text: "North Levantine Arabic"});
-                langList.push({ value: "arz", text: "Egyptian Arabic"});
-                langList = langList.sort(function(a,b){ return a.text.localeCompare(b.text); });
+            langList.push({ value: "apc", text: "North Levantine Arabic"});
+            langList.push({ value: "arz", text: "Egyptian Arabic"});
+            langList = langList.sort(function(a,b){ return a.text.localeCompare(b.text); });
 
             new EditorWidgets.SuperSelect({
                 el: "langLocation",
