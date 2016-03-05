@@ -115,7 +115,8 @@ var ContentRenderer = (function(){
             alert("We couldn't translate \"" + event.detail.text + "\" for you.");
         });
 
-        pane = document.createDocumentFragment();
+        pane = document.createElement('div');
+        pane.className = "definitionsContainer";
         pane.appendChild(selectHolder);
         pane.appendChild(document.createElement('hr'));
         pane.appendChild(translationsHolder);

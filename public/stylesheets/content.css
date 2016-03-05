@@ -235,10 +235,20 @@
     position: relative;
 }
 
+.transcriptDisplay, .definitionsContainer {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+}
+
 /* Transcript styling */
 
-.transcriptContentHolder, .definitionsContent, #Annotations {
-    max-height: calc(100% - 35px);
+.transcriptSelect {
+    height: 35px;
+}
+
+.transcriptContentHolder {
     overflow-y: scroll;
 }
 
@@ -266,6 +276,10 @@
 }
 
 /* Translation styling */
+
+.definitionsContent {
+    overflow-y: scroll;
+}
 
 .translationResult {
     margin-bottom: 35px;
@@ -351,14 +365,6 @@
     background-size: contain;
 }
 
-#transcriptDisplay ul {
-    margin: 10px 0 0 0;
-}
-
-#transcriptDisplay .transcriptContent {
-    margin-top: 10px;
-}
-
 #metadataContainer {
     background-image: linear-gradient(bottom, rgb(222,222,222) 100%, rgb(255,255,255) 0%);
     background-image: -o-linear-gradient(bottom, rgb(222,222,222) 100%, rgb(255,255,255) 0%);
@@ -407,12 +413,4 @@
 
 .form-horizontal .controls {
     padding-top: 5px;
-}
-
-.transcriptDisplay {
-    height: calc(100% - 4px);
-}
-
-.transcriptSelect {
-    height: 35px;
 }
