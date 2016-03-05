@@ -100,6 +100,7 @@
         JS("plainText.js"),
         JS("timedFallback.js")))))
 
+<script src="@{Play.configuration.getString("translation.library").getOrElse("")}"></script>
 <script>
     Ayamel.path = "@{Dependencies.config.getString("Ayamel.js").getOrElse("(function(){ throw \"Missing Ayamel.js Path\";})()")}";
     Ayamel.classes.Translator.endpoint = "@{Play.configuration.getString("translation.endpoint").getOrElse("(function(){ throw \"Missing Translation Endpoint\";})()")}";
