@@ -115,38 +115,6 @@ var ContentRenderer = (function(){
             alert("We couldn't translate \"" + event.detail.text + "\" for you.");
         });
 
-        function engineToHTML(detail){
-            var logoURL,
-                engine = detail.engine,
-                src = Ayamel.utils.downgradeLangCode(detail.srcLang),
-                dest = Ayamel.utils.downgradeLangCode(detail.destLang);
-            if(engine === "WordReference"){
-                return '<a href="http://www.wordreference.com/' +
-                    src +
-                    dest +
-                    '/' + detail.text + '" target="wordreference">' +
-                    detail.text + ' at WordReference.com</a> © WordReference.com';
-            }
-            if(engine === "Merriam-Webster Inc."){
-                logoURL="http://www.dictionaryapi.com/images/info/branding-guidelines/mw-logo-light-background-50x50.png";
-                if((src==="es") || (dest==="es")){
-                    return '<a href="http://www.spanishcentral.com/translate/' + detail.text + '" target="Merriam-Webster">'
-                        + detail.text +' at SpanishCentral.com </a>'
-                        + '<br/>Merriam-Webster\'s Spanish-English Dictionary '
-                        + '<div class="merriamLogo"><a href="http://www.spanishcentral.com/translate/'
-                        + detail.text + '" target="Merriam-Webster"> <img src="' + logoURL + '"></img></a></div>';
-                }
-                if((src==="en") && (dest==="en")){
-                    return '<a href="http://www.merriam-webster.com/dictionary/' + detail.text + '" target="Merriam-Webster">'
-                        + detail.text +' at Merriam-Webster.com </a>'
-                        + '<br/> Merriam-Webster\'s Collegiate® Dictionary <br/>'
-                        + '<div class="merriamLogo"><a href="http://www.merriam-webster.com/dictionary/'
-                        + detail.text + '" target="Merriam-Webster"><img src="' + logoURL + '"></img></a></div>';
-                }
-            }
-            return engine;
-        }
-
         pane = document.createDocumentFragment();
         pane.appendChild(selectHolder);
         pane.appendChild(document.createElement('hr'));
