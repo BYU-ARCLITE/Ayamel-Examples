@@ -31,6 +31,7 @@ var TranscriptPlayer = (function(){
                     </select>\
                     <button on-tap="sync" type="button" class="{{sync?"btn active":"btn"}}" title="Sync with media"><i class="icon-refresh"></i></button>\
                 </div>\
+                <hr/>\
                 <div class="transcriptContentHolder">\
                     {{#transcripts:ti}}\
                     <div class="transcriptContent" style="display:{{ ti === activeIndex ? "block" : "none" }}" data-trackindex="{{ti}}">\
@@ -116,14 +117,14 @@ var TranscriptPlayer = (function(){
                     // Possibly scroll
                     if(!ractive.get("sync")){ return; }
                     activeCues = document.querySelectorAll('.transcriptContent[data-trackindex="'+activeIndex+'"] > .active');
-					if(activeCues.length === 0){ return; }
+                    if(activeCues.length === 0){ return; }
                     [].forEach.call(activeCues, function(activeCue){
                         top = Math.min(top, activeCue.offsetTop);
-						bottom = Math.max(bottom, activeCue.offsetTop + activeCue.offsetHeight);
+                        bottom = Math.max(bottom, activeCue.offsetTop + activeCue.offsetHeight);
                     });
 
-					parent = document.querySelector('.transcriptContentHolder');
-					parent.scrollTop = (top - parent.offsetHeight + bottom)/2 - parent.offsetTop;
+                    parent = document.querySelector('.transcriptContentHolder');
+                    parent.scrollTop = (top - parent.offsetHeight + bottom)/2 - parent.offsetTop;
                 }
             },
             update: { value: function(){ ractive.set('transcripts', tracks); } }
