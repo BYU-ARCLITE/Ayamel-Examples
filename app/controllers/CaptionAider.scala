@@ -39,7 +39,6 @@ object CaptionAider extends Controller {
    * - label: The title of the track (no extension)
    * - language: The language of the track
    * - kind: "subtitles" or "captions"
-   * - courseId (optional): The course ID that will own the track. If not specified, the user owns it.
    */
   def save = Authentication.authenticatedAction(parse.multipartFormData) {
     implicit request =>
@@ -61,7 +60,6 @@ object CaptionAider extends Controller {
             val size = file.length()
 
             if (resourceId.isEmpty) {
-              //TODO: This is where we need to edit stuff to use the proper Resource Library API
 
               // Create a new resource
               // Upload the data

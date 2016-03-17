@@ -261,8 +261,8 @@ $(function() {
         function serverSaver(exportedTracks){
             var savep = Promise.all(exportedTracks.map(function(fObj){
                 var data = new FormData(),
-                    resource = trackResources.get(textTrack),
-                    textTrack = fObj.track;
+                    textTrack = fObj.track,
+                    resource = trackResources.get(textTrack);
                 data.append("file", new Blob([fObj.data],{type:fObj.mime}), fObj.name);
                 data.append("label", textTrack.label);
                 data.append("language", textTrack.language);
@@ -272,7 +272,7 @@ $(function() {
                 return new Promise(function(resolve, reject){
                     var xhr = new XMLHttpRequest();
                     xhr.responseType = "json";
-                    xhr.open("POST", "/captionaider/save?course=" + courseId, true);
+                    xhr.open("POST", "/captionaider/save", true);
                     xhr.addEventListener('load', function(){
                         if(xhr.status < 200 || xhr.status > 299){ reject(); }
                         else{
