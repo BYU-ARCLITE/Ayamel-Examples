@@ -691,7 +691,7 @@ $(function() {
                                 destLang: ntt.language,
                                 text: txt
                             }).then(function(data){
-                                return data.translations[0];
+                                return data.translations[0].text;
                             }).catch(function(){
                                 return txt;
                             });
