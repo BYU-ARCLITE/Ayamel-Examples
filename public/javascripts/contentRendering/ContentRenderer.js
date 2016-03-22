@@ -26,7 +26,7 @@ var ContentRenderer = (function(){
     }
 
     function showWordList(content){
-        return true;
+        return content.settings.showWordList === "true";
     }
 
     function getDefaultLanguage(languages) {
@@ -327,10 +327,12 @@ var ContentRenderer = (function(){
             });
         }
 
-        tabs.push({
-            title: "My Word List",
-            content: setupWordListPane
-        });
+        if(showWordList(content)){
+            tabs.push({
+                title: "Word List",
+                content: setupWordListPane
+            });
+        }
 
         player = new Ayamel.classes.AyamelPlayer({
             components: components,
