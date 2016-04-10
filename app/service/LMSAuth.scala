@@ -44,15 +44,17 @@ object LMSAuth {
                      .getOrElse(user_id)
 
       User.findByAuthInfo(id, 'ltiAuth).getOrElse {
-        val name = params.get("lis_person_name_full")
-        val email = params.get("lis_person_contact_email_primary")
-        val user = User(None, id, 'ltiAuth, "user" + id, name, email).save
-        SitePermissions.assignRole(user, 'student)
-        if (course.isDefined) {  
-          user.enroll(course.get, teacher = false)
-          //TODO: add course permissions
+        User.findLtiUserByNameAndEmail(params.get("name"), params.get("email")).getOrElse {
+          val name = params.get("lis_person_name_full")
+          val email = params.get("lis_person_contact_email_primary")
+          val user = User(None, id, 'ltiAuth, "user" + id, name, email).save
+          SitePermissions.assignRole(user, 'student)
+          if (course.isDefined) {  
+            user.enroll(course.get, teacher = false)
+            //TODO: add course permissions
+          }
+          user
         }
-        user
       }
     }.orElse {
       val uopt = Authentication.getUserFromRequest()
