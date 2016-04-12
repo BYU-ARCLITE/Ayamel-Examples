@@ -9,9 +9,9 @@ $(function() {
             return {value: code, text: Ayamel.utils.getLangName(code)};
         });
 
-	langList.push({ value: "apc", text: "North Levantine Arabic"});
-	langList.push({ value: "arz", text: "Egyptian Arabic"});
-	langList.sort(function(a,b){ return a.text.localeCompare(b.text); });
+    langList.push({ value: "apc", text: "North Levantine Arabic"});
+    langList.push({ value: "arz", text: "Egyptian Arabic"});
+    langList.sort(function(a,b){ return a.text.localeCompare(b.text); });
 
     Dialog = Ractive.extend({
         template: '<div class="modal-header">\
@@ -682,10 +682,25 @@ $(function() {
                             mime: values[3]
                         },
                         function(cue, ott, ntt, mime){
-                            var txt = cue.getCueAsHTML().textContent;
+                            var node, txt, tlist = [],
+                                walker = document.createTreeWalker(
+                                    cue.getCueAsHTML(), 
+                                    NodeFilter.SHOW_TEXT, 
+                                    null,false
+                                );
+
+                            while(node = walker.nextNode()){
+                                if(!node.isElementContentWhitespace){
+                                    tlist.push(node.nodeValue.trim());
+                                }
+                            }
+                            
+                            txt = tlist.join(" ");
+
                             if(ott.language === ntt.language){
                                 return txt;
                             }
+
                             return translator.translate({
                                 srcLang: ott.language,
                                 destLang: ntt.language,
