@@ -1,8 +1,8 @@
 
 tr td:first-child { text-align: center; }
-.short { width: 90px; }
+.short { width: 86px; }
 .med   { width: 160px;}
-.long  { width: 240px;}
+.long  { width: 220px;}
 .addRemoveLineButton {
 	cursor: pointer;
 	height: 25px;
@@ -24,4 +24,8 @@ tr td:first-child { text-align: center; }
 
 input {
 	margin: 0 !important;
+}
+
+.mainContent {
+	overflow-x: scroll;
 }
