@@ -97,7 +97,16 @@ function initBatchTable(target){
 					error: function(){ resolve([]); },
 					complete: function(results){
 						var data = results.data;
-						data.shift(); // skip the header
+
+						console.log('Data: ' + data[0][0].trim().substring(0,5).toLowerCase());
+
+						if(!(data[0][0].trim().substring(0,5).toLowerCase() === 'video' ||
+						     data[0][0].trim().substring(0,5).toLowerCase() === 'audio' ||
+						     data[0][0].trim().substring(0,5).toLowerCase() === 'image' ||
+						     data[0][0].trim().substring(0,4).toLowerCase() === 'text')){
+							data.shift(); // skip the header
+						}
+
 						resolve(data);
 					}
 				});
