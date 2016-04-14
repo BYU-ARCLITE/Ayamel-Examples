@@ -34,7 +34,7 @@ function initBatchTable(target){
 	function submitRow(row, index){
 		var formData = new FormData();
 
-		formData.append("contentType",  row.contentType );
+		formData.append("contentType",  row.contentType.toLowerCase());	// I think that the "contentType" endpoint is case sensitve.
 		formData.append("title",        row.title       );
 		formData.append("url",          row.url         );
 		formData.append("description",  row.description );
