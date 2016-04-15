@@ -38,8 +38,8 @@ function initBatchTable(target){
 		formData.append("title",        row.title       );
 		formData.append("url",          row.url         );
 		formData.append("description",  row.description );
-		formData.append("label",        row.label       );
-		formData.append("language",     row.language    );
+		formData.append("labels",        row.labels       );
+		formData.append("languages",     row.languages    );
 
 		return new Promise(function(resolve, reject){
 			// AJAX section
