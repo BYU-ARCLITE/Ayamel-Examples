@@ -100,6 +100,11 @@ $(function(){
                     });
                 });
             });
+        } else {
+            /*
+             * Show the Annotation Filename and Language Selection
+             */
+            $("#metadataModal").modal("show");
         }
     });
 

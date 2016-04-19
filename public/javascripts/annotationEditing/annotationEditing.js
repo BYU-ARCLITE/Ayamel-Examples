@@ -71,11 +71,6 @@ $(function() {
                 ractive: ractive
             });
 
-            /*
-             * Show the Annotation Filename and Language Selection
-             */
-            $("#metadataModal").modal("show");
-
             var saveButton = document.getElementById("saveAnnotations");
             var fileName = "";
             var fileNameEl = document.getElementById("filename");
