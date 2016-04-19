@@ -65,7 +65,7 @@ object ContentManagement {
    * @param info A ContentDescriptor which contains information about the content
    * @param owner The user who is to own the content
    * @param contentType The type of content
-   * @return The content object in a future
+   * @return The content id in a future
    */
   def createContent(info: ContentDescriptor, owner: User, contentType: Symbol): Future[Long] = {
       createContentObject(info, owner, contentType).map { content => content.id.get

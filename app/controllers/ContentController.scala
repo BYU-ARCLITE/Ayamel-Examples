@@ -23,6 +23,16 @@ import java.util.Calendar
 object ContentController extends Controller {
 
   /**
+   * Store content id created in annotation editor in the browser.
+   */
+  val createContentFromAnnotationEditorResponse = (contentJson: String) => s"""
+  | <script>
+  | localStorage.newAnnotationEditorContent = JSON.stringify($contentJson);
+  | window.close();
+  | </script>
+  """.stripMargin
+
+  /**
    * Action mix-in to get the content from the request
    */
   def getContent(id: Long)(f: Content => Future[Result])(implicit request: Request[_]) = {
@@ -203,20 +213,19 @@ object ContentController extends Controller {
                     redirect.flashing("error" -> s"Could not add content to course: $message")
                   }
               } else {
-                ContentManagement.createContent(info, user, contentType)
-                .map{ contentid => 
-                    if (!createAndAdd.isEmpty) {
-                    Redirect(routes.ContentController.createPage("url", 0))
+                ContentManagement.createContentObject(info, user, contentType)
+                .map{ content => 
+                  if (!createAndAdd.isEmpty) {
+                    Redirect(routes.ContentController.createPage("url", courseId))
                       .flashing("success" -> "Content Created")
                   } else {
-                    Redirect(routes.ContentController.view(contentid))
-                      .flashing("success" -> "Content Added")
+                    Ok(createContentFromAnnotationEditorResponse(content.toJson.toString)).as(HTML)
                   }
                 } 
                 .recover { case e: Exception =>
                   val message = e.getMessage()
                   Logger.debug("Error creating content: " + message)
-                  Redirect(routes.ContentController.createPage("url", 0))
+                  Redirect(routes.ContentController.createPage("url", courseId))
                     .flashing("error" -> s"Failed to create content: $message")
                 }
               }

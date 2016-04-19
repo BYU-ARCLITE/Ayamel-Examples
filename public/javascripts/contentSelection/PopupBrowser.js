@@ -153,15 +153,15 @@ var PopupBrowser = (function(){
                 // save window to bring the focus back afterwards.
                 var thisWindow = window.open('', '_parent', '');
                 var newWindow = window.open(url, '_blank');
-                win2.focus();
                 $modal.modal("hide");
-                // checks to see if the window has closed been closed,
-                // then opens the modal and removes the timer
+                // checks to see if the window has been closed,
+                // then invokes the callback with a list of the object and removes the timer
                 var contentCreated = setInterval(function(){
                     if (newWindow.location.pathname === undefined) {
                         thisWindow.focus();
+                        selection = [];
+                        callback([JSON.parse(localStorage.newAnnotationEditorContent)]);
                         window.clearInterval(contentCreated);
-                        $modal.modal("show");
                     }
                 }, 700);
             } else {
