@@ -304,7 +304,7 @@ $(function() {
                     var errorText = document.getElementById('saveText');
                     errorDiv.style.background = "linear-gradient(#F59D9D, #F95454)";
                     errorImg.src = "http://www.kinfolk.com/wp-content/plugins/itro-popup/images/close-icon.png";
-                    errorText.innerHTML = "Error occurred while saving "+textTrack.label;
+                    errorText.innerHTML = "Error occurred while saving \""+textTrack.label+ "\".";
                     setTimeout(function(){
                         document.getElementById('saveDiv').remove();
                     },5000);
