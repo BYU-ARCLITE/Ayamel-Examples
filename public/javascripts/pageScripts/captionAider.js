@@ -9,6 +9,22 @@ $(function() {
             return {value: code, text: Ayamel.utils.getLangName(code)};
         });
 
+
+    var saveDiv = document.createElement('div'),
+    saveImg = new Image(),
+    saveText = document.createElement('p');
+    
+    saveDiv.setAttribute('id', 'saveDiv');
+    saveImg.setAttribute('id', 'saveImg');
+    saveText.setAttribute('id', 'saveText');
+    saveImg.style.cssText = 'width:25px; height:25px; margin-right:15px; margin-top:-3px;';
+    saveText.style.display = 'inline';
+
+    saveDiv.appendChild(saveImg);
+    saveDiv.appendChild(saveText);
+    document.body.appendChild(saveDiv);
+
+
     langList.push({ value: "apc", text: "North Levantine Arabic"});
     langList.push({ value: "arz", text: "Egyptian Arabic"});
     langList.sort(function(a,b){ return a.text.localeCompare(b.text); });
@@ -283,28 +299,18 @@ $(function() {
                     xhr.addEventListener('error', reject, false);
                     xhr.send(data);
 
-                    var saveDiv = document.createElement('div');
-                    var spinner = new Image();
-                    saveDiv.setAttribute('id', 'saveDiv');
-                    spinner.setAttribute('id', 'saveSpinner');
-                    spinner.src = "/assets/images/captionAider/loading.gif";
-                    spinner.style.cssText = 'width:25px; height:25px; margin-right:15px; margin-top:-3px;';
-                    saveDiv.appendChild(spinner);
-                    saveDiv.style.cssText = 'position:fixed; top:45px; right:0px; width:auto; height:auto; z-index:1000; border-radius:3px; padding:15px;';
-                    saveDiv.style.background = "linear-gradient(#f7e488, #edc912)";
-                    saveDiv.innerHTML += "<span id='saveText'>Saving...</span>";
-                    document.body.appendChild(saveDiv);
+                    saveImg.src = "/assets/images/captionAider/loading.gif";
+                    saveDiv.style.cssText = 'position:fixed; top:45px; right:0px; width:auto; height:auto; z-index:1000; border-radius:3px; padding:15px; background:linear-gradient(#f7e488, #edc912);';
+                    saveText.innerHTML = "Saving...";
+                    saveDiv.style.visibility = "visible";
 
                 }).catch(function(){
 
-                    var errorDiv = document.getElementById('saveDiv');
-                    var errorImg = document.getElementById('saveSpinner');
-                    var errorText = document.getElementById('saveText');
-                    errorDiv.style.background = "linear-gradient(#F59D9D, #F95454)";
-                    errorImg.src = "/assets/images/captionAider/Cancel.png";
-                    errorText.innerHTML = "Error occurred while saving \""+textTrack.label+ "\".";
+                    saveDiv.style.background = "linear-gradient(#F59D9D, #F95454)";
+                    saveImg.src = "/assets/images/captionAider/Cancel.png";
+                    saveText.innerHTML = "Error occurred while saving \""+textTrack.label+ "\".";
                     setTimeout(function(){
-                        document.getElementById('saveDiv').remove();
+                        saveDiv.style.visibility = "hidden";
                     },5000);
                     return null;
                 });
@@ -314,14 +320,11 @@ $(function() {
             savep.then(function(savedTracks){
                 if(savedTracks.length === 0){ return; }
 
-                var successDiv = document.getElementById('saveDiv');
-                var successImg = document.getElementById('saveSpinner');
-                var successText = document.getElementById('saveText');
-                successDiv.style.background = "linear-gradient(#D6E0D7, #6CC36E)";
-                successImg.src = "/assets/images/captionAider/CheckCircle.png";
-                successText.innerHTML = "Successfully saved track \""+savedTracks+"\".";
+                saveDiv.style.background = "linear-gradient(#D6E0D7, #6CC36E)";
+                saveImg.src = "/assets/images/captionAider/CheckCircle.png";
+                saveText.innerHTML = "Successfully saved track \""+savedTracks+"\".";
                 setTimeout(function(){
-                    document.getElementById('saveDiv').remove();
+                    saveDiv.style.visibility = "hidden";
                 },5000);
             });
             return savep;
