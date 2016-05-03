@@ -283,12 +283,11 @@ $(function() {
                     xhr.addEventListener('error', reject, false);
                     xhr.send(data);
 
-                    // TODO: call all images from our server
                     var saveDiv = document.createElement('div');
                     var spinner = new Image();
                     saveDiv.setAttribute('id', 'saveDiv');
                     spinner.setAttribute('id', 'saveSpinner');
-                    spinner.src = "https://s3-ap-southeast-2.amazonaws.com/alcaston/assets/images/ajax-loader.gif";
+                    spinner.src = "/assets/images/captionAider/loading.gif";
                     spinner.style.cssText = 'width:25px; height:25px; margin-right:15px; margin-top:-3px;';
                     saveDiv.appendChild(spinner);
                     saveDiv.style.cssText = 'position:fixed; top:45px; right:0px; width:auto; height:auto; z-index:1000; border-radius:3px; padding:15px;';
@@ -298,12 +297,11 @@ $(function() {
 
                 }).catch(function(){
 
-                    // TODO: call all images from our server
                     var errorDiv = document.getElementById('saveDiv');
                     var errorImg = document.getElementById('saveSpinner');
                     var errorText = document.getElementById('saveText');
                     errorDiv.style.background = "linear-gradient(#F59D9D, #F95454)";
-                    errorImg.src = "http://www.kinfolk.com/wp-content/plugins/itro-popup/images/close-icon.png";
+                    errorImg.src = "/assets/images/captionAider/Cancel.png";
                     errorText.innerHTML = "Error occurred while saving \""+textTrack.label+ "\".";
                     setTimeout(function(){
                         document.getElementById('saveDiv').remove();
@@ -316,12 +314,11 @@ $(function() {
             savep.then(function(savedTracks){
                 if(savedTracks.length === 0){ return; }
 
-                // TODO: call all images from our server
                 var successDiv = document.getElementById('saveDiv');
                 var successImg = document.getElementById('saveSpinner');
                 var successText = document.getElementById('saveText');
                 successDiv.style.background = "linear-gradient(#D6E0D7, #6CC36E)";
-                successImg.src = "https://d30y9cdsu7xlg0.cloudfront.net/png/95989-200.png";
+                successImg.src = "/assets/images/captionAider/CheckCircle.png";
                 successText.innerHTML = "Successfully saved track \""+savedTracks+"\".";
                 setTimeout(function(){
                     document.getElementById('saveDiv').remove();
