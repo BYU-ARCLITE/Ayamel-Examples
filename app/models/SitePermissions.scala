@@ -18,7 +18,8 @@ object SitePermissions extends SQLSelectable[String]  {
     "createContent" -> "Create Content",
     "viewRestricted" -> "View Restricted Content",
     "joinCourse" -> "Join Courses",
-    "requestPermission" -> "Request New Permissions"
+    "requestPermission" -> "Request New Permissions",
+    "ltiConnect" -> "Connect to LMS"
   )
 
   def permissionList = desc_map.keys.toList

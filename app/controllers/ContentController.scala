@@ -505,19 +505,24 @@ object ContentController extends Controller {
     implicit request =>
       getContent(id) { content =>
         Future {
-          LMSAuth.ltiContentAuth(content) match {
-          case Some(user) => Ok(
-            if(request.queryString.get("embed").flatMap(_.lift(0)).exists(_.toBoolean)){
-              views.html.content.share.embed(content, ResourceController.baseUrl, Some(user))
-            } else if (MobileDetection.isMobile()) {
-              views.html.content.viewMobile(content, ResourceController.baseUrl, Some(user))
-            } else {
-              views.html.content.view(content, ResourceController.baseUrl, Some(user))
+          if(content.getOwner.map(_.hasSitePermission("ltiConnect")).getOrElse(false)) {
+            LMSAuth.ltiContentAuth(content) match {
+            case Some(user) => Ok(
+              if(request.queryString.get("embed").flatMap(_.lift(0)).exists(_.toBoolean)){
+                views.html.content.share.embed(content, ResourceController.baseUrl, Some(user))
+              } else if (MobileDetection.isMobile()) {
+                views.html.content.viewMobile(content, ResourceController.baseUrl, Some(user))
+              } else {
+                views.html.content.view(content, ResourceController.baseUrl, Some(user))
+              }
+            )
+            case _ => //TODO: Create error page for embedding
+              Redirect(routes.Application.home)
+                .flashing("error" -> "You do not have permission to view the requested content.")
             }
-          )
-          case _ => //TODO: Create error page for embedding
+          } else {
             Redirect(routes.Application.home)
-              .flashing("error" -> "You do not have permission to view the requested content.")
+              .flashing("error" -> "The requested content is not available via LTI.")
           }
         }
       }
