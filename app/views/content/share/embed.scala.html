@@ -44,7 +44,8 @@
         <script type="text/javascript">
             ResourceLibrary.setBaseUrl("@resourceLibraryUrl");
             var content = @Html(content.toJson.toString());
-            function setupXapi(args) {
+        @if(content.getOwner.map(_.hasSitePermission("lrsConnect")).getOrElse(false)) {
+            function setupXapi(args){
                 // information for statements to learninglocker
                 var llendpoint = "@current.configuration.getString("learninglocker.endpoint")";
                 var llusername = "@current.configuration.getString("learninglocker.username")";
@@ -87,6 +88,9 @@
                 // Save the page load
                 xApi.predefined.pageLoad();
             }
+        }else{
+            function setupXapi(){}
+        }
         </script>
     </head>
     <body class="share embed">

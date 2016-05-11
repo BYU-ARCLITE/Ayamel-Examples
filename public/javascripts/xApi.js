@@ -1,13 +1,15 @@
 var xApi = (function() {
 
     var page = course = user = {},
-		record = true,
-		resourceName = "",
-		baseUri = window.location.origin + "/";
+        record = true,
+        resourceName = "",
+        baseUri = window.location.origin + "/";
 
     // args: verb, type, extensions
     function send(args) {
-		if(!record){ return; }
+        if(!record){ return; }
+        if(!page.name){ return; }
+        if(!user.name || !user.authScheme){ return; }
         // create statement
         // Agent = User, Action = Verb, Activity = Content Object
         var stmt = new ADL.XAPIStatement(
@@ -337,9 +339,9 @@ var xApi = (function() {
             };
             ADL.XAPIWrapper.changeConfig(conf);
         },
-		/** Turn recording on and off. */
-		record: function(b){
-			record = !!b;
-		}
+        /** Turn recording on and off. */
+        record: function(b){
+            record = !!b;
+        }
     };
 }());

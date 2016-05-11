@@ -30,6 +30,8 @@
         @views.html.content.header.includes()
 
         <script type="text/javascript">
+
+        @if(content.getOwner.map(_.hasSitePermission("lrsConnect")).getOrElse(false)) {
             function setupXapi() {
                 ResourceLibrary.setBaseUrl("@resourceLibraryUrl");
 
@@ -58,6 +60,9 @@
                 // Save the page load
                 xApi.predefined.pageLoad();
             }
+        }else{
+            function setupXapi(){}
+        }
         </script>
     </head>
     <body class="mobile">
