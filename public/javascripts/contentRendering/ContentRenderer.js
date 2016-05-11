@@ -94,12 +94,48 @@ var ContentRenderer = (function(){
 
         // Translation succeeded
         player.addEventListener("translation", function(event){
-            //TODO: Add Word List functionality back in. Somehow.
-            var translationSize,
+
+           // console.log(event.toString() )
+        var translationSize, detail = event.detail,
+                 translations = detail.translations,
+                 wordList = !document.body.classList.contains("share")? // Only allow saving words if the user is logged in (not sharing)
+                     '<div class="addToWordList"><button class="btn btn-small"><i class="icon-paste"></i> Add to Word List</button></div>':"",
                 html = document.createElement('div');
-            html.innerHTML = YLex.renderResult(event.detail);
-            translationsHolder.appendChild(html);
-            tab.select();
+                html.innerHTML = YLex.renderResult(event.detail);
+                translationsHolder.appendChild(html);
+                tab.select();
+ /*                html = Ayamel.utils.parseHTML('<div class="translationResult">\
+                     <div class="sourceText">' + detail.text + '</div>\
+                     <div class="translations">' + translations.join(",<br/>") + '</div>\
+                     <div class="engine">' + engineToHTML(detail) + '</div>' + wordList +
+                 '</div>');
+ */
+//console.log( wordList.toString() );
+
+             if (wordList != "" ) {
+                 html.querySelector("button").addEventListener('click', function(){
+                     var addWord = this.parentNode;
+                     $.ajax("/words", {
+                         type: "post",
+                         data: {
+                             srcLang: detail.srcLang,
+                             destLang: detail.destLang,
+                             word: detail.text
+                         },
+                         success: function(){
+                             addWord.innerHTML = "<span class='color-blue'>Added to word list.</span>";
+                         },
+                         error: function(){
+                             alert("Error adding to word list");
+                             addWord.parentNode.removeChild(addWord);
+                         }
+                     });
+                 });
+             }
+           
+            //TODO: Add Word List functionality back in. Somehow.
+//            var translationSize,
+          
 
             //keep the top of the new translation visible.
             if (html.offsetHeight > translationsHolder.offsetHeight) {
