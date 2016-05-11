@@ -94,12 +94,40 @@ var ContentRenderer = (function(){
 
         // Translation succeeded
         player.addEventListener("translation", function(event){
-            //TODO: Add Word List functionality back in. Somehow.
-            var translationSize,
+
+        var translationSize, detail = event.detail,
+                 translations = detail.translations,
+                 wordList = !document.body.classList.contains("share")? // Only allow saving words if the user is logged in (not sharing)
+                     '<div class="addToWordList"><button class="btn btn-small"><i class="icon-paste"></i> Add to Word List</button></div>':"",
                 html = document.createElement('div');
-            html.innerHTML = YLex.renderResult(event.detail);
-            translationsHolder.appendChild(html);
-            tab.select();
+                html.innerHTML = YLex.renderResult(event.detail) + wordList;
+                translationsHolder.appendChild(html);
+                tab.select();
+
+             if (wordList != "" ) {
+                 html.querySelector("button").addEventListener('click', function(){
+                     var addWord = this.parentNode;
+                     var Data = new FormData();
+                    Data.append("srcLang", detail.src);
+                    Data.append("destLang", detail.dst);
+                    Data.append("word", detail.text);
+                     $.ajax("/words", {
+                         type: "post",
+                         cache: false,
+                         contentType: false,
+                         processData: false,
+                         
+                         data: Data,
+                         success: function(){
+                             addWord.innerHTML = "<span class='color-blue'>Added to word list.</span>";
+                         },
+                         error: function(){
+                             alert("Error adding to word list");
+                             addWord.parentNode.removeChild(addWord);
+                         }
+                     });
+                 });
+             }          
 
             //keep the top of the new translation visible.
             if (html.offsetHeight > translationsHolder.offsetHeight) {
