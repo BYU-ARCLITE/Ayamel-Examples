@@ -101,7 +101,7 @@ var ContentRenderer = (function(){
                  wordList = !document.body.classList.contains("share")? // Only allow saving words if the user is logged in (not sharing)
                      '<div class="addToWordList"><button class="btn btn-small"><i class="icon-paste"></i> Add to Word List</button></div>':"",
                 html = document.createElement('div');
-                html.innerHTML = YLex.renderResult(event.detail);
+                html.innerHTML = YLex.renderResult(event.detail) + wordList;
                 translationsHolder.appendChild(html);
                 tab.select();
  /*                html = Ayamel.utils.parseHTML('<div class="translationResult">\
