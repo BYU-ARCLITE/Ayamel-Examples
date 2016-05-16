@@ -117,6 +117,9 @@ var ContentRenderer = (function(){
                      var addWord = this.parentNode;
                      $.ajax("/words", {
                          type: "post",
+                         cache: false,
+                         contentType: false,
+                         processData: false,
                          data: {
                              srcLang: detail.src,
                              destLang: detail.dest,
