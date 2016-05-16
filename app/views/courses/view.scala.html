@@ -26,7 +26,7 @@
         <div class="courseTitle">
             <h1>@course.name</h1>
             <div class="btn-group">
-                @if(user.hasCoursePermission(course, "teacher")) {
+                @if(user.hasCoursePermission(course, "teacher") && user.hasSitePermission("ltiConnect")) {
                     <a href="#lmsModal" role="button" class="btn" data-toggle="modal"><i class="icon-book"></i> Add to an LMS</a>
                 }
                 @if(user.hasCoursePermission(course, "viewData")) {

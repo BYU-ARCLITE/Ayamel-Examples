@@ -123,7 +123,7 @@
                                                 <i class="icon-book"></i> Course <b class="caret"></b>
                                             </a>
                                             <ul class="dropdown-menu">
-                                              @if(user.get.hasCoursePermission(course.get, "teacher")) {
+                                              @if(user.get.hasCoursePermission(course.get, "teacher") && user.get.hasSitePermission("ltiConnect")) {
                                                 <li><a href="#lmsModal" data-toggle="modal"><i class="icon-briefcase"></i> Add to LMS</a></li>
                                               }
                                               @if(user.get.hasCoursePermission(course.get, "removeContent")) {
