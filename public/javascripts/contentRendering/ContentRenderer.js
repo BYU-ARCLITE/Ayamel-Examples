@@ -104,13 +104,6 @@ var ContentRenderer = (function(){
                 html.innerHTML = YLex.renderResult(event.detail) + wordList;
                 translationsHolder.appendChild(html);
                 tab.select();
- /*                html = Ayamel.utils.parseHTML('<div class="translationResult">\
-                     <div class="sourceText">' + detail.text + '</div>\
-                     <div class="translations">' + translations.join(",<br/>") + '</div>\
-                     <div class="engine">' + engineToHTML(detail) + '</div>' + wordList +
-                 '</div>');
- */
-//console.log( wordList.toString() );
 
              if (wordList != "" ) {
                  html.querySelector("button").addEventListener('click', function(){
@@ -125,12 +118,7 @@ var ContentRenderer = (function(){
                          contentType: false,
                          processData: false,
 
-/*
-var formData = new FormData();
-                formData.append("title", fileName);
-                formData.append("filename", fileName);
-                formData.append("language", language);
-*/
+
 
                          data: Data,
                          success: function(){
@@ -142,11 +130,7 @@ var formData = new FormData();
                          }
                      });
                  });
-             }
-           
-            //TODO: Add Word List functionality back in. Somehow.
-//            var translationSize,
-          
+             }          
 
             //keep the top of the new translation visible.
             if (html.offsetHeight > translationsHolder.offsetHeight) {
