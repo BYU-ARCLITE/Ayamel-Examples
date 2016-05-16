@@ -3,7 +3,7 @@
 @(user: User, course: Course)(implicit request: RequestHeader)
 
 @defining(Play.configuration.getBoolean("HTTPS").getOrElse(false)) { isHTTPS =>
-  @if(user.hasCoursePermission(course, "teacher")) {
+  @if(user.hasCoursePermission(course, "teacher") && user.hasSitePermission("ltiConnect")) {
     <div id="lmsModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="lmsModalLabel" aria-hidden="true">
         <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
