@@ -117,7 +117,7 @@ var ContentRenderer = (function(){
                      var addWord = this.parentNode;
                      var Data = new FormData();
                     Data.append("srcLang", detail.src);
-                    Data.append("destLang", detail.dest);
+                    Data.append("destLang", detail.dst);
                     Data.append("word", detail.text);
                      $.ajax("/words", {
                          type: "post",
