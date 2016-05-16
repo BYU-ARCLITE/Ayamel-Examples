@@ -30,7 +30,7 @@ object WordLists extends Controller {
   /**
    * Adds a word (or text) to a word list. For AJAX calls
    */
-  def add = Authentication.authenticatedAction(parse.urlFormEncoded) {
+  def add = Authentication.authenticatedAction(parse.multipartFormData) {
     implicit request =>
       implicit user =>
         user.addWord(normalize(request.body("word")(0)), request.body("srcLang")(0), request.body("destLang")(0))

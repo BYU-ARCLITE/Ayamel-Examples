@@ -118,8 +118,8 @@ var ContentRenderer = (function(){
                      $.ajax("/words", {
                          type: "post",
                          data: {
-                             srcLang: detail.srcLang,
-                             destLang: detail.destLang,
+                             srcLang: detail.src,
+                             destLang: detail.dest,
                              word: detail.text
                          },
                          success: function(){
