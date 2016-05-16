@@ -115,16 +115,24 @@ var ContentRenderer = (function(){
              if (wordList != "" ) {
                  html.querySelector("button").addEventListener('click', function(){
                      var addWord = this.parentNode;
+                     var Data = new FormData();
+                    Data.append("srcLang", detail.src);
+                    Data.append("destLang", detail.dest);
+                    Data.append("word", detail.text);
                      $.ajax("/words", {
                          type: "post",
                          cache: false,
                          contentType: false,
                          processData: false,
-                         data: {
-                             srcLang: detail.src,
-                             destLang: detail.dest,
-                             word: detail.text
-                         },
+
+/*
+var formData = new FormData();
+                formData.append("title", fileName);
+                formData.append("filename", fileName);
+                formData.append("language", language);
+*/
+
+                         data: Data,
                          success: function(){
                              addWord.innerHTML = "<span class='color-blue'>Added to word list.</span>";
                          },
