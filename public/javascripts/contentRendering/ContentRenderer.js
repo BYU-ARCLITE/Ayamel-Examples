@@ -95,7 +95,6 @@ var ContentRenderer = (function(){
         // Translation succeeded
         player.addEventListener("translation", function(event){
 
-           // console.log(event.toString() )
         var translationSize, detail = event.detail,
                  translations = detail.translations,
                  wordList = !document.body.classList.contains("share")? // Only allow saving words if the user is logged in (not sharing)
@@ -117,9 +116,7 @@ var ContentRenderer = (function(){
                          cache: false,
                          contentType: false,
                          processData: false,
-
-
-
+                         
                          data: Data,
                          success: function(){
                              addWord.innerHTML = "<span class='color-blue'>Added to word list.</span>";
