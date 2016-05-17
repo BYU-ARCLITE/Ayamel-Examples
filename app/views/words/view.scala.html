@@ -97,8 +97,8 @@
                 this.classList.add("disabled");
 
                 var text = this.dataset.text;
-                var srcLang = Ayamel.utils.downgradeLangCode(this.dataset.srcLang);
-                var destLang = Ayamel.utils.downgradeLangCode(this.dataset.destLang);
+                var srcLang = /*Ayamel.utils.downgradeLangCode*/(this.dataset.srcLang);
+                var destLang = /*Ayamel.utils.downgradeLangCode*/(this.dataset.destLang);
 
                 translate(srcLang, destLang, text, function(results) {
                     var html =
