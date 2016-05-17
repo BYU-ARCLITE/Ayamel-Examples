@@ -101,7 +101,7 @@
                 var destLang = /*Ayamel.utils.downgradeLangCode*/(this.dataset.destLang);
 
                 translate(srcLang, destLang, text, function(results) {
-                    console.log( results.toString() )
+                    console.log( results.translations.toString() )
                     var html =
                         //'<div class="translationResult noBorder">' +
                             '<div class="translations">' + results.translations/*.join(", ") */+ '</div>' +
