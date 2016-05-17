@@ -103,9 +103,9 @@
                 translate(srcLang, destLang, text, function(results) {
                     console.log( results.translations )
                     var html =
-                        //'<div class="translationResult noBorder">' +
+                        '<div class="translationResult noBorder">' +
                             '<div class="translations">' + results.translations/*.join(", ") */+ '</div>' +
-                           // '<div class="engine">' + results.engine + '</div>' +
+                            '<div class="engine">' + results.engine + '</div>' +
                         '</div>';
                     $(_this).after(html).remove();
                 });
