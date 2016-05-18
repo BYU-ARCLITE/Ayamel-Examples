@@ -8,7 +8,7 @@
 var AnnotationTextEditor = (function(){
     function loadTracks(content, callback){
 
- // TODO: Determine which course we're operating in
+        // TODO: Determine which course we're operating in
        ResourceLibrary.load(content.resourceId).then(function(resource){
            return ContentLoader.getTranscriptWhitelist({
                courseId: 0,

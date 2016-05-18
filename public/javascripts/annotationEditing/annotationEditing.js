@@ -24,6 +24,8 @@ $(function() {
         audio: "text",
         image: "image"
     };
+    
+    var annotationPopupEditor;
 
     $("#spinner").hide();
 
@@ -61,9 +63,9 @@ $(function() {
     loadManifest(typeMap[content.contentType], function(data) {
 
         // Then create the popup editor
-        new AnnotationPopupEditor(function (popupEditor) {
+        annotationPopupEditor = new AnnotationPopupEditor(function (popupEditor) {
             // Create the text editor
-            var textEditor = new AnnotationTextEditor({
+            this.textEditor = new AnnotationTextEditor({
                 holder: document.getElementById("annotationEditor"),
                 content: content,
                 popupEditor: popupEditor,

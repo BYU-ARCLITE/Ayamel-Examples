@@ -27,7 +27,7 @@ object ContentController extends Controller {
    */
   val createContentFromAnnotationEditorResponse = (contentJson: String) => s"""
   | <script>
-  | localStorage.newAnnotationEditorContent = JSON.stringify($contentJson);
+  | opener.contentReceiver($contentJson);
   | window.close();
   | </script>
   """.stripMargin
@@ -162,7 +162,7 @@ object ContentController extends Controller {
   /**
    * Creates content based on the posted data (URL)
    */
-  def createFromUrl(courseId: Long) = Authentication.authenticatedAction(parse.multipartFormData) {
+  def createFromUrl(courseId: Long, annotations: Boolean = false) = Authentication.authenticatedAction(parse.multipartFormData) {
     implicit request =>
       implicit user =>
 
@@ -196,13 +196,12 @@ object ContentController extends Controller {
                                            labels = labels, categories = categories,
                                            languages = languages)
 
-              // find alternate create content ↓ through annotations method
-              if (courseId > 0 && courseId != 40747105) {
-                    val redirect = if (!createAndAdd.isEmpty) {
-                          Redirect(routes.ContentController.createPage("url", courseId))
-                        } else {
-                          Redirect(routes.Courses.view(courseId))
-                        }
+              if (courseId > 0) {
+                val redirect = if (!createAndAdd.isEmpty) {
+                  Redirect(routes.ContentController.createPage("url", courseId))
+                } else {
+                  Redirect(routes.Courses.view(courseId))
+                }
                 ContentManagement.createAndAddToCourse(info, user, contentType, courseId)
                   .map { _ => 
                     redirect.flashing("success" -> "Content created and added to course")
@@ -213,15 +212,28 @@ object ContentController extends Controller {
                     redirect.flashing("error" -> s"Could not add content to course: $message")
                   }
               } else {
+                //check if we came from the annotation editor
+                val createFromAnnotations: Boolean = request.queryString.getOrElse("annotations", Nil).contains("true")
+
                 ContentManagement.createContentObject(info, user, contentType)
-                .map{ content => 
+                .map{ content =>
                   if (!createAndAdd.isEmpty) {
-                    Redirect(routes.ContentController.createPage("url", courseId))
-                      .flashing("success" -> "Content Created")
+                    if (createFromAnnotations) {
+                      Ok(views.html.content.create.url(courseId))
+                        .flashing("success" -> "Content Created")
+                    } else {
+                      Redirect(routes.ContentController.createPage("url", courseId))
+                        .flashing("success" -> "Content Created")
+                    }
                   } else {
-                    Ok(createContentFromAnnotationEditorResponse(content.toJson.toString)).as(HTML)
+                    play.Logger.debug(request.queryString.toString)
+                    if (createFromAnnotations) {
+                      Ok(createContentFromAnnotationEditorResponse(content.toJson.toString)).as(HTML)
+                    } else {
+                      Redirect(routes.ContentController.view(content.id.get))
+                    }
                   }
-                } 
+                }
                 .recover { case e: Exception =>
                   val message = e.getMessage()
                   Logger.debug("Error creating content: " + message)
