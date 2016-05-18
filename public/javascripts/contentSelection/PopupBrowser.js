@@ -142,28 +142,25 @@ var PopupBrowser = (function(){
         });
 
         /**
+         * Invoked by child window after having created content
+         */
+        window.contentReceiver = function(content) {
+            // save window to bring the focus back afterwards.
+            window.open('', '_parent', '').focus();
+            callback([content]);
+        };
+
+        /**
          * Opens the create file page in a new tab if the current page is not in a course setting.
          * otherwise, the window goes to the create content page.
          * The modal is hidden and then shown after the content has been added in order to refresh it's contents.
          */
         $createButton.click(function(){
-            var newTab = window.location.pathname.split("/").indexOf("course") === -1;
-            var url = newTab?"/content/create/url/40747105":"/content/create/url/" + window.location.pathname.split("/").pop();
+            var newTab = window.location.pathname.split("/").indexOf("annotations") !== -1;
+            var url = newTab?"/content/create/url?annotations=true":"/content/create/url/" + window.location.pathname.split("/").pop();
             if (newTab) {
-                // save window to bring the focus back afterwards.
-                var thisWindow = window.open('', '_parent', '');
                 var newWindow = window.open(url, '_blank');
                 $modal.modal("hide");
-                // checks to see if the window has been closed,
-                // then invokes the callback with a list of the object and removes the timer
-                var contentCreated = setInterval(function(){
-                    if (newWindow.location.pathname === undefined) {
-                        thisWindow.focus();
-                        selection = [];
-                        callback([JSON.parse(localStorage.newAnnotationEditorContent)]);
-                        window.clearInterval(contentCreated);
-                    }
-                }, 700);
             } else {
                 window.location = url;
             }
