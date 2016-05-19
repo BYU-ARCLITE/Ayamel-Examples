@@ -76,12 +76,12 @@ object Administration extends Controller {
     implicit request => 
       implicit user =>
         Authentication.enforcePermission("admin") {
-          Future(Ok(views.html.admin.users(User.list)))
+          Future(Ok(views.html.admin.users()))
         }
   }
 
   /**
-   * Get Users 50 at a time
+   * Get Users {limit} at a time
    * @param id The id for the last user currently loaded on the page 
    * @param limit The size of the list of users queried from the db
    * @return list of user JSON objects

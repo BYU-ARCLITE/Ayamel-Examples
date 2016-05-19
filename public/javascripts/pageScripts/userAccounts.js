@@ -1,7 +1,8 @@
 $(function(){
     "use strict";
 
-    var userTemplate = '<superselect\
+    var userList = getUsers(0, 50), 
+    userTemplate = '<superselect\
         icon="" text="Select Permissions"\
         button="left"\
         selection="{{activePermissions}}"\
@@ -42,7 +43,10 @@ $(function(){
             <a on-tap="removesel" class="btn btn-small btn-yellow">Remove Extra</a>\
             <a on-tap="matchsel" class="btn btn-small btn-yellow">Match Filter</a>\
         </td></tr>\
-    </table>';
+    </table>\
+    <input id="limit" type="text" value="50" style="width: 35px; margin-top: 10px;">\
+    <button on-tap="getPrev: get_first_index" class="btn btn-small btn-yellow">Previous</button>\
+    <button on-tap="getNext: get_last_index" class="btn btn-small btn-yellow">Next</button>';
 
     /* Add back when setting the selection outside of superselect works:
                     {{#(is_missing(.permissions, activePermissions) || has_extra(.permissions, activePermissions))}}\
@@ -76,6 +80,15 @@ $(function(){
                 return missing?
                     (extra?"#FF00FF":"#FFFFFF"):
                     (extra?"#AAAAFF":"#AAFFAA");
+            },
+            get_first_index: function(){
+                return utable.get("users")[0].id+1 || 0;
+            },
+            get_last_index: function(){
+                return utable.get("users").pop().id+1 || 0;
+            },
+            limit_val: function(){
+                return document.getElementById("limit").value;
             }
         }
     });
@@ -99,6 +112,10 @@ $(function(){
     /*utable.on('select', function(e,index){
         utable.set('activePermissions', utable.get("users")[index].permissions);
     });*/
+
+    utable.on("get_first_index", function(){
+        $("#limit")
+    }
 
     utable.on('proxy', function(e,id){
         window.location = "/admin/proxy/"+id;
@@ -133,6 +150,21 @@ $(function(){
         });
     });
     //utable.on('deletesel', function(){alert("Unimplemented");});
+
+    /**
+     * Does an AJAX request for getting paginated users for admin dashbaord.
+     */
+    function getUsers(index, limit){
+        var request = new XMLHttpRequest();
+        request.onreadystatechange = function(){
+            if (request.readyState == 4 && request.status == 200) {
+              userList = JSON.parse(request.responseText);
+              utable.set("users", userList);
+            }
+        }
+        request.open("GET", "/admin/users/"+index+"/"+limit, true);
+        request.send();
+    }
 
     function updateUserPermissions(index, perms, operation){
         var data = new FormData();
