@@ -274,17 +274,17 @@ case class User(id: Option[Long], authId: String, authScheme: Symbol, username: 
    */
   def getStringFromOption(opt: Option[String]): String = opt.getOrElse("")
 
+  /**
+   * Gets all of the fields required for the Admin dashboard table
+   */
   def toJson = Json.obj(
     "id" -> id.get,
-    "authId" -> authId,
     "authScheme" -> authScheme.name,
     "username" -> username,
     "name" -> getStringFromOption(name),
     "email" -> getStringFromOption(email),
-    "picture" -> getStringFromOption(picture),
-    "accountLinkId" -> accountLinkId,
-    "created" -> created,
-    "lastLogin" -> lastLogin
+    "linked" -> accountLinkId,
+    "permissions" -> getPermissions
   )
 
   //       _____      _   _

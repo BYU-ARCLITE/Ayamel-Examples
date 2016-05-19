@@ -1,5 +1,5 @@
 @import models.SitePermissions.descriptionMap
-@(users: List[User])(implicit request: RequestHeader, user: User)
+@()(implicit request: RequestHeader, user: User)
 
 @main("Ayamel - User Accounts", Some(user),
     Local(
@@ -65,17 +65,7 @@
         var userPermissionList = [@for((k,v) <- descriptionMap) {
             {value: "@k", text: "@v"},
         }];
-        var userList = [@for(_user <- users) {
-            {
-                id: @{_user.id.get},
-                authScheme: "@{_user.authScheme.name}",
-                username: "@{_user.username}",
-                name: "@{_user.name.getOrElse("")}",
-                email: "@{_user.email.getOrElse("")}",
-                linked: @{_user.getAccountLink.map(_.primaryAccount).getOrElse(-1)},
-                permissions: [@for(p <- _user.getPermissions){ "@p", }]
-            },
-        }];
+
         $(function() {
             $(".formSubmitter").click(function() {
                 $(this.dataset["target"]).submit();
