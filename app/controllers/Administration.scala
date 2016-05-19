@@ -9,6 +9,7 @@ import scala.concurrent.duration._
 import ExecutionContext.Implicits.global
 import play.api.Logger
 import dataAccess.ResourceController
+import play.api.libs.json.{Json, JsValue}
 
 /**
  * Controller for Administration pages and actions
@@ -72,11 +73,26 @@ object Administration extends Controller {
    * User management view
    */
   def manageUsers = Authentication.authenticatedAction() {
-    implicit request =>
+    implicit request => 
       implicit user =>
         Authentication.enforcePermission("admin") {
           Future(Ok(views.html.admin.users(User.list)))
         }
+  }
+
+  /**
+   * Get Users 50 at a time
+   * @param id The id for the last user currently loaded on the page 
+   * @param limit The size of the list of users queried from the db
+   * @return list of user JSON objects
+   */
+  def pagedUsers(id: Long, limit: Long) = Authentication.authenticatedAction() {
+    implicit request =>
+      implicit user =>
+      //check if admin
+      Authentication.enforcePermission("admin") {
+        Future(Ok(Json.toJson(User.listPaginated(id, limit).map(_.toJson))))
+      }
   }
 
   /**

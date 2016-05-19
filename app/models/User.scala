@@ -5,6 +5,7 @@ import anorm.SqlParser._
 import java.sql.SQLException
 import dataAccess.sqlTraits._
 import play.api.db.DB
+import play.api.libs.json.{Json, JsValue}
 import play.api.Play.current
 import play.api.Logger
 import controllers.routes
@@ -268,6 +269,24 @@ case class User(id: Option[Long], authId: String, authScheme: Symbol, username: 
     }
   }
 
+  /**
+   * Gets a string from an option.
+   */
+  def getStringFromOption(opt: Option[String]): String = opt.getOrElse("")
+
+  def toJson = Json.obj(
+    "id" -> id.get,
+    "authId" -> authId,
+    "authScheme" -> authScheme.name,
+    "username" -> username,
+    "name" -> getStringFromOption(name),
+    "email" -> getStringFromOption(email),
+    "picture" -> getStringFromOption(picture),
+    "accountLinkId" -> accountLinkId,
+    "created" -> created,
+    "lastLogin" -> lastLogin
+  )
+
   //       _____      _   _
   //      / ____|    | | | |
   //     | |  __  ___| |_| |_ ___ _ __ ___
@@ -477,7 +496,6 @@ case class User(id: Option[Long], authId: String, authScheme: Symbol, username: 
 
   def removeAllCoursePermissions(course: Course) =
     course.removeAllUserPermissions(this)
-
 }
 
 object User extends SQLSelectable[User] {
@@ -581,6 +599,24 @@ object User extends SQLSelectable[User] {
    * @return The list of users
    */
   def list: List[User] = list(simple)
+
+  /**
+   *
+   */
+  def listPaginated(id: Long, limit: Long): List[User] = {
+    DB.withConnection {
+      implicit connection =>
+        try {
+          SQL(s"select * from $tableName where id between {lowerBound} and {upperBound}")
+            .on('lowerBound -> id, 'upperBound -> (id + limit))
+            .as(simple *)
+        } catch {
+          case e: SQLException =>
+            Logger.debug("Error getting paginated users. User.scala")
+            Nil
+        }
+    }
+  }
 
   /**
    * Create a user from fixture data
