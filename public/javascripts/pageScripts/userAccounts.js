@@ -45,8 +45,8 @@ $(function(){
         </td></tr>\
     </table>\
     <input id="limit" type="text" value="50" style="width: 35px; margin-top: 10px;">\
-    <button on-tap="getPrev: get_first_index" class="btn btn-small btn-yellow">Previous</button>\
-    <button on-tap="getNext: get_last_index" class="btn btn-small btn-yellow">Next</button>';
+    <button on-tap="getPrev" class="btn btn-small btn-yellow">Previous</button>\
+    <button on-tap="getNext" class="btn btn-small btn-yellow">Next</button>';
 
     /* Add back when setting the selection outside of superselect works:
                     {{#(is_missing(.permissions, activePermissions) || has_extra(.permissions, activePermissions))}}\
@@ -65,6 +65,7 @@ $(function(){
             users: userList,
             viewer_id: viewer_id,
             shorten: function(str) {
+                // console.log(str);
                 return str.length < 16?str:
                     '<span title="'+str+'">'+str.substr(0,12)+'...</span>';
             },
@@ -82,13 +83,19 @@ $(function(){
                     (extra?"#AAAAFF":"#AAFFAA");
             },
             get_first_index: function(){
-                return utable.get("users")[0].id+1 || 0;
+                // gets the smallest user id currently in the table -1 or 0
+                if (utable.get("users").length > 0) {
+                    return utable.get("users")[0].id-1>-1?utable.get("users")[0].id-1:0;
+                } else {
+                    return 0;
+                }
             },
             get_last_index: function(){
-                return utable.get("users").pop().id+1 || 0;
-            },
-            limit_val: function(){
-                return document.getElementById("limit").value;
+                if (utable.get("users").length > 0) {
+                    return utable.get("users")[utable.get("users").length-1].id+1 || 0;
+                } else {
+                    return 0;
+                }
             }
         }
     });
@@ -113,9 +120,34 @@ $(function(){
         utable.set('activePermissions', utable.get("users")[index].permissions);
     });*/
 
-    utable.on("get_first_index", function(){
-        $("#limit")
+    function isNum(n) {
+      return !isNaN(parseFloat(n)) && isFinite(n);
     }
+
+
+    utable.on("getPrev", function(){
+        var limit = $("#limit").val();
+        var index = utable.get("get_first_index")();
+        console.log(index);
+        if (isNum(limit) && +limit > 0 && index >= 0) {
+            if(index === 0){
+                getUsers(0, Math.abs(limit));
+            }
+            else{
+                limit=(limit>index)?index:limit;
+                console.log("Limit: " + limit);
+                getUsers(index-limit, index);
+            }
+        } else console.log("error getting prev");
+    });
+
+    utable.on("getNext", function(){
+        var limit = $("#limit").val();
+        if (isNum(limit) && +limit > 0) {
+            getUsers(utable.get("get_last_index")(), limit);
+            console.log("Asdfasdf");
+        } else console.log("error getting next");
+    });
 
     utable.on('proxy', function(e,id){
         window.location = "/admin/proxy/"+id;
@@ -158,8 +190,8 @@ $(function(){
         var request = new XMLHttpRequest();
         request.onreadystatechange = function(){
             if (request.readyState == 4 && request.status == 200) {
-              userList = JSON.parse(request.responseText);
-              utable.set("users", userList);
+              var users = JSON.parse(request.responseText);
+              if(users.length > 0) { utable.set("users", users); }
             }
         }
         request.open("GET", "/admin/users/"+index+"/"+limit, true);
