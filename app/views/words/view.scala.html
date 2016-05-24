@@ -192,7 +192,7 @@
                 Promise.all(words.map(function(word){
                     return new Promise(function(resolve){
                         translate(srcLang, destLang, word, function(translationResults) {
-                            resolve(translationResults.translations.join(", "));
+                            resolve(translationResults.words.join(", "));
                         });
                     });
                 })).then(function(results){
