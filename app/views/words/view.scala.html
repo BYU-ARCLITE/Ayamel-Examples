@@ -104,7 +104,7 @@
                     console.log(  YLex.renderResult( results.words )  )
                     var html =
                         '<div class="translationResult noBorder">' +
-                            '<div class="translations">' + YLex.renderResult(results.words).join(", ") + '</div>' +
+                            '<div class="translations">' + YLex.renderResult(results) + '</div>' +
                             '<div class="engine">' + results.engine + '</div>' +
                         '</div>';
                     $(_this).after(html).remove();
