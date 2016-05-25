@@ -149,8 +149,8 @@
                         var data = new FormData();
                         data.append("token", authCode);
                         data.append("title", title);
-                        data.append("lang_terms", srcLang);
-                        data.append("lang_definitions", destLang);
+                        data.append("lang_terms", srcLang); // should be fine
+                        data.append("lang_definitions", destLang); // should be fine
                         for (var i=0; i<words.length; i++) {
                             data.append("terms[]", words[i]);
                             data.append("definitions[]", translations[i]);
@@ -192,7 +192,7 @@
                 Promise.all(words.map(function(word){
                     return new Promise(function(resolve){
                         translate(srcLang, destLang, word, function(translationResults) {
-                            resolve(translationResults.words.join(", "));
+                            resolve(translationResults.words);
                         });
                     });
                 })).then(function(results){
