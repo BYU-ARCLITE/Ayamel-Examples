@@ -40,6 +40,14 @@ $(function() {
             return true;
         }, false);
 
+        /**
+         * Adds a label programatically
+         */
+        sel.addLabel = function(label) {
+            labelInputText.value = label;
+            evtHandler();
+        };
+
         node.parentNode.replaceChild(element, node);
 
         function evtHandler(){

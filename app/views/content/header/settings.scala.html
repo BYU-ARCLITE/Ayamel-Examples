@@ -73,9 +73,15 @@
                     </div>
                 </div>
                 <div class="control-group">
+                    <label class="control-label" for="keywords">Keywords</label>
+                    <div class="controls">
+                        <input type="labels" id="keywords" name="keywords">
+                    </div>
+                </div>
+                <div class="control-group">
                     <label class="control-label" for="labels">Labels</label>
                     <div class="controls">
-                        <input type="labels" id="labels" name="labels" value="@content.labels.mkString(",")">
+                        <input type="labels" id="labels" name="labels">
                     </div>
                 </div>
                 <input type="submit" style="position: absolute; left: -9999px; width: 1px; height: 1px;"/>
@@ -110,7 +116,17 @@
                     ResourceLibrary.load("@content.resourceId", function(resource) {
                         document.getElementById("title").value = resource.title;
                         document.getElementById("description").value = resource.description;
-                        document.getElementById("labels").value = "@{content.labels.map(s => Literal(Constant(s)).toString).mkString(",")}";
+
+                        var labelsEl = document.getElementById("labels");
+                        var labelsList = @Html(content.labels.mkString("['", "','", "']"));
+                        labelsList.forEach(function(label){
+                            labelsEl.addLabel(label);
+                        });
+                        var keywordsEl = document.getElementById("keywords");
+                        resource.keywords.split(",").forEach(function(keyword) {
+                            keywordsEl.addLabel(keyword);
+                        });
+
                         new EditorWidgets.SuperSelect({
                             el: "langLocation",
                             data:{
