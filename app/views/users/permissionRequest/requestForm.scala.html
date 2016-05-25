@@ -11,7 +11,7 @@
         <h1>Permission Request Form</h1>
 
         @defining(SitePermissions.permissionList.filter { p =>
-          !user.hasSitePermission(p)
+          !user.hasSitePermission(p) && p != "admin"
         }) { permissions =>
           @if(permissions.isEmpty) {
             <p>
