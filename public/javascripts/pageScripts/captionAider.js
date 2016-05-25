@@ -716,20 +716,7 @@ $(function() {
                             mime: values[3]
                         },
                         function(cue, ott, ntt, mime){
-                            var node, txt, tlist = [],
-                                walker = document.createTreeWalker(
-                                    cue.getCueAsHTML(), 
-                                    NodeFilter.SHOW_TEXT, 
-                                    null,false
-                                );
-
-                            while(node = walker.nextNode()){
-                                if(!node.isElementContentWhitespace){
-                                    tlist.push(node.nodeValue.trim());
-                                }
-                            }
-                            
-                            txt = tlist.join(" ");
+                            var txt = Ayamel.utils.extractPlainText(cue.getCueAsHTML());
 
                             if(ott.language === ntt.language){
                                 return txt;
