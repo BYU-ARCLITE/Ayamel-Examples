@@ -98,7 +98,7 @@
     position: absolute;
     left: 40px;
     display: inline-block;
-    height: 100px;
+    /*height: 100px;*/
     width: calc(100% - 80px);
     overflow: hidden;
     white-space: nowrap;
