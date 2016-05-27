@@ -149,6 +149,14 @@ $(function(){
             files = this.get('files'),
             label = this.get('label');
 
+        // Check that caption file to be uploaded is supported.
+        // TODO: This needs to work for all unsupported files. (see TimedText for supported types)
+        var type = files[0].name.split('.')[1].toLowerCase();
+        if(type == "txt"){
+            alert('Error: Files of type \".txt\" are unsupported.');
+            return;
+        }
+
         if(!(files && label)){
             alert('File & Name are Required');
             return;
