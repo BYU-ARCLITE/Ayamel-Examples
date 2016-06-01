@@ -76,7 +76,7 @@ object CaptionAider extends Controller {
                 ResourceHelper.createResourceWithUri(resource, user, url, size, mime)
                   .flatMap { json =>
                     val subjectId = (json \ "id").as[String]
-                    AdditionalDocumentAdder.add(content, subjectId, 'captionTrack, Json.obj("kind" -> kind)) { _ => Ok(subjectId) }
+                    AdditionalDocumentAdder.add(content, subjectId, 'captionTrack, Json.obj("kind" -> kind)) { _ => Ok(json) }
                   }.recover { case e =>
                     Logger.debug("Could not create resource: " + e.getMessage())
                     InternalServerError("Could not create resource")
@@ -101,7 +101,6 @@ object CaptionAider extends Controller {
                   // Handle updating the information.
                   val updatedFile = (resource \ "content" \ "files")(0).as[JsObject] ++ Json.obj(
                       "bytes" -> size
-                      // "attributes" -> Json.obj("kind" -> kind) //How do we do this up above?
                   )
                   val updatedResource = resource.as[JsObject] ++ Json.obj(
                     "title" -> label,
