@@ -128,7 +128,7 @@ object DocumentManager extends Controller {
           val mime = "application/json"
           // should we use a unique filename?
           // 
-          val file = new File("/tmp/" + title + ".json")
+          val file = new File(/*"/tmp/" +*/ title + ".json")
           val writer = new PrintWriter(file)
           writer.write(params("manifest"))
           writer.close()
