@@ -22,7 +22,7 @@
 
         <h2>Content information</h2>
 
-        @defining(true) { annotations =>
+        @defining(request.queryString.getOrElse("annotations", List("false"))(0).toBoolean) { annotations =>
             <form class="form-horizontal" method="post" enctype="multipart/form-data" action="@{routes.ContentController.createFromUrl(courseId, annotations)}">
                 <div class="control-group">
                     <label class="control-label" for="url">URL</label>
