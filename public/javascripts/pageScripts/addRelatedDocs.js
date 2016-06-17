@@ -72,9 +72,9 @@ $(function(){
         return {value: code, text: Ayamel.utils.getLangName(code)};
     });
 
-	langList.push({ value: "apc", text: "North Levantine Arabic"});
-	langList.push({ value: "arz", text: "Egyptian Arabic"});
-	langList.sort(function(a,b){ return a.text.localeCompare(b.text); });
+    langList.push({ value: "apc", text: "North Levantine Arabic"});
+    langList.push({ value: "arz", text: "Egyptian Arabic"});
+    langList.sort(function(a,b){ return a.text.localeCompare(b.text); });
 
     function getLanguage(resource) {
         var langs = resource.languages.iso639_3;
@@ -149,14 +149,6 @@ $(function(){
             files = this.get('files'),
             label = this.get('label');
 
-        // Check that caption file to be uploaded is supported.
-        // TODO: This needs to work for all unsupported files. (see TimedText for supported types)
-        var type = files[0].name.split('.')[1].toLowerCase();
-        if(type == "txt"){
-            alert('Error: Files of type \".txt\" are unsupported.');
-            return;
-        }
-
         if(!(files && label)){
             alert('File & Name are Required');
             return;
@@ -170,6 +162,14 @@ $(function(){
         if(!mime){
             alert('Could not determine file type.');
             document.getElementById("uplCaptionsBtn").disabled = false;
+            return;
+        }
+
+        // Check that caption file to be uploaded is supported.
+        // It would be nice to actually restrict the file dialog
+        // so only supported files could be selected.
+        if(!TimedText.isSupported(mime)){
+            alert('Files of type \"'+mime+'\" are not supported.');
             return;
         }
 
