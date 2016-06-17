@@ -24,7 +24,7 @@ $(function() {
         audio: "text",
         image: "image"
     };
-    
+
     var annotationPopupEditor;
 
     $("#spinner").hide();
@@ -35,8 +35,10 @@ $(function() {
     }, false);
 
     var langList = Object.keys(Ayamel.utils.p1map).map(function (p1) {
-        var code = Ayamel.utils.p1map[p1];
-        return {value: code, text: Ayamel.utils.getLangName(code)};
+        var code = Ayamel.utils.p1map[p1],
+            engname = Ayamel.utils.getLangName(code,"eng"),
+            localname = Ayamel.utils.getLangName(code,code);
+        return {value: code, text: engname, desc: localname!==engname?localname:void 0};
     });
 
     langList.push({ value: "apc", text: "North Levantine Arabic"});
@@ -78,7 +80,7 @@ $(function() {
             var fileNameEl = document.getElementById("filename");
             var saveOptions = document.getElementById("save");
             var metadataTitle = document.getElementById("title");
-            
+
             document.getElementById("title").value = !!content.name ? content.name + " - Annotations" : "";
 
             fileNameEl.addEventListener('keyup', function() {
@@ -134,7 +136,7 @@ $(function() {
                     return;
                 }
                 /*
-                 *  Create and send post request. 
+                 *  Create and send post request.
                  *  The Following lines remove the following characters from the string fileName: * \ / < >
                  */
                 var re = /[\*\\\/\<\>][\ \t\n]*/g;
