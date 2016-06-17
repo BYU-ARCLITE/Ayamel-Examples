@@ -68,8 +68,10 @@ $(function(){
         </table>';
 
     langList = Object.keys(Ayamel.utils.p1map).map(function (p1) {
-        var code = Ayamel.utils.p1map[p1];
-        return {value: code, text: Ayamel.utils.getLangName(code)};
+        var code = Ayamel.utils.p1map[p1],
+            engname = Ayamel.utils.getLangName(code,"eng"),
+            localname = Ayamel.utils.getLangName(code,code);
+        return {value: code, text: engname, desc: localname!==engname?localname:void 0};
     });
 
     langList.push({ value: "apc", text: "North Levantine Arabic"});

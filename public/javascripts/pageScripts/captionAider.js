@@ -5,15 +5,16 @@ $(function() {
         trackResources, trackMimes,
         timeline, commandStack, Dialog,
         langList = Object.keys(Ayamel.utils.p1map).map(function (p1) {
-            var code = Ayamel.utils.p1map[p1];
-            return {value: code, text: Ayamel.utils.getLangName(code)};
+            var code = Ayamel.utils.p1map[p1],
+                engname = Ayamel.utils.getLangName(code,"eng"),
+                localname = Ayamel.utils.getLangName(code,code);
+            return {value: code, text: engname, desc: localname!==engname?localname:void 0};
         });
-
 
     var saveDiv = document.createElement('div'),
     saveImg = new Image(),
     saveText = document.createElement('p');
-    
+
     saveDiv.setAttribute('id', 'saveDiv');
     saveImg.setAttribute('id', 'saveImg');
     saveText.setAttribute('id', 'saveText');
@@ -23,7 +24,6 @@ $(function() {
     saveDiv.appendChild(saveImg);
     saveDiv.appendChild(saveText);
     document.body.appendChild(saveDiv);
-
 
     langList.push({ value: "apc", text: "North Levantine Arabic"});
     langList.push({ value: "arz", text: "Egyptian Arabic"});

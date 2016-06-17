@@ -104,8 +104,10 @@
             var languagesLoaded = false;
             $("#metadataModal").on("show", function() {
                 var langList = Object.keys(Ayamel.utils.p1map).map(function (p1) {
-                        var code = Ayamel.utils.p1map[p1];
-                        return {value: code, text: Ayamel.utils.getLangName(code)};
+                        var code = Ayamel.utils.p1map[p1],
+                            engname = Ayamel.utils.getLangName(code,"eng"),
+                            localname = Ayamel.utils.getLangName(code,code);
+                        return {value: code, text: engname, desc: localname!==engname?localname:void 0};
                     });
 
                 langList.push({ value: "apc", text: "North Levantine Arabic"});
@@ -207,14 +209,14 @@
                 $("#thumbnailForm").submit();
             }, false);
             @if(content.contentType == 'video) {
-            // Get the time from the player - currently, there is no way to directly access 
+            // Get the time from the player - currently, there is no way to directly access
             // the videoPlayer to grab the actual currentTime, so send an event to the
             // videoPlayer object itself to grab the video time
             document.getElementById("makeThumbnail").addEventListener('click', function(){
                 // Get the time
                 document.dispatchEvent(new CustomEvent('makeThumbnail',{bubbles:true, cancelable:true}));
             }, false);
-            
+
             // Recieved the current time from the videoPlayer, now create the thumbnail based off of the current time
             document.getElementById("makeThumbnail").addEventListener('timeUpdate', function(e){
                 // Get the time
