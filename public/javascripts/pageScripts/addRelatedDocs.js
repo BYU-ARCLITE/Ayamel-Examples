@@ -1,4 +1,18 @@
 $(function(){
+    var ackeys = [];
+
+    Object.keys(Ayamel.utils.p1map).forEach(function(p1){
+        var code = Ayamel.utils.p1map[p1],
+            engname = Ayamel.utils.getLangName(code,"eng").toLowerCase(),
+            localname = Ayamel.utils.getLangName(code,code).toLowerCase();
+        ackeys.push({key: engname, value: code});
+        if(localname!==engname){
+            ackeys.push({key: localname, value: code});
+        }
+    });
+
+    var acroot = AhoCorasick.buildTable(ackeys);
+
     var viewCapR, addCapR,
         addAnnR, viewAnnR,
         langList, altered = false,
@@ -9,7 +23,7 @@ $(function(){
             </tr></thead>\
             <tbody>\
                 <tr>\
-                <td><input type="file" value="{{files}}" /></td>\
+                <td><input type="file" value="{{files}}" on-change="addfile" /></td>\
                 <td><input type="text" value="{{label}}" /></td>\
                 <td><superselect icon="icon-globe" text="Select Language" selection="{{lang}}" button="left" open="{{selectOpen}}" multiple="false" options="{{languages}}" modalId="{{modalId}}" defaultValue="{{defaultValue}}"></td>\
                 <td><select value="{{kind}}">\
@@ -146,6 +160,19 @@ $(function(){
             defaultValue: {value:'zxx',text:'No Linguistic Content'}
         }
     });
+
+    addCapR.on("addfile", function(){
+        var lang, files = this.get('files'),
+            file = files[0],
+            name = file.name,
+            mime = file.type || TimedText.inferType(name);
+
+        this.set('label', TimedText.removeExt(mime,name));
+
+        lang = acroot.findall(name.toLowerCase()).map(function(r){ return r.value; })[0];
+        this.set('lang',lang?[lang]:[]);
+    });
+
     addCapR.on('upload', function(){
         var data, file, mime, dup = "",
             files = this.get('files'),
