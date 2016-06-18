@@ -34,7 +34,7 @@
         //and therefore am reluctant to change it. It overwrites itself with the text of returned pages,
         //which does not change the URL, which means that this page may end up overwriting the add
         //content page at the wrong address. If that happens, we need to re-write history to display
-        //the correct URL for this page here.  
+        //the correct URL for this page here.
         if(location.pathname !== "/content/@{content.id.get}" && history.pushState){
             history.pushState(null, "Ayamel - @{content.name}", "/content/@{content.id.get}");
         }
@@ -80,9 +80,9 @@
                 <li><a href="@routes.Courses.view(course.get.id.get)">@course.get.name</a> <span class="divider">/</span></li>
                 <li class="active">@content.name</li>
             </ul>
-			@if(user.isDefined) {
-			    @views.html.content.header.LTISettings(content, course.get, user.get)
-			}
+            @if(user.isDefined) {
+                @views.html.content.header.LTISettings(content, course.get, user.get)
+            }
         }
         @if(user.isDefined) {
             <div class="navbar">
@@ -113,44 +113,44 @@
                                     </ul>
                                 </li>
                                 @if(course.isDefined) {
-								    @if(user.get.hasCoursePermission(course.get, "teacher") || user.get.hasCoursePermission(course.get, "removeContent")) {
-										<li class="dropdown">
-											<a class="dropdown-toggle" data-toggle="dropdown" href="#">
-												<i class="icon-book"></i> Course <b class="caret"></b>
-											</a>
-											<ul class="dropdown-menu">
-											  @if(user.get.hasCoursePermission(course.get, "teacher")) {
-												<li><a href="#lmsModal" data-toggle="modal"><i class="icon-briefcase"></i> Add to LMS</a></li>
-											  }
-											  @if(user.get.hasCoursePermission(course.get, "removeContent")) {
-												<li><a href="#" id="courseremovebtn"><i class="icon-remove"></i> Remove from course</a></li>
-												<script>
-													document.getElementById("courseremovebtn").addEventListener("click",function(){
-														var xhr = new XMLHttpRequest();
-														xhr.addEventListener('load',function(){
-															if(history.pushState){ history.pushState(null,"",xhr.responseURL); }
-															document.open();
-															document.write(xhr.responseText);
-															document.close();
-														},false);
-														xhr.addEventListener('error',function(){ alert("Error removing content"); },false);
-														xhr.open("POST", "@routes.CourseContent.removeFromCourse(content.id.get, course.get.id.get)");
-														xhr.send();
-													},false);
-												</script>
-											  }
-											</ul>
-										</li>
-									}
+                                    @if(user.get.hasCoursePermission(course.get, "teacher") || user.get.hasCoursePermission(course.get, "removeContent")) {
+                                        <li class="dropdown">
+                                            <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                                                <i class="icon-book"></i> Course <b class="caret"></b>
+                                            </a>
+                                            <ul class="dropdown-menu">
+                                              @if(user.get.hasCoursePermission(course.get, "teacher")) {
+                                                <li><a href="#lmsModal" data-toggle="modal"><i class="icon-briefcase"></i> Add to LMS</a></li>
+                                              }
+                                              @if(user.get.hasCoursePermission(course.get, "removeContent")) {
+                                                <li><a href="#" id="courseremovebtn"><i class="icon-remove"></i> Remove from course</a></li>
+                                                <script>
+                                                    document.getElementById("courseremovebtn").addEventListener("click",function(){
+                                                        var xhr = new XMLHttpRequest();
+                                                        xhr.addEventListener('load',function(){
+                                                            if(history.pushState){ history.pushState(null,"",xhr.responseURL); }
+                                                            document.open();
+                                                            document.write(xhr.responseText);
+                                                            document.close();
+                                                        },false);
+                                                        xhr.addEventListener('error',function(){ alert("Error removing content"); },false);
+                                                        xhr.open("POST", "@routes.CourseContent.removeFromCourse(content.id.get, course.get.id.get)");
+                                                        xhr.send();
+                                                    },false);
+                                                </script>
+                                              }
+                                            </ul>
+                                        </li>
+                                    }
                                 }
-								@defining(Course.list.filter { course =>
-									user.get.hasCoursePermission(course, "addContent") && !course.getContent.contains(content)
-								}) { possibleCourses =>
-									@if(possibleCourses.length > 0) {
-										<li><a href="#addToCourseModal" data-toggle="modal"><i class="icon-book"></i> Add to Course</a></li>
-										@views.html.content.header.addToCourse(content, possibleCourses, user.get)
-									}
-								}
+                                @defining(Course.list.filter { course =>
+                                    user.get.hasCoursePermission(course, "addContent") && !course.getContent.contains(content)
+                                }) { possibleCourses =>
+                                    @if(possibleCourses.length > 0) {
+                                        <li><a href="#addToCourseModal" data-toggle="modal"><i class="icon-book"></i> Add to Course</a></li>
+                                        @views.html.content.header.addToCourse(content, possibleCourses, user.get)
+                                    }
+                                }
                                 @if(content.isEditableBy(user.get)) {
                                     <li class="dropdown">
                                         <a class="dropdown-toggle" data-toggle="dropdown" href="#">
@@ -169,7 +169,7 @@
                                         </ul>
                                         @views.html.content.header.settings(content, resourceLibraryUrl, user.get)
                                     </li>
-                                    <li class="dropdown">
+                                    <li class="dropdown" id="downloadButton">
                                         <a class="dropdown-toggle" data-toggle="dropdown" href="#">
                                             <i class="icon-download"></i> Download <b class="caret"></b>
                                         </a>
@@ -251,10 +251,12 @@
                 ResourceLibrary.load(content.resourceId).then(function(resource){
                     var title = resource.title,
                         descEl = document.getElementById("metadataDescription");
+
                     resource.description.split('\n').forEach(function(text){
                         descEl.appendChild(document.createTextNode(text));
                         descEl.appendChild(document.createElement('br'));
                     });
+
                     document.getElementById("metadataLanguages").firstChild.innerHTML =
                         resource.languages.iso639_3.map(function(langCode) {
                             return '<em class="pad-left-high">' + Ayamel.utils.getLangName(langCode) + '</em>';
@@ -265,12 +267,17 @@
                         .map(function(w){return "<span class='label label-info pad-left-med'>" + w + "</span>";})
                         .join('');
 
-                    document.getElementById("downloadMenu").innerHTML =
-                        resource.content.files
-                        .filter(function(fobj){return fobj.downloadUri;})
-                        .map(function(fobj){
+                @if(content.isEditableBy(user.get)){
+                    var downloads = resource.content.files
+                            .filter(function(fobj){return fobj.downloadUri;});
+                    if(downloads.length > 0){
+                        document.getElementById("downloadMenu").innerHTML = downloads.map(function(fobj){
                             return '<li><a href="'+fobj.downloadUri+'" target="_blank" download="'+title+'">'+fobj.representation+': '+fobj.mime+' ('+(fobj.bytes/1024)+'KB)</a></li>';
-                        }).join('') || '<li><a>No downloads available</a></li>';
+                        }).join('');
+                    }else{
+                        document.getElementById("downloadButton").style.display = "none";
+                    }
+                }
                 });
             });
         </script>
