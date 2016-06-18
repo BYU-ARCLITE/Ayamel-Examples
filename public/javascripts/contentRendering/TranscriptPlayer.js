@@ -29,7 +29,7 @@ var TranscriptPlayer = (function(){
                     <select value="{{activeIndex}}">\
                         {{#transcripts:i}}<option value="{{i}}">{{.label}}</option>{{/transcripts}}\
                     </select>\
-                    <button on-tap="sync" type="button" class="{{sync?"btn active":"btn"}}" title="Sync with media"><i class="icon-refresh"></i></button>\
+                    <button on-tap="sync" type="button" class="{{sync?"btn active":"btn"}}" title="Anchor transcript to media location"><i class="icon-anchor"></i></button>\
                 </div>\
                 <hr/>\
                 <div class="transcriptContentHolder">\
