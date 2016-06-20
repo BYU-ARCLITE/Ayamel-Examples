@@ -101,7 +101,6 @@
                 var destLang = /*Ayamel.utils.downgradeLangCode*/(this.dataset.destLang);
 
                 translate(srcLang, destLang, text, function(results) {
-                    console.log(  YLex.renderResult( results.words )  )
                     var html =
                         '<div class="translationResult noBorder">' +
                             '<div class="translations">' + YLex.renderResult(results) + '</div>' +
@@ -122,10 +121,10 @@
                 var $button = $(this);
 
                 // Collect information
-                var srcLang = /*Ayamel.utils.downgradeLangCode*/(this.dataset.srcLang);
-                var destLang = /*Ayamel.utils.downgradeLangCode*/(this.dataset.destLang);
-                var srcLangName = /*Ayamel.utils.getLangName*/(this.dataset.srcLang);
-                var destLangName = /*Ayamel.utils.getLangName*/(this.dataset.destLang)
+                var srcLang = this.dataset.srcLang;
+                var destLang = this.dataset.destLang;
+                var srcLangName = Ayamel.utils.getLangName(srcLang);
+                var destLangName = Ayamel.utils.getLangName(destLang)
                 var title = ((srcLang === destLang)?srcLangName:srcLangName+"-"+destLangName) + " words from Ayamel";
                 var words = $(".exportCheckbox:checked[data-src-lang="+this.dataset.srcLang+"][data-dest-lang="+this.dataset.destLang+"]").toArray().map(function (e) {
                     return e.dataset.text;
@@ -149,11 +148,11 @@
                         var data = new FormData();
                         data.append("token", authCode);
                         data.append("title", title);
-                        data.append("lang_terms", srcLang); // should be fine
-                        data.append("lang_definitions", destLang); // should be fine
+                        data.append("lang_terms", Ayamel.utils.downgradeLangCode(srcLang));
+                        data.append("lang_definitions", Ayamel.utils.downgradeLangCode(destLang));
                         for (var i=0; i<words.length; i++) {
                             data.append("terms[]", words[i]);
-                            data.append("definitions[]", translations[i]);
+                            data.append("definitions[]", JSON.stringify(translations[i]));
                         }
                         $.ajax("/words/export", {
                             type: "post",
