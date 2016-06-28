@@ -9,10 +9,11 @@ var TranscriptPlayer = (function(){
 
     // TODO: resizing
 
-    /* args: captionTracks, holder, sync */
+    /* args: captionTracks, holder, sync, annotator */
     function TranscriptPlayer(args) {
 
         var currentTime = 0,
+            annotator = args.annotator,
             element = args.holder,
             tracks = args.captionTracks.filter(function(track){
                 return track.kind === "captions" ||
@@ -49,8 +50,8 @@ var TranscriptPlayer = (function(){
                 direction: function(cue){ return Ayamel.Text.getDirection(cue.getCueAsHTML().textContent); },
                 HTML: function(cue){
                     var HTML = document.createElement('span');
-                    HTML.appendChild(args.annotator?
-                            args.annotator.Text(cue.text.replace(/<[^]*?>/gm, '')):
+                    HTML.appendChild(annotator?
+                            annotator.Text(cue.text.replace(/<[^]*?>/gm, '')):
                             cue.getCueAsHTML()
                     );
                     return HTML.outerHTML;
@@ -127,6 +128,7 @@ var TranscriptPlayer = (function(){
                     parent.scrollTop = (top - parent.offsetHeight + bottom)/2 - parent.offsetTop;
                 }
             },
+            setAnnotator: { value: function(ann){ annotator = ann; } },
             update: { value: function(){ ractive.set('transcripts', tracks); } }
         });
     }
