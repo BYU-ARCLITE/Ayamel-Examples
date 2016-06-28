@@ -116,7 +116,7 @@ var ContentRenderer = (function(){
                          cache: false,
                          contentType: false,
                          processData: false,
-                         
+
                          data: Data,
                          success: function(){
                              addWord.innerHTML = "<span class='color-blue'>Added to word list.</span>";
@@ -127,7 +127,7 @@ var ContentRenderer = (function(){
                          }
                      });
                  });
-             }          
+             }
 
             //keep the top of the new translation visible.
             if (html.offsetHeight > translationsHolder.offsetHeight) {
@@ -179,6 +179,19 @@ var ContentRenderer = (function(){
             trackResources.set(track, event.detail.resource);
             trackMimes.set(track, event.detail.mime);
         }, false);
+
+        player.addEventListener("enableannset", function() {
+          transcriptPlayer.update();
+        });
+
+        player.addEventListener("disableannset", function() {
+            transcriptPlayer.update();
+        });
+
+        player.mediaPlayer.promise.then(function() {
+            transcriptPlayer.setAnnotator(player.mediaPlayer.annotator);
+            transcriptPlayer.update();
+        });
 
         return DOM;
     }
