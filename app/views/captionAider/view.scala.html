@@ -161,14 +161,4 @@
             <superselect icon="icon-laptop" text="Select Track" selection="{{selectedTracks}}" button="left" open="{{selectOpen}}" multiple="true" options="{{tracks}}" modalId="{{modalId}}">
         </span>
     </script>
-
-    <script type="text/javascript">
-        $('#newTrackModal').on('shown.bs.modal', function() {
-            $('#createTrackAutofocus').focus();
-        });
-        $('#editTrackModal').on('shown.bs.modal', function() {
-            $('#editTrackAutofocus').focus();
-        });
-
-    </script>
 }
