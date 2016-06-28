@@ -281,5 +281,17 @@
                 });
             });
         </script>
+
+        <!-- For scaling modals when too window is too short -->
+        <script>
+            window.addEventListener("resize", function(){
+                var modalBody = document.getElementById('thumbnailBody');
+                if(window.innerHeight < 550){
+                    modalBody.style.maxHeight = window.innerHeight-200 + "px";
+                    return;
+                }
+                modalBody.style.maxHeight = "400px";
+            });
+        </script>
     </div>
 }

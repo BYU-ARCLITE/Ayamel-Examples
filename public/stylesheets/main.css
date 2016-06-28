@@ -519,3 +519,9 @@ h1, h2, h3, h4, h5, h6 {
 .bigModal .modal-footer > div {
     padding: 14px 15px 15px;
 }
+
+/*@media screen and (max-height: 500px){
+    .modal-body {
+        height: 100px !important;
+    }
+}*/
