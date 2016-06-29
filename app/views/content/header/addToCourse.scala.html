@@ -9,7 +9,7 @@
         <form id="addToCourseForm" method="post" enctype="application/x-www-form-urlencoded" action="@routes.CourseContent.addToCourse(content.id.get)">
             <label for="course">Select which course this content will be added to:</label>
             <select name="course" id="course">
-                @for(course <- possibleCourses) {
+                @for(course <- possibleCourses.sortBy(_.name)) {
                     <option value="@course.id.get">@course.name</option>
                 }
             </select>
