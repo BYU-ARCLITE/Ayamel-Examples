@@ -155,6 +155,7 @@ POST    /help/:id/delete                    controllers.HelpPages.delete(id: Lon
 
 # Ajax utilities
 POST    /scola                              controllers.Scola.buildUrl
+POST    /byusecure                          controllers.BYUSecure.buildUrl
 POST    /ajax/permissionChecker             controllers.ajax.PermissionChecker.check
 GET     /ajax/content/mine                  controllers.ajax.ContentLister.mine
 GET     /ajax/content/course                controllers.ajax.ContentLister.course

@@ -71,7 +71,8 @@ playgraph.player.key=""
 playgraph.player.secret=""
 
 # Translation configuration
-translation.endpoint=""
+translation.library="https://y-lex.byu.edu/assets/javascripts/ylex.js"
+translation.endpoint="https://y-lex.byu.edu/api"
 translation.key="################################"
 
 # SMTP (email) settings
@@ -92,6 +93,10 @@ exercises.createFormScript="https://script.google.com/macros/s/1234567890abcdefg
 exercises.getResponseIndexScript="https://script.google.com/macros/s/1234567890abcdefghijklmnopqrstuvwxyz/exec"
 exercises.gradeFormScript="https://script.google.com/macros/s/1234567890abcdefghijklmnopqrstuvwxyz/exec"
 
+# Settings for Google OpenID Connect
+openID.client_id=""
+openID.client_secret=""
+
 # Settings for exporting to Quizlet
 quizlet.clientId=""
 quizlet.secretKey=""
@@ -101,6 +106,20 @@ quizlet.auth=""
 learninglocker.endpoint=""
 learninglocker.username=""
 learninglocker.password=""
+
+# SCOLA Configuration
+scola.lifetime=28000
+scola.secret=""
+scola.prefix=""
+scola.algorithm="SHA-256"
+scola.hasip=false
+
+# BYUSecure Configuration
+byusecure.lifetime=28000
+byusecure.secret=""
+byusecure.prefix=""
+byusecure.algorithm="SHA-256"
+byusecure.hasip=false
 
 #Extra MIME Types
 mimetype.m3u8="application/x-mpegurl"
