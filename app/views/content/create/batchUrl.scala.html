@@ -21,19 +21,59 @@
 
         <h2>Ayamel Batch Upload Utility 2.0</h2>
 
+        <style>
+          .dropZone{
+            background: lightgrey;
+            border: 3px solid white;
+            border-radius: 3px;
+            padding: 45px;
+            margin-bottom: 15px;
+            min-height: 125px;
+            min-width: 300px;
+            max-width: 45%;
+            resize: both;
+            transition: border .75s,
+                        background .75s,
+                        color .35s,
+                        border-radius .75s;
+          }
+          .dropZone:hover{
+            border: 3px dashed grey;
+            border-radius: 5px;
+            background: darkgrey;
+            color: white;
+          }
+          li{
+            list-style-type: circle;
+          }
+
+          #dropLeft{
+            float: left;
+          }
+
+          #dropRight{
+            float: right;
+          }
+        </style>
+
         <div class="grid-container">
             <div class="grid-75">
+              <!-- BULK/CSV UPLOAD AREA -->
+                <div class="dropZone" id="dropLeft">
+                  <h4>Add your CSV Here:</h3><br/>
+                  <input type="file" id="csvList" multiple>
+                  <br>
+                  <br>
+                </div>
 
-                <br><br>
-                Add your CSV Here:&nbsp;
-                <input type="file" id="files" multiple>
-                <br><br><br>
-
-                <!-- TODO: implement uploading content...
-                Select Media Files here:<br>
-                <input type="file" id="files" multiple>
-                <br><br>
-                -->
+              <!-- CONTENT UPLOADER AREA  -->
+                <div class="dropZone" id="dropRight">
+                  <h4>Add Local Media Files here:</h4><br>
+                  <img src="/assets/images/info.png" style="height:20px;">
+                  <span style="font-style: italic;">Title reference must be the same as filename.</span><br/>
+                  <input type="file" id="localFilesList" multiple>
+                  <ul id="filesUL"></ul>
+                </div>
             </div>
 
             <div id="populatedItems"></div>
@@ -69,7 +109,7 @@
 				{{/id}}</td>
 			</tr>
 			{{/content}}
-		</table>		
+		</table>
 		<div>
 			<button class="btn btn-blue" on-tap="start" {{disabled?'disabled="true"':''}}>Start Batch</button>
 			<button class="btn btn-yellow" on-tap="clear" {{disabled?'disabled="true"':''}}>Clear Table</button>
@@ -81,4 +121,26 @@
 		initBatchTable("@routes.ContentController.createFromBatch(courseId)");
     </script>
 
+    <script>
+      $(document).ready(function(){
+          //////////////////////////////////////////////////////
+          //    Event Listener for adding local files list    //
+          //////////////////////////////////////////////////////
+          $('#localFilesList').change(function(e){
+            // TODO: Throw error for duplicate file name
+              var list = e.target.files;
+
+              // Delete all existing childNodes (if any)
+              $('#filesUL').empty();
+
+              // create an <li> for each filename
+              for(var i=0; i < list.length; i++){
+                var node = document.createElement('LI');
+                var textNode = document.createTextNode(list[i].name);
+                node.appendChild(textNode);
+                filesUL.appendChild(node);
+              }
+          });
+      });
+    </script>
 }

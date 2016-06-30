@@ -115,47 +115,88 @@ object ContentController extends Controller {
           val keywords = data.get("keywords").map(_.toList).getOrElse(Nil).mkString(",")
           val languages = data.get("languages").map(_.toList).getOrElse(List("eng"))
 
-          // Get the URL and MIME. Process the URL if it is not "special"
-          val raw_url = data("url")(0)
-          val url = if (ResourceHelper.isHTTP(raw_url)) processUrl(raw_url) else raw_url
 
-          if (ResourceHelper.isValidUrl(url)) {
-            val mime = ResourceHelper.getMimeFromUri(url)
-            Logger.debug(s"Got mime: $mime")
-
-            // Create the content
-            ResourceHelper.getUrlSize(url).recover[Long] { case _ =>
-              Logger.debug(s"Could not access $url to determine size.")  
-              0
-            }.flatMap { bytes =>
-              val info = ContentDescriptor(title, description, keywords, url, bytes, mime,
-                                           labels = labels, categories = categories,
-                                           languages = languages)
-
-              // find alternate create content ↓ through annotations method
-              if (courseId > 0 && courseId != 40747105) {
-                ContentManagement.createAndAddToCourse(info, user, contentType, courseId)
-                  .map { cid => Ok(Json.obj("contentId" -> cid)) }
-                  .recover { case e: Exception =>
-                    val message = e.getMessage()
-                    Logger.debug(s"Error creating content in course $courseId: $message")
-                    InternalServerError(Json.obj("message" -> s"Could not add content to course: $message"))
+          if (request.body.file("file").isDefined)
+          {
+              // Upload the file
+              request.body.file("file").map { file =>
+                FileUploader.normalizeAndUploadFile(file).flatMap { url =>
+                  // Create the content
+                  val info = ContentDescriptor(title, description, keywords, url,
+                                               file.ref.file.length(), file.contentType.get,
+                                               labels = labels, categories = categories,
+                                               languages = languages)
+                  if (courseId > 0) {
+                    ContentManagement.createAndAddToCourse(info, user, contentType, courseId)
+                      .map { cid => Ok(Json.obj("contentId" -> cid)) }
+                      .recover { case e: Exception =>
+                        val message = e.getMessage()
+                        Logger.debug(s"Error creating content in course $courseId: $message")
+                        InternalServerError(Json.obj("message" -> s"Could not add content to course: $message"))
+                      }
+                  } else {
+                    ContentManagement.createContent(info, user, contentType)
+                    .map { cid => Ok(Json.obj("contentId" -> cid)) }
+                    .recover { case e: Exception =>
+                      val message = e.getMessage()
+                      Logger.debug(s"Error creating content $courseId: $message")
+                      InternalServerError(Json.obj("message" -> s"Could not add content: $message"))
+                    }
                   }
-              } else {
-                ContentManagement.createContent(info, user, contentType)
-                .map { cid => Ok(Json.obj("contentId" -> cid)) }
-                  .recover { case e: Exception =>
-                    val message = e.getMessage()
-                    Logger.debug(s"Error creating content: $message")
-                    InternalServerError(Json.obj("message" -> s"Could not add content: $message"))
-                  }
+                }.recover { case e =>
+                  val message = e.getMessage()
+                  Logger.debug(s"Failed to upload FILE: $message")
+                  InternalServerError(Json.obj("message" -> s"Failed to upload FILE: $message"))
+                }
+              }.getOrElse {
+                Future(BadRequest(Json.obj("message" -> "The FILE is missing.")))
               }
-            }
-          } else
-            Future{
-              BadRequest(Json.obj("message" -> "The given URL is invalid."))
-            }
+          }
+
+
+        else{
+          // Get the URL and MIME. Process the URL if it is not "special"
+            val raw_url = data("url")(0)
+            val url = if (ResourceHelper.isHTTP(raw_url)) processUrl(raw_url) else raw_url
+
+            if (ResourceHelper.isValidUrl(url)) {
+              val mime = ResourceHelper.getMimeFromUri(url)
+              Logger.debug(s"Got mime: $mime")
+
+              // Create the content
+              ResourceHelper.getUrlSize(url).recover[Long] { case _ =>
+                Logger.debug(s"Could not access $url to determine size.")
+                0
+              }.flatMap { bytes =>
+                val info = ContentDescriptor(title, description, keywords, url, bytes, mime,
+                                             labels = labels, categories = categories,
+                                             languages = languages)
+
+                // find alternate create content ↓ through annotations method
+                if (courseId > 0 && courseId != 40747105) {
+                  ContentManagement.createAndAddToCourse(info, user, contentType, courseId)
+                    .map { cid => Ok(Json.obj("contentId" -> cid)) }
+                    .recover { case e: Exception =>
+                      val message = e.getMessage()
+                      Logger.debug(s"Error creating content in course $courseId: $message")
+                      InternalServerError(Json.obj("message" -> s"Could not add content to course: $message"))
+                    }
+                } else {
+                  ContentManagement.createContent(info, user, contentType)
+                  .map { cid => Ok(Json.obj("contentId" -> cid)) }
+                    .recover { case e: Exception =>
+                      val message = e.getMessage()
+                      Logger.debug(s"Error creating content: $message")
+                      InternalServerError(Json.obj("message" -> s"Could not add content: $message"))
+                    }
+                }
+              }
+            } else
+              Future{
+                BadRequest(Json.obj("message" -> "The given URL is invalid."))
+              }
         }
+      }
   }
 
 
@@ -189,7 +230,7 @@ object ContentController extends Controller {
 
             // Create the content
             ResourceHelper.getUrlSize(url).recover[Long] { case _ =>
-              Logger.debug(s"Could not access $url to determine size.")  
+              Logger.debug(s"Could not access $url to determine size.")
               0
             }.flatMap { bytes =>
               val info = ContentDescriptor(title, description, keywords, url, bytes, mime,
@@ -203,7 +244,7 @@ object ContentController extends Controller {
                   Redirect(routes.Courses.view(courseId))
                 }
                 ContentManagement.createAndAddToCourse(info, user, contentType, courseId)
-                  .map { _ => 
+                  .map { _ =>
                     redirect.flashing("success" -> "Content created and added to course")
                   }
                   .recover { case e: Exception =>
@@ -286,7 +327,7 @@ object ContentController extends Controller {
                   Redirect(routes.Courses.view(courseId))
                 }
                 ContentManagement.createAndAddToCourse(info, user, contentType, courseId)
-                  .map { _ => 
+                  .map { _ =>
                     redirect.flashing("success" -> "Content created and added to course")
                   }
                   .recover { case e: Exception =>
@@ -296,7 +337,7 @@ object ContentController extends Controller {
                   }
               } else {
                 ContentManagement.createContent(info, user, contentType)
-                .map { _ => 
+                .map { _ =>
                     redirect.flashing("success" -> "Content created")
                   }
                   .recover { case e: Exception =>
