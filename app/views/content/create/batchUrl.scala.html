@@ -21,6 +21,19 @@
 
         <h2>Ayamel Batch Upload Utility 2.0</h2>
 
+        <style>
+          #dropZone{
+            float: right;
+            background: lightblue;
+            border: 2px dashed darkgray;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: -120px;
+            overflow-y: scroll;
+            max-height: 100px;
+          }
+        </style>
+
         <div class="grid-container">
             <div class="grid-75">
 
@@ -29,11 +42,12 @@
                 <input type="file" id="files" multiple>
                 <br><br><br>
 
-                <!-- TODO: implement uploading content...
-                Select Media Files here:<br>
-                <input type="file" id="files" multiple>
-                <br><br>
-                -->
+                <!-- TODO: implement uploading content... -->
+                <div id="dropZone">
+                  Select Media Files here:<br>
+                  <input type="file" id="files" multiple>
+                  <ul id="filesList"></ul>
+              </div>
             </div>
 
             <div id="populatedItems"></div>
@@ -69,7 +83,7 @@
 				{{/id}}</td>
 			</tr>
 			{{/content}}
-		</table>		
+		</table>
 		<div>
 			<button class="btn btn-blue" on-tap="start" {{disabled?'disabled="true"':''}}>Start Batch</button>
 			<button class="btn btn-yellow" on-tap="clear" {{disabled?'disabled="true"':''}}>Clear Table</button>
