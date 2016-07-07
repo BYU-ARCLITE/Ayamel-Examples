@@ -29,8 +29,10 @@
             border-radius: 10px;
             padding: 15px;
             margin-top: -120px;
-            overflow-y: scroll;
+            margin-bottom: 15px;
+            overflow: scroll;
             max-height: 100px;
+            max-width: 300px;
           }
         </style>
 
@@ -39,15 +41,15 @@
 
                 <br><br>
                 Add your CSV Here:&nbsp;
-                <input type="file" id="files" multiple>
+                <input type="file" id="csvList" multiple>
                 <br><br><br>
 
                 <!-- TODO: implement uploading content... -->
                 <div id="dropZone">
                   Select Media Files here:<br>
-                  <input type="file" id="files" multiple>
-                  <ul id="filesList"></ul>
-              </div>
+                  <input type="file" id="localFilesList" multiple>
+                  <ul id="filesUL"></ul>
+                </div>
             </div>
 
             <div id="populatedItems"></div>
@@ -95,4 +97,23 @@
 		initBatchTable("@routes.ContentController.createFromBatch(courseId)");
     </script>
 
+    <script>
+      $(document).ready(function(){
+          $('#localFilesList').change(function(e){
+            // TODO: Throw error for duplicate file name
+              var list = e.target.files;
+
+              // Delete all existing childNodes (if any)
+              $('#filesUL').empty();
+              
+              // create an <li> for each filename
+              for(var i=0; i < list.length; i++){
+                var node = document.createElement('LI');
+                var textNode = document.createTextNode(list[i].name);
+                node.appendChild(textNode);
+                filesUL.appendChild(node);
+              }
+          });
+      });
+    </script>
 }

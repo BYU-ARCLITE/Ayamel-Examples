@@ -30,9 +30,27 @@ function initBatchTable(target){
 		if(myTable.get("content").length < 2){ return; }
 		myTable.get("content").splice(index, 1);
 	});
-	
+
 	function submitRow(row, index){
 		var formData = new FormData();
+		var filesElement = document.getElementById('localFilesList');
+		var filesList = [];
+
+		// GET localFilesList data
+		for(var i=0; i < filesElement.files.length; i++){
+			filesList.push(filesElement.files[i].name);
+		}
+
+		// If the URL textbox is empty, check the filesList
+		if(row.url == ""){
+			console.log("No url! Checking localFilesList...");
+
+					for(var i=0; i < filesList.length; i++){
+						console.log(filesList[i]);
+					}
+				return;
+		}
+
 
 		formData.append("contentType",  row.contentType.toLowerCase());	// I think that the "contentType" endpoint is case sensitve.
 		formData.append("title",        row.title       );
@@ -86,7 +104,7 @@ function initBatchTable(target){
 
 	myTable.on("clear", clearTable);
 
-	document.getElementById('files').addEventListener("change", function(){
+	document.getElementById('csvList').addEventListener("change", function(){
 		myTable.set('content', []);
 
 		[].reduce.call(this.files, function(acc, file){
