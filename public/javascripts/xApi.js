@@ -158,7 +158,7 @@ var xApi = (function() {
                     type: baseUri+"mediaPlayer",
                     extensions : extensions
                 });
-            }, 
+            },
             repeatCaption: function(time){
                 var extensions = {};
                 extensions[baseUri+"playerTime"] = time;
@@ -167,7 +167,7 @@ var xApi = (function() {
                     type: baseUri+"mediaPlayer",
                     extensions : extensions
                 });
-            },  
+            },
             transcriptCueClick: function(captionTrackId, cueNumber, time) {
                 var extensions = {};
                 extensions[baseUri+"playerTime"] = time;
@@ -183,7 +183,7 @@ var xApi = (function() {
                 var extensions = {};
                 extensions[baseUri+"playerTime"] = time;
                 extensions[baseUri+"captionTrackId"] = captionTrackId;
-                extensions[baseUri+"text"] = text;
+                extensions[baseUri+"text"] = "\"" + text + "\"";
                 send({
                     verb: "translated_word",
                     type: baseUri+"caption",
@@ -195,7 +195,7 @@ var xApi = (function() {
                 extensions[baseUri+"captionTrackId"] = captionTrackId;
                 extensions[baseUri+"cueNumber"] = cueNumber;
                 extensions[baseUri+"playerTime"] = time;
-                extensions[baseUri+"text"] = text;
+                extensions[baseUri+"text"] = "\"" + text + "\"";
                 send({
                     verb: "translateda_word",
                     type: baseUri+"caption",
