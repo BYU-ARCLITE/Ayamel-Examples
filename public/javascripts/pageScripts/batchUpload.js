@@ -34,23 +34,20 @@ function initBatchTable(target){
 	function submitRow(row, index){
 		var formData = new FormData();
 		var filesElement = document.getElementById('localFilesList');
-		var filesList = [];
-
-		// GET localFilesList data
-		for(var i=0; i < filesElement.files.length; i++){
-			filesList.push(filesElement.files[i].name);
-		}
+		var filesList = [].filter.call(filesElement.files, function(val){
+			return row.title == val.name
+		});
 
 		// If the URL textbox is empty, check the filesList
 		if(row.url == ""){
 			console.log("No url! Checking localFilesList...");
 
-					for(var i=0; i < filesList.length; i++){
-						console.log(filesList[i]);
-					}
-				return;
+			if(filesList.length > 0){
+				formData.append("file", filesList[0]);
+			}else{
+				return Promise.reject();
+			}
 		}
-
 
 		formData.append("contentType",  row.contentType.toLowerCase());	// I think that the "contentType" endpoint is case sensitve.
 		formData.append("title",        row.title       );
