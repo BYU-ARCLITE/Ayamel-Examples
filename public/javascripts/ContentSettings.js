@@ -411,23 +411,21 @@ var ContentSettings = (function() {
 
             targetLanguages = new EditorWidgets.SuperSelect({
                 el: "targetLangLocation",
-                data:{
-                    id: 'languages',
-                    selection: (content.settings.targetLanguages || "")
-                                    .split(",").filter(function(s){ return !!s; }),
-                    icon: 'icon-globe',
-                    text: 'Select Language',
-                    button: 'left',
-                    modalId: 'configurationModal',
-                    multiple: true,
-                    options: Object.keys(Ayamel.utils.p1map).map(function (p1) {
-                        var code = Ayamel.utils.p1map[p1],
-                            engname = Ayamel.utils.getLangName(code,"eng"),
-                            localname = Ayamel.utils.getLangName(code,code);
-                        return {value: code, text: engname, desc: localname!==engname?localname:void 0};
-                    }).sort(function(a,b){ return a.text.localeCompare(b.text); }),
-                    defaultValue: {value:"",text:"No Linguistic Content"}
-                }
+                id: 'languages',
+                value: (content.settings.targetLanguages || "")
+                            .split(",").filter(function(s){ return !!s; }),
+                icon: 'icon-globe',
+                text: 'Select Language',
+                button: 'left',
+                modalId: 'configurationModal',
+                multiple: true,
+                options: Object.keys(Ayamel.utils.p1map).map(function (p1) {
+                    var code = Ayamel.utils.p1map[p1],
+                        engname = Ayamel.utils.getLangName(code,"eng"),
+                        localname = Ayamel.utils.getLangName(code,code);
+                    return {value: code, text: engname, desc: localname!==engname?localname:void 0};
+                }).sort(function(a,b){ return a.text.localeCompare(b.text); }),
+                defaultValue: {value:"",text:"No Linguistic Content"}
             });
         });
     }

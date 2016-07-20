@@ -11,7 +11,7 @@ $(function(){
                 <tr>\
                 <td><input type="file" value="{{files}}" /></td>\
                 <td><input type="text" value="{{label}}" /></td>\
-                <td><superselect icon="icon-globe" text="Select Language" selection="{{lang}}" button="left" open="{{selectOpen}}" multiple="false" options="{{languages}}" modalId="{{modalId}}" defaultValue="{{defaultValue}}"></td>\
+                <td><SuperSelect icon="icon-globe" text="Select Language" value="{{lang}}" btnpos="left" multiple="false" options="{{languages}}" modal="{{modalId}}" defaultOption="{{defaultOption}}"></td>\
                 <td><select value="{{kind}}">\
                     <option value="subtitles">Subtitles</option>\
                     <option value="captions">Captions</option>\
@@ -31,7 +31,7 @@ $(function(){
                 <tr>\
                 <td><input type="file" value="{{files}}" /></td>\
                 <td><input type="text" value="{{label}}" /></td>\
-                <td><superselect icon="icon-globe" text="Select Language" selection="{{lang}}" button="left" open="{{selectOpen}}" multiple="false" options="{{languages}}" modalId="{{modalId}}" defaultValue="{{defaultValue}}"></td>\
+                <td><SuperSelect icon="icon-globe" text="Select Language" value="{{lang}}" btnpos="left" multiple="false" options="{{languages}}" modal="{{modalId}}" defaultOption="{{defaultOption}}"></td>\
                 <td><button on-tap="upload">Upload</button></td>\
                 </tr>\
             </tbody>\
@@ -67,7 +67,7 @@ $(function(){
             </tbody>\
         </table>';
 
-    langList = Object.keys(Ayamel.utils.p1map).map(function (p1) {
+    /*langList = Object.keys(Ayamel.utils.p1map).map(function (p1) {
         var code = Ayamel.utils.p1map[p1],
             engname = Ayamel.utils.getLangName(code,"eng"),
             localname = Ayamel.utils.getLangName(code,code);
@@ -75,7 +75,13 @@ $(function(){
     });
 
     langList.push({ value: "apc", text: "North Levantine Arabic"});
-    langList.push({ value: "arz", text: "Egyptian Arabic"});
+    langList.push({ value: "arz", text: "Egyptian Arabic"});*/
+
+    langList = Object.keys(Ayamel.utils.langCodes).map(function(code){
+        var engname = Ayamel.utils.getLangName(code,"eng"),
+            localname = Ayamel.utils.getLangName(code,code);
+        return {value: code, text: engname, desc: localname!==engname?localname:void 0};
+    });
     langList.sort(function(a,b){ return a.text.localeCompare(b.text); });
 
     function getLanguage(resource) {
@@ -136,14 +142,13 @@ $(function(){
     addCapR = new Ractive({
         el: "#captionsUpload",
         template: addCapTemplate,
-        components:{ superselect: EditorWidgets.SuperSelect },
         data: {
             label: '',
             kind: 'subtitles',
             lang: [],
             languages: langList,
             modalId: 'captionTrackModal',
-            defaultValue: {value:'zxx',text:'No Linguistic Content'}
+            defaultOption: {value:'zxx',text:'No Linguistic Content'}
         }
     });
     addCapR.on('upload', function(){
@@ -231,13 +236,12 @@ $(function(){
     addAnnR = new Ractive({
         el: "#annotationsUpload",
         template: addAnnTemplate,
-        components:{ superselect: EditorWidgets.SuperSelect },
         data: {
             label: '',
             lang: [],
             languages: langList,
             modalId: 'annotationsModal',
-            defaultValue: {value:'zxx', text:'No Linguistic Content'}
+            defaultOption: {value:'zxx', text:'No Linguistic Content'}
         }
     });
     addAnnR.on('upload', function(){

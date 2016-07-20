@@ -2,10 +2,10 @@ $(function(){
     "use strict";
 
     var userList = getUsers(0, 50), 
-    userTemplate = '<superselect\
+    userTemplate = '<SuperSelect\
         icon="" text="Select Permissions"\
         button="left"\
-        selection="{{activePermissions}}"\
+        value="{{activePermissions}}"\
         multiple="true"\
         options="{{permissionList}}"\
     />\
@@ -56,7 +56,6 @@ $(function(){
     
     var utable = new Ractive({
         el: document.getElementById('usertable'),
-        components: { superselect:  EditorWidgets.SuperSelect },
         template: userTemplate,
         data: {
             activePermissions: [],

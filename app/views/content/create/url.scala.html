@@ -159,16 +159,14 @@
 
             new EditorWidgets.SuperSelect({
                 el: "langLocation",
-                data:{
-                    id: 'languages',
-                    selection: [],
-                    icon: 'icon-globe',
-                    text: 'Select Language',
-                    button: 'left',
-                    multiple: true,
-                    options: langList,
-                    defaultValue : {value:'zxx',text:'No Linguistic Content'}
-                }
+                id: 'languages',
+                value: [],
+                icon: 'icon-globe',
+                text: 'Select Language',
+                button: 'left',
+                multiple: true,
+                options: langList,
+                defaultValue : {value:'zxx',text:'No Linguistic Content'}
             });
 
             document.getElementById("url").addEventListener('change', function(){

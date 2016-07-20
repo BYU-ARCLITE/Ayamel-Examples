@@ -58,20 +58,18 @@ var ContentRenderer = (function(){
         translationsHolder.className = "definitionsContent";
         (new EditorWidgets.SuperSelect({
             el: selectHolder,
-            data:{
-                id: 'transLang',
-                selection: [
-                    codes.indexOf("eng") !== -1 ?
-                        "eng" : codes[0]
-                ],
-                icon: 'icon-globe',
-                button: 'left',
-                text: 'Select Language',
-                multiple: false,
-                options: targetLanguages
-            }
-        })).observe('selection', function(newValue){
-            player.targetLang = newValue[0];
+            id: 'transLang',
+            value: [
+                codes.indexOf("eng") !== -1 ?
+                    "eng" : codes[0]
+            ],
+            icon: 'icon-globe',
+            button: 'left',
+            text: 'Select Language',
+            options: targetLanguages,
+            multiple: false
+        })).addEventListener('valuechange', function(){
+            player.targetLang = this.value[0];
         });
 
         // Player Event Listeners

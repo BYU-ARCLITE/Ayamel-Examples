@@ -65,13 +65,13 @@ $(function() {
     Ractive.partials.trackLangSelect = '<div class="control-group">\
         <label class="control-label">Language</label>\
         <div class="controls">\
-            <superselect icon="icon-globe" text="Select Language" selection="{{trackLang}}" button="left" open="{{selectOpen}}" multiple="false" options="{{languages}}" modalId="{{modalId}}" defaultValue={{defaultValue}}>\
+            <SuperSelect icon="icon-globe" text="Select Language" value="{{trackLang}}" button="left" open="{{selectOpen}}" multiple="false" options="{{languages}}" modal="{{modalId}}" defaultValue={{defaultValue}}>\
         </div>\
     </div>';
 
     Ractive.partials.trackSelect = '<div class="control-group">\
         <div class="controls">\
-                <superselect icon="icon-laptop" text="Select Track" selection="{{selectedTracks}}" button="left" open="{{selectOpen}}" multiple="true" options="{{tracks}}" modalId="{{modalId}}">\
+                <SuperSelect icon="icon-laptop" text="Select Track" value="{{selectedTracks}}" button="left" open="{{selectOpen}}" multiple="true" options="{{tracks}}" modal="{{modalId}}">\
         </div>\
     </div>';
 
@@ -120,7 +120,6 @@ $(function() {
                 defaultValue: {value:'zxx',text:'No Linguistic Content'}
             },
             partials:{ dialogBody: document.getElementById('createTrackTemplate').textContent },
-            components:{ superselect: EditorWidgets.SuperSelect },
             actions: {
                 create: function(event){
                     var that = this;
@@ -170,7 +169,6 @@ $(function() {
                 defaultValue: {value:'zxx',text:'No Linguistic Content'}
             },
             partials:{ dialogBody: document.getElementById('editTrackTemplate').textContent },
-            components:{ superselect: EditorWidgets.SuperSelect },
             actions: {
                 save: function(event){
                     var that = this;
@@ -237,7 +235,6 @@ $(function() {
                 buttons: [{event:"save",label:"Save"}]
             },
             partials:{ dialogBody: document.getElementById('saveTrackTemplate').textContent },
-            components:{ superselect: EditorWidgets.SuperSelect },
             actions: {
                 save: function(event){
                     var tracks = stracks;
@@ -387,7 +384,6 @@ $(function() {
                 buttons: [{event:"load",label:"Load"}]
             },
             partials:{ dialogBody: document.getElementById('loadTrackTemplate').textContent },
-            components:{ superselect: EditorWidgets.SuperSelect },
             actions: {
                 load: function(event){
                     var that = this;
@@ -447,7 +443,6 @@ $(function() {
                 buttons: [{event:"showT",label:"Show"}]
             },
             partials:{ dialogBody: document.getElementById('showTrackTemplate').textContent },
-            components:{ superselect: EditorWidgets.SuperSelect },
             actions: {
                 showT: function(event){
                     var that = this;
