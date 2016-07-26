@@ -37,7 +37,7 @@ var TranscriptPlayer = (function(){
                     {{#transcripts:ti}}\
                     <div class="transcriptContent" style="display:{{ ti === activeIndex ? "block" : "none" }}" data-trackindex="{{ti}}">\
                         {{#[].slice.call(.cues):ci}}\
-                        <div class="transcriptCue {{direction(.)}}" on-tap="cueclick" data-cueindex="{{ci}}" data-trackindex="{{ti}}">{{{HTML(.)}}}</div>\
+                        <div class="transcriptCue {{direction(.)}}" on-tap="cueclick" data-cueindex="{{ci}}" data-trackindex="{{ti}}">{{{HTML(., ci, ti)}}}</div>\
                         {{/.cues}}\
                     </div>\
                     {{/transcripts}}\
@@ -48,13 +48,15 @@ var TranscriptPlayer = (function(){
                 transcripts: tracks,
                 sync: args.sync || false,
                 direction: function(cue){ return Ayamel.Text.getDirection(cue.getCueAsHTML().textContent); },
-                HTML: function(cue){
-                    var HTML = document.createElement('span');
+                HTML: function(cue, cueIndex, trackIndex){
+                    var HTML = document.createElement('span'),
+                        targetCue = document.querySelector("[data-trackindex='"+trackIndex+"'][data-cueindex='"+cueIndex+"']");
                     HTML.appendChild(annotator?
                             annotator.Text(cue.text.replace(/<[^]*?>/gm, '')):
                             cue.getCueAsHTML()
                     );
-                    return HTML.outerHTML;
+                    if (!targetCue) return HTML.outerHTML;
+                    targetCue.appendChild(HTML);
                 }
             }
         });
