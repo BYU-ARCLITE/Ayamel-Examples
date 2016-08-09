@@ -161,9 +161,6 @@
                                             <li><a href="#thumbnailModal" data-toggle="modal"><i class="icon-camera"></i> Set thumbnail</a></li>
                                             <li class="divider"></li>
                                             <li><a href="#changeSourceModal" data-toggle="modal"><i class="icon-link"></i> Set media source</a></li>
-                                            @if(content.contentType == 'image) {
-                                                <li><a href="@routes.ContentEditing.editImage(content.id.get)?course=@course.map(_.id.get).getOrElse(0)"><i class="icon-crop"></i> Edit image</a></li>
-                                            }
                                             <li class="divider"></li>
                                             <li><a href="#deleteModal" data-toggle="modal"><i class="icon-trash"></i> Delete</a></li>
                                         </ul>
@@ -267,7 +264,7 @@
                         .map(function(w){return "<span class='label label-info pad-left-med'>" + w + "</span>";})
                         .join('');
 
-                @if(content.isEditableBy(user.get)){
+                @if(user.map(content.isEditableBy(_)).getOrElse(false)){
                     var downloads = resource.content.files
                             .filter(function(fobj){return fobj.downloadUri;});
                     if(downloads.length > 0){
