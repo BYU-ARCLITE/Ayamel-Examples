@@ -145,33 +145,78 @@
                 function exportWords() {
                     // Make sure both async actions are finished
                     if (authCode && translations.length) {
-                        var data = new FormData();
-                        data.append("token", authCode);
-                        data.append("title", title);
-                        data.append("lang_terms", Ayamel.utils.downgradeLangCode(srcLang));
-                        data.append("lang_definitions", Ayamel.utils.downgradeLangCode(destLang));
-                        for (var i=0; i<words.length; i++) {
-                            data.append("terms[]", words[i]);
-                            data.append("definitions[]", JSON.stringify(translations[i]));
-                        }
-                        $.ajax("/words/export", {
-                            type: "post",
-                            data: data,
-                            processData: false,
-                            contentType: false,
-                            dataType: "text",
-                            success: function(url){
-                                $button.after(
-                                    '<div class="alert alert-success pad-top-med">\
-                                        <button class="close" data-dismiss="alert">&times;</button>\
-                                        Quizlet set created.\
-                                        <a href="https://quizlet.com'+url+'" target="_blank">View it now</a>.\
-                                    </div>'
-                                );
-                            },
-                            error: function(data){ console.log(data); }
+                        $.get("https://quizlet.com/api/2.0/docs/languages.json?whitespace=0", function(data) {
+                            var quizletCodes = Object.keys(data),
+                                src = Ayamel.utils.downgradeLangCode(srcLang),
+                                dest = Ayamel.utils.downgradeLangCode(destLang);
+
+                            if (~quizletCodes.indexOf(src)) {
+                                // special cases
+                                var chinese_codes = [
+                                    "cdo", // min dong chinese
+                                    "cjy", // Jinyu Chinese
+                                    "cmn", // Mandarin Chinese
+                                    "cpi", // Chinese Pidgin English
+                                    "cpx", // Pu-Xian Chinese
+                                    "csl", // Chinese Sign Language
+                                    "czh", // Huizhou Chinese
+                                    "czo", // Min Zhong Chinese
+                                    "gan", // Gan Chinese
+                                    "hak", // Hakka Chinese
+                                    "hsn", // Xiang Chinese
+                                    "ltc", // Late Middle Chinese
+                                    "lzh", // Literary Chinese
+                                    "mnp", // Min Bei Chinese
+                                    "nan", // Min Nan Chinese
+                                    "och", // Old Chinese,
+                                    "wuu", // Wuu Chinese
+                                    "yue", // Yue Chinese
+                                    "zho", // Chinese
+                                    "chi" // Chinese
+                                ];
+                                // quizlet's chinese codes are the following:
+                                // zh-TW : traditional chinese
+                                // zh-CN : simplified chinese
+                                // zh-pi : pinyin
+                                // so we default to traditional because with ISO_639_3 there is no way to differentiate between the 3
+                                // if the code is not found in the quizlet list or the chinese codes, then we default to quizlet's 'other' lang code : '??'
+                                src = !~chinese_codes.indexOf(srcLang) ? "zh-TW" : "??";
+                                dest = !~chinese_codes.indecOf(destLang) ? "zh-TW" : "??";
+                            }
+                            export(src,dest);
                         });
                     }
+                }
+
+                // lang_terms and lang_definitions are codes specified by //quizlet.com/api/2.0/docs/languages.json?whitespace=0
+                function export(lang_terms,lang_definitions) {
+                    var data = new FormData();
+                    data.append("token", authCode);
+                    data.append("title", title);
+                    // ?? is quizlet's code for unspecified or not supported language
+                    data.append("lang_terms", lang_terms||"??");
+                    data.append("lang_definitions", lang_definitions||"??");
+                    for (var i=0; i<words.length; i++) {
+                        data.append("terms[]", words[i]);
+                        data.append("definitions[]", JSON.stringify(translations[i]));
+                    }
+                    $.ajax("/words/export", {
+                        type: "post",
+                        data: data,
+                        processData: false,
+                        contentType: false,
+                        dataType: "text",
+                        success: function(url){
+                            $button.after(
+                                '<div class="alert alert-success pad-top-med">\
+                                    <button class="close" data-dismiss="alert">&times;</button>\
+                                    Quizlet set created.\
+                                    <a href="https://quizlet.com'+url+'" target="_blank">View it now</a>.\
+                                </div>'
+                            );
+                        },
+                        error: function(data){ console.log(data); }
+                    });
                 }
 
                 // Get Quizlet auth code through a popup window
