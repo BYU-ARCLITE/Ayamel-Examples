@@ -5,7 +5,7 @@
  * Time: 10:12 AM
  * To change this template use File | Settings | File Templates.
  */
-var ContentSettings = (function() {
+var ContentSettings = (function(){
 
     var settingsTemplate = '<form class="form-horizontal">\
         {{#controls:c}}\
@@ -44,12 +44,9 @@ var ContentSettings = (function() {
                 {{/type}}\
                 {{#(type == \'superselect\')}}\
                     <div class="control-group">\
-                        <label class="control-label" for="language">{{label}}</label>\
-                        <div class="controls" id="targetLangLocation">\
-                            <input type="text" id="language" placeholder="Language">\
-                        </div>\
+                        {{#label}}<span class="control-label">{{label}}</span>{{/label}}\
+                        <SuperSelect icon="icon-globe" text="Select Language" value="{{setting}}" btnpos="left" multiple="true" options="{{items}}" modal="configurationModal">\
                     </div>\
-                    {{include(context, content)}}\
                 {{/type}}\
             {{/include}}\
             {{^(controlsSettings[c].include(context, content))}}\
@@ -73,16 +70,16 @@ var ContentSettings = (function() {
             name: "save",
             //none: "Save option not available",
             classes: "btn-blue",
-            include: function(context, content) { return true; },
-            setting: function(context, content) {},
+            include: function(context, content){ return true; },
+            setting: function(context, content){},
             items: function(){}
         },
         aspectRatio: {
             type: "radio",
             label: "Player Aspect Ratio:",
             name: "aspectRatio",
-            include: function(context, content) { return true; },
-            setting: function(context, content) {
+            include: function(context, content){ return true; },
+            setting: function(context, content){
                 return content.settings.aspectRatio;
             },
             items: function(){
@@ -99,7 +96,7 @@ var ContentSettings = (function() {
             include: function(context, content){
                 return !!content.enableableCaptionTracks.length;
             },
-            setting: function(context, content) {
+            setting: function(context, content){
                 return content.settings.showCaptions === "true";
             },
             items: function(){}
@@ -112,7 +109,7 @@ var ContentSettings = (function() {
             include: function(context, content){
                 return !!content.enableableAnnotationDocuments.length;
             },
-            setting: function(context, content) {
+            setting: function(context, content){
                 return content.settings.showAnnotations === "true";
             },
             items: function(){}
@@ -125,7 +122,7 @@ var ContentSettings = (function() {
             include: function(context, content){
                 return !!content.enableableCaptionTracks.length;
             },
-            setting: function(context, content) {
+            setting: function(context, content){
                 return content.settings.allowDefinitions === "true";
             },
             items: function(){}
@@ -134,11 +131,20 @@ var ContentSettings = (function() {
             type: "superselect",
             label: "Definition Languages:",
             name: "targetLanguages",
-            include: function(context, content) {
+            include: function(context, content){
                 return !!content.enableableCaptionTracks.length;
             },
-            setting: function(context, content) {},
-            items: function(){}
+            setting: function(context, content){
+				return (content.settings.targetLanguages || "")
+                            .split(",").filter(function(s){ return !!s; });
+			},
+            items: function(){
+				return Object.keys(Ayamel.utils.langCodes).map(function(code){
+                    var engname = Ayamel.utils.getLangName(code,"eng"),
+                        localname = Ayamel.utils.getLangName(code,code);
+                    return {value: code, text: engname, desc: localname!==engname?localname:void 0};
+                }).sort(function(a,b){ return a.text.localeCompare(b.text); })
+			}
         },
         showTranscripts: {
             type: "checkbox",
@@ -148,7 +154,7 @@ var ContentSettings = (function() {
             include: function(context, content){
                 return !!content.enableableCaptionTracks.length;
             },
-            setting: function(context, content) {
+            setting: function(context, content){
                 return content.settings.showTranscripts === "true";
             },
             items: function(){}
@@ -163,7 +169,7 @@ var ContentSettings = (function() {
                 // however, may need to change if we have different criteria
                 return !!content.enableableCaptionTracks.length;
             },
-            setting: function(context, content) {
+            setting: function(context, content){
                 return content.settings.showWordList === "true";
             },
             items: function(){}
@@ -176,13 +182,13 @@ var ContentSettings = (function() {
             include: function(context, content){
                 return !!content.enableableCaptionTracks.length;
             },
-            setting: function(context, content) {
+            setting: function(context, content){
                 return (content.settings.captionTrack || "")
                     .split(",").filter(function(s){return !!s;});
             },
-            items: function(context, content) {
+            items: function(context, content){
                 // Get the document name and language from the ID
-                return content.enableableCaptionTracks.map(function (resource) {
+                return content.enableableCaptionTracks.map(function(resource){
                     var langCode = resource.languages.iso639_3[0],
                         language = Ayamel.utils.getLangName(langCode);
                     return {
@@ -200,13 +206,13 @@ var ContentSettings = (function() {
             include: function(context, content){
                 return !!content.enableableAnnotationDocuments.length;
             },
-            setting: function(context, content) {
+            setting: function(context, content){
                 return (content.settings.annotationDocument || "")
                     .split(",").filter(function(s){return !!s;});
             },
-            items: function(context, content) {
+            items: function(context, content){
                 // Get the document name and language from the ID
-                return content.enableableAnnotationDocuments.map(function (resource) {
+                return content.enableableAnnotationDocuments.map(function(resource){
                     var langCode = resource.languages.iso639_3[0],
                         language = Ayamel.utils.getLangName(langCode);
                     return {
@@ -221,10 +227,10 @@ var ContentSettings = (function() {
             label: "Shareability:",
             name: "shareability",
             include: function(context, content){ return true; },
-            setting: function(context, content) {
+            setting: function(context, content){
                 return content.shareability || 1;
             },
-            items: function(context, content) {
+            items: function(context, content){
                 return [{
                     text: "Not Shareable",
                     value: 1
@@ -242,10 +248,10 @@ var ContentSettings = (function() {
             label: "Visibility:",
             name: "visibility",
             include: function(context, content){ return true; },
-            setting: function(context, content) {
+            setting: function(context, content){
                 return content.visibility || 1;
             },
-            items: function(context, content) {
+            items: function(context, content){
                 return [{
                     text: "Private",
                     value: 1
@@ -322,20 +328,20 @@ var ContentSettings = (function() {
         }));
     }
 
-    function getCaptionTracks(resource) {
+    function getCaptionTracks(resource){
         var captionTrackIds = resource.relations
             .filter(function(r){return r.type==="transcript_of";})
             .map(function(r){return r.subjectId;});
         return getResources(captionTrackIds);
     }
-    function getAnnotationDocs(resource) {
+    function getAnnotationDocs(resource){
         var annotationIds = resource.relations
             .filter(function(r){return r.type==="references";})
             .map(function(r){return r.subjectId;});
         return getResources(annotationIds);
     }
 
-    function createControls(config, context, content) {
+    function createControls(config, context, content){
         var control = {
             type: config.type,
             name: config.name,
@@ -349,7 +355,7 @@ var ContentSettings = (function() {
     }
 
     /* args: courseId, owner, userId, content, resource, holder, action */
-    function ContentSettings(args) {
+    function ContentSettings(args){
 
         // Determine what content type we are dealing with
         var context = {
@@ -369,7 +375,7 @@ var ContentSettings = (function() {
 
             // Create the form
             controlsSettings = settings[args.content.contentType];
-            controls = controlsSettings.map(function(config) {
+            controls = controlsSettings.map(function(config){
                 return createControls(config, context, args.content);
             });
 
@@ -391,7 +397,6 @@ var ContentSettings = (function() {
                     if(control.type === 'button'){ return; }
                     var setting = ractive.get('controls['+index+'].setting'),
                         name = control.name;
-                    if(control.type === 'superselect'){ setting = targetLanguages.get("selection"); }
                     (setting instanceof Array?setting:[setting]).forEach(function(value){
                         fd.append(name, ""+value);
                     });
@@ -408,29 +413,8 @@ var ContentSettings = (function() {
                 xhr.open('POST', args.action);
                 xhr.send(fd);
             });
-
-            targetLanguages = new EditorWidgets.SuperSelect({
-                el: "targetLangLocation",
-                id: 'languages',
-                value: (content.settings.targetLanguages || "")
-                            .split(",").filter(function(s){ return !!s; }),
-                icon: 'icon-globe',
-                text: 'Select Language',
-                button: 'left',
-                modalId: 'configurationModal',
-                multiple: true,
-                options: Object.keys(Ayamel.utils.p1map).map(function (p1) {
-                    var code = Ayamel.utils.p1map[p1],
-                        engname = Ayamel.utils.getLangName(code,"eng"),
-                        localname = Ayamel.utils.getLangName(code,code);
-                    return {value: code, text: engname, desc: localname!==engname?localname:void 0};
-                }).sort(function(a,b){ return a.text.localeCompare(b.text); }),
-                defaultValue: {value:"",text:"No Linguistic Content"}
-            });
         });
     }
-
-
 
     return ContentSettings;
 })();
