@@ -73,7 +73,7 @@ $(function() {
     Ractive.partials.trackLangSelect = '<div class="control-group">\
         <label class="control-label">Language</label>\
         <div class="controls">\
-            <SuperSelect icon="icon-globe" text="Select Language" value="{{trackLang}}" button="left" open="{{selectOpen}}" multiple="false" options="{{languages}}" modal="{{modalId}}" defaultValue={{defaultValue}}>\
+            <SuperSelect icon="icon-globe" text="Select Language" value="{{trackLang}}" button="left" open="{{selectOpen}}" multiple="false" options="{{languages}}" modal="{{modalId}}" defaultOption={{defaultOption}}>\
         </div>\
     </div>';
 
@@ -125,7 +125,7 @@ $(function() {
                 types: types,
                 modalId: "newTrackModal",
                 buttons: [{event:"create",label:"Create"}],
-                defaultValue: {value:'zxx',text:'No Linguistic Content'}
+                defaultOption: {value:'zxx',text:'No Linguistic Content'}
             },
             partials:{ dialogBody: document.getElementById('createTrackTemplate').textContent },
             actions: {
@@ -174,7 +174,7 @@ $(function() {
                 trackName: "",
                 modalId: "editTrackModal",
                 buttons: [{event:"save",label:"Save"}],
-                defaultValue: {value:'zxx',text:'No Linguistic Content'}
+                defaultOption: {value:'zxx',text:'No Linguistic Content'}
             },
             partials:{ dialogBody: document.getElementById('editTrackTemplate').textContent },
             actions: {
@@ -387,7 +387,7 @@ $(function() {
                 trackLang: [],
                 trackKind: "subtitles",
                 modalId: 'loadTrackModal',
-                defaultValue: {value:'zxx',text:'No Linguistic Content'},
+                defaultOption: {value:'zxx',text:'No Linguistic Content'},
                 sources: Object.keys(sources).map(function(key){ return {name: key, label: sources[key].label}; }),
                 buttons: [{event:"load",label:"Load"}]
             },
