@@ -11,6 +11,13 @@ $(function() {
             return {value: code, text: engname, desc: localname!==engname?localname:void 0};
         });
 
+    // CueEditor: Element that pops up when segment is created.
+    var cueEditor = document.createElement('div');
+    cueEditor.setAttribute('id', 'cueEditor');
+    cueEditor.style.cssText = "position: fixed;top: 0;right: 0;height: 100px;width: 100px;z-index: 100;background: white;border-radius: 0 0 0 5px;"
+    document.body.appendChild(cueEditor);
+
+    // saveDiv: Element that pops up when saving track.
     var saveDiv = document.createElement('div'),
     saveImg = new Image(),
     saveText = document.createElement('p');
@@ -25,6 +32,7 @@ $(function() {
     saveDiv.appendChild(saveText);
     document.body.appendChild(saveDiv);
 
+    // Manually adding languages to Language Selection (that weren't working otherwise)
     langList.push({ value: "apc", text: "North Levantine Arabic"});
     langList.push({ value: "arz", text: "Egyptian Arabic"});
     langList.sort(function(a,b){ return a.text.localeCompare(b.text); });
