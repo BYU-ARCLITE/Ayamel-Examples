@@ -11,11 +11,61 @@ $(function() {
             return {value: code, text: engname, desc: localname!==engname?localname:void 0};
         });
 
-    // CueEditor: Element that pops up when segment is created.
-    var cueEditor = document.createElement('div');
-    cueEditor.setAttribute('id', 'cueEditor');
-    cueEditor.style.cssText = "position: fixed;top: 0;right: 0;height: 100px;width: 100px;z-index: 100;background: white;border-radius: 0 0 0 5px;"
-    document.body.appendChild(cueEditor);
+    /* eventTrackEditor: User interface that pops up when segment is selected
+                                            and disappears when unselected.*/
+    var eventTrackEditor = document.createElement('div');
+    eventTrackEditor.setAttribute('id', 'eventTrackEditor');
+    eventTrackEditor.style.cssText = "display:none;position:fixed;box-shadow:0 0 20px;min-width:300px;top:0;right:0;z-index:100;background:white;border-radius:0 0 0 5px;padding:25px;"
+    eventTrackEditor.innerHTML = "\
+        <style>\
+            .container{width: auto !important;}\
+            .editorLabel{display: inline;}\
+            .editorList{list-style-type: none;}\
+            .editorList>li{margin-top: 5px;}\
+            input[type=range]{width: 150px;position: absolute; right: 25px;}\
+            input[type=checkbox]{margin: 0;}\
+        </style>\
+        \
+        <div class='container' id='eventTrackContainer'>\
+        <h4>Event Track Editor</h4><hr/>\
+        <div class='row' style='display:inline-block;'>\
+            <div style='float:left; margin: 0 45px 0 30px;'>\
+                <ul class='editorList'>\
+                    <li><input type='checkbox' id='pauseCheckbox'>\
+                        <label for='pauseCheckbox' class='editorLabel'>Pause</label>\
+                    <li><input type='checkbox' id='skipCheckbox'>\
+                        <label for='skipCheckbox' class='editorLabel'>Skip</label>\
+                </ul>\
+            </div>\
+            <div style='float:right'>\
+                <ul class='editorList'>\
+                    <li><input type='checkbox' id='muteCheckbox'>\
+                        <label for='muteCheckbox' class='editorLabel'>Mute</label>\
+                    <li><input type='checkbox' id='blankCheckbox'>\
+                        <label for='blankCheckbox' class='editorLabel'>Blank</label>\
+                </ul>\
+            </div>\
+        </div>\
+        <hr>\
+        <div>\
+            <ul class='editorList'>\
+                <li><input type='checkbox' id='blurCheckbox'><label for='blurCheckbox' class='editorLabel'> Blur</label>\
+                    <input type='range' id='blurRange'><br>\
+                <li><input type='checkbox' id='volumeCheckbox'><label for='volumeCheckbox' class='editorLabel'> Volume</label>\
+                    <input type='range' id='volumeRange'><br>\
+                <li><input type='checkbox' id='speedCheckbox'><label for='speedCheckbox' class='editorLabel'> Speed</label>\
+                    <input type='range' id='speedRange'>\
+            </ul>\
+            <hr>\
+            <div style='float:right;'>\
+                <button class='btn btn-blue' id='saveEditorBtn'>Save</button>\
+                <button class='btn' id='cancelEditorBtn'>Cancel</button>\
+            </div>\
+        </div>\
+        ";
+
+
+    document.body.appendChild(eventTrackEditor);
 
     // saveDiv: Element that pops up when saving track.
     var saveDiv = document.createElement('div'),
