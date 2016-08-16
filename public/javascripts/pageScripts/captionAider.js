@@ -15,17 +15,7 @@ $(function() {
                                             and disappears when unselected.*/
     var eventTrackEditor = document.createElement('div');
     eventTrackEditor.setAttribute('id', 'eventTrackEditor');
-    eventTrackEditor.style.cssText = "display:none;position:fixed;box-shadow:0 0 20px;min-width:300px;top:0;right:0;z-index:100;background:white;border-radius:0 0 0 5px;padding:25px;"
     eventTrackEditor.innerHTML = "\
-        <style>\
-            .container{width: auto !important;}\
-            .editorLabel{display: inline;}\
-            .editorList{list-style-type: none;}\
-            .editorList>li{margin-top: 5px;}\
-            input[type=range]{width: 150px;position: absolute; right: 25px;}\
-            input[type=checkbox]{margin: 0;}\
-        </style>\
-        \
         <div class='container' id='eventTrackContainer'>\
         <h4>Event Track Editor</h4><hr/>\
         <div class='row' style='display:inline-block;'>\
@@ -46,7 +36,6 @@ $(function() {
                 </ul>\
             </div>\
         </div>\
-        <hr>\
         <div>\
             <ul class='editorList'>\
                 <li><input type='checkbox' id='blurCheckbox'><label for='blurCheckbox' class='editorLabel'> Blur</label>\
@@ -63,9 +52,25 @@ $(function() {
             </div>\
         </div>\
         ";
-
-
     document.body.appendChild(eventTrackEditor);
+
+    // Presets for Event Track Editor
+    var blurRange   = document.getElementById('blurRange'),
+        volumeRange = document.getElementById('volumeRange'),
+        speedRange  = document.getElementById('speedRange'), 
+        blurCheckbox    = document.getElementById('blurCheckbox'),
+        volumeCheckbox  = document.getElementById('volumeCheckbox'),
+        speedCheckbox   = document.getElementById('speedCheckbox');
+
+    // TODO: this preset needs to set to the current state
+    // example: blurRange.disabled = currentState['blurRange'] || 'true';
+
+
+    // Event Listeners
+    blurCheckbox.addEventListener('click', () => { blurRange.style.display = blurCheckbox.checked?"inline":"none"});
+    volumeCheckbox.addEventListener('click', () => { volumeRange.style.display = volumeCheckbox.checked?"inline":"none"});
+    speedCheckbox.addEventListener('click', () => { speedRange.style.display = speedCheckbox.checked?"inline":"none"});
+
 
     // saveDiv: Element that pops up when saving track.
     var saveDiv = document.createElement('div'),
