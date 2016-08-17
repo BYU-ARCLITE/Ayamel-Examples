@@ -11,6 +11,8 @@ $(function() {
             return {value: code, text: engname, desc: localname!==engname?localname:void 0};
         });
 
+
+    // Creating 'saveDiv' div on CaptionAider page
     var saveDiv = document.createElement('div'),
     saveImg = new Image(),
     saveText = document.createElement('p');
@@ -24,6 +26,49 @@ $(function() {
     saveDiv.appendChild(saveImg);
     saveDiv.appendChild(saveText);
     document.body.appendChild(saveDiv);
+
+    // Creating 'eventTrackEditor' div on CaptionAider page
+    var eventTrackEditor = document.createElement('div');
+    eventTrackEditor.setAttribute('id', 'eventTrackEditor');
+    eventTrackEditor.innerHTML = "\
+        <h4>Event Track Editor</h4><hr>\
+        <div id='topSection'>\
+            <div class='leftCol'>\
+                <ul>\
+                    <li><input type='checkbox' id='pauseCheckbox'><label for='pauseCheckbox' class='editorLabel'>Pause</label></li>\
+                    <li><input type='checkbox' id='skipCheckbox'><label for='skipCheckbox' class='editorLabel'>Skip</label></li>\
+                </ul>\
+            </div>\
+            <div class='rightCol'>\
+                <ul>\
+                    <li><input type='checkbox' id='muteCheckbox'><label for='muteCheckbox' class='editorLabel'>Mute</label></li>\
+                    <li><input type='checkbox' id='blankCheckbox'><label for='blankCheckbox' class='editorLabel'>Blank</label></li>\
+                </ul>\
+            </div>\
+        </div>\
+        <div id='midSection'>\
+            <div class='leftCol'>\
+                <ul>\
+                    <li><input type='checkbox' id='blurCheckbox'><label for='blurCheckbox' class='editorLabel'>Blur</label></li>\
+                    <li><input type='checkbox' id='volumeCheckbox'><label for='volumeCheckbox' class='editorLabel'>Volume</label></li>\
+                    <li><input type='checkbox' id='speedCheckbox'><label for='speedCheckbox' class='editorLabel'>Speed</label></li>\
+                </ul>\
+            </div>\
+                <div class='rightCol'>\
+                <ul>\
+                    <li><input type='range' class='editorRange' id='blurRange'></li>\
+                    <li><input type='range' class='editorRange' id='volumeRange'></li>\
+                    <li><input type='range' class='editorRange' id='speedRange'></li>\
+                </ul>\
+            </div>\
+        </div><hr>\
+        <div id='bottomSection'>\
+            <button class='btn btn-blue'>Save</button>\
+            <button class='btn'>Cancel</button>\
+        </div>\
+        ";
+    document.body.appendChild(eventTrackEditor);
+
 
     langList.push({ value: "apc", text: "North Levantine Arabic"});
     langList.push({ value: "arz", text: "Egyptian Arabic"});
