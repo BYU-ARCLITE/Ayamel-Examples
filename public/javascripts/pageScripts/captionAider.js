@@ -11,68 +11,7 @@ $(function() {
             return {value: code, text: engname, desc: localname!==engname?localname:void 0};
         });
 
-    /* eventTrackEditor: User interface that pops up when segment is selected
-                                            and disappears when unselected.*/
-    var eventTrackEditor = document.createElement('div');
-    eventTrackEditor.setAttribute('id', 'eventTrackEditor');
-    eventTrackEditor.innerHTML = "\
-        <div class='container' id='eventTrackContainer'>\
-        <h4>Event Track Editor</h4><hr/>\
-        <div class='row' style='display:inline-block;'>\
-            <div style='float:left; margin: 0 45px 0 30px;'>\
-                <ul class='editorList'>\
-                    <li><input type='checkbox' id='pauseCheckbox'>\
-                        <label for='pauseCheckbox' class='editorLabel'>Pause</label>\
-                    <li><input type='checkbox' id='skipCheckbox'>\
-                        <label for='skipCheckbox' class='editorLabel'>Skip</label>\
-                </ul>\
-            </div>\
-            <div style='float:right'>\
-                <ul class='editorList'>\
-                    <li><input type='checkbox' id='muteCheckbox'>\
-                        <label for='muteCheckbox' class='editorLabel'>Mute</label>\
-                    <li><input type='checkbox' id='blankCheckbox'>\
-                        <label for='blankCheckbox' class='editorLabel'>Blank</label>\
-                </ul>\
-            </div>\
-        </div>\
-        <div>\
-            <ul class='editorList'>\
-                <li><input type='checkbox' id='blurCheckbox'><label for='blurCheckbox' class='editorLabel'> Blur</label>\
-                    <input type='range' id='blurRange'><br>\
-                <li><input type='checkbox' id='volumeCheckbox'><label for='volumeCheckbox' class='editorLabel'> Volume</label>\
-                    <input type='range' id='volumeRange'><br>\
-                <li><input type='checkbox' id='speedCheckbox'><label for='speedCheckbox' class='editorLabel'> Speed</label>\
-                    <input type='range' id='speedRange'>\
-            </ul>\
-            <hr>\
-            <div style='float:right;'>\
-                <button class='btn btn-blue' id='saveEditorBtn'>Save</button>\
-                <button class='btn' id='cancelEditorBtn'>Cancel</button>\
-            </div>\
-        </div>\
-        ";
-    document.body.appendChild(eventTrackEditor);
 
-    // Presets for Event Track Editor
-    var blurRange   = document.getElementById('blurRange'),
-        volumeRange = document.getElementById('volumeRange'),
-        speedRange  = document.getElementById('speedRange'), 
-        blurCheckbox    = document.getElementById('blurCheckbox'),
-        volumeCheckbox  = document.getElementById('volumeCheckbox'),
-        speedCheckbox   = document.getElementById('speedCheckbox');
-
-    // TODO: this preset needs to set to the current state
-    // example: blurRange.disabled = currentState['blurRange'] || 'true';
-
-
-    // Event Listeners
-    blurCheckbox.addEventListener('click', () => { blurRange.style.display = blurCheckbox.checked?"inline":"none"});
-    volumeCheckbox.addEventListener('click', () => { volumeRange.style.display = volumeCheckbox.checked?"inline":"none"});
-    speedCheckbox.addEventListener('click', () => { speedRange.style.display = speedCheckbox.checked?"inline":"none"});
-
-
-    // saveDiv: Element that pops up when saving track.
     var saveDiv = document.createElement('div'),
     saveImg = new Image(),
     saveText = document.createElement('p');
@@ -87,7 +26,54 @@ $(function() {
     saveDiv.appendChild(saveText);
     document.body.appendChild(saveDiv);
 
-    // Manually adding languages to Language Selection (that weren't working otherwise)
+    // Creating 'eventTrackEditor' div on CaptionAider page
+    var eventTrackEditor = document.createElement('div');
+    eventTrackEditor.setAttribute('id', 'eventTrackEditor');
+    eventTrackEditor.innerHTML = "\
+        <h4>Event Track Editor</h4><hr>\
+        <div id='topSection'>\
+            <div class='leftCol'>\
+                <ul>\
+                    <li><input type='checkbox' id='pauseCheckbox'><label for='pauseCheckbox' class='editorLabel'>Pause</label></li>\
+                    <li><input type='checkbox' id='skipCheckbox'><label for='skipCheckbox' class='editorLabel'>Skip</label></li>\
+                </ul>\
+            </div>\
+            <div class='rightCol'>\
+                <ul>\
+                    <li><input type='checkbox' id='muteCheckbox'><label for='muteCheckbox' class='editorLabel'>Mute</label></li>\
+                    <li><input type='checkbox' id='blankCheckbox'><label for='blankCheckbox' class='editorLabel'>Blank</label></li>\
+                </ul>\
+            </div>\
+        </div>\
+        <div id='midSection'>\
+            <div class='leftCol'>\
+                <ul>\
+                    <li><input type='checkbox' id='blurCheckbox'><label for='blurCheckbox' class='editorLabel'>Blur</label></li>\
+                    <li><input type='checkbox' id='volumeCheckbox'><label for='volumeCheckbox' class='editorLabel'>Volume</label></li>\
+                    <li><input type='checkbox' id='speedCheckbox'><label for='speedCheckbox' class='editorLabel'>Speed</label></li>\
+                </ul>\
+            </div>\
+                <div class='rightCol'>\
+                <ul>\
+                    <li><input type='range' class='editorRange' id='blurRange'></li>\
+                    <li><input type='range' class='editorRange' id='volumeRange'></li>\
+                    <li><input type='range' class='editorRange' id='speedRange'></li>\
+                </ul>\
+            </div>\
+        </div><hr>\
+        <div id='bottomSection'>\
+            <button class='btn btn-blue'>Save</button>\
+            <button class='btn'>Cancel</button>\
+        </div>\
+        ";
+    document.body.appendChild(eventTrackEditor);
+
+    // Event Listeners
+    blurCheckbox.addEventListener('click', () => { blurRange.style.display = blurCheckbox.checked?"inline":"none"});
+    volumeCheckbox.addEventListener('click', () => { volumeRange.style.display = volumeCheckbox.checked?"inline":"none"});
+    speedCheckbox.addEventListener('click', () => { speedRange.style.display = speedCheckbox.checked?"inline":"none"});
+
+
     langList.push({ value: "apc", text: "North Levantine Arabic"});
     langList.push({ value: "arz", text: "Egyptian Arabic"});
     langList.sort(function(a,b){ return a.text.localeCompare(b.text); });
