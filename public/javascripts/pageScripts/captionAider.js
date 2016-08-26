@@ -63,8 +63,6 @@ $(function() {
             </div>\
         </div><hr>\
         <div id='bottomSection'>\
-            <button class='btn btn-blue'>Save</button>\
-            <button class='btn'>Cancel</button>\
         </div>\
         ";
     document.body.appendChild(eventTrackEditor);
@@ -778,4 +776,5 @@ $(function() {
             }
         });
     }
+
 });
