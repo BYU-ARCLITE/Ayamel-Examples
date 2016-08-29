@@ -27,6 +27,7 @@ $(function() {
     saveDiv.appendChild(saveText);
     document.body.appendChild(saveDiv);
 
+    // EVENT TRACK EDITOR html
     // Creating 'eventTrackEditor' div on CaptionAider page
     var eventTrackEditor = document.createElement('div');
     eventTrackEditor.setAttribute('id', 'eventTrackEditor');
@@ -45,8 +46,8 @@ $(function() {
                     <li><input type='checkbox' id='blankCheckbox'><label for='blankCheckbox' class='editorLabel'>Blank</label></li>\
                 </ul>\
             </div>\
-        </div>\
-        <div id='midSection'>\
+        </div><hr>\
+        <div id='bottomSection'>\
             <div class='leftCol'>\
                 <ul>\
                     <li><input type='checkbox' id='blurCheckbox'><label for='blurCheckbox' class='editorLabel'>Blur</label></li>\
@@ -56,16 +57,16 @@ $(function() {
             </div>\
                 <div class='rightCol'>\
                 <ul>\
-                    <li><input type='range' class='editorRange' id='blurRange'></li>\
-                    <li><input type='range' class='editorRange' id='volumeRange'></li>\
-                    <li><input type='range' class='editorRange' id='speedRange'></li>\
+                    <li><input type='textbox' id='blurTextbox'></li>\
+                    <li><input type='range' class='editorRange' id='volumeRange' min='0' max='1' step='0.1'></li>\
+                    <li><input type='range' class='editorRange' id='speedRange' min='0' max='2' step='0.1'></li>\
                 </ul>\
             </div>\
-        </div><hr>\
-        <div id='bottomSection'>\
         </div>\
         ";
     document.body.appendChild(eventTrackEditor);
+
+
 
 
     langList.push({ value: "apc", text: "North Levantine Arabic"});
@@ -711,6 +712,17 @@ $(function() {
             if(timeline.hasCachedTextTrack(track)){ return; }
             timeline.cacheTextTrack(track,trackMimes.get(track),'server');
         });
+
+        // TODO: CREATE (rather than SHOW) event Track Editor in DOM
+        // EVENT TRACK EDITOR event listeners
+        timeline.on('select', function(selected){
+            document.getElementById('eventTrackEditor').style.display = 'inline-block';
+            var eventTrackEditor = new EventTrackEditor(selected.segments[0].cue, videoPlayer);
+        })
+
+        timeline.on('unselect', function(){
+            document.getElementById('eventTrackEditor').style.display = 'none';
+        })
 
         //keep the editor and the player menu in sync
         timeline.on('altertrack', function(){ videoPlayer.refreshCaptionMenu(); });
