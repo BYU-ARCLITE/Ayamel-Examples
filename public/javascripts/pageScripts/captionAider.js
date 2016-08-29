@@ -672,6 +672,17 @@ $(function() {
             timeline.cacheTextTrack(track,trackMimes.get(track),'server');
         });
 
+        // TODO: CREATE (rather than SHOW) event Track Editor in DOM
+        // EVENT TRACK EDITOR event listeners
+        timeline.on('select', function(selected){
+            document.getElementById('eventTrackEditor').style.display = 'inline-block';
+            var eventTrackEditor = new EventTrackEditor(selected.segments[0].cue, videoPlayer);
+        })
+
+        timeline.on('unselect', function(){
+            document.getElementById('eventTrackEditor').style.display = 'none';
+        })
+
         //keep the editor and the player menu in sync
         timeline.on('altertrack', function(){ videoPlayer.refreshCaptionMenu(); });
 
