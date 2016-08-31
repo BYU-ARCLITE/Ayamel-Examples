@@ -28,50 +28,49 @@ $(function() {
 
     // EVENT TRACK EDITOR html
     // Creating 'eventTrackEditor' div on CaptionAider page
-    var eventTrackEditor = document.createElement('div');
-    eventTrackEditor.setAttribute('id', 'eventTrackEditor');
-    eventTrackEditor.innerHTML = "\
-        <h4>Event Track Editor</h4><hr>\
-        <div id='topSection'>\
-            <div class='leftCol'>\
-                <ul>\
-                    <li><input type='checkbox' id='pauseCheckbox'><label for='pauseCheckbox' class='editorLabel'>Pause</label></li>\
-                    <li><input type='checkbox' id='skipCheckbox'><label for='skipCheckbox' class='editorLabel'>Skip</label></li>\
-                </ul>\
-            </div>\
-            <div class='rightCol'>\
-                <ul>\
-                    <li><input type='checkbox' id='muteCheckbox'><label for='muteCheckbox' class='editorLabel'>Mute</label></li>\
-                    <li><input type='checkbox' id='blankCheckbox'><label for='blankCheckbox' class='editorLabel'>Blank</label></li>\
-                </ul>\
-            </div>\
-        </div><hr>\
-        <div id='bottomSection'>\
-            <div class='leftCol'>\
-                <ul>\
-                    <li><input type='checkbox' id='blurCheckbox'><label for='blurCheckbox' class='editorLabel'>Blur</label></li>\
-                    <li><input type='checkbox' id='volumeCheckbox'><label for='volumeCheckbox' class='editorLabel'>Volume</label></li>\
-                    <li><input type='checkbox' id='speedCheckbox'><label for='speedCheckbox' class='editorLabel'>Speed</label></li>\
-                </ul>\
-            </div>\
-                <div class='rightCol'>\
-                <ul>\
-                    <li><input type='textbox' id='blurTextbox'></li>\
-                    <li><input type='range' class='editorRange' id='volumeRange' min='0' max='1' step='0.1'></li>\
-                    <li><input type='range' class='editorRange' id='speedRange' min='0' max='2' step='0.1'></li>\
-                </ul>\
-            </div>\
-        </div>\
-        ";
-    document.body.appendChild(eventTrackEditor);
+    // var eventTrackEditor = document.createElement('div');
+    // eventTrackEditor.setAttribute('id', 'eventTrackEditor');
+    // eventTrackEditor.innerHTML = "\
+    //     <h4>Event Track Editor</h4><hr>\
+    //     <div id='topSection'>\
+    //         <div class='leftCol'>\
+    //             <ul>\
+    //                 <li><input type='checkbox' id='pauseCheckbox'><label for='pauseCheckbox' class='editorLabel'>Pause</label></li>\
+    //                 <li><input type='checkbox' id='skipCheckbox'><label for='skipCheckbox' class='editorLabel'>Skip</label></li>\
+    //             </ul>\
+    //         </div>\
+    //         <div class='rightCol'>\
+    //             <ul>\
+    //                 <li><input type='checkbox' id='muteCheckbox'><label for='muteCheckbox' class='editorLabel'>Mute</label></li>\
+    //                 <li><input type='checkbox' id='blankCheckbox'><label for='blankCheckbox' class='editorLabel'>Blank</label></li>\
+    //             </ul>\
+    //         </div>\
+    //     </div><hr>\
+    //     <div id='bottomSection'>\
+    //         <div class='leftCol'>\
+    //             <ul>\
+    //                 <li><input type='checkbox' id='blurCheckbox'><label for='blurCheckbox' class='editorLabel'>Blur</label></li>\
+    //                 <li><input type='checkbox' id='volumeCheckbox'><label for='volumeCheckbox' class='editorLabel'>Volume</label></li>\
+    //                 <li><input type='checkbox' id='speedCheckbox'><label for='speedCheckbox' class='editorLabel'>Speed</label></li>\
+    //             </ul>\
+    //         </div>\
+    //             <div class='rightCol'>\
+    //             <ul>\
+    //                 <li><input type='textbox' id='blurTextbox'></li>\
+    //                 <li><input type='range' class='editorRange' id='volumeRange' min='0' max='1' step='0.1'></li>\
+    //                 <li><input type='range' class='editorRange' id='speedRange' min='0' max='2' step='0.1'></li>\
+    //             </ul>\
+    //         </div>\
+    //     </div>\
+    //     ";
+    // document.body.appendChild(eventTrackEditor);
 
     // Event Listeners
-    blurCheckbox.addEventListener('click', () => { blurRange.style.display = blurCheckbox.checked?"inline":"none"});
-    volumeCheckbox.addEventListener('click', () => { volumeRange.style.display = volumeCheckbox.checked?"inline":"none"});
-    speedCheckbox.addEventListener('click', () => { speedRange.style.display = speedCheckbox.checked?"inline":"none"});
+    // blurCheckbox.addEventListener('click', () => { blurRange.style.display = blurCheckbox.checked?"inline":"none"});
+    // volumeCheckbox.addEventListener('click', () => { volumeRange.style.display = volumeCheckbox.checked?"inline":"none"});
+    // speedCheckbox.addEventListener('click', () => { speedRange.style.display = speedCheckbox.checked?"inline":"none"});
 
-
-
+    ///////////////////////////////////////
 
     langList.push({ value: "apc", text: "North Levantine Arabic"});
     langList.push({ value: "arz", text: "Egyptian Arabic"});
@@ -717,16 +716,12 @@ $(function() {
             timeline.cacheTextTrack(track,trackMimes.get(track),'server');
         });
 
-        // TODO: CREATE (rather than SHOW) event Track Editor in DOM
         // EVENT TRACK EDITOR event listeners
-        timeline.on('select', function(selected){
-            document.getElementById('eventTrackEditor').style.display = 'inline-block';
-            var eventTrackEditor = new EventTrackEditor(selected.segments[0].cue, videoPlayer);
+        timeline.on('select', function(selected){ 
+            selected.segments[0].makeEventTrackEditor(selected.segments[0].cue, videoPlayer);
         })
 
-        timeline.on('unselect', function(){
-            document.getElementById('eventTrackEditor').style.display = 'none';
-        })
+        timeline.on('unselect', function(deselected){ deselected.segments[0].destroyEventTrackEditor(); })
 
         //keep the editor and the player menu in sync
         timeline.on('altertrack', function(){ videoPlayer.refreshCaptionMenu(); });

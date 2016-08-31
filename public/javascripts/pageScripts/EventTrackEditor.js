@@ -4,17 +4,59 @@
 var EventTrackEditor = (function(){
 
     var EventTrackEditor = function(cue, player){
-    	// Create references for all editor tools
-        var pauseCheckbox 	= document.getElementById('pauseCheckbox'),
-            skipCheckbox 	= document.getElementById('skipCheckbox'),
-            muteCheckbox 	= document.getElementById('muteCheckbox'),
-            blankCheckbox 	= document.getElementById('blankCheckbox'),
-            blurCheckbox 	= document.getElementById('blurCheckbox'),
-            volumeCheckbox 	= document.getElementById('volumeCheckbox'),
-            speedCheckbox 	= document.getElementById('speedCheckbox'),
-            blurTextbox		= document.getElementById('blurTextbox'),
-            volumeRange		= document.getElementById('volumeRange'),
-            speedRange 		= document.getElementById('speedRange');
+
+        var editor = document.createElement('div');
+        var toolContainer = document.createElement('div');
+        var topSection = document.createElement('div');
+        var bottomSection = document.createElement('div');
+
+        editor.setAttribute('class', 'eventTrackEditor');
+        toolContainer.setAttribute('class', 'toolContainer');
+        topSection.setAttribute('class', 'topSection');
+        bottomSection.setAttribute('class', 'bottomSection');
+
+        var pauseCheckbox   = document.createElement('input'),
+            skipCheckbox    = document.createElement('input'),
+            muteCheckbox    = document.createElement('input'),
+            blankCheckbox   = document.createElement('input'),
+            blurCheckbox    = document.createElement('input'),
+            volumeCheckbox  = document.createElement('input'),
+            speedCheckbox   = document.createElement('input'),
+            blurTextbox     = document.createElement('input'),
+            volumeRange     = document.createElement('input'),
+            speedRange      = document.createElement('input');
+
+        pauseCheckbox.type = 'checkbox';
+        skipCheckbox.type = 'checkbox';
+        muteCheckbox.type = 'checkbox';
+        blankCheckbox.type = 'checkbox';
+        blurCheckbox.type = 'checkbox';
+        volumeCheckbox.type = 'checkbox';
+        speedCheckbox.type = 'checkbox';
+        blurTextbox.type = 'textbox';
+        volumeRange.type = 'range';
+        speedRange.type = 'range';
+
+        toolContainer.appendChild(topSection);
+        toolContainer.appendChild(bottomSection);
+        editor.appendChild(toolContainer);
+        document.body.appendChild(editor);
+
+        var topLeftCol = document.createElement('ul');
+        var pauseLI = document.createElement('li');
+        var pauseText = document.createElement('p');
+        pauseText.innerHTML = 'Pause';
+        pauseText.setAttribute('style', 'display: inline !important;');
+
+        pauseLI.appendChild(pauseCheckbox);
+        pauseLI.appendChild(pauseText);
+        topLeftCol.appendChild(pauseLI);
+        
+
+        topSection.appendChild(topLeftCol);
+        
+
+
 
         // Set values of tools from the given cue
         (function setFromCue(cue){
@@ -26,9 +68,6 @@ var EventTrackEditor = (function(){
         	// Set all checkboxes and ranges to default
         	pauseCheckbox.checked = skipCheckbox.checked = muteCheckbox.checked = blankCheckbox.checked = 
         	blurCheckbox.checked = volumeCheckbox.checked = speedCheckbox.checked = blurTextbox.value = 0;
-
-        	// TODO:
-    		// volumeRange.value default value is AyamelPlayer's current volume value
     		volumeRange.value = player.volume;
     		speedRange.value = player.playbackRate;
 
@@ -144,7 +183,23 @@ var EventTrackEditor = (function(){
     		}
     		catch(e) { console.log(e); }
     	}
+
+
+        this.deleteDOMElements = function(){
+            editor.remove();
+            pauseCheckbox.remove();
+            skipCheckbox.remove();
+            muteCheckbox.remove();
+            blankCheckbox.remove();
+            blurCheckbox.remove();
+            volumeCheckbox.remove();
+            speedCheckbox.remove();
+            blurTextbox.remove();
+            volumeRange.remove();
+            speedRange.remove();
+        };
     }
+
 
     return EventTrackEditor;
 })()
