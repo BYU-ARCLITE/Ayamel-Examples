@@ -39,23 +39,52 @@ var EventTrackEditor = (function(){
 
         toolContainer.appendChild(topSection);
         toolContainer.appendChild(bottomSection);
+
+        // Add Header
+        var header = document.createElement('h4');
+        header.innerHTML = "Event Track Editor";
+
+        // Add toolContainer
+        editor.appendChild(header);
         editor.appendChild(toolContainer);
         document.body.appendChild(editor);
 
         var topLeftCol = document.createElement('ul');
+        topLeftCol.setAttribute('class', 'topLeftCol');
+        
+        // Create Pause
         var pauseLI = document.createElement('li');
         var pauseText = document.createElement('p');
         pauseText.innerHTML = 'Pause';
-        pauseText.setAttribute('style', 'display: inline !important;');
+        pauseText.setAttribute('class', 'editorLabel');
 
         pauseLI.appendChild(pauseCheckbox);
         pauseLI.appendChild(pauseText);
         topLeftCol.appendChild(pauseLI);
-        
-
         topSection.appendChild(topLeftCol);
-        
 
+        // Create Skip
+        var skipLI = document.createElement('li');
+        var skipText = document.createElement('p');
+        skipText.innerHTML = 'Skip';
+        skipText.setAttribute('class', 'editorLabel');
+        skipLI.appendChild(skipCheckbox);
+        skipLI.appendChild(skipText);
+        topLeftCol.appendChild(skipLI);
+
+        var topRightCol = document.createElement('ul');
+        topRightCol.setAttribute('class', 'topRightCol');
+
+        // Create Mute
+
+        // Create Blank
+        var blankLI = document.createElement('li');
+        var blankText = document.createElement('p');
+        blankText.innerHTML = 'Blank';
+        blankText.setAttribute('class', 'editorLabel');
+        blankLI.appendChild(blankCheckbox);
+        blankLI.appendChild(blankText);
+        topLeftCol.appendChild(blankLI);
 
 
         // Set values of tools from the given cue
