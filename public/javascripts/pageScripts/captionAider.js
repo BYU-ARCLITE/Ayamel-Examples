@@ -27,7 +27,6 @@ $(function() {
     document.body.appendChild(saveDiv);
 
     // Manually adding languages to Language Selection (that weren't working otherwise)
-
     langList.push({ value: "apc", text: "North Levantine Arabic"});
     langList.push({ value: "arz", text: "Egyptian Arabic"});
     langList.sort(function(a,b){ return a.text.localeCompare(b.text); });
