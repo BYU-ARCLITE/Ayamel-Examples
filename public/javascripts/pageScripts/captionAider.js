@@ -717,7 +717,7 @@ $(function() {
         });
 
         // EVENT TRACK EDITOR event listeners
-        timeline.on('select', function(selected){ 
+        timeline.on('select', function(selected){
             selected.segments[0].makeEventTrackEditor(selected.segments[0].cue, videoPlayer);
         })
 

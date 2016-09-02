@@ -10,11 +10,6 @@ var EventTrackEditor = (function(){
         var topSection = document.createElement('div');
         var bottomSection = document.createElement('div');
 
-        editor.setAttribute('class', 'eventTrackEditor');
-        toolContainer.setAttribute('class', 'toolContainer');
-        topSection.setAttribute('class', 'topSection');
-        bottomSection.setAttribute('class', 'bottomSection');
-
         var pauseCheckbox   = document.createElement('input'),
             skipCheckbox    = document.createElement('input'),
             muteCheckbox    = document.createElement('input'),
@@ -37,6 +32,12 @@ var EventTrackEditor = (function(){
         volumeRange.type = 'range';
         speedRange.type = 'range';
 
+        // Create Editor > toolContainer > topSection & bottomSection
+        editor.setAttribute('class', 'eventTrackEditor');
+        toolContainer.setAttribute('class', 'toolContainer');
+        topSection.setAttribute('class', 'topSection');
+        bottomSection.setAttribute('class', 'bottomSection');
+
         toolContainer.appendChild(topSection);
         toolContainer.appendChild(bottomSection);
 
@@ -44,15 +45,32 @@ var EventTrackEditor = (function(){
         var header = document.createElement('h4');
         header.innerHTML = "Event Track Editor";
 
-        // Add toolContainer
         editor.appendChild(header);
         editor.appendChild(toolContainer);
         document.body.appendChild(editor);
 
+        // Create 2 columns: left and right (topSection and bottomSection)
         var topLeftCol = document.createElement('ul');
         topLeftCol.setAttribute('class', 'topLeftCol');
         
-        // Create Pause
+        var topRightCol = document.createElement('ul');
+        topRightCol.setAttribute('class', 'topRightCol');
+
+        var bottomLeftCol = document.createElement('ul');
+        bottomLeftCol.setAttribute('class', 'bottomLeftCol');
+
+        var bottomRightCol = document.createElement('ul');
+        bottomRightCol.setAttribute('class', 'bottomRightCol');
+
+        // Add columns to top and bottom sections
+        topSection.appendChild(topLeftCol);
+        topSection.appendChild(topRightCol);
+
+        bottomSection.appendChild(bottomLeftCol);
+        bottomSection.appendChild(bottomRightCol);
+        
+        // TOP LEFT                
+        // Pause
         var pauseLI = document.createElement('li');
         var pauseText = document.createElement('p');
         pauseText.innerHTML = 'Pause';
@@ -61,9 +79,8 @@ var EventTrackEditor = (function(){
         pauseLI.appendChild(pauseCheckbox);
         pauseLI.appendChild(pauseText);
         topLeftCol.appendChild(pauseLI);
-        topSection.appendChild(topLeftCol);
 
-        // Create Skip
+        // Skip
         var skipLI = document.createElement('li');
         var skipText = document.createElement('p');
         skipText.innerHTML = 'Skip';
@@ -72,19 +89,79 @@ var EventTrackEditor = (function(){
         skipLI.appendChild(skipText);
         topLeftCol.appendChild(skipLI);
 
-        var topRightCol = document.createElement('ul');
-        topRightCol.setAttribute('class', 'topRightCol');
+        // TOP RIGHT
+        // Mute
+        var muteLI = document.createElement('li');
+        var muteText = document.createElement('p');
+        muteText.innerHTML = 'Mute';
+        muteText.setAttribute('class', 'editorLabel');
+        muteLI.appendChild(muteCheckbox);
+        muteLI.appendChild(muteText);
+        topRightCol.appendChild(muteLI);
 
-        // Create Mute
-
-        // Create Blank
+        // Blank
         var blankLI = document.createElement('li');
         var blankText = document.createElement('p');
         blankText.innerHTML = 'Blank';
         blankText.setAttribute('class', 'editorLabel');
         blankLI.appendChild(blankCheckbox);
         blankLI.appendChild(blankText);
-        topLeftCol.appendChild(blankLI);
+        topRightCol.appendChild(blankLI);
+
+        // BOTTOM LEFT
+        // Blur
+        var blurLI = document.createElement('li');
+        var blurText = document.createElement('p');
+        blurText.innerHTML = 'Blur';
+        blurText.setAttribute('class', 'editorLabel');
+        blurLI.appendChild(blurCheckbox);
+        blurLI.appendChild(blurText);
+        bottomLeftCol.appendChild(blurLI);
+
+        // Volume
+        var volumeLI = document.createElement('li');
+        var volumeText = document.createElement('p');
+        volumeText.innerHTML = 'Volume';
+        volumeText.setAttribute('class', 'editorLabel');
+        volumeLI.appendChild(volumeCheckbox);
+        volumeLI.appendChild(volumeText);
+        bottomLeftCol.appendChild(volumeLI);
+
+        // Speed (playback rate) checkbox
+        var speedLI = document.createElement('li');
+        var speedText = document.createElement('p');
+        speedText.innerHTML = 'speed';
+        speedText.setAttribute('class', 'editorLabel');
+        speedLI.appendChild(speedCheckbox);
+        speedLI.appendChild(speedText);
+        bottomLeftCol.appendChild(speedLI);
+
+        // BOTTOM RIGHT
+        // Blur range
+        var blurTextboxLI = document.createElement('li');
+        blurTextboxLI.appendChild(blurTextbox);
+        blurTextbox.setAttribute('style', 'width: 30px');
+        bottomRightCol.appendChild(blurTextboxLI);
+
+        // Volume range
+        var volumeRangeLI = document.createElement('li')
+        volumeRangeLI.appendChild(volumeRange);
+        volumeRange.setAttribute('style', 'width: 80px');
+        volumeRange.setAttribute('min', '0');
+        volumeRange.setAttribute('max', '1');
+        volumeRange.setAttribute('step', '0.1');
+        bottomRightCol.appendChild(volumeRangeLI);
+
+        // Speed (playback rate) range
+        var speedRangeLI = document.createElement('li')
+        speedRangeLI.appendChild(speedRange);
+        speedRange.setAttribute('style', 'width: 80px');
+        speedRange.setAttribute('min', '0');
+        speedRange.setAttribute('max', '2');
+        speedRange.setAttribute('step', '0.1');
+        bottomRightCol.appendChild(speedRangeLI);
+
+
 
 
         // Set values of tools from the given cue
