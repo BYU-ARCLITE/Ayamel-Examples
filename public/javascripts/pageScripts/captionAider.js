@@ -27,48 +27,7 @@ $(function() {
     document.body.appendChild(saveDiv);
 
     // EVENT TRACK EDITOR html
-    // Creating 'eventTrackEditor' div on CaptionAider page
-    // var eventTrackEditor = document.createElement('div');
-    // eventTrackEditor.setAttribute('id', 'eventTrackEditor');
-    // eventTrackEditor.innerHTML = "\
-    //     <h4>Event Track Editor</h4><hr>\
-    //     <div id='topSection'>\
-    //         <div class='leftCol'>\
-    //             <ul>\
-    //                 <li><input type='checkbox' id='pauseCheckbox'><label for='pauseCheckbox' class='editorLabel'>Pause</label></li>\
-    //                 <li><input type='checkbox' id='skipCheckbox'><label for='skipCheckbox' class='editorLabel'>Skip</label></li>\
-    //             </ul>\
-    //         </div>\
-    //         <div class='rightCol'>\
-    //             <ul>\
-    //                 <li><input type='checkbox' id='muteCheckbox'><label for='muteCheckbox' class='editorLabel'>Mute</label></li>\
-    //                 <li><input type='checkbox' id='blankCheckbox'><label for='blankCheckbox' class='editorLabel'>Blank</label></li>\
-    //             </ul>\
-    //         </div>\
-    //     </div><hr>\
-    //     <div id='bottomSection'>\
-    //         <div class='leftCol'>\
-    //             <ul>\
-    //                 <li><input type='checkbox' id='blurCheckbox'><label for='blurCheckbox' class='editorLabel'>Blur</label></li>\
-    //                 <li><input type='checkbox' id='volumeCheckbox'><label for='volumeCheckbox' class='editorLabel'>Volume</label></li>\
-    //                 <li><input type='checkbox' id='speedCheckbox'><label for='speedCheckbox' class='editorLabel'>Speed</label></li>\
-    //             </ul>\
-    //         </div>\
-    //             <div class='rightCol'>\
-    //             <ul>\
-    //                 <li><input type='textbox' id='blurTextbox'></li>\
-    //                 <li><input type='range' class='editorRange' id='volumeRange' min='0' max='1' step='0.1'></li>\
-    //                 <li><input type='range' class='editorRange' id='speedRange' min='0' max='2' step='0.1'></li>\
-    //             </ul>\
-    //         </div>\
-    //     </div>\
-    //     ";
-    // document.body.appendChild(eventTrackEditor);
-
-    // Event Listeners
-    // blurCheckbox.addEventListener('click', () => { blurRange.style.display = blurCheckbox.checked?"inline":"none"});
-    // volumeCheckbox.addEventListener('click', () => { volumeRange.style.display = volumeCheckbox.checked?"inline":"none"});
-    // speedCheckbox.addEventListener('click', () => { speedRange.style.display = speedCheckbox.checked?"inline":"none"});
+   
 
     ///////////////////////////////////////
 

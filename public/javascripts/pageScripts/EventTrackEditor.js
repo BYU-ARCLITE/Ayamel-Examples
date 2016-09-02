@@ -162,6 +162,54 @@ var EventTrackEditor = (function(){
         bottomRightCol.appendChild(speedRangeLI);
 
 
+        // A primitive drag function
+        var dragEditor = function(){
+            return {
+                move : function(divid,xpos,ypos){
+                    divid.style.left = xpos + 'px';
+                    divid.style.top = ypos + 'px';
+                },
+                startMoving : function(divid,container,evt){
+                    evt = evt || window.event;
+                    var posX = evt.clientX,
+                        posY = evt.clientY,
+                        divTop = divid.style.top,
+                        divLeft = divid.style.left,
+                        eWi = parseInt(divid.style.width),
+                        eHe = parseInt(divid.style.height),
+                        cWi = parseInt(editor.style.width),
+                        cHe = parseInt(editor.style.height);
+                        
+                    editor.style.cursor='move';
+                    divTop = divTop.replace('px','');
+                    divLeft = divLeft.replace('px','');
+
+                    var diffX = posX - divLeft,
+                        diffY = posY - divTop;
+                    document.onmousemove = function(evt){
+                        evt = evt || window.event;
+                        var posX = evt.clientX,
+                            posY = evt.clientY,
+                            aX = posX - diffX,
+                            aY = posY - diffY;
+                            (aX < 0) ? aX = 0 : null;
+                            (aY < 0) ? aY = 0 : null;
+                            (aX + eWi > cWi) ? aX = cWi - eWi : null;
+                            (aY + eHe > cHe) ? aY = cHe -eHe : null;
+                        dragEditor.move(divid,aX,aY);
+                    }
+                },
+                stopMoving : function(container){
+                    var a = document.createElement('script');
+                    editor.style.cursor='default';
+                    document.onmousemove = function(){}
+                },
+            }
+        }();
+
+        editor.addEventListener('mousedown',function(){ dragEditor.startMoving(this,"container",event); });
+        editor.addEventListener('mouseup',function(){ dragEditor.stopMoving("container"); });
+
 
 
         // Set values of tools from the given cue
@@ -227,6 +275,7 @@ var EventTrackEditor = (function(){
         	(speedCheckbox.checked) ? addElementToCue(cue, 'setrate', this.value.toString()) : null;
         })
 
+        toolContainer.addEventListener('mousedown', function(event){ event.stopPropagation(); });
 
 
     	/*************************************************************************\
