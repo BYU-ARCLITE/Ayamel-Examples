@@ -11,6 +11,7 @@ $(function() {
             return {value: code, text: engname, desc: localname!==engname?localname:void 0};
         });
 
+
     var saveDiv = document.createElement('div'),
     saveImg = new Image(),
     saveText = document.createElement('p');
@@ -24,6 +25,11 @@ $(function() {
     saveDiv.appendChild(saveImg);
     saveDiv.appendChild(saveText);
     document.body.appendChild(saveDiv);
+
+    // EVENT TRACK EDITOR html
+   
+
+    ///////////////////////////////////////
 
     langList.push({ value: "apc", text: "North Levantine Arabic"});
     langList.push({ value: "arz", text: "Egyptian Arabic"});
@@ -669,6 +675,13 @@ $(function() {
             timeline.cacheTextTrack(track,trackMimes.get(track),'server');
         });
 
+        // EVENT TRACK EDITOR event listeners
+        timeline.on('select', function(selected){
+            selected.segments[0].makeEventTrackEditor(selected.segments[0].cue, videoPlayer);
+        })
+
+        timeline.on('unselect', function(deselected){ deselected.segments[0].destroyEventTrackEditor(); })
+
         //keep the editor and the player menu in sync
         timeline.on('altertrack', function(){ videoPlayer.refreshCaptionMenu(); });
 
@@ -733,4 +746,5 @@ $(function() {
             }
         });
     }
+
 });
