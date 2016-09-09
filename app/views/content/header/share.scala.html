@@ -18,10 +18,11 @@
             <h3 id="shareModalLabel">Share</h3>
         </div>
         <div class="modal-body">
-            <h4>Social Sharing</h4>
+            <!-- Removed Social Editor -->
+            <!-- <h4>Social Sharing</h4>
             <div>
 
-                <!-- Place this tag where you want the share button to render. -->
+                <!** Place this tag where you want the share button to render. **>
                 <div id="googlePlusShare" class="g-plus" data-action="share" data-annotation="bubble" data-height="24" data-href="@routes.ContentController.shareAccess(content.id.get, content.authKey).absoluteURL(isHTTPS)"></div>
 
                 <div>
@@ -39,7 +40,7 @@
                 }
 
             </div>
-
+ -->
             <h4>Embed Code</h4>
             <pre>&lt;iframe src="@{routes.ContentController.shareAccess(content.id.get, content.authKey).absoluteURL(isHTTPS)}?embed=true" style="border: none; @embedSize(content.embedClass)"&gt;&lt;/iframe&gt;</pre>
 
