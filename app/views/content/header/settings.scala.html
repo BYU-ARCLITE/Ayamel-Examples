@@ -131,17 +131,15 @@
 
                         new EditorWidgets.SuperSelect({
                             el: "langLocation",
-                            data:{
-                                id: 'languages',
-                                selection: resource.languages.iso639_3,
-                                icon: 'icon-globe',
-                                text: 'Select Language',
-                                button: 'left',
-                                modalId: "metadataModal",
-                                multiple: true,
-                                options: langList,
-                                defaultValue: {value:"zxx",text:"No Linguistic Content"}
-                            }
+                            id: 'languages',
+                            selection: resource.languages.iso639_3,
+                            icon: 'icon-globe',
+                            text: 'Select Language',
+                            button: 'left',
+                            modalId: "metadataModal",
+                            multiple: true,
+                            options: langList,
+                            defaultValue: {value:"zxx",text:"No Linguistic Content"}
                         });
                     });
                     languagesLoaded = true;
