@@ -183,13 +183,13 @@
                                 src = !~chinese_codes.indexOf(srcLang) ? "zh-TW" : "??";
                                 dest = !~chinese_codes.indecOf(destLang) ? "zh-TW" : "??";
                             }
-                            export(src,dest);
+                            createSet(src,dest);
                         });
                     }
                 }
 
                 // lang_terms and lang_definitions are codes specified by //quizlet.com/api/2.0/docs/languages.json?whitespace=0
-                function export(lang_terms,lang_definitions) {
+                function createSet(lang_terms,lang_definitions) {
                     var data = new FormData();
                     data.append("token", authCode);
                     data.append("title", title);
