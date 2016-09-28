@@ -132,11 +132,11 @@
                         new EditorWidgets.SuperSelect({
                             el: "langLocation",
                             id: 'languages',
-                            selection: resource.languages.iso639_3,
+                            value: [],
                             icon: 'icon-globe',
                             text: 'Select Language',
                             button: 'left',
-                            modalId: "metadataModal",
+                            modal: "metadataModal",
                             multiple: true,
                             options: langList,
                             defaultValue: {value:"zxx",text:"No Linguistic Content"}

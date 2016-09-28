@@ -139,11 +139,16 @@ var ContentSettings = (function(){
                             .split(",").filter(function(s){ return !!s; });
 			},
             items: function(){
-				return Object.keys(Ayamel.utils.langCodes).map(function(code){
-                    var engname = Ayamel.utils.getLangName(code,"eng"),
-                        localname = Ayamel.utils.getLangName(code,code);
+                langList = Object.keys(Ayamel.utils.p1map).map(function (p1) {
+                    var code = Ayamel.utils.p1map[p1],
+                    engname = Ayamel.utils.getLangName(code,"eng"),
+                    localname = Ayamel.utils.getLangName(code,code);
                     return {value: code, text: engname, desc: localname!==engname?localname:void 0};
-                }).sort(function(a,b){ return a.text.localeCompare(b.text); })
+                });
+
+                langList.push({ value: "apc", text: "North Levantine Arabic"});
+                langList.push({ value: "arz", text: "Egyptian Arabic"});
+                return langList.sort(function(a,b){ return a.text.localeCompare(b.text); });
 			}
         },
         showTranscripts: {

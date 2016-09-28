@@ -49,16 +49,15 @@ $(function() {
 
     var ractive = new EditorWidgets.SuperSelect({
         el: "langLocation",
-        data:{
-            id: 'languages',
-            selection: [],
-            icon: 'icon-globe',
-            text: 'Select Language',
-            button: 'left',
-            modalId: 'metadataModal',
-            multiple: false,
-            options: langList
-        }
+        id: 'languages',
+        value: [],
+        icon: 'icon-globe',
+        text: 'Select Language',
+        button: 'left',
+        modal: "metadataModal",
+        multiple: false,
+        options: langList,
+        defaultValue: {value:"zxx",text:"No Linguistic Content"}
     });
 
     // First load the annotations
@@ -118,7 +117,7 @@ $(function() {
                 var title = metadataTitle.value;
                 fileNameEl.value = title;
                 fileName = title;
-                textEditor.language = language = ractive.get("selection")[0];
+                textEditor.language = language = ractive.value[0];
                 if (fileNameEl.value.toString().trim() != "")
                     saveButton.disabled = false;
                 $("#metadataModal").modal("hide");
