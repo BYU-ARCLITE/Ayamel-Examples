@@ -120,7 +120,7 @@
                         document.getElementById("description").value = resource.description;
 
                         var labelsEl = document.getElementById("labels");
-                        var labelsList = @Html(content.labels.mkString("['", "','", "']"));
+                        var labelsList = @Html(content.labels.mkString("[\"", "\",\"", "\"]"));
                         labelsList.forEach(function(label){
                             labelsEl.addLabel(label);
                         });
