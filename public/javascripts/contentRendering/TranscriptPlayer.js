@@ -19,55 +19,88 @@ var TranscriptPlayer = (function(){
                 return track.kind === "captions" ||
                        track.kind === "subtitles" ||
                        track.kind === "descriptions";
-            }), ractive;
+            }), transcriptDisplay,
+            // replacing ractive variables
+            sync = args.sync || false,
+            activeIndex = 0;
 
-        // Create the transcript player from the template
+        // Transcript DOM
+        var transcriptSelect = document.createElement("div"),
+            syncButton = document.createElement("button"),
+            transcriptContentHolder = document.createElement("div"),
+            transcriptSelector = document.createElement("select"),
+            iconAnchorElement = document.createElement("i"),
+            transcriptDisplay = document.createElement("div");
 
-        ractive = new Ractive({
-            el: element,
-            template: '<div class="transcriptDisplay">\
-                <div class="form-inline transcriptSelect">\
-                    <select value="{{activeIndex}}">\
-                        {{#transcripts:i}}<option value="{{i}}">{{.label}}</option>{{/transcripts}}\
-                    </select>\
-                    <button on-tap="sync" type="button" class="{{sync?"btn active":"btn"}}" title="Anchor transcript to media location"><i class="icon-anchor"></i></button>\
-                </div>\
-                <hr/>\
-                <div class="transcriptContentHolder">\
-                    {{#transcripts:ti}}\
-                    <div class="transcriptContent" style="display:{{ ti === activeIndex ? "block" : "none" }}" data-trackindex="{{ti}}">\
-                        {{#[].slice.call(.cues):ci}}\
-                        <div class="transcriptCue {{direction(.)}}" on-tap="cueclick" data-cueindex="{{ci}}" data-trackindex="{{ti}}">{{{HTML(., ci, ti)}}}</div>\
-                        {{/.cues}}\
-                    </div>\
-                    {{/transcripts}}\
-                </div>\
-            </div>',
-            data: {
-                activeIndex: 0,
-                transcripts: tracks,
-                sync: args.sync || false,
-                direction: function(cue){ return Ayamel.Text.getDirection(cue.getCueAsHTML().textContent); },
-                HTML: function(cue, cueIndex, trackIndex){
-                    var HTML = document.createElement('span'),
-                        targetCue = document.querySelector("[data-trackindex='"+trackIndex+"'][data-cueindex='"+cueIndex+"']");
-                    HTML.appendChild(annotator?
-                            annotator.Text(cue.text.replace(/<[^]*?>/gm, '')):
-                            cue.getCueAsHTML()
-                    );
-                    if (!targetCue) return HTML.outerHTML;
-                    targetCue.appendChild(HTML);
+        (function initTranscriptPlayer() {
+            transcriptDisplay.classList.add("transcriptDisplay");
+            transcriptSelect.classList.add("form-inline");
+            transcriptSelect.classList.add("transcriptSelect");
+            transcriptContentHolder.classList.add("transcriptContentHolder");
+            iconAnchorElement.classList.add("icon-anchor");
+            syncButton.title = "Anchor transcript to media location";
+
+            syncButton.appendChild(iconAnchorElement);
+            syncButton.addEventListener("click", function(e) {
+                sync = !sync;
+                if (sync) {
+                    syncButton.classList.add("active");
                 }
+                else {
+                    syncButton.classList.remove("active");
+                }
+            });
+            syncButton.setAttribute("type", "button");
+            syncButton.classList.add("btn");
+            if (sync) {
+                syncButton.classList.add("active");
             }
-        });
-        ractive.on('sync',function(e){ ractive.set('sync',!ractive.get("sync")); });
-        ractive.on('cueclick',function(e){
-            var target = e.node,
-                ci = target.dataset.cueindex,
-                ti = target.dataset.trackindex,
-                track = tracks[ti];
-            element.dispatchEvent(new CustomEvent("cueclick",{bubbles:true,detail:{track:track,cue:track.cues[ci]}}));
-        });
+
+            transcriptSelect.appendChild(transcriptSelector);
+            transcriptSelect.appendChild(syncButton);
+            transcriptSelector.addEventListener("change", function(e) {
+                activeIndex = e.target.selectedIndex;
+                transcriptContentHolder.querySelectorAll(".transcriptContent").forEach(function(t, i) {
+                    t.style.display = i == activeIndex ? "block" : "none";
+                });
+            });
+
+            transcriptDisplay.appendChild(transcriptSelect);
+            transcriptDisplay.appendChild(document.createElement("hr"));
+            transcriptDisplay.appendChild(transcriptContentHolder);
+            element.appendChild(transcriptDisplay);
+        })();
+
+        function addTrack(ti) {
+            if (tracks.length < ti + 1) { return false; }
+            var transcriptOption = document.createElement("option"),
+                transcriptContent = document.createElement("div"),
+                transcript = tracks[ti];
+
+            transcriptOption.innerHTML = transcript.label;
+            transcriptSelector.appendChild(transcriptOption);
+            transcriptContent.style.display = activeIndex == ti ? "block" : "none";
+            transcriptContent.setAttribute("data-trackindex", ti);
+            transcriptContent.classList.add("transcriptContent");
+
+            transcript.cues.forEach(function(cue, i) {
+                var q = document.createElement("div"),
+                    html_cue = cue.getCueAsHTML();
+
+                q.classList.add("transcriptCue");
+                q.classList.add(Ayamel.Text.getDirection(html_cue.textContent));
+                q.setAttribute("data-trackindex", ti);
+                q.setAttribute("data-cueindex", i);
+                q.appendChild(html_cue);
+                q.addEventListener("click", function(e) {
+                    element.dispatchEvent(new CustomEvent("cueclick",{bubbles:true,detail:{track:transcript,cue:cue}}));
+                });
+                transcriptContent.appendChild(q);
+            });
+
+            transcriptContentHolder.appendChild(transcriptContent);
+            return true;
+        }
 
         /*
          * Define the module interface.
@@ -75,14 +108,14 @@ var TranscriptPlayer = (function(){
         Object.defineProperties(this, {
             sync: {
                 set: function(value){
-                    ractive.set('sync', !!value);
-                    return ractive.get("sync");
+                    sync = !!value;
+                    return sync;
                 },
-                get: function(){ return ractive.get("sync"); }
+                get: function(){ return sync; }
             },
             activeTranscript: {
-                set: function(value) { ractive.set('activeIndex', value); },
-                get: function() { return ractive.get("activeIndex"); }
+                set: function(value) {activeIndex = value; },
+                get: function() { return activeIndex; }
             },
             addEventListener: {
                 value: function(event, callback, capture){ element.addEventListener(event, callback, capture||false); }
@@ -94,21 +127,22 @@ var TranscriptPlayer = (function(){
                        track.kind !== "descriptions"
                     ){ return; }
                     if(~tracks.indexOf(track)){ return; }
-                    ractive.get("transcripts").push(track);
+                    tracks.push(track);
+                    return addTrack(tracks.indexOf(track));
                 }
             },
             updateTrack: {
                 value: function(track) {
                     var i = tracks.indexOf(track);
-                    if(~i){ ractive.set("transcripts["+i+"]", track); }
+                    if(~i){ console.log("updateTrack not implemented. Report this if the Transcripts are not loading correctly.") }
                 }
             },
             currentTime: {
                 get: function(){ return currentTime; },
                 set: function(value) {
                     var activeCues, parent, top = 1/0, bottom = -1/0,
-                        activeIndex = ractive.get("activeIndex"),
-                        track = ractive.get("transcripts")[activeIndex];
+                        track = tracks[activeIndex];
+
                     currentTime = +value;
                     [].forEach.call(document.querySelectorAll('.transcriptContent[data-trackindex="'+activeIndex+'"] > .transcriptCue'),
                         function(node){
@@ -116,9 +150,8 @@ var TranscriptPlayer = (function(){
                             node.classList[(currentTime >= cue.startTime && currentTime <= cue.endTime)?'add':'remove']('active');
                         }
                     );
-
                     // Possibly scroll
-                    if(!ractive.get("sync")){ return; }
+                    if(!sync) { return; }
                     activeCues = document.querySelectorAll('.transcriptContent[data-trackindex="'+activeIndex+'"] > .active');
                     if(activeCues.length === 0){ return; }
                     [].forEach.call(activeCues, function(activeCue){
@@ -131,7 +164,7 @@ var TranscriptPlayer = (function(){
                 }
             },
             setAnnotator: { value: function(ann){ annotator = ann; } },
-            update: { value: function(){ ractive.set('transcripts', tracks); } }
+            update: { value: function(){ console.log("Transcript Player Update all tracks not implemented. Report this if the transcripts are not loading correctly.") } }
         });
     }
 
