@@ -1,5 +1,6 @@
 @(content: models.Content, resourceLibraryUrl: String, user: User)
 @import scala.reflect.runtime.universe._
+@import play.api.libs.json.Json
 
 @background = @{
     if (content.thumbnail.isEmpty) {
@@ -120,7 +121,7 @@
                         document.getElementById("description").value = resource.description;
 
                         var labelsEl = document.getElementById("labels");
-                        var labelsList = @Html(content.labels.mkString("['", "','", "']"));
+                        var labelsList = @Html(Json.toJson(content.labels).toString);
                         labelsList.forEach(function(label){
                             labelsEl.addLabel(label);
                         });
