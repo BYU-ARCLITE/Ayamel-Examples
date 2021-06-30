@@ -1,6 +1,6 @@
 package service
 
-import play.api.Logger
+import play.api.{Logger, Play}
 import play.api.libs.json._
 import play.api.libs.ws.WS
 import play.api.libs.MimeTypes
@@ -16,6 +16,7 @@ import models.User
  */
 object ResourceHelper {
 
+  val resourceLibraryBaseUrl = Play.configuration.getString("resourceLibrary.baseUrl").get.stripSuffix("/api/v1/")
   /**
    * Determines if the given URL is a standard HTTP or HTTPS url or not
    * @param uri The URL to check
@@ -39,7 +40,7 @@ object ResourceHelper {
    * @return
    */
   def isSCOLA(uri: String): Boolean = uri.startsWith("scola://")
-  
+
   /**
    * Determines if the given URL is a SCOLA url or not
    * @param uri The URL to check
@@ -163,7 +164,7 @@ object ResourceHelper {
     // Create the resource
     ResourceController.createResource(resource, user).flatMap { json =>
       val message = (json \ "response" \ "message").asOpt[String]
-      
+
       val id = (json \ "resource" \ "id").asOpt[String]
       if (!id.isDefined) {
         throw new Exception(message.getOrElse("Could not create resource."))
@@ -188,7 +189,7 @@ object ResourceHelper {
       Logger.debug(remoteFiles.toString())
 
       // Save this info and return the updated resource
-      ResourceController.setRemoteFiles(uploadUrl.get, remoteFiles).map { json =>
+      ResourceController.setRemoteFiles(resourceLibraryBaseUrl + uploadUrl.get, remoteFiles).map { json =>
         (json \ "resource") match {
         case JsDefined(res) => res
         case _ =>
