@@ -25,7 +25,7 @@ object ResourceController {
     r.json
   } catch {
     case e: Throwable =>
-      Logger.debug("Error decoding:\n${r.body}")
+      Logger.debug(s"Error decoding:\n${r.body}")
       throw e
   }
 
