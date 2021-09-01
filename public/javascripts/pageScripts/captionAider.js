@@ -37,7 +37,7 @@ $(function() {
         <div class="modal-body">{{>dialogBody}}</div>\
         <div class="modal-footer">\
             {{#buttons}}\
-            <button class="btn btn-blue" on-tap="buttonpress:{{.event}}">{{.label}}</button>\
+            <button class="btn btn-blue" on-click="buttonpress:{{.event}}">{{.label}}</button>\
             {{/buttons}}\
             <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>\
         </div>',
