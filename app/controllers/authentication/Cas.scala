@@ -21,7 +21,7 @@ object Cas extends Controller {
   def login(action: String, path: String = "") = Action {
     implicit request =>
       val service = routes.Cas.callback(action, path).absoluteURL(isHTTPS)
-      Redirect("https://cas.byu.edu:443?service=" + service, 302)
+      Redirect("https://cas.byu.edu:443/cas/login?service=" + service, 302)
   }
 
   /**
